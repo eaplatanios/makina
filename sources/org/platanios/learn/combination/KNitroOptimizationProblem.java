@@ -336,7 +336,7 @@ public class KNitroOptimizationProblem {
                 for (int index : indexes) {
                     term *= daX[index];
                 }
-                dObj += Math.pow(daX[entry.getValue()] - term, 2);
+                dObj += Math.pow(1 - daX[entry.getValue()] / term, 2);
             }
         }
 
@@ -398,10 +398,10 @@ public class KNitroOptimizationProblem {
                 for (int index : indexes) {
                     temp_product *= daX[index];
                 }
-                double term = daX[entry.getValue()] - temp_product;
-                daObjGrad[entry.getValue()] += 2 * term;
-                for (int i : indexes.subList(1, indexes.size())) {
-                    daObjGrad[i] -= 2 * term * temp_product / daX[i];
+                double term = 1 - daX[entry.getValue()] / temp_product;
+                daObjGrad[entry.getValue()] -= 2 * term / temp_product;
+                for (int i : indexes) {
+                    daObjGrad[i] += 2 * term * daX[entry.getValue()] / (temp_product * daX[i]);
                 }
             }
         }
@@ -435,22 +435,25 @@ public class KNitroOptimizationProblem {
                     temp_product *= daX[index];
                 }
                 int jointTermIndex = entry.getValue();
-                daHess[hessianIndexToKeyMapping.get(new ArrayList<Integer>(Arrays.asList(new Integer[] { jointTermIndex, jointTermIndex })))] += 2;
+                daHess[hessianIndexToKeyMapping.get(new ArrayList<Integer>(Arrays.asList(new Integer[] { jointTermIndex, jointTermIndex })))] += 2 / Math.pow(temp_product, 2);
                 for (int i : indexes) {
                     if (jointTermIndex <= i) {
-                        daHess[hessianIndexToKeyMapping.get(new ArrayList<Integer>(Arrays.asList(new Integer[] { jointTermIndex, i })))] -= 2 * temp_product / daX[i];
+                        daHess[hessianIndexToKeyMapping.get(new ArrayList<Integer>(Arrays.asList(new Integer[] { jointTermIndex, i })))] +=
+                                2 / (temp_product * daX[i]) - 4 * daX[jointTermIndex] / (Math.pow(temp_product, 2) * daX[i]);
                     }
 
                     if (i <= jointTermIndex) {
-                        daHess[hessianIndexToKeyMapping.get(new ArrayList<Integer>(Arrays.asList(new Integer[] { i, jointTermIndex })))] -= 2 * temp_product / daX[i];
+                        daHess[hessianIndexToKeyMapping.get(new ArrayList<Integer>(Arrays.asList(new Integer[] { i, jointTermIndex })))] +=
+                                2 / (temp_product * daX[i]) - 4 * daX[jointTermIndex] / (Math.pow(temp_product, 2) * daX[i]);
                     }
 
-                    daHess[hessianIndexToKeyMapping.get(new ArrayList<Integer>(Arrays.asList(new Integer[] { i, i })))] += 2 * daX[jointTermIndex] * temp_product / Math.pow(daX[i], 2);
+                    daHess[hessianIndexToKeyMapping.get(new ArrayList<Integer>(Arrays.asList(new Integer[] { i, i })))] +=
+                            6 * Math.pow(daX[jointTermIndex], 2) / (Math.pow(temp_product, 2) * Math.pow(daX[i], 2)) - 3 * daX[jointTermIndex] / (temp_product * Math.pow(daX[i], 2));
 
                     for (int j : indexes) {
                         if (i <= j) {
-                            daHess[hessianIndexToKeyMapping.get(new ArrayList<Integer>(Arrays.asList(new Integer[] { i, j })))] -= (2 * daX[jointTermIndex] * temp_product + 2 * Math.pow(temp_product, 2))
-                                    / (daX[i] * daX[j]);
+                            daHess[hessianIndexToKeyMapping.get(new ArrayList<Integer>(Arrays.asList(new Integer[] { i, j })))] +=
+                                    4 * Math.pow(daX[jointTermIndex], 2) / (Math.pow(temp_product, 2) * daX[i] * daX[j]) - 2 * daX[jointTermIndex] / (temp_product * daX[i] * daX[j]);
                         }
                     }
                 }
