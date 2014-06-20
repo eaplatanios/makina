@@ -26,7 +26,7 @@ public class ErrorRatesVector {
         errorRates = new double[errorRatesLength];
 
         createMappings();
-        initializeValues(0);
+        initializeValues(0.25);
     }
 
     public ErrorRatesVector(int numberOfFunctions, int maximumOrder, double initialValue) {
