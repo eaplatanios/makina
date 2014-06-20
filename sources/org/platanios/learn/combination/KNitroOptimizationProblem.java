@@ -162,6 +162,31 @@ public class KNitroOptimizationProblem {
             System.err.println ("Error setting parameter 'bar_feasmodetol'");
             return;
         }
+//        if (!solver.setDoubleParamByName("bar_initmu", 1E-10))
+//        {
+//            System.err.println ("Error setting parameter 'bar_initmu'");
+//            return;
+//        }
+//        if (!solver.setIntParamByName("bar_initpt", 0))
+//        {
+//            System.err.println ("Error setting parameter 'bar_initpt'");
+//            return;
+//        }
+        if (!solver.setIntParamByName("bar_maxbacktrack", 0))
+        {
+            System.err.println ("Error setting parameter 'bar_maxbacktrack'");
+            return;
+        }
+        if (!solver.setIntParamByName("bar_maxcrossit", 10))
+        {
+            System.err.println ("Error setting parameter 'bar_maxcrossit'");
+            return;
+        }
+        if (!solver.setIntParamByName("bar_maxrefactor", 0))
+        {
+            System.err.println ("Error setting parameter 'bar_maxrefactor'");
+            return;
+        }
         if (!solver.setIntParamByName("bar_murule", 0))
         {
             System.err.println ("Error setting parameter 'bar_murule'");
@@ -263,6 +288,17 @@ public class KNitroOptimizationProblem {
             return;
         }
 
+//        if (!solver.setIntParamByName("ms_enable", 1))
+//        {
+//            System.err.println ("Error setting parameter 'ms_enable'");
+//            return;
+//        }
+//        if (!solver.setIntParamByName("ms_maxsolves", 10000))
+//        {
+//            System.err.println ("Error setting parameter 'ms_maxsolves'");
+//            return;
+//        }
+
         if (!solver.initProblem(n, objGoal, objType, bndsLo, bndsUp,
                 m, cType, cBndsLo, cBndsUp,
                 nnzJ, jacIxVar, jacIxConstr,
@@ -359,7 +395,7 @@ public class KNitroOptimizationProblem {
             if (entry.getKey().size() > 1) {
                 double temp_product = 1;
                 ArrayList<Integer> indexes = entry.getKey();
-                for (int index : indexes.subList(1, indexes.size())) {
+                for (int index : indexes) {
                     temp_product *= daX[index];
                 }
                 double term = daX[entry.getValue()] - temp_product;
