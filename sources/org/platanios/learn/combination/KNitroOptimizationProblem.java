@@ -147,14 +147,24 @@ public class KNitroOptimizationProblem {
             return;
         }
 
-        if (!solver.setIntParamByName("algorithm", 0))
+        if (!solver.setIntParamByName("algorithm", 1))
         {
             System.err.println ("Error setting parameter 'algorithm'");
             return;
         }
-        if (!solver.setIntParamByName("bar_feasible", 0))
+        if (!solver.setIntParamByName("bar_feasible", 3))
         {
             System.err.println ("Error setting parameter 'bar_feasible'");
+            return;
+        }
+        if (!solver.setDoubleParamByName("bar_feasmodetol", 1E-10))
+        {
+            System.err.println ("Error setting parameter 'bar_feasmodetol'");
+            return;
+        }
+        if (!solver.setIntParamByName("bar_murule", 0))
+        {
+            System.err.println ("Error setting parameter 'bar_murule'");
             return;
         }
         if (!solver.setIntParamByName("bar_penaltycons", 0))
@@ -172,11 +182,11 @@ public class KNitroOptimizationProblem {
             System.err.println ("Error setting parameter 'bar_relaxcons'");
             return;
         }
-//        if (!solver.setIntParamByName("bar_switchrule", 3))
-//        {
-//            System.err.println ("Error setting parameter 'bar_switchrule'");
-//            return;
-//        }
+        if (!solver.setIntParamByName("bar_switchrule", 1))
+        {
+            System.err.println ("Error setting parameter 'bar_switchrule'");
+            return;
+        }
         if (!solver.setIntParamByName("blasoption", 1))
         {
             System.err.println ("Error setting parameter 'blasoption'");
@@ -217,6 +227,11 @@ public class KNitroOptimizationProblem {
             System.err.println ("Error setting parameter 'maxit'");
             return;
         }
+        if (!solver.setDoubleParamByName("opttol", 1E-20))
+        {
+            System.err.println ("Error setting parameter 'opttol'");
+            return;
+        }
         if (!solver.setCharParamByName("outlev", "all"))
         {
             System.err.println ("Error setting parameter 'outlev'");
@@ -232,7 +247,7 @@ public class KNitroOptimizationProblem {
             System.err.println ("Error setting parameter 'scale'");
             return;
         }
-        if (!solver.setIntParamByName("soc", 2))
+        if (!solver.setIntParamByName("soc", 0))
         {
             System.err.println ("Error setting parameter 'soc'");
             return;
