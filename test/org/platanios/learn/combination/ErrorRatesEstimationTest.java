@@ -2,6 +2,9 @@ package org.platanios.learn.combination;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.platanios.learn.combination.error.DataPreprocessing;
+import org.platanios.learn.combination.error.DataStructure;
+import org.platanios.learn.combination.error.ErrorRatesEstimation;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -13,12 +16,12 @@ public class ErrorRatesEstimationTest {
         String separator = ",";
         int maximumOrder = 4;
         double[] classificationThresholds = new double[] { 0.05, 0.05, 0.1, 0.05 };
-        DataStructure data = DataPreprocessing.parseLabeledDataFromCSVFile(filename, separator, classificationThresholds, maximumOrder);
+        DataStructure data = DataPreprocessing.parseLabeledDataFromCSVFile(filename, separator, classificationThresholds, maximumOrder, true);
         ErrorRatesEstimation ere = new ErrorRatesEstimation(data);
         data = ere.solve();
 
-        double[] obtainedErrorRates = data.getErrorRates().errorRates;
-        double[] sampleErrorRates = data.getSampleErrorRates().errorRates;
+        double[] obtainedErrorRates = data.getErrorRates().array;
+        double[] sampleErrorRates = data.getSampleErrorRates().array;
 
         double mad = 0.0;
         double mad_ind = 0.0;

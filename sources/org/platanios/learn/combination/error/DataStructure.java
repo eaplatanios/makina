@@ -1,4 +1,4 @@
-package org.platanios.learn.combination;
+package org.platanios.learn.combination.error;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -51,6 +51,6 @@ public class DataStructure {
     }
 
     public void setErrorRatesValues(double[] errorRatesValues) {
-        errorRates.errorRates = errorRatesValues;
+        errorRates.array = errorRatesValues;
     }
 }

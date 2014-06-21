@@ -2,6 +2,8 @@ package org.platanios.learn.combination;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.platanios.learn.combination.error.DataPreprocessing;
+import org.platanios.learn.combination.error.DataStructure;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -14,7 +16,7 @@ public class AgreementRatesVectorTest {
         int maximumOrder = 4;
         double[] classificationThresholds = new double[] { 0.05, 0.05, 0.1, 0.05 };
         DataStructure data = DataPreprocessing.parseLabeledDataFromCSVFile(filename, separator, classificationThresholds, maximumOrder, false);
-        double[] obtainedAgreementRates = data.getAgreementRates().agreementRates;
+        double[] obtainedAgreementRates = data.getAgreementRates().array;
         double[] correctAgreementRates = new double[]{
                 0.646698499975884,
                 0.698548208170549,
