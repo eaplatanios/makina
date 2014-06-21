@@ -147,69 +147,9 @@ public class KNitroOptimizationProblem {
             return;
         }
 
-        if (!solver.setIntParamByName("algorithm", 1))
+        if (!solver.setIntParamByName("algorithm", 3))
         {
             System.err.println ("Error setting parameter 'algorithm'");
-            return;
-        }
-        if (!solver.setIntParamByName("bar_feasible", 3))
-        {
-            System.err.println ("Error setting parameter 'bar_feasible'");
-            return;
-        }
-        if (!solver.setDoubleParamByName("bar_feasmodetol", 1E-10))
-        {
-            System.err.println ("Error setting parameter 'bar_feasmodetol'");
-            return;
-        }
-//        if (!solver.setDoubleParamByName("bar_initmu", 1E-10))
-//        {
-//            System.err.println ("Error setting parameter 'bar_initmu'");
-//            return;
-//        }
-//        if (!solver.setIntParamByName("bar_initpt", 0))
-//        {
-//            System.err.println ("Error setting parameter 'bar_initpt'");
-//            return;
-//        }
-        if (!solver.setIntParamByName("bar_maxbacktrack", 0))
-        {
-            System.err.println ("Error setting parameter 'bar_maxbacktrack'");
-            return;
-        }
-        if (!solver.setIntParamByName("bar_maxcrossit", 10))
-        {
-            System.err.println ("Error setting parameter 'bar_maxcrossit'");
-            return;
-        }
-        if (!solver.setIntParamByName("bar_maxrefactor", 0))
-        {
-            System.err.println ("Error setting parameter 'bar_maxrefactor'");
-            return;
-        }
-        if (!solver.setIntParamByName("bar_murule", 0))
-        {
-            System.err.println ("Error setting parameter 'bar_murule'");
-            return;
-        }
-        if (!solver.setIntParamByName("bar_penaltycons", 0))
-        {
-            System.err.println ("Error setting parameter 'bar_penaltycons'");
-            return;
-        }
-        if (!solver.setIntParamByName("bar_penaltyrule", 0))
-        {
-            System.err.println ("Error setting parameter 'bar_penaltyrule'");
-            return;
-        }
-        if (!solver.setIntParamByName("bar_relaxcons", 0))
-        {
-            System.err.println ("Error setting parameter 'bar_relaxcons'");
-            return;
-        }
-        if (!solver.setIntParamByName("bar_switchrule", 1))
-        {
-            System.err.println ("Error setting parameter 'bar_switchrule'");
             return;
         }
         if (!solver.setIntParamByName("blasoption", 1))
@@ -257,7 +197,7 @@ public class KNitroOptimizationProblem {
             System.err.println ("Error setting parameter 'opttol'");
             return;
         }
-        if (!solver.setCharParamByName("outlev", "all"))
+        if (!solver.setIntParamByName("outlev", 6))
         {
             System.err.println ("Error setting parameter 'outlev'");
             return;
@@ -277,27 +217,11 @@ public class KNitroOptimizationProblem {
             System.err.println ("Error setting parameter 'soc'");
             return;
         }
-        if (!solver.setIntParamByName("tuner", 0))
-        {
-            System.err.println ("Error setting parameter 'tuner'");
-            return;
-        }
         if (!solver.setDoubleParamByName("xtol", 1.0E-20))
         {
             System.err.println ("Error setting parameter 'xtol'");
             return;
         }
-
-//        if (!solver.setIntParamByName("ms_enable", 1))
-//        {
-//            System.err.println ("Error setting parameter 'ms_enable'");
-//            return;
-//        }
-//        if (!solver.setIntParamByName("ms_maxsolves", 10000))
-//        {
-//            System.err.println ("Error setting parameter 'ms_maxsolves'");
-//            return;
-//        }
 
         if (!solver.initProblem(n, objGoal, objType, bndsLo, bndsUp,
                 m, cType, cBndsLo, cBndsUp,
