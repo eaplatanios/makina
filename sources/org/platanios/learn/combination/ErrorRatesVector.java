@@ -35,6 +35,11 @@ public class ErrorRatesVector {
         initializeValues(initialValue);
     }
 
+    public ErrorRatesVector(int numberOfFunctions, int maximumOrder, boolean[] trueLabels, boolean[][] classifiersOutputs) {
+        this(numberOfFunctions, maximumOrder);
+        computeValues(trueLabels, classifiersOutputs);
+    }
+
     private ImmutableBiMap.Builder<List<Integer>, Integer> createIndexKeyMappingBuilder() {
         ImmutableBiMap.Builder<List<Integer>, Integer> indexKeyMappingBuilder = new ImmutableBiMap.Builder<List<Integer>, Integer>();
 
@@ -67,6 +72,24 @@ public class ErrorRatesVector {
                     errorRates[key] *= errorRates[indexKeyMapping.get(Ints.asList(i))];
                 }
             }
+        }
+    }
+
+    private void computeValues(boolean[] trueLabels, boolean[][] classifiersOutputs) {
+        for (int i = 0; i < trueLabels.length; i++) {
+            for (BiMap.Entry<List<Integer>, Integer> entry : indexKeyMapping.entrySet()) {
+                boolean equal = true;
+                List<Integer> indexes = entry.getKey();
+                for (int index : indexes.subList(1, indexes.size())) {
+                    equal = equal && (classifiersOutputs[i][indexes.get(0)] == classifiersOutputs[i][index]);
+                }
+                if (equal && (classifiersOutputs[i][indexes.get(0)] != trueLabels[i])) {
+                    errorRates[entry.getValue()] += 1;
+                }
+            }
+        }
+        for (int i = 0; i < errorRates.length; i++) {
+            errorRates[i] /= classifiersOutputs.length;
         }
     }
 

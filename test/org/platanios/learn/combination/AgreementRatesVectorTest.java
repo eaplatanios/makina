@@ -9,11 +9,25 @@ import org.junit.Test;
 public class AgreementRatesVectorTest {
     @Test
     public void testAgreementRatesVector() {
-        String filename = "C:\\Users\\Anthony\\Documents\\GitHub\\learn\\data\\combination\\nell\\labels\\animal.csv";
+        String filename = ErrorRatesEstimationTest.class.getResource("resources/animal.csv").getPath();
         String separator = ",";
-        boolean[][] observations = DataPreprocessing.getObservationsFromCsvFile(filename, separator);
-        double[] obtainedAgreementRates = new AgreementRatesVector(4, 4, observations).agreementRates;
-        double[] correctAgreementRates = new double[] { 0.74, 0.66, 0.62, 0.80, 0.52, 0.60, 0.60, 0.44, 0.44, 0.46, 0.40 };
-        Assert.assertArrayEquals(obtainedAgreementRates, correctAgreementRates, 0);
+        int maximumOrder = 4;
+        double[] classificationThresholds = new double[] { 0.05, 0.05, 0.1, 0.05 };
+        DataStructure data = DataPreprocessing.parseLabeledDataFromCSVFile(filename, separator, classificationThresholds, maximumOrder, false);
+        double[] obtainedAgreementRates = data.getAgreementRates().agreementRates;
+        double[] correctAgreementRates = new double[]{
+                0.646698499975884,
+                0.698548208170549,
+                0.575362947957363,
+                0.693290888921044,
+                0.583803598128587,
+                0.607678580041480,
+                0.519268798533739,
+                0.402932523030917,
+                0.440794868084696,
+                0.442386533545555,
+                0.337481309988907
+        };
+        Assert.assertArrayEquals(obtainedAgreementRates, correctAgreementRates, 1E-15);
     }
 }

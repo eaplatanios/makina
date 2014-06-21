@@ -55,13 +55,13 @@ public class AgreementRatesVector {
         return indexKeyMappingBuilder;
     }
 
-    private void computeValues(boolean[][] observations) {
-        for (boolean[] observation : observations) {
+    private void computeValues(boolean[][] classifiersOutputs) {
+        for (boolean[] classifiersOutput : classifiersOutputs) {
             for (BiMap.Entry<List<Integer>, Integer> entry : indexKeyMapping.entrySet()) {
                 boolean equal = true;
                 List<Integer> indexes = entry.getKey();
                 for (int index : indexes.subList(1, indexes.size())) {
-                    equal = equal && (observation[indexes.get(0)] == observation[index]);
+                    equal = equal && (classifiersOutput[indexes.get(0)] == classifiersOutput[index]);
                 }
                 if (equal) {
                     agreementRates[entry.getValue()] += 1;
@@ -69,7 +69,7 @@ public class AgreementRatesVector {
             }
         }
         for (int i = 0; i < agreementRatesLength; i++) {
-            agreementRates[i] /= observations.length;
+            agreementRates[i] /= classifiersOutputs.length;
         }
     }
 

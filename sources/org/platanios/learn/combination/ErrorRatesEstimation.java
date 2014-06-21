@@ -4,16 +4,19 @@ package org.platanios.learn.combination;
  * @author Emmanouil Antonios Platanios
  */
 public class ErrorRatesEstimation {
-    private ErrorRatesVector errorRates;
+    private DataStructure data;
     private KnitroOptimizationProblem optimizationProblem;
 
-    public ErrorRatesEstimation(final AgreementRatesVector agreementRates, final int numberOfFunctions, int maximumOrder) {
-        this.errorRates = new ErrorRatesVector(numberOfFunctions, maximumOrder, 0.25);
-        this.optimizationProblem = new KnitroOptimizationProblem(numberOfFunctions, maximumOrder, errorRates, agreementRates);
+    public ErrorRatesEstimation(DataStructure data) {
+        this.data = data;
+        this.optimizationProblem = new KnitroOptimizationProblem(data.getNumberOfFunctions(),
+                                                                 data.getMaximumOrder(),
+                                                                 data.getErrorRates(),
+                                                                 data.getAgreementRates());
     }
 
-    public ErrorRatesVector solve() {
-        errorRates.errorRates = optimizationProblem.solve();
-        return errorRates;
+    public DataStructure solve() {
+        data.setErrorRatesValues(optimizationProblem.solve());
+        return data;
     }
 }
