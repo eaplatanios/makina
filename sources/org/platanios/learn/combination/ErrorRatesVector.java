@@ -1,5 +1,8 @@
 package org.platanios.learn.combination;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
+import com.google.common.primitives.Ints;
 import org.platanios.math.combinatorics.CombinatoricsUtilities;
 
 import java.util.*;
@@ -9,12 +12,11 @@ import java.util.*;
  */
 public class ErrorRatesVector {
     public double[] errorRates;
+    public final BiMap<List<Integer>, Integer> indexKeyMapping;
 
     private int numberOfFunctions;
     private int maximumOrder;
     private int errorRatesLength;
-    private Map<ArrayList<Integer>, Integer> indexToKeyMapping;
-    private Map<Integer, ArrayList<Integer>> keyToIndexMapping;
 
     public ErrorRatesVector(int numberOfFunctions, int maximumOrder) {
         this.numberOfFunctions = numberOfFunctions;
@@ -24,8 +26,7 @@ public class ErrorRatesVector {
             errorRatesLength += CombinatoricsUtilities.binomialCoefficient(numberOfFunctions, m);
         }
         errorRates = new double[errorRatesLength];
-
-        createMappings();
+        indexKeyMapping = createIndexKeyMappingBuilder().build();
         initializeValues(0.25);
     }
 
@@ -34,51 +35,39 @@ public class ErrorRatesVector {
         initializeValues(initialValue);
     }
 
-    private void createMappings() {
-        indexToKeyMapping = new LinkedHashMap<ArrayList<Integer>, Integer>();
-        keyToIndexMapping = new LinkedHashMap<Integer, ArrayList<Integer>>();
+    private ImmutableBiMap.Builder<List<Integer>, Integer> createIndexKeyMappingBuilder() {
+        ImmutableBiMap.Builder<List<Integer>, Integer> indexKeyMappingBuilder = new ImmutableBiMap.Builder<List<Integer>, Integer>();
 
         for (int i = 0; i < numberOfFunctions; i++)
         {
-            indexToKeyMapping.put(new ArrayList<Integer>(Arrays.asList(i)), i);
-            keyToIndexMapping.put(i, new ArrayList<Integer>(Arrays.asList(i)));
+            indexKeyMappingBuilder.put(Ints.asList(i), i);
         }
 
         int offset = numberOfFunctions;
-
         for (int m = 2; m <= maximumOrder; m++) {
-            List<ArrayList<Integer>> indexes = CombinatoricsUtilities.getCombinations(numberOfFunctions, m);
-            for (int i = 0; i < indexes.size(); i++) {
-                indexToKeyMapping.put(indexes.get(i), offset + i);
-                keyToIndexMapping.put(offset + i, indexes.get(i));
+            int[][] indexes = CombinatoricsUtilities.getCombinations(numberOfFunctions, m);
+            for (int i = 0; i < indexes.length; i++) {
+                indexKeyMappingBuilder.put(Ints.asList(indexes[i]), offset + i);
             }
             offset += CombinatoricsUtilities.binomialCoefficient(numberOfFunctions, m);
         }
+
+        return indexKeyMappingBuilder;
     }
 
     private void initializeValues(double initialValue) {
-        for (int i = 0; i < numberOfFunctions; i++)
-        {
-            errorRates[i] = initialValue;
-        }
-
-        for (int m = 2; m <= maximumOrder; m++) {
-            List<ArrayList<Integer>> indexes = CombinatoricsUtilities.getCombinations(numberOfFunctions, m);
-            for (int i = 0; i < indexes.size(); i++) {
-                errorRates[indexToKeyMapping.get(indexes.get(i))] = 1;
-                for (int index : indexes.get(i)) {
-                    errorRates[indexToKeyMapping.get(indexes.get(i))] *= errorRates[indexToKeyMapping.get(new ArrayList<Integer>(Arrays.asList(index)))];
+        for (BiMap.Entry<List<Integer>, Integer> indexKeyPair : indexKeyMapping.entrySet()) {
+            List<Integer> index = indexKeyPair.getKey();
+            Integer key = indexKeyPair.getValue();
+            if (index.size() == 1) {
+                errorRates[key] = initialValue;
+            } else {
+                errorRates[key] = 1;
+                for (Integer i : index) {
+                    errorRates[key] *= errorRates[indexKeyMapping.get(Ints.asList(i))];
                 }
             }
         }
-    }
-
-    public Map<ArrayList<Integer>, Integer> getIndexToKeyMapping() {
-        return indexToKeyMapping;
-    }
-
-    public Map<Integer, ArrayList<Integer>> getKeyToIndexMapping() {
-        return keyToIndexMapping;
     }
 
     public int getLength() {

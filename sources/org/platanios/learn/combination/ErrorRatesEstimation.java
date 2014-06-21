@@ -5,11 +5,11 @@ package org.platanios.learn.combination;
  */
 public class ErrorRatesEstimation {
     private ErrorRatesVector errorRates;
-    private KNitroOptimizationProblem optimizationProblem;
+    private KnitroOptimizationProblem optimizationProblem;
 
     public ErrorRatesEstimation(final AgreementRatesVector agreementRates, final int numberOfFunctions, int maximumOrder) {
         this.errorRates = new ErrorRatesVector(numberOfFunctions, maximumOrder);
-        this.optimizationProblem = new KNitroOptimizationProblem(numberOfFunctions, maximumOrder, errorRates, agreementRates);
+        this.optimizationProblem = new KnitroOptimizationProblem(numberOfFunctions, maximumOrder, errorRates, agreementRates);
     }
 
     public ErrorRatesVector solve() {

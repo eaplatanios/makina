@@ -1,5 +1,8 @@
 package org.platanios.learn.combination;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
+import com.google.common.primitives.Ints;
 import com.ziena.knitro.KnitroJava;
 import org.platanios.math.combinatorics.CombinatoricsUtilities;
 
@@ -13,10 +16,8 @@ class KnitroOptimizationProblem {
     final int maximumOrder;
     final ErrorRatesVector errorRates;
     final AgreementRatesVector agreementRates;
+    final BiMap<List<Integer>, Integer> hessianIndexKeyMapping;
 
-    Map<ArrayList<Integer>, Integer> agreementRatesIndexToKeyMapping;
-    Map<ArrayList<Integer>, Integer> errorRatesIndexToKeyMapping;
-    Map<ArrayList<Integer>, Integer> hessianIndexToKeyMapping;
     List<Integer[]> constraintsJacobian;
     KnitroJava solver;
 
@@ -38,9 +39,6 @@ class KnitroOptimizationProblem {
         this.errorRates = errorRates;
         this.agreementRates = agreementRates;
 
-        agreementRatesIndexToKeyMapping = agreementRates.getIndexToKeyMapping();
-        errorRatesIndexToKeyMapping = errorRates.getIndexToKeyMapping();
-
         int numberOfVariables = errorRates.getLength();
         int  objectiveGoal = KnitroJava.KTR_OBJGOAL_MINIMIZE;
         int  objectiveFunctionType = KnitroJava.KTR_OBJTYPE_GENERAL;
@@ -53,7 +51,7 @@ class KnitroOptimizationProblem {
             variableUpperBounds[i] = 0.5;
         }
 
-        int numberOfConstraints = agreementRatesIndexToKeyMapping.size();
+        int numberOfConstraints = agreementRates.indexKeyMapping.size();
 
         for (int k = 2; k <= maximumOrder; k++) {
             numberOfConstraints += CombinatoricsUtilities.binomialCoefficient(numberOfFunctions, k) * k;
@@ -68,12 +66,12 @@ class KnitroOptimizationProblem {
         double[] constraintLowerBounds = new double[numberOfConstraints];
         double[] constraintUpperBounds = new double[numberOfConstraints];
 
-        for (int i = 0; i < agreementRatesIndexToKeyMapping.size(); i++) {
+        for (int i = 0; i < agreementRates.indexKeyMapping.size(); i++) {
             constraintLowerBounds[i] = agreementRates.agreementRates[i] - 1;
             constraintUpperBounds[i] = agreementRates.agreementRates[i] - 1;
         }
 
-        for (int i = agreementRatesIndexToKeyMapping.size(); i < numberOfConstraints; i++) {
+        for (int i = agreementRates.indexKeyMapping.size(); i < numberOfConstraints; i++) {
             constraintLowerBounds[i] = -KnitroJava.KTR_INFBOUND;
             constraintUpperBounds[i] = 0;
         }
@@ -82,37 +80,37 @@ class KnitroOptimizationProblem {
         int constraintIndex = 0;
         constraintsJacobian = new ArrayList<Integer[]>();
 
-        for (Map.Entry<ArrayList<Integer>, Integer> entry : agreementRatesIndexToKeyMapping.entrySet()) {
+        for (BiMap.Entry<List<Integer>, Integer> entry : agreementRates.indexKeyMapping.entrySet()) {
             int k = entry.getKey().size();
-            constraintsJacobian.add(new Integer[]{constraintIndex, errorRatesIndexToKeyMapping.get(entry.getKey()), 2});
+            constraintsJacobian.add(new Integer[]{constraintIndex, errorRates.indexKeyMapping.get(entry.getKey()), 2});
             numberOfNonZerosInConstraintsJacobian += 1;
             for (int l = 1; l < k; l++) {
-                List<ArrayList<Integer>> inner_indexes = CombinatoricsUtilities.getCombinations(k, l);
-                for (ArrayList<Integer> inner_index : inner_indexes) {
-                    ArrayList<Integer> temp_index = new ArrayList<Integer>();
+                int[][] inner_indexes = CombinatoricsUtilities.getCombinations(k, l);
+                for (int[] inner_index : inner_indexes) {
+                    List<Integer> temp_index = new ArrayList<Integer>();
                     for (int i : inner_index) {
                         temp_index.add(entry.getKey().get(i));
                     }
-                    constraintsJacobian.add(new Integer[]{constraintIndex, errorRatesIndexToKeyMapping.get(temp_index), (int) Math.pow(-1, l)});
+                    constraintsJacobian.add(new Integer[]{constraintIndex, errorRates.indexKeyMapping.get(temp_index), (int) Math.pow(-1, l)});
                 }
-                numberOfNonZerosInConstraintsJacobian += inner_indexes.size();
+                numberOfNonZerosInConstraintsJacobian += inner_indexes.length;
             }
             constraintIndex++;
         }
 
-        for (Map.Entry<ArrayList<Integer>, Integer> entry : errorRatesIndexToKeyMapping.entrySet()) {
+        for (BiMap.Entry<List<Integer>, Integer> entry : errorRates.indexKeyMapping.entrySet()) {
             int k = entry.getKey().size();
             if (entry.getKey().size() > 1) {
-                List<ArrayList<Integer>> inner_indexes = CombinatoricsUtilities.getCombinations(k, k - 1);
-                for (ArrayList<Integer> inner_index : inner_indexes) {
-                    ArrayList<Integer> temp_index = new ArrayList<Integer>();
+                int[][] inner_indexes = CombinatoricsUtilities.getCombinations(k, k - 1);
+                for (int[] inner_index : inner_indexes) {
+                    List<Integer> temp_index = new ArrayList<Integer>();
                     for (int i : inner_index) {
                         temp_index.add(entry.getKey().get(i));
                     }
-                    constraintsJacobian.add(new Integer[]{constraintIndex, errorRatesIndexToKeyMapping.get(entry.getKey()), 1});
-                    constraintsJacobian.add(new Integer[]{constraintIndex++, errorRatesIndexToKeyMapping.get(temp_index), -1});
+                    constraintsJacobian.add(new Integer[]{constraintIndex, errorRates.indexKeyMapping.get(entry.getKey()), 1});
+                    constraintsJacobian.add(new Integer[]{constraintIndex++, errorRates.indexKeyMapping.get(temp_index), -1});
                 }
-                numberOfNonZerosInConstraintsJacobian += 2 * inner_indexes.size();
+                numberOfNonZerosInConstraintsJacobian += 2 * inner_indexes.length;
             }
         }
 
@@ -129,15 +127,17 @@ class KnitroOptimizationProblem {
         int[] hessianRowIndexes = new int[numberOfVariables * (numberOfVariables + 1) / 2];
         int[] hessianColumnIndexes = new int[numberOfVariables * (numberOfVariables + 1) / 2];
         int hessianEntryIndex = 0;
-        hessianIndexToKeyMapping = new LinkedHashMap<ArrayList<Integer>, Integer>();
+        ImmutableBiMap.Builder<List<Integer>, Integer> hessianIndexKeyMappingBuilder = new ImmutableBiMap.Builder<List<Integer>, Integer>();
 
         for (int i = 0; i < numberOfVariables; i++) {
             for (int j = i; j < numberOfVariables; j++) {
                 hessianRowIndexes[hessianEntryIndex] = i;
                 hessianColumnIndexes[hessianEntryIndex] = j;
-                hessianIndexToKeyMapping.put(new ArrayList<Integer>(Arrays.asList(new Integer[] { i, j })), hessianEntryIndex++);
+                hessianIndexKeyMappingBuilder.put(Ints.asList(i, j), hessianEntryIndex++);
             }
         }
+
+        hessianIndexKeyMapping = hessianIndexKeyMappingBuilder.build();
 
         double[]  daXInit = errorRates.errorRates;
 
@@ -265,10 +265,10 @@ class KnitroOptimizationProblem {
                                double[] optimizationConstraints)
     {
         double optimizationObjective = 0;
-        for (Map.Entry<ArrayList<Integer>, Integer> entry : errorRatesIndexToKeyMapping.entrySet()) {
+        for (BiMap.Entry<List<Integer>, Integer> entry : errorRates.indexKeyMapping.entrySet()) {
             if (entry.getKey().size() > 1) {
                 double term = 1;
-                ArrayList<Integer> indexes = entry.getKey();
+                List<Integer> indexes = entry.getKey();
                 for (int index : indexes) {
                     term *= optimizationVariables[index];
                 }
@@ -278,32 +278,32 @@ class KnitroOptimizationProblem {
 
         int constraintIndex = 0;
 
-        for (Map.Entry<ArrayList<Integer>, Integer> entry : agreementRatesIndexToKeyMapping.entrySet()) {
+        for (BiMap.Entry<List<Integer>, Integer> entry : agreementRates.indexKeyMapping.entrySet()) {
             int k = entry.getKey().size();
-            optimizationConstraints[constraintIndex] = 2 * optimizationVariables[errorRatesIndexToKeyMapping.get(entry.getKey())];
+            optimizationConstraints[constraintIndex] = 2 * optimizationVariables[errorRates.indexKeyMapping.get(entry.getKey())];
             for (int l = 1; l < k; l++) {
-                List<ArrayList<Integer>> inner_indexes = CombinatoricsUtilities.getCombinations(k, l);
-                for (ArrayList<Integer> inner_index : inner_indexes) {
-                    ArrayList<Integer> temp_index = new ArrayList<Integer>();
+                int[][] inner_indexes = CombinatoricsUtilities.getCombinations(k, l);
+                for (int[] inner_index : inner_indexes) {
+                    List<Integer> temp_index = new ArrayList<Integer>();
                     for (int i : inner_index) {
                         temp_index.add(entry.getKey().get(i));
                     }
-                    optimizationConstraints[constraintIndex] += Math.pow(-1, l) * optimizationVariables[errorRatesIndexToKeyMapping.get(temp_index)];
+                    optimizationConstraints[constraintIndex] += Math.pow(-1, l) * optimizationVariables[errorRates.indexKeyMapping.get(temp_index)];
                 }
             }
             constraintIndex++;
         }
 
-        for (Map.Entry<ArrayList<Integer>, Integer> entry : errorRatesIndexToKeyMapping.entrySet()) {
+        for (BiMap.Entry<List<Integer>, Integer> entry : errorRates.indexKeyMapping.entrySet()) {
             int k = entry.getKey().size();
             if (k > 1) {
-                List<ArrayList<Integer>> inner_indexes = CombinatoricsUtilities.getCombinations(k, k - 1);
-                for (ArrayList<Integer> inner_index : inner_indexes) {
-                    ArrayList<Integer> temp_index = new ArrayList<Integer>();
+                int[][] inner_indexes = CombinatoricsUtilities.getCombinations(k, k - 1);
+                for (int[] inner_index : inner_indexes) {
+                    List<Integer> temp_index = new ArrayList<Integer>();
                     for (int i : inner_index) {
                         temp_index.add(entry.getKey().get(i));
                     }
-                    optimizationConstraints[constraintIndex++] = optimizationVariables[errorRatesIndexToKeyMapping.get(entry.getKey())] - optimizationVariables[errorRatesIndexToKeyMapping.get(temp_index)];
+                    optimizationConstraints[constraintIndex++] = optimizationVariables[errorRates.indexKeyMapping.get(entry.getKey())] - optimizationVariables[errorRates.indexKeyMapping.get(temp_index)];
                 }
             }
         }
@@ -330,10 +330,10 @@ class KnitroOptimizationProblem {
             optimizationObjectiveGradients[i] = 0;
         }
 
-        for (Map.Entry<ArrayList<Integer>, Integer> entry : errorRatesIndexToKeyMapping.entrySet()) {
+        for (BiMap.Entry<List<Integer>, Integer> entry : errorRates.indexKeyMapping.entrySet()) {
             if (entry.getKey().size() > 1) {
                 double temp_product = 1;
-                ArrayList<Integer> indexes = entry.getKey();
+                List<Integer> indexes = entry.getKey();
                 for (int index : indexes) {
                     temp_product *= optimizationVariables[index];
                 }
@@ -374,29 +374,29 @@ class KnitroOptimizationProblem {
         }
 
         if (!onlyConstraints) {
-            for (Map.Entry<ArrayList<Integer>, Integer> entry : errorRatesIndexToKeyMapping.entrySet()) {
+            for (BiMap.Entry<List<Integer>, Integer> entry : errorRates.indexKeyMapping.entrySet()) {
                 if (entry.getKey().size() > 1) {
                     double temp_product = 1;
-                    ArrayList<Integer> indexes = entry.getKey();
+                    List<Integer> indexes = entry.getKey();
                     for (int index : indexes) {
                         temp_product *= optimizationVariables[index];
                     }
                     int jointTermIndex = entry.getValue();
-                    optimizationHessian[hessianIndexToKeyMapping.get(new ArrayList<Integer>(Arrays.asList(new Integer[]{jointTermIndex, jointTermIndex})))] += 2;
+                    optimizationHessian[hessianIndexKeyMapping.get(Ints.asList(jointTermIndex, jointTermIndex))] += 2;
                     for (int i : indexes) {
                         if (jointTermIndex <= i) {
-                            optimizationHessian[hessianIndexToKeyMapping.get(new ArrayList<Integer>(Arrays.asList(new Integer[]{jointTermIndex, i})))] -= 2 * temp_product / optimizationVariables[i];
+                            optimizationHessian[hessianIndexKeyMapping.get(Ints.asList(jointTermIndex, i))] -= 2 * temp_product / optimizationVariables[i];
                         }
 
                         if (i <= jointTermIndex) {
-                            optimizationHessian[hessianIndexToKeyMapping.get(new ArrayList<Integer>(Arrays.asList(new Integer[]{i, jointTermIndex})))] -= 2 * temp_product / optimizationVariables[i];
+                            optimizationHessian[hessianIndexKeyMapping.get(Ints.asList(i, jointTermIndex))] -= 2 * temp_product / optimizationVariables[i];
                         }
 
-                        optimizationHessian[hessianIndexToKeyMapping.get(new ArrayList<Integer>(Arrays.asList(new Integer[]{i, i})))] += 2 * optimizationVariables[jointTermIndex] * temp_product / Math.pow(optimizationVariables[i], 2);
+                        optimizationHessian[hessianIndexKeyMapping.get(Ints.asList(i, i))] += 2 * optimizationVariables[jointTermIndex] * temp_product / Math.pow(optimizationVariables[i], 2);
 
                         for (int j : indexes) {
                             if (i <= j) {
-                                optimizationHessian[hessianIndexToKeyMapping.get(new ArrayList<Integer>(Arrays.asList(new Integer[]{i, j})))] -= (2 * optimizationVariables[jointTermIndex] * temp_product + 2 * Math.pow(temp_product, 2))
+                                optimizationHessian[hessianIndexKeyMapping.get(Ints.asList(i, j))] -= (2 * optimizationVariables[jointTermIndex] * temp_product + 2 * Math.pow(temp_product, 2))
                                         / (optimizationVariables[i] * optimizationVariables[j]);
                             }
                         }

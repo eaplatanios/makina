@@ -1,5 +1,8 @@
 package org.platanios.learn.combination;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
+import com.google.common.primitives.Ints;
 import org.platanios.math.combinatorics.CombinatoricsUtilities;
 
 import java.util.*;
@@ -9,12 +12,11 @@ import java.util.*;
  */
 public class AgreementRatesVector {
     public double[] agreementRates;
+    public final BiMap<List<Integer>, Integer> indexKeyMapping;
 
     private int numberOfFunctions;
     private int maximumOrder;
     private int agreementRatesLength;
-    private Map<ArrayList<Integer>, Integer> indexToKeyMapping;
-    private Map<Integer, ArrayList<Integer>> keyToIndexMapping;
 
     public AgreementRatesVector(int numberOfFunctions, int maximumOrder, boolean[][] observations) {
         this.numberOfFunctions = numberOfFunctions;
@@ -22,38 +24,36 @@ public class AgreementRatesVector {
         agreementRatesLength = 0;
         for (int m = 2; m <= maximumOrder; m++) {
 //            if (m % 2 == 0) {
-                agreementRatesLength += CombinatoricsUtilities.binomialCoefficient(numberOfFunctions, m);
+            agreementRatesLength += CombinatoricsUtilities.binomialCoefficient(numberOfFunctions, m);
 //            }
         }
         agreementRates = new double[agreementRatesLength];
-
-        createMappings();
+        indexKeyMapping = createIndexKeyMappingBuilder().build();
         computeValues(observations);
     }
 
-    private void createMappings() {
-        indexToKeyMapping = new LinkedHashMap<ArrayList<Integer>, Integer>();
-        keyToIndexMapping = new LinkedHashMap<Integer, ArrayList<Integer>>();
+    private ImmutableBiMap.Builder<List<Integer>, Integer> createIndexKeyMappingBuilder() {
+        ImmutableBiMap.Builder<List<Integer>, Integer> indexKeyMappingBuilder = new ImmutableBiMap.Builder<List<Integer>, Integer>();
 
         int offset = 0;
-
         for (int m = 2; m <= maximumOrder; m++) {
 //            if (m % 2 == 0) {
-                List<ArrayList<Integer>> indexes = CombinatoricsUtilities.getCombinations(numberOfFunctions, m);
-                for (int i = 0; i < indexes.size(); i++) {
-                    indexToKeyMapping.put(indexes.get(i), offset + i);
-                    keyToIndexMapping.put(offset + i, indexes.get(i));
-                }
-                offset += CombinatoricsUtilities.binomialCoefficient(numberOfFunctions, m);
+            int[][] indexes = CombinatoricsUtilities.getCombinations(numberOfFunctions, m);
+            for (int i = 0; i < indexes.length; i++) {
+                indexKeyMappingBuilder.put(Ints.asList(indexes[i]), offset + i);
+            }
+            offset += CombinatoricsUtilities.binomialCoefficient(numberOfFunctions, m);
 //            }
         }
+
+        return indexKeyMappingBuilder;
     }
 
     private void computeValues(boolean[][] observations) {
         for (boolean[] observation : observations) {
-            for (Map.Entry<ArrayList<Integer>, Integer> entry : indexToKeyMapping.entrySet()) {
+            for (BiMap.Entry<List<Integer>, Integer> entry : indexKeyMapping.entrySet()) {
                 boolean equal = true;
-                ArrayList<Integer> indexes = entry.getKey();
+                List<Integer> indexes = entry.getKey();
                 for (int index : indexes.subList(1, indexes.size())) {
                     equal = equal && (observation[indexes.get(0)] == observation[index]);
                 }
@@ -65,14 +65,6 @@ public class AgreementRatesVector {
         for (int i = 0; i < agreementRatesLength; i++) {
             agreementRates[i] /= observations.length;
         }
-    }
-
-    public Map<ArrayList<Integer>, Integer> getIndexToKeyMapping() {
-        return indexToKeyMapping;
-    }
-
-    public Map<Integer, ArrayList<Integer>> getKeyToIndexMapping() {
-        return keyToIndexMapping;
     }
 
     public int getLength() {

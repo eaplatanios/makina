@@ -7,6 +7,10 @@ import java.util.List;
  * @author Emmanouil Antonios Platanios
  */
 public class CombinatoricsUtilities {
+//    public static int factorial(int n) {
+//        return (n == 0 || n == 1) ? 1 : n * factorial(n - 1);
+//    }
+
     public static int binomialCoefficient(int n, int k) {
         if ((n == k) || (k == 0)) {
             return 1;
@@ -25,31 +29,56 @@ public class CombinatoricsUtilities {
         }
     }
 
-    public static List<ArrayList<Integer>> getCombinations(int n, int k) {
+//    public static List<ArrayList<Integer>> getCombinations(int n, int k) {
+//        return getCombinations(n, k, 0);
+//    }
+//
+//    private static List<ArrayList<Integer>> getCombinations(int n, int k, int startIndex) {
+//        List<ArrayList<Integer>> indexes;
+//
+//        if (k == 1) {
+//            indexes = new ArrayList<ArrayList<Integer>>();
+//            for (int i = startIndex; i < n; i++) {
+//                ArrayList<Integer> temp_result = new ArrayList<Integer>();
+//                temp_result.add(i);
+//                indexes.add(temp_result);
+//            }
+//        } else {
+//            indexes = new ArrayList<ArrayList<Integer>>();
+//            for (int i = startIndex; i < n - k + 1; i++) {
+//                List<ArrayList<Integer>> inner_indexes = getCombinations(n, k - 1, i + 1);
+//                for (ArrayList<Integer> index : inner_indexes) {
+//                    index.add(0, i);
+//                }
+//                indexes.addAll(inner_indexes);
+//            }
+//        }
+//
+//        return indexes;
+//    }
+
+    public static int[][] getCombinations(int n, int k) {
         return getCombinations(n, k, 0);
     }
 
-    private static List<ArrayList<Integer>> getCombinations(int n, int k, int startIndex) {
-        List<ArrayList<Integer>> indexes;
+    private static int[][] getCombinations(int n, int k, int startIndex) {
+        int[][] combinations = new int[binomialCoefficient(n - startIndex, k)][k];
+        int combinationIndex = 0;
 
         if (k == 1) {
-            indexes = new ArrayList<ArrayList<Integer>>();
             for (int i = startIndex; i < n; i++) {
-                ArrayList<Integer> temp_result = new ArrayList<Integer>();
-                temp_result.add(i);
-                indexes.add(temp_result);
+                combinations[combinationIndex++][0] = i;
             }
         } else {
-            indexes = new ArrayList<ArrayList<Integer>>();
             for (int i = startIndex; i < n - k + 1; i++) {
-                List<ArrayList<Integer>> inner_indexes = getCombinations(n, k - 1, i + 1);
-                for (ArrayList<Integer> index : inner_indexes) {
-                    index.add(0, i);
+                int[][] inner_indexes = getCombinations(n, k - 1, i + 1);
+                for (int[] index : inner_indexes) {
+                    combinations[combinationIndex][0] = i;
+                    System.arraycopy(index, 0, combinations[combinationIndex++], 1, k - 1);
                 }
-                indexes.addAll(inner_indexes);
             }
         }
 
-        return indexes;
+        return combinations;
     }
 }
