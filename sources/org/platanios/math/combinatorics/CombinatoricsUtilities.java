@@ -29,34 +29,6 @@ public class CombinatoricsUtilities {
         }
     }
 
-//    public static List<ArrayList<Integer>> getCombinations(int n, int k) {
-//        return getCombinations(n, k, 0);
-//    }
-//
-//    private static List<ArrayList<Integer>> getCombinations(int n, int k, int startIndex) {
-//        List<ArrayList<Integer>> indexes;
-//
-//        if (k == 1) {
-//            indexes = new ArrayList<ArrayList<Integer>>();
-//            for (int i = startIndex; i < n; i++) {
-//                ArrayList<Integer> temp_result = new ArrayList<Integer>();
-//                temp_result.add(i);
-//                indexes.add(temp_result);
-//            }
-//        } else {
-//            indexes = new ArrayList<ArrayList<Integer>>();
-//            for (int i = startIndex; i < n - k + 1; i++) {
-//                List<ArrayList<Integer>> inner_indexes = getCombinations(n, k - 1, i + 1);
-//                for (ArrayList<Integer> index : inner_indexes) {
-//                    index.add(0, i);
-//                }
-//                indexes.addAll(inner_indexes);
-//            }
-//        }
-//
-//        return indexes;
-//    }
-
     public static int[][] getCombinations(int n, int k) {
         return getCombinations(n, k, 0);
     }
@@ -80,5 +52,17 @@ public class CombinatoricsUtilities {
         }
 
         return combinations;
+    }
+
+    public static int[][] getCombinationsOfIntegers(int[] index, int k) {
+        int[][] inner_indexes = getCombinations(index.length, k);
+        int[][] keyCombinations = new int[inner_indexes.length][k];
+        for (int i = 0; i < inner_indexes.length; i++) {
+            for (int j = 0; j < k; j++) {
+                keyCombinations[i][j] = index[inner_indexes[i][j]];
+            }
+        }
+
+        return keyCombinations;
     }
 }

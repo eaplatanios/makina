@@ -17,15 +17,21 @@ public class AgreementRatesVector {
     private int numberOfFunctions;
     private int maximumOrder;
     private int agreementRatesLength;
+    private boolean onlyEvenCardinalitySubsets;
 
     public AgreementRatesVector(int numberOfFunctions, int maximumOrder, boolean[][] observations) {
+        this(numberOfFunctions, maximumOrder, observations, true);
+    }
+
+    public AgreementRatesVector(int numberOfFunctions, int maximumOrder, boolean[][] observations, boolean onlyEvenCardinalitySubsets) {
         this.numberOfFunctions = numberOfFunctions;
         this.maximumOrder = maximumOrder;
+        this.onlyEvenCardinalitySubsets = onlyEvenCardinalitySubsets;
         agreementRatesLength = 0;
         for (int m = 2; m <= maximumOrder; m++) {
-//            if (m % 2 == 0) {
-            agreementRatesLength += CombinatoricsUtilities.binomialCoefficient(numberOfFunctions, m);
-//            }
+            if ((m % 2 == 0) || (m % 2 != 0 && !onlyEvenCardinalitySubsets)) {
+                agreementRatesLength += CombinatoricsUtilities.binomialCoefficient(numberOfFunctions, m);
+            }
         }
         agreementRates = new double[agreementRatesLength];
         indexKeyMapping = createIndexKeyMappingBuilder().build();
@@ -37,13 +43,13 @@ public class AgreementRatesVector {
 
         int offset = 0;
         for (int m = 2; m <= maximumOrder; m++) {
-//            if (m % 2 == 0) {
-            int[][] indexes = CombinatoricsUtilities.getCombinations(numberOfFunctions, m);
-            for (int i = 0; i < indexes.length; i++) {
-                indexKeyMappingBuilder.put(Ints.asList(indexes[i]), offset + i);
+            if ((m % 2 == 0) || (m % 2 != 0 && !onlyEvenCardinalitySubsets)) {
+                int[][] indexes = CombinatoricsUtilities.getCombinations(numberOfFunctions, m);
+                for (int i = 0; i < indexes.length; i++) {
+                    indexKeyMappingBuilder.put(Ints.asList(indexes[i]), offset + i);
+                }
+                offset += CombinatoricsUtilities.binomialCoefficient(numberOfFunctions, m);
             }
-            offset += CombinatoricsUtilities.binomialCoefficient(numberOfFunctions, m);
-//            }
         }
 
         return indexKeyMappingBuilder;

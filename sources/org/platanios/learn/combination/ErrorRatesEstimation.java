@@ -8,7 +8,7 @@ public class ErrorRatesEstimation {
     private KnitroOptimizationProblem optimizationProblem;
 
     public ErrorRatesEstimation(final AgreementRatesVector agreementRates, final int numberOfFunctions, int maximumOrder) {
-        this.errorRates = new ErrorRatesVector(numberOfFunctions, maximumOrder);
+        this.errorRates = new ErrorRatesVector(numberOfFunctions, maximumOrder, 0.25);
         this.optimizationProblem = new KnitroOptimizationProblem(numberOfFunctions, maximumOrder, errorRates, agreementRates);
     }
 
