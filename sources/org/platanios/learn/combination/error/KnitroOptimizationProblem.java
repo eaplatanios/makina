@@ -16,39 +16,40 @@ import java.util.*;
  * @author Emmanouil Antonios Platanios
  */
 class KnitroOptimizationProblem {
-    /** Holds the error rates structure used for this optimization (this structure contains the power set indexing
+    /** The error rates structure used for this optimization (this structure contains the power set indexing
      * information used to index the error rates over all possible power sets of functions as a simple one-dimensional
      * array). */
     private final ErrorRatesPowerSetVector errorRates;
-    /** Holds the agreement rates structure used for this optimization (this structure contains the sample agreement
+    /** The agreement rates structure used for this optimization (this structure contains the sample agreement
      * rates that are used for defining the equality constraints of the problem). */
     private final AgreementRatesPowerSetVector agreementRates;
-    /** Holds the error rates array indices corresponding to each inequality constraint. It is used in order to make the
-     * inequality constraints calculation fast. */
+    /** A map containing the error rates array indices that correspond to each inequality constraint. It is used in
+     * order to make the inequality constraints calculation fast. */
     private final BiMap<Integer, int[]> inequalityConstraintsIndexes;
-    /** Holds a list and each entry in that list is an array with three elements: (i) a constraint index, (ii) an error
-     * rate index and (iii) the derivative of the constraint specified in (i) with respect to the error rate specified
-     * in (ii). It is used to make the constraints Jacobian calculation fast. */
+    /** A list where each entry is an array with three elements: (i) a constraint index, (ii) an error rate index and
+     * (iii) the derivative of the constraint specified in (i) with respect to the error rate specified in (ii). It is
+     * used to make the constraints Jacobian calculation fast. */
     private final List<Integer[]> constraintsJacobian;
-    /** Holds a mapping used for specifying the sparse format of the Lagrangian Hessian matrix. More specifically, each
-     * entry of the two-dimensional array is equal to the corresponding index of that Hessian entry in the sparse,
+    /** A mapping used for specifying the sparse format of the Lagrangian Hessian matrix. More specifically, each entry
+     * of the two-dimensional array is equal to the corresponding index of that Hessian entry in the sparse,
      * one-dimensional representation of the Hessian matrix. */
     private final int[][] hessianIndexKeyMapping;
 
-    /** Holds the actual KNITRO solver instance. */
+    /** The actual KNITRO solver instance. */
     private KnitroJava solver;
-    /** Holds the variables with respect to which the optimization is performed. That is, the array with the error
+    /** Array with the variables with respect to which the optimization is performed. That is, the array with the error
      * rates. */
     private double[] optimizationVariables;
-    /** Holds the value of the objective function (it is defined as an array but it holds a single value). */
+    /** Array with the value of the objective function (it is defined as an array but it holds a single value). */
     private double[] optimizationObjective;
-    /** Holds the values of the constraints of the optimization problem (both inequality and equality constraints). */
+    /** Array with the values of the constraints of the optimization problem (both inequality and equality
+     * constraints). */
     private double[] optimizationConstraints;
-    /** Holds the values of the objective function derivatives. */
+    /** Array with the values of the objective function derivatives. */
     private double[] optimizationObjectiveGradients;
-    /** Holds the values of the constraints derivatives (or, equivalently, the constraints Jacobian). */
+    /** Array with the values of the constraints derivatives (or, equivalently, the constraints Jacobian). */
     private double[] optimizationConstraintsJacobian;
-    /** Holds the Hessian of the Lagrangian. */
+    /** The Hessian of the Lagrangian. */
     private double[] optimizationHessian;
 
     /**
@@ -131,8 +132,8 @@ class KnitroOptimizationProblem {
                 int[] inner_keys = new int[inner_indexes.length];
                 for (int i = 0; i < inner_indexes.length; i++) {
                     inner_keys[i] = errorRates.indexKeyMapping.get(Ints.asList(inner_indexes[i]));
-                    constraintsJacobian.add(new Integer[]{constraintIndex, jointErrorRatesIndex, 1});
-                    constraintsJacobian.add(new Integer[]{constraintIndex++, inner_keys[i], -1});
+                    constraintsJacobian.add(new Integer[] { constraintIndex, jointErrorRatesIndex, 1 });
+                    constraintsJacobian.add(new Integer[] { constraintIndex++, inner_keys[i], -1 });
                 }
                 inequalityConstraintsIndexesBuilder.put(entryValue, inner_keys);
                 numberOfNonZerosInConstraintsJacobian += 2 * inner_indexes.length;
@@ -154,8 +155,9 @@ class KnitroOptimizationProblem {
                 inner_indexes = CombinatoricsUtilities.getCombinationsOfIntegers(Ints.toArray(entryKey), l);
                 for (int[] inner_index : inner_indexes) {
                     constraintsJacobian.add(new Integer[] {
-                            constraintIndex, errorRates.indexKeyMapping.get(Ints.asList(inner_index)),
-                            (int) Math.pow(-1, l)
+                            constraintIndex,
+                            errorRates.indexKeyMapping.get(Ints.asList(inner_index)),
+                            (int)Math.pow(-1, l)
                     });
                 }
                 numberOfNonZerosInConstraintsJacobian += inner_indexes.length;
