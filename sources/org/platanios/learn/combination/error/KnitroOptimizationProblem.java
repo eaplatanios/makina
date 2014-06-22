@@ -9,42 +9,77 @@ import org.platanios.math.combinatorics.CombinatoricsUtilities;
 import java.util.*;
 
 /**
+ * Implementation of the numerical optimization problem that needs to be solved in order to estimate error rates of
+ * several approximations to a single function, by using only the agreement rates of those functions on an unlabeled set
+ * of data, for use with the KNITRO solver.
+ *
  * @author Emmanouil Antonios Platanios
  */
 class KnitroOptimizationProblem {
-    final int numberOfFunctions;
-    final int maximumOrder;
-    final ErrorRatesVector errorRates;
-    final AgreementRatesVector agreementRates;
-    final BiMap<Integer, int[]> inequalityConstraintsIndexes;
-    final int[][] hessianIndexKeyMapping;
+    /** Holds the error rates structure used for this optimization (this structure contains the power set indexing
+     * information used to index the error rates over all possible power sets of functions as a simple one-dimensional
+     * array). */
+    private final ErrorRatesPowerSetVector errorRates;
+    /** Holds the agreement rates structure used for this optimization (this structure contains the sample agreement
+     * rates that are used for defining the equality constraints of the problem). */
+    private final AgreementRatesPowerSetVector agreementRates;
+    /** Holds the error rates array indices corresponding to each inequality constraint. It is used in order to make the
+     * inequality constraints calculation fast. */
+    private final BiMap<Integer, int[]> inequalityConstraintsIndexes;
+    /** Holds a list and each entry in that list is an array with three elements: (i) a constraint index, (ii) an error
+     * rate index and (iii) the derivative of the constraint specified in (i) with respect to the error rate specified
+     * in (ii). It is used to make the constraints Jacobian calculation fast. */
+    private final List<Integer[]> constraintsJacobian;
+    /** Holds a mapping used for specifying the sparse format of the Lagrangian Hessian matrix. More specifically, each
+     * entry of the two-dimensional array is equal to the corresponding index of that Hessian entry in the sparse,
+     * one-dimensional representation of the Hessian matrix. */
+    private final int[][] hessianIndexKeyMapping;
 
-    List<Integer[]> constraintsJacobian;
-    KnitroJava solver;
+    /** Holds the actual KNITRO solver instance. */
+    private KnitroJava solver;
+    /** Holds the variables with respect to which the optimization is performed. That is, the array with the error
+     * rates. */
+    private double[] optimizationVariables;
+    /** Holds the value of the objective function (it is defined as an array but it holds a single value). */
+    private double[] optimizationObjective;
+    /** Holds the values of the constraints of the optimization problem (both inequality and equality constraints). */
+    private double[] optimizationConstraints;
+    /** Holds the values of the objective function derivatives. */
+    private double[] optimizationObjectiveGradients;
+    /** Holds the values of the constraints derivatives (or, equivalently, the constraints Jacobian). */
+    private double[] optimizationConstraintsJacobian;
+    /** Holds the Hessian of the Lagrangian. */
+    private double[] optimizationHessian;
 
-    // Global variables used by the KNITRO solver
-    double[] optimizationVariables;
-    double[] optimizationObjective;
-    double[] optimizationConstraints;
-    double[] optimizationObjectiveGradients;
-    double[] optimizationConstraintsJacobian;
-    double[] optimizationHessian;
-
+    /**
+     * Initializes all parameters needed for performing the optimization procedure using the KNITRO solver. It also
+     * instantiates the solver and makes sure that JVM can "communicate" with the KNITRO solver native libraries.
+     *
+     * @param   numberOfFunctions   The number of function approximations/classifiers whose error rates we are trying to
+     *                              estimate
+     * @param   highestOrder        The highest order of agreement rates to consider and equivalently, the highest order
+     *                              of error rates to try and estimate
+     * @param   errorRates          The error rates structure used for this optimization (this structure contains the
+     *                              power set indexing information used to index the error rates over all possible power
+     *                              sets of functions as a simple one-dimensional array)
+     * @param   agreementRates      The agreement rates structure used for this optimization (this structure contains
+     *                              the sample agreement rates that are used for defining the equality constraints of
+     *                              the problem)
+     */
     KnitroOptimizationProblem(int numberOfFunctions,
-                              int maximumOrder,
-                              ErrorRatesVector errorRates,
-                              AgreementRatesVector agreementRates) {
-        this.numberOfFunctions = numberOfFunctions;
-        this.maximumOrder = maximumOrder;
+                              int highestOrder,
+                              ErrorRatesPowerSetVector errorRates,
+                              AgreementRatesPowerSetVector agreementRates) {
         this.errorRates = errorRates;
         this.agreementRates = agreementRates;
 
+        // Initialize related optimization related variables
         int numberOfVariables = errorRates.length;
+        int objectiveGoal = KnitroJava.KTR_OBJGOAL_MINIMIZE;
+        int objectiveFunctionType = KnitroJava.KTR_OBJTYPE_GENERAL;
+        double[] optimizationStartingPoint = errorRates.array;
 
-        // Initialize optimization related variables
-        int  objectiveGoal = KnitroJava.KTR_OBJGOAL_MINIMIZE;
-        int  objectiveFunctionType = KnitroJava.KTR_OBJTYPE_GENERAL;
-
+        // Set the optimization variables' lower and upper bounds
         double[] variableLowerBounds = new double[numberOfVariables];
         double[] variableUpperBounds = new double[numberOfVariables];
 
@@ -53,14 +88,13 @@ class KnitroOptimizationProblem {
             variableUpperBounds[i] = 0.5;
         }
 
+        // Set up the optimization constraints
         int numberOfConstraints = agreementRates.indexKeyMapping.size();
-
-        for (int k = 2; k <= maximumOrder; k++) {
-            numberOfConstraints += CombinatoricsUtilities.binomialCoefficient(numberOfFunctions, k) * k;
+        for (int k = 2; k <= highestOrder; k++) {
+            numberOfConstraints += CombinatoricsUtilities.getBinomialCoefficient(numberOfFunctions, k) * k;
         }
 
         int[] constraintTypes = new int[numberOfConstraints];
-
         for (int k = 0; k < numberOfConstraints; k++) {
             constraintTypes[k] = KnitroJava.KTR_CONTYPE_LINEAR;
         }
@@ -68,14 +102,12 @@ class KnitroOptimizationProblem {
         double[] constraintLowerBounds = new double[numberOfConstraints];
         double[] constraintUpperBounds = new double[numberOfConstraints];
         int constraintIndex = 0;
-
         while(constraintIndex < numberOfConstraints - agreementRates.indexKeyMapping.size()) {
             constraintLowerBounds[constraintIndex] = -KnitroJava.KTR_INFBOUND;
             constraintUpperBounds[constraintIndex++] = 0;
         }
 
         int agreementRatesIndex = 0;
-
         while(constraintIndex < numberOfConstraints) {
             constraintLowerBounds[constraintIndex] = agreementRates.array[agreementRatesIndex] - 1;
             constraintUpperBounds[constraintIndex++] = agreementRates.array[agreementRatesIndex++] - 1;
@@ -83,12 +115,12 @@ class KnitroOptimizationProblem {
 
         int numberOfNonZerosInConstraintsJacobian = 0;
         int[][] inner_indexes;
+        constraintIndex = 0;
+
+        // Inequality constraints settings
         constraintsJacobian = new ArrayList<Integer[]>();
         ImmutableBiMap.Builder<Integer, int[]> inequalityConstraintsIndexesBuilder
                 = new ImmutableBiMap.Builder<Integer, int[]>();
-        constraintIndex = 0;
-
-        // Error rates inequality constraints
         for (BiMap.Entry<List<Integer>, Integer> entry : errorRates.indexKeyMapping.entrySet()) {
             List<Integer> entryKey = entry.getKey();
             int k = entryKey.size();
@@ -106,10 +138,9 @@ class KnitroOptimizationProblem {
                 numberOfNonZerosInConstraintsJacobian += 2 * inner_indexes.length;
             }
         }
-
         inequalityConstraintsIndexes = inequalityConstraintsIndexesBuilder.build();
 
-        // Agreement rates equality constraints
+        // Equality constraints settings
         for (BiMap.Entry<List<Integer>, Integer> entry : agreementRates.indexKeyMapping.entrySet()) {
             List<Integer> entryKey = entry.getKey();
             int k = entryKey.size();
@@ -135,18 +166,17 @@ class KnitroOptimizationProblem {
         int[] constraintsJacobianConstraintIndexes = new int[numberOfNonZerosInConstraintsJacobian];
         int[] constraintsJacobianVariableIndexes = new int[numberOfNonZerosInConstraintsJacobian];
         constraintIndex = 0;
-
         for (Integer[] constraintsIndex : constraintsJacobian) {
             constraintsJacobianConstraintIndexes[constraintIndex] = constraintsIndex[0];
             constraintsJacobianVariableIndexes[constraintIndex++] = constraintsIndex[1];
         }
 
+        // Hessian settings
         int numberOfNonZerosInHessian = numberOfVariables * (numberOfVariables + 1) / 2;
         int[] hessianRowIndexes = new int[numberOfVariables * (numberOfVariables + 1) / 2];
         int[] hessianColumnIndexes = new int[numberOfVariables * (numberOfVariables + 1) / 2];
-        int hessianEntryIndex = 0;
         int[][] hessianIndexKeyMappingTemp = new int[numberOfVariables][numberOfVariables];
-
+        int hessianEntryIndex = 0;
         for (int i = 0; i < numberOfVariables; i++) {
             for (int j = i; j < numberOfVariables; j++) {
                 hessianRowIndexes[hessianEntryIndex] = i;
@@ -154,10 +184,7 @@ class KnitroOptimizationProblem {
                 hessianIndexKeyMappingTemp[i][j] = hessianEntryIndex++;
             }
         }
-
         hessianIndexKeyMapping = hessianIndexKeyMappingTemp;
-
-        double[] optimizationStartingPoint = errorRates.array;
 
         // Instantiate the KNITRO solver
         try {
@@ -169,63 +196,59 @@ class KnitroOptimizationProblem {
 
         // Configure the KNITRO solver
         if (!solver.setIntParamByName("algorithm", 3)) {
-            System.err.println ("Error setting parameter 'algorithm'");
+            System.err.println ("Error setting parameter 'algorithm'!");
             return;
         }
         if (!solver.setIntParamByName("blasoption", 1)) {
-            System.err.println ("Error setting parameter 'blasoption'");
+            System.err.println ("Error setting parameter 'blasoption'!");
             return;
         }
         if (!solver.setDoubleParamByName("feastol", 1.0E-20)) {
-            System.err.println ("Error setting parameter 'feastol'");
+            System.err.println ("Error setting parameter 'feastol'!");
             return;
         }
         if (!solver.setIntParamByName("gradopt", 1)) {
-            System.err.println ("Error setting parameter 'gradopt'");
+            System.err.println ("Error setting parameter 'gradopt'!");
             return;
         }
         if (!solver.setIntParamByName("hessian_no_f", 1)) {
-            System.err.println ("Error setting parameter 'hessian_no_f'");
+            System.err.println ("Error setting parameter 'hessian_no_f'!");
             return;
         }
         if (!solver.setIntParamByName("hessopt", 1)) {
-            System.err.println ("Error setting parameter 'hessopt'");
+            System.err.println ("Error setting parameter 'hessopt'!");
             return;
         }
         if (!solver.setIntParamByName("honorbnds", 1)) {
-            System.err.println ("Error setting parameter 'honorbnds'");
-            return;
-        }
-        if (!solver.setIntParamByName("linsolver", 0)) {
-            System.err.println ("Error setting parameter 'linsolver'");
+            System.err.println ("Error setting parameter 'honorbnds'!");
             return;
         }
         if (!solver.setIntParamByName("maxit", 100000)) {
-            System.err.println ("Error setting parameter 'maxit'");
+            System.err.println ("Error setting parameter 'maxit'!");
             return;
         }
         if (!solver.setDoubleParamByName("opttol", 1E-20)) {
-            System.err.println ("Error setting parameter 'opttol'");
+            System.err.println ("Error setting parameter 'opttol'!");
             return;
         }
         if (!solver.setIntParamByName("outlev", 6)) {
-            System.err.println ("Error setting parameter 'outlev'");
+            System.err.println ("Error setting parameter 'outlev'!");
             return;
         }
         if (!solver.setIntParamByName("par_numthreads", 1)) {
-            System.err.println ("Error setting parameter 'par_numthreads'");
+            System.err.println ("Error setting parameter 'par_numthreads'!");
             return;
         }
         if (!solver.setIntParamByName("scale", 1)) {
-            System.err.println ("Error setting parameter 'scale'");
+            System.err.println ("Error setting parameter 'scale'!");
             return;
         }
         if (!solver.setIntParamByName("soc", 0)) {
-            System.err.println ("Error setting parameter 'soc'");
+            System.err.println ("Error setting parameter 'soc'!");
             return;
         }
         if (!solver.setDoubleParamByName("xtol", 1.0E-20)) {
-            System.err.println ("Error setting parameter 'xtol'");
+            System.err.println ("Error setting parameter 'xtol'!");
             return;
         }
 
@@ -263,7 +286,7 @@ class KnitroOptimizationProblem {
     }
 
     /**
-     * Compute the objective value and the constraints values at a particular point.
+     * Computes the objective value and the constraints values at a particular point.
      *
      * @param   optimizationVariables   The point in which to evaluate the objective function and the constraints
      * @param   optimizationConstraints The constraints vector to modify
@@ -401,7 +424,7 @@ class KnitroOptimizationProblem {
     /**
      * Solves the optimization problem and returns the error rates estimates.
      *
-     * @return  The error rates estimates
+     * @return  The error rates estimates in a double[] format
      */
     double[] solve() {
         // Solve the optimization problem using KNITRO and record its status code
