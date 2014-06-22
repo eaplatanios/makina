@@ -1,23 +1,27 @@
 package org.platanios.math.combinatorics;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
+ * A collection of several static methods for performing combinatorics related tasks.
+ *
  * @author Emmanouil Antonios Platanios
  */
 public class CombinatoricsUtilities {
-//    public static int factorial(int n) {
-//        return (n == 0 || n == 1) ? 1 : n * factorial(n - 1);
-//    }
-
-    public static int binomialCoefficient(int n, int k) {
+    /**
+     * Computes the binomial coefficient indexed by {@code n} and {@code k}, also known as "{@code n} choose {@code k}".
+     * The value of that coefficient represent the total number of ways in which {@code k} items can be picked out of
+     * {@code n} possible items, irrespective of the order in which they are picked.
+     *
+     * @param   n   The total number of items
+     * @param   k   The number of items to pick
+     * @return      The number of possible combinations
+     */
+    public static int getBinomialCoefficient(int n, int k) {
         if ((n == k) || (k == 0)) {
             return 1;
         } else if ((k == 1) || (k == n - 1)) {
             return n;
         } else if (k > n / 2) {
-            return binomialCoefficient(n, n - k);
+            return getBinomialCoefficient(n, n - k);
         } else {
             int result = 1;
             int i = n - k + 1;
@@ -25,16 +29,38 @@ public class CombinatoricsUtilities {
                 result = result * i / j;
                 i++;
             }
+
             return result;
         }
     }
 
+    /**
+     * Computes all possible ways of picking {@code k} items out of {@code n} items irrespective of the ordering of
+     * those items. The items are represented as all integers between 0 (inclusive) and n (exclusive).
+     *
+     * @param   n   The total number of items
+     * @param   k   The number of items to pick
+     * @return      An array containing one integer array for each possible combination of items, where each integer in
+     *              that array corresponds to an item
+     */
     public static int[][] getCombinations(int n, int k) {
         return getCombinations(n, k, 0);
     }
 
+    /**
+     * Computes all possible ways of picking {@code k} items out of {@code n} items irrespective of the ordering of
+     * those items and without using items with value < {@code startIndex}. The items are represented as all integers
+     * between 0 (inclusive) and n (exclusive). This method is used in the implementation of
+     * {@link #getCombinations(int, int)}.
+     *
+     * @param   n           The total number of items
+     * @param   k           The number of items to pick
+     * @param   startIndex  Integer specifying which items to use (items with value less than that integer are not used)
+     * @return              An array containing one integer array for each possible combination of items, where each
+     *                      integer in that array corresponds to an item
+     */
     private static int[][] getCombinations(int n, int k, int startIndex) {
-        int[][] combinations = new int[binomialCoefficient(n - startIndex, k)][k];
+        int[][] combinations = new int[getBinomialCoefficient(n - startIndex, k)][k];
         int combinationIndex = 0;
 
         if (k == 1) {
@@ -54,6 +80,14 @@ public class CombinatoricsUtilities {
         return combinations;
     }
 
+    /**
+     * Computes all possible ways of picking {@code k} integers out of a specified set of integers irrespective of their
+     * ordering.
+     *
+     * @param   index   The set of all possible integers out of which to pick the combinations
+     * @param   k       The number of integers to pick
+     * @return          An array containing one integer array for each possible combination of integers
+     */
     public static int[][] getCombinationsOfIntegers(int[] index, int k) {
         int[][] inner_indexes = getCombinations(index.length, k);
         int[][] keyCombinations = new int[inner_indexes.length][k];
