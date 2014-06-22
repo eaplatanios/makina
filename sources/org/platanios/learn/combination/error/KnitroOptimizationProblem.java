@@ -57,15 +57,15 @@ class KnitroOptimizationProblem {
      * instantiates the solver and makes sure that JVM can "communicate" with the KNITRO solver native libraries.
      *
      * @param   numberOfFunctions   The number of function approximations/classifiers whose error rates we are trying to
-     *                              estimate
+     *                              estimate.
      * @param   highestOrder        The highest order of agreement rates to consider and equivalently, the highest order
-     *                              of error rates to try and estimate
+     *                              of error rates to try and estimate.
      * @param   errorRates          The error rates structure used for this optimization (this structure contains the
      *                              power set indexing information used to index the error rates over all possible power
-     *                              sets of functions as a simple one-dimensional array)
+     *                              sets of functions as a simple one-dimensional array).
      * @param   agreementRates      The agreement rates structure used for this optimization (this structure contains
      *                              the sample agreement rates that are used for defining the equality constraints of
-     *                              the problem)
+     *                              the problem).
      */
     KnitroOptimizationProblem(int numberOfFunctions,
                               int highestOrder,
@@ -290,9 +290,9 @@ class KnitroOptimizationProblem {
     /**
      * Computes the objective value and the constraints values at a particular point.
      *
-     * @param   optimizationVariables   The point in which to evaluate the objective function and the constraints
-     * @param   optimizationConstraints The constraints vector to modify
-     * @return                          The objective function value at the given point
+     * @param   optimizationVariables   The point in which to evaluate the objective function and the constraints.
+     * @param   optimizationConstraints The constraints vector to modify.
+     * @return                          The objective function value at the given point.
      */
     private double computeObjectiveAndConstraints(double[] optimizationVariables,
                                                   double[] optimizationConstraints) {
@@ -343,9 +343,9 @@ class KnitroOptimizationProblem {
     /**
      * Computes the first derivatives of the objective function and the constraints at a particular point.
      *
-     * @param   optimizationVariables           The point in which to evaluate the derivatives
-     * @param   optimizationObjectiveGradients  The objective function gradients vector to modify
-     * @param   optimizationConstraintsJacobian The constraints Jacobian (in sparse/vector form) to modify
+     * @param   optimizationVariables           The point in which to evaluate the derivatives.
+     * @param   optimizationObjectiveGradients  The objective function gradients vector to modify.
+     * @param   optimizationConstraintsJacobian The constraints Jacobian (in sparse/vector form) to modify.
      */
     private void computeGradients(double[] optimizationVariables,
                                   double[] optimizationObjectiveGradients,
@@ -380,10 +380,10 @@ class KnitroOptimizationProblem {
      * Computes the Hessian of the Lagrangian at a particular point. The constraints in this case are linear and so they
      * do not contribute to the Hessian value.
      *
-     * @param   optimizationVariables   The point in which to evaluate the Hessian
-     * @param   optimizationHessian     The Hessian (in sparse/vector form) to modify
+     * @param   optimizationVariables   The point in which to evaluate the Hessian.
+     * @param   optimizationHessian     The Hessian (in sparse/vector form) to modify.
      * @param   onlyConstraints         Variable indicating whether to compute the Hessian only for the constraints, or
-     *                                  for the whole Lagrangian function
+     *                                  for the whole Lagrangian function.
      */
     private void computeHessian(double[] optimizationVariables,
                                 double[] optimizationHessian,
@@ -424,9 +424,9 @@ class KnitroOptimizationProblem {
     }
 
     /**
-     * Solves the optimization problem and returns the error rates estimates.
+     * Solves the numerical optimization problem and returns the error rates estimates in {@code double[]} format.
      *
-     * @return  The error rates estimates in a double[] format
+     * @return  The error rates estimates in a {@code double[]} format.
      */
     double[] solve() {
         // Solve the optimization problem using KNITRO and record its status code

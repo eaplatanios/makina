@@ -49,7 +49,7 @@ public class CombinatoricsUtilities {
 
     /**
      * Computes all possible ways of picking {@code k} items out of {@code n} items irrespective of the ordering of
-     * those items and without using items with value < {@code startIndex}. The items are represented as all integers
+     * those items and without using items with value &lt; {@code startIndex}. The items are represented as all integers
      * between 0 (inclusive) and n (exclusive). This method is used in the implementation of
      * {@link #getCombinations(int, int)}.
      *
