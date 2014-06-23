@@ -13,5 +13,9 @@ public enum ObjectiveFunctionType {
     SCALED_DEPENDENCY, // TODO: Implement this objective function and add all relevant documentation.
     DEPENDENCY_ACROSS_DOMAINS, // TODO: Implement this objective function and add all relevant documentation.
     SCALED_DEPENDENCY_ACROSS_DOMAINS, // TODO: Implement this objective function and add all relevant documentation.
-    L2_NORM // TODO: Implement this objective function and add all relevant documentation.
+    L2_NORM, // TODO: Implement this objective function and add all relevant documentation.
+    DEPENDENCY_AND_L2_NORM, // TODO: Implement this objective function and add all relevant documentation.
+    SCALED_DEPENDENCY_AND_L2_NORM, // TODO: Implement this objective function and add all relevant documentation.
+    DEPENDENCY_ACROSS_DOMAINS_AND_L2_NORM, // TODO: Implement this objective function and add all relevant documentation.
+    SCALED_DEPENDENCY_ACROSS_DOMAINS_AND_L2_NORM // TODO: Implement this objective function and add all relevant documentation.
 }

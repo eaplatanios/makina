@@ -4,7 +4,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.primitives.Ints;
 import com.ziena.knitro.KnitroJava;
-import org.platanios.math.combinatorics.CombinatoricsUtilities;
+import org.platanios.learn.math.combinatorics.CombinatoricsUtilities;
 
 import java.util.*;
 
@@ -205,6 +205,18 @@ class OptimizationProblem {
                 // TODO: Implement relevant class
                 break;
             case L2_NORM:
+                // TODO: Implement relevant class
+                break;
+            case DEPENDENCY_AND_L2_NORM:
+                // TODO: Implement relevant class
+                break;
+            case SCALED_DEPENDENCY_AND_L2_NORM:
+                // TODO: Implement relevant class
+                break;
+            case DEPENDENCY_ACROSS_DOMAINS_AND_L2_NORM:
+                // TODO: Implement relevant class
+                break;
+            case SCALED_DEPENDENCY_ACROSS_DOMAINS_AND_L2_NORM:
                 // TODO: Implement relevant class
                 break;
         }

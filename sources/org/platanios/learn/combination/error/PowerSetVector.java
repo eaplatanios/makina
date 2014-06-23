@@ -3,7 +3,7 @@ package org.platanios.learn.combination.error;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.primitives.Ints;
-import org.platanios.math.combinatorics.CombinatoricsUtilities;
+import org.platanios.learn.math.combinatorics.CombinatoricsUtilities;
 
 import java.util.List;
 
