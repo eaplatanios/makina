@@ -56,8 +56,8 @@ class OptimizationProblem {
      * Initializes all parameters needed for performing the optimization procedure using the KNITRO solver. It also
      * instantiates the solver and makes sure that JVM can "communicate" with the KNITRO solver native libraries.
      *
-     * @param   numberOfFunctions       The number of function approximations/classifiers whose error rates we are
-     *                                  trying to estimate.
+     * @param   numberOfFunctions       The number of function approximations/classifiers whose error rates we want to
+     *                                  estimate.
      * @param   highestOrder            The highest order of agreement rates to consider and equivalently, the highest
      *                                  order of error rates to try and estimate.
      * @param   errorRates              The error rates structure used for this optimization (this structure contains

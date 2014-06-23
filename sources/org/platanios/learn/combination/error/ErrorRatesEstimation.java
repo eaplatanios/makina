@@ -26,7 +26,7 @@ public class ErrorRatesEstimation {
     public ErrorRatesEstimation(EstimationData data) {
         this.data = data;
         this.optimizationProblem = new OptimizationProblem(data.getNumberOfFunctions(),
-                                                           data.getMaximumOrder(),
+                                                           data.getHighestOrder(),
                                                            data.getErrorRates(),
                                                            data.getAgreementRates(),
                                                            ObjectiveFunctionType.DEPENDENCY);
@@ -45,7 +45,7 @@ public class ErrorRatesEstimation {
     public ErrorRatesEstimation(EstimationData data, ObjectiveFunctionType objectiveFunctionType) {
         this.data = data;
         this.optimizationProblem = new OptimizationProblem(data.getNumberOfFunctions(),
-                                                           data.getMaximumOrder(),
+                                                           data.getHighestOrder(),
                                                            data.getErrorRates(),
                                                            data.getAgreementRates(),
                                                            objectiveFunctionType);
