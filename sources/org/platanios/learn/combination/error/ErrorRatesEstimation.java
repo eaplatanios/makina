@@ -12,21 +12,43 @@ public class ErrorRatesEstimation {
     private EstimationData data;
     /** The wrapper of the solver used for solving the numerical optimization problem involved in the estimation of the
      * error rates. */
-    private KnitroOptimizationProblem optimizationProblem;
+    private OptimizationProblem optimizationProblem;
 
     /**
-     * Sets up the optimization problem that needs to be solved for estimating the error rates and initializes the
-     * numerical optimization solver that is used to solve it. That solver is currently the KNITRO solver.
+     * Sets up the optimization problem that needs to be solved for estimating the error rates, using
+     * {@link org.platanios.learn.combination.error.DependencyObjectiveFunction} as the objective function we wish to
+     * minimize, and initializes the numerical optimization solver that is used to solve it. That solver is currently
+     * the KNITRO solver.
      *
      * @param   data    A data structure ({@link org.platanios.learn.combination.error.EstimationData}) which contains
      *                  all the data required to setup and solve the numerical optimization problem.
      */
     public ErrorRatesEstimation(EstimationData data) {
         this.data = data;
-        this.optimizationProblem = new KnitroOptimizationProblem(data.getNumberOfFunctions(),
-                                                                 data.getMaximumOrder(),
-                                                                 data.getErrorRates(),
-                                                                 data.getAgreementRates());
+        this.optimizationProblem = new OptimizationProblem(data.getNumberOfFunctions(),
+                                                           data.getMaximumOrder(),
+                                                           data.getErrorRates(),
+                                                           data.getAgreementRates(),
+                                                           ObjectiveFunctionType.DEPENDENCY);
+    }
+
+    /**
+     * Sets up the optimization problem that needs to be solved for estimating the error rates, using the provided
+     * objective function as the objective function we wish to minimize, and initializes the numerical optimization
+     * solver that is used to solve it. That solver is currently the KNITRO solver.
+     *
+     * @param   data                    A data structure ({@link org.platanios.learn.combination.error.EstimationData})
+     *                                  which contains all the data required to setup and solve the numerical optimization problem.
+     * @param   objectiveFunctionType   The type of objective function to minimize (e.g. minimize dependency, scaled
+     *                                  dependency, etc.).
+     */
+    public ErrorRatesEstimation(EstimationData data, ObjectiveFunctionType objectiveFunctionType) {
+        this.data = data;
+        this.optimizationProblem = new OptimizationProblem(data.getNumberOfFunctions(),
+                                                           data.getMaximumOrder(),
+                                                           data.getErrorRates(),
+                                                           data.getAgreementRates(),
+                                                           objectiveFunctionType);
     }
 
     /**

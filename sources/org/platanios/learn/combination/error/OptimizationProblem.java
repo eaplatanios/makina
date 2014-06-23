@@ -15,7 +15,7 @@ import java.util.*;
  *
  * @author Emmanouil Antonios Platanios
  */
-class KnitroOptimizationProblem {
+class OptimizationProblem {
     /** The error rates structure used for this optimization (this structure contains the power set indexing
      * information used to index the error rates over all possible power sets of functions as a simple one-dimensional
      * array). */
@@ -30,13 +30,13 @@ class KnitroOptimizationProblem {
      * (iii) the derivative of the constraint specified in (i) with respect to the error rate specified in (ii). It is
      * used to make the constraints Jacobian calculation fast. */
     private final List<Integer[]> constraintsJacobian;
-    /** A mapping used for specifying the sparse format of the Lagrangian Hessian matrix. More specifically, each entry
-     * of the two-dimensional array is equal to the corresponding index of that Hessian entry in the sparse,
-     * one-dimensional representation of the Hessian matrix. */
-    private final int[][] hessianIndexKeyMapping;
 
     /** The actual KNITRO solver instance. */
     private KnitroJava solver;
+    /** An instance of the class containing methods that compute the objective function that we wish to minimize, its
+     * gradients with respect to the optimization variables and its Hessian with respect to the optimization
+     * variables. */
+    private ObjectiveFunction objectiveFunction;
     /** Array with the variables with respect to which the optimization is performed. That is, the array with the error
      * rates. */
     private double[] optimizationVariables;
@@ -56,28 +56,31 @@ class KnitroOptimizationProblem {
      * Initializes all parameters needed for performing the optimization procedure using the KNITRO solver. It also
      * instantiates the solver and makes sure that JVM can "communicate" with the KNITRO solver native libraries.
      *
-     * @param   numberOfFunctions   The number of function approximations/classifiers whose error rates we are trying to
-     *                              estimate.
-     * @param   highestOrder        The highest order of agreement rates to consider and equivalently, the highest order
-     *                              of error rates to try and estimate.
-     * @param   errorRates          The error rates structure used for this optimization (this structure contains the
-     *                              power set indexing information used to index the error rates over all possible power
-     *                              sets of functions as a simple one-dimensional array).
-     * @param   agreementRates      The agreement rates structure used for this optimization (this structure contains
-     *                              the sample agreement rates that are used for defining the equality constraints of
-     *                              the problem).
+     * @param   numberOfFunctions       The number of function approximations/classifiers whose error rates we are
+     *                                  trying to estimate.
+     * @param   highestOrder            The highest order of agreement rates to consider and equivalently, the highest
+     *                                  order of error rates to try and estimate.
+     * @param   errorRates              The error rates structure used for this optimization (this structure contains
+     *                                  the power set indexing information used to index the error rates over all
+     *                                  possible power sets of functions as a simple one-dimensional array).
+     * @param   agreementRates          The agreement rates structure used for this optimization (this structure
+     *                                  contains the sample agreement rates that are used for defining the equality
+     *                                  constraints of the problem).
+     * @param   objectiveFunctionType   The type of objective function to minimize (e.g. minimize dependency, scaled
+     *                                  dependency, etc.).
      */
-    KnitroOptimizationProblem(int numberOfFunctions,
-                              int highestOrder,
-                              ErrorRatesPowerSetVector errorRates,
-                              AgreementRatesPowerSetVector agreementRates) {
+    OptimizationProblem(int numberOfFunctions,
+                        int highestOrder,
+                        ErrorRatesPowerSetVector errorRates,
+                        AgreementRatesPowerSetVector agreementRates,
+                        ObjectiveFunctionType objectiveFunctionType) {
         this.errorRates = errorRates;
         this.agreementRates = agreementRates;
 
         // Initialize related optimization related variables
         int numberOfVariables = errorRates.length;
         int objectiveGoal = KnitroJava.KTR_OBJGOAL_MINIMIZE;
-        int objectiveFunctionType = KnitroJava.KTR_OBJTYPE_GENERAL;
+        int objectiveFunctionKnitroType = KnitroJava.KTR_OBJTYPE_GENERAL;
         double[] optimizationStartingPoint = errorRates.array;
 
         // Set the optimization variables' lower and upper bounds
@@ -177,16 +180,34 @@ class KnitroOptimizationProblem {
         int numberOfNonZerosInHessian = numberOfVariables * (numberOfVariables + 1) / 2;
         int[] hessianRowIndexes = new int[numberOfVariables * (numberOfVariables + 1) / 2];
         int[] hessianColumnIndexes = new int[numberOfVariables * (numberOfVariables + 1) / 2];
-        int[][] hessianIndexKeyMappingTemp = new int[numberOfVariables][numberOfVariables];
+        int[][] hessianIndexKeyMapping = new int[numberOfVariables][numberOfVariables];
         int hessianEntryIndex = 0;
         for (int i = 0; i < numberOfVariables; i++) {
             for (int j = i; j < numberOfVariables; j++) {
                 hessianRowIndexes[hessianEntryIndex] = i;
                 hessianColumnIndexes[hessianEntryIndex] = j;
-                hessianIndexKeyMappingTemp[i][j] = hessianEntryIndex++;
+                hessianIndexKeyMapping[i][j] = hessianEntryIndex++;
             }
         }
-        hessianIndexKeyMapping = hessianIndexKeyMappingTemp;
+
+        // Instantiate the chosen objective function class
+        switch (objectiveFunctionType) {
+            case DEPENDENCY:
+                objectiveFunction = new DependencyObjectiveFunction(errorRates, hessianIndexKeyMapping);
+                break;
+            case SCALED_DEPENDENCY:
+                // TODO: Implement relevant class
+                break;
+            case DEPENDENCY_ACROSS_DOMAINS:
+                // TODO: Implement relevant class
+                break;
+            case SCALED_DEPENDENCY_ACROSS_DOMAINS:
+                // TODO: Implement relevant class
+                break;
+            case L2_NORM:
+                // TODO: Implement relevant class
+                break;
+        }
 
         // Instantiate the KNITRO solver
         try {
@@ -225,7 +246,7 @@ class KnitroOptimizationProblem {
             System.err.println ("Error setting parameter 'honorbnds'!");
             return;
         }
-        if (!solver.setIntParamByName("maxit", 100000)) {
+        if (!solver.setIntParamByName("maxit", 10000)) {
             System.err.println ("Error setting parameter 'maxit'!");
             return;
         }
@@ -257,7 +278,7 @@ class KnitroOptimizationProblem {
         // Initialize the KNITRO solver
         if (!solver.initProblem(numberOfVariables,
                                 objectiveGoal,
-                                objectiveFunctionType,
+                                objectiveFunctionKnitroType,
                                 variableLowerBounds,
                                 variableUpperBounds,
                                 numberOfConstraints,
@@ -288,32 +309,20 @@ class KnitroOptimizationProblem {
     }
 
     /**
-     * Computes the objective value and the constraints values at a particular point.
+     * Computes the constraints values at a particular point.
      *
      * @param   optimizationVariables   The point in which to evaluate the objective function and the constraints.
-     * @param   optimizationConstraints The constraints vector to modify.
-     * @return                          The objective function value at the given point.
+     * @param   optimizationConstraints The constraints values to set for the given point.
      */
-    private double computeObjectiveAndConstraints(double[] optimizationVariables,
-                                                  double[] optimizationConstraints) {
-        double optimizationObjective = 0;
+    private void computeConstraints(double[] optimizationVariables,
+                                    double[] optimizationConstraints) {
         int constraintIndex = -1;
 
         for (BiMap.Entry<List<Integer>, Integer> entry : errorRates.indexKeyMapping.entrySet()) {
             List<Integer> entryKey = entry.getKey();
             int k = entryKey.size();
             if (k > 1) {
-                int entryValue = entry.getValue();
-
-                // Objective function
-                double tempProduct = 1;
-                for (int index : entryKey) {
-                    tempProduct *= optimizationVariables[index];
-                }
-                optimizationObjective += Math.pow(optimizationVariables[entry.getValue()] - tempProduct, 2);
-
-                // Inequality constraints
-                for (int inner_index : inequalityConstraintsIndexes.get(entryValue)) {
+                for (int inner_index : inequalityConstraintsIndexes.get(entry.getValue())) {
                     optimizationConstraints[++constraintIndex] =
                             optimizationVariables[errorRates.indexKeyMapping.get(entryKey)]
                                     - optimizationVariables[inner_index];
@@ -336,90 +345,19 @@ class KnitroOptimizationProblem {
                 }
             }
         }
-
-        return optimizationObjective;
     }
 
     /**
-     * Computes the first derivatives of the objective function and the constraints at a particular point.
+     * Computes the first derivatives of the constraints at a particular point (the constraints are actually linear in
+     * this case and so their derivatives values are constant).
      *
-     * @param   optimizationVariables           The point in which to evaluate the derivatives.
-     * @param   optimizationObjectiveGradients  The objective function gradients vector to modify.
      * @param   optimizationConstraintsJacobian The constraints Jacobian (in sparse/vector form) to modify.
      */
-    private void computeGradients(double[] optimizationVariables,
-                                  double[] optimizationObjectiveGradients,
-                                  double[] optimizationConstraintsJacobian) {
-        for (int i = 0; i < optimizationObjectiveGradients.length; i++) {
-            optimizationObjectiveGradients[i] = 0;
-        }
-
-        for (BiMap.Entry<List<Integer>, Integer> entry : errorRates.indexKeyMapping.entrySet()) {
-            if (entry.getKey().size() > 1) {
-                double tempProduct = 1;
-                List<Integer> indexes = entry.getKey();
-                for (int index : indexes) {
-                    tempProduct *= optimizationVariables[index];
-                }
-                double term = optimizationVariables[entry.getValue()] - tempProduct;
-                optimizationObjectiveGradients[entry.getValue()] += 2 * term;
-                for (int index : indexes) {
-                    optimizationObjectiveGradients[index] -= 2 * term * tempProduct / optimizationVariables[index];
-                }
-            }
-        }
-
+    private void computeConstraintsGradients(double[] optimizationConstraintsJacobian) {
         int i = 0;
 
         for (Integer[] constraintsIndex : constraintsJacobian) {
             optimizationConstraintsJacobian[i++] = constraintsIndex[2];
-        }
-    }
-
-    /**
-     * Computes the Hessian of the Lagrangian at a particular point. The constraints in this case are linear and so they
-     * do not contribute to the Hessian value.
-     *
-     * @param   optimizationVariables   The point in which to evaluate the Hessian.
-     * @param   optimizationHessian     The Hessian (in sparse/vector form) to modify.
-     * @param   onlyConstraints         Variable indicating whether to compute the Hessian only for the constraints, or
-     *                                  for the whole Lagrangian function.
-     */
-    private void computeHessian(double[] optimizationVariables,
-                                double[] optimizationHessian,
-                                boolean onlyConstraints) {
-        for (int i = 0; i < optimizationHessian.length; i++) {
-            optimizationHessian[i] = 0;
-        }
-
-        if (onlyConstraints) {
-            return;
-        }
-
-        for (BiMap.Entry<List<Integer>, Integer> entry : errorRates.indexKeyMapping.entrySet()) {
-            int[] entryKey = Ints.toArray(entry.getKey());
-            if (entryKey.length > 1) {
-                double tempProduct = 1;
-                for (int index : entryKey) {
-                    tempProduct *= optimizationVariables[index];
-                }
-                int jointTermIndex = entry.getValue();
-                optimizationHessian[hessianIndexKeyMapping[jointTermIndex][jointTermIndex]] = 2;
-                for (int i = 0; i < entryKey.length; i++) {
-                    optimizationHessian[hessianIndexKeyMapping[entryKey[i]][jointTermIndex]] =
-                            2 * tempProduct / optimizationVariables[entryKey[i]];
-                    optimizationHessian[hessianIndexKeyMapping[entryKey[i]][entryKey[i]]] +=
-                            2 * optimizationVariables[jointTermIndex] * tempProduct
-                                    / Math.pow(optimizationVariables[entryKey[i]], 2);
-
-                    // Notice that the (map) keys of indexKeyMapping are in ascending order by construction
-                    for (int j = i; j < entryKey.length; j++) {
-                        optimizationHessian[hessianIndexKeyMapping[entryKey[i]][entryKey[j]]] -=
-                                (2 * optimizationVariables[jointTermIndex] * tempProduct + 2 * Math.pow(tempProduct, 2))
-                                        / (optimizationVariables[entryKey[i]] * optimizationVariables[entryKey[j]]);
-                    }
-                }
-            }
         }
     }
 
@@ -442,22 +380,23 @@ class KnitroOptimizationProblem {
             switch (knitroStatusCode) {
                 case KnitroJava.KTR_RC_EVALFC:
                     optimizationVariables = solver.getCurrentX();
-                    optimizationObjective[0] = computeObjectiveAndConstraints(optimizationVariables,
-                            optimizationConstraints);
+                    objectiveFunction.computeObjective(optimizationVariables, optimizationObjective);
+                    computeConstraints(optimizationVariables, optimizationConstraints);
                     break;
                 case KnitroJava.KTR_RC_EVALGA:
                     optimizationVariables = solver.getCurrentX();
-                    computeGradients(optimizationVariables,
-                            optimizationObjectiveGradients,
-                            optimizationConstraintsJacobian);
+                    objectiveFunction.computeGradient(optimizationVariables, optimizationObjectiveGradients);
+                    computeConstraintsGradients(optimizationConstraintsJacobian);
                     break;
                 case KnitroJava.KTR_RC_EVALH:
                     optimizationVariables = solver.getCurrentX();
-                    computeHessian(optimizationVariables, optimizationHessian, false);
+                    objectiveFunction.computeHessian(optimizationVariables, optimizationHessian);
                     break;
                 case KnitroJava.KTR_RC_EVALH_NO_F:
                     optimizationVariables = solver.getCurrentX();
-                    computeHessian(optimizationVariables, optimizationHessian, true);
+                    for (int i = 0; i < optimizationHessian.length; i++) {
+                        optimizationHessian[i] = 0;
+                    }
                     break;
             }
         }
