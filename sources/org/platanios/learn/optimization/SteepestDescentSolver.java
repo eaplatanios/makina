@@ -2,40 +2,19 @@ package org.platanios.learn.optimization;
 
 import org.platanios.learn.math.linearalgebra.Vector;
 
-import java.text.DecimalFormat;
-
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class SteepestDescentAlgorithm {
-    private final ObjectiveFunction objectiveFunction;
-    private final LineSearchAlgorithm lineSearchAlgorithm;
-    private final DecimalFormat decimalFormat;
-
-    private double[] currentPoint;
-    private double[] previousPoint;
-    private double[] currentDirection;
-    private double currentObjectiveValue;
-    private double previousObjectiveValue;
-    private double pointL2NormChange;
-    private double objectiveChange;
-    private double pointL2NormChangeTolerance = 1e-10;
-    private double objectiveChangeTolerance = 1e-10;
-    private boolean pointL2NormConverged;
-    private boolean objectiveConverged;
-
-    public SteepestDescentAlgorithm(ObjectiveFunction objectiveFunction,
-                                    double[] initialPoint) {
-        this.objectiveFunction = objectiveFunction;
-        this.currentPoint = initialPoint;
-        currentObjectiveValue = objectiveFunction.computeValue(currentPoint);
-
-        lineSearchAlgorithm = new BacktrackingLineSearchAlgorithm(objectiveFunction, 1.0, 0.9, 1e-4);
-        decimalFormat = new DecimalFormat("0.##E0");
+public class SteepestDescentSolver extends AbstractSolver {
+    public SteepestDescentSolver(ObjectiveFunctionWithGradient objectiveFunction,
+                                 double[] initialPoint) {
+        super(objectiveFunction, new BacktrackingLineSearchAlgorithm(objectiveFunction, 1.0, 0.9, 1e-4), initialPoint);
     }
 
     public void updateDirection() {
-        currentDirection = Vector.multiply(-1, objectiveFunction.computeGradient(currentPoint));
+        currentDirection = Vector.multiply(
+                -1,                ((ObjectiveFunctionWithGradient) objectiveFunction).computeGradient(currentPoint)
+        );
     }
 
     public void updatePoint() {
@@ -79,21 +58,5 @@ public class SteepestDescentAlgorithm {
         }
 
         return currentPoint;
-    }
-
-    public double getPointL2NormChangeTolerance() {
-        return pointL2NormChangeTolerance;
-    }
-
-    public void setPointL2NormChangeTolerance(double pointL2NormChangeTolerance) {
-        this.pointL2NormChangeTolerance = pointL2NormChangeTolerance;
-    }
-
-    public double getObjectiveChangeTolerance() {
-        return objectiveChangeTolerance;
-    }
-
-    public void setObjectiveChangeTolerance(double objectiveChangeTolerance) {
-        this.objectiveChangeTolerance = objectiveChangeTolerance;
     }
 }

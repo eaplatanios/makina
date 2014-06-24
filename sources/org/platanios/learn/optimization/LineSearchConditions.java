@@ -67,7 +67,7 @@ public class LineSearchConditions {
      *                              solution.
      * @return
      */
-    public static boolean checkWolfeConditions(ObjectiveFunction objectiveFunction,
+    public static boolean checkWolfeConditions(ObjectiveFunctionWithGradient objectiveFunction,
                                                double[] currentPoint,
                                                double[] direction,
                                                double stepSize,
@@ -134,7 +134,7 @@ public class LineSearchConditions {
      * @param   c
      * @return
      */
-    public static boolean checkGoldsteinConditions(ObjectiveFunction objectiveFunction,
+    public static boolean checkGoldsteinConditions(ObjectiveFunctionWithGradient objectiveFunction,
                                                    double[] currentPoint,
                                                    double[] direction,
                                                    double stepSize,
