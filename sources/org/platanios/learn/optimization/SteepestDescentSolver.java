@@ -1,30 +1,27 @@
 package org.platanios.learn.optimization;
 
+import org.platanios.learn.optimization.function.Function;
+
 /**
  * @author Emmanouil Antonios Platanios
  */
 public class SteepestDescentSolver extends AbstractSolver {
-    public SteepestDescentSolver(ObjectiveFunctionWithGradient objectiveFunction,
+    public SteepestDescentSolver(Function objectiveFunction,
                                  double[] initialPoint) {
-        super(objectiveFunction, new BacktrackingLineSearchAlgorithm(objectiveFunction, 1.0, 0.9, 1e-4), initialPoint);
+        super(objectiveFunction, initialPoint);
+    }
+
+    public SteepestDescentSolver(Function objectiveFunction,
+                                 double[] initialPoint,
+                                 LineSearch lineSearch) {
+        super(objectiveFunction, initialPoint, lineSearch);
     }
 
     public void updateDirection() {
-        currentDirection =
-                ((ObjectiveFunctionWithGradient) objectiveFunction).computeGradient(currentPoint).mapMultiply(-1);
+        currentDirection = objectiveFunction.computeGradient(currentPoint).mapMultiply(-1);
     }
 
     public void updatePoint() {
-        double stepSize = lineSearchAlgorithm.computeStepSize(currentPoint, currentDirection);
-        currentPoint = currentPoint.add(currentDirection.mapMultiply(stepSize));
-    }
-
-    public boolean checkForConvergence() {
-        pointL2NormChange = currentPoint.subtract(previousPoint).getNorm();
-        objectiveChange = Math.abs((previousObjectiveValue - currentObjectiveValue) / previousObjectiveValue);
-        pointL2NormConverged = pointL2NormChange <= pointL2NormChangeTolerance;
-        objectiveConverged = objectiveChange <= objectiveChangeTolerance;
-
-        return pointL2NormConverged || objectiveConverged;
+        currentPoint = currentPoint.add(currentDirection.mapMultiply(stepSizes.get(currentIteration)));
     }
 }

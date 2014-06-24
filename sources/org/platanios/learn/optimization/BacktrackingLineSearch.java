@@ -2,20 +2,25 @@ package org.platanios.learn.optimization;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.math3.linear.RealVector;
+import org.platanios.learn.optimization.function.Function;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class BacktrackingLineSearchAlgorithm implements LineSearchAlgorithm {
-    private final ObjectiveFunctionWithGradient objectiveFunction;
+public class BacktrackingLineSearch implements LineSearch {
+    private final Function objectiveFunction;
     private final double initialStepSize;
     private final double contraptionFactor;
     private final double c;
 
-    public BacktrackingLineSearchAlgorithm(ObjectiveFunctionWithGradient objectiveFunction,
-                                           double initialStepSize,
-                                           double contraptionFactor,
-                                           double c) {
+    public BacktrackingLineSearch(Function objectiveFunction,
+                                  double initialStepSize,
+                                  double contraptionFactor,
+                                  double c) {
+        Preconditions.checkArgument(initialStepSize > 0);
+        Preconditions.checkArgument(contraptionFactor > 0 && contraptionFactor < 1);
+        Preconditions.checkArgument(c > 0 && c < 1);
+
         this.objectiveFunction = objectiveFunction;
         this.initialStepSize = initialStepSize;
         this.contraptionFactor = contraptionFactor;
@@ -35,10 +40,6 @@ public class BacktrackingLineSearchAlgorithm implements LineSearchAlgorithm {
      */
     public double computeStepSize(RealVector currentPoint,
                                   RealVector direction) {
-        Preconditions.checkArgument(initialStepSize > 0);
-        Preconditions.checkArgument(contraptionFactor > 0 && contraptionFactor < 1);
-        Preconditions.checkArgument(c > 0 && c < 1);
-
         double objectiveFunctionValueAtCurrentPoint = objectiveFunction.computeValue(currentPoint);
         RealVector objectiveFunctionGradientAtCurrentPoint = objectiveFunction.computeGradient(currentPoint);
 

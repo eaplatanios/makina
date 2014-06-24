@@ -2,6 +2,7 @@ package org.platanios.learn.optimization;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.math3.linear.RealVector;
+import org.platanios.learn.optimization.function.Function;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -22,7 +23,7 @@ public class LineSearchConditions {
      * @param   objectiveFunctionGradientAtCurrentPoint
      * @return
      */
-    public static boolean checkArmijoCondition(ObjectiveFunction objectiveFunction,
+    public static boolean checkArmijoCondition(Function objectiveFunction,
                                                RealVector currentPoint,
                                                RealVector direction,
                                                double stepSize,
@@ -60,7 +61,7 @@ public class LineSearchConditions {
      *                              solution.
      * @return
      */
-    public static boolean checkWolfeConditions(ObjectiveFunctionWithGradient objectiveFunction,
+    public static boolean checkWolfeConditions(Function objectiveFunction,
                                                RealVector currentPoint,
                                                RealVector direction,
                                                double stepSize,
@@ -115,7 +116,7 @@ public class LineSearchConditions {
      * @param   c
      * @return
      */
-    public static boolean checkGoldsteinConditions(ObjectiveFunctionWithGradient objectiveFunction,
+    public static boolean checkGoldsteinConditions(Function objectiveFunction,
                                                    RealVector currentPoint,
                                                    RealVector direction,
                                                    double stepSize,
