@@ -1,5 +1,7 @@
 package org.platanios.learn.optimization;
 
+import org.apache.commons.math3.linear.RealVector;
+
 /**
  * @author Emmanouil Antonios Platanios
  */
@@ -11,5 +13,5 @@ public interface LineSearchAlgorithm {
      * @param   direction
      * @return
      */
-    public double computeStepSize(double[] currentPoint, double[] direction);
+    public double computeStepSize(RealVector currentPoint, RealVector direction);
 }

@@ -1,7 +1,7 @@
 package org.platanios.learn.optimization;
 
 import com.google.common.base.Preconditions;
-import org.platanios.learn.math.linearalgebra.Vector;
+import org.apache.commons.math3.linear.RealVector;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -23,25 +23,18 @@ public class LineSearchConditions {
      * @return
      */
     public static boolean checkArmijoCondition(ObjectiveFunction objectiveFunction,
-                                               double[] currentPoint,
-                                               double[] direction,
+                                               RealVector currentPoint,
+                                               RealVector direction,
                                                double stepSize,
                                                double c,
                                                double objectiveFunctionValueAtCurrentPoint,
-                                               double[] objectiveFunctionGradientAtCurrentPoint) {
+                                               RealVector objectiveFunctionGradientAtCurrentPoint) {
         Preconditions.checkArgument(c > 0 && c < 1);
 
-        double newObjectiveFunctionValue = objectiveFunction.computeValue(
-                Vector.add(
-                        currentPoint,
-                        Vector.multiply(
-                                stepSize,
-                                direction
-                        )
-                )
-        );
+        double newObjectiveFunctionValue =
+                objectiveFunction.computeValue(direction.mapMultiply(stepSize).add(currentPoint));
         double upperBound = objectiveFunctionValueAtCurrentPoint
-                + c * stepSize * Vector.computeDotProduct(objectiveFunctionGradientAtCurrentPoint, direction);
+                + c * stepSize * objectiveFunctionGradientAtCurrentPoint.dotProduct(direction);
 
         return newObjectiveFunctionValue <= upperBound;
     }
@@ -68,8 +61,8 @@ public class LineSearchConditions {
      * @return
      */
     public static boolean checkWolfeConditions(ObjectiveFunctionWithGradient objectiveFunction,
-                                               double[] currentPoint,
-                                               double[] direction,
+                                               RealVector currentPoint,
+                                               RealVector direction,
                                                double stepSize,
                                                double c1,
                                                double c2,
@@ -78,7 +71,7 @@ public class LineSearchConditions {
         Preconditions.checkArgument(c2 > c1 && c2 < 1);
 
         double objectiveFunctionValueAtCurrentPoint = objectiveFunction.computeValue(currentPoint);
-        double[] objectiveFunctionGradientAtCurrentPoint = objectiveFunction.computeGradient(currentPoint);
+        RealVector objectiveFunctionGradientAtCurrentPoint = objectiveFunction.computeGradient(currentPoint);
 
         // Check the Armijo condition
         boolean armijoConditionSatisfied = checkArmijoCondition(
@@ -92,22 +85,10 @@ public class LineSearchConditions {
         );
 
         // Check the curvature condition
-        double curvatureConditionTerm1 = Vector.computeDotProduct(
-                objectiveFunction.computeGradient(
-                        Vector.add(
-                                currentPoint,
-                                Vector.multiply(
-                                        stepSize,
-                                        direction
-                                )
-                        )
-                ),
-                direction
-        );
-        double curvatureConditionTerm2 = Vector.computeDotProduct(
-                objectiveFunctionGradientAtCurrentPoint,
-                direction
-        );
+        double curvatureConditionTerm1 = objectiveFunction.computeGradient(
+                currentPoint.add(direction.mapMultiply(stepSize))
+        ).dotProduct(direction);
+        double curvatureConditionTerm2 = objectiveFunctionGradientAtCurrentPoint.dotProduct(direction);
         boolean curvatureConditionSatisfied;
         if (strong) {
             curvatureConditionSatisfied = Math.abs(curvatureConditionTerm1) >= c2 * Math.abs(curvatureConditionTerm2);
@@ -135,28 +116,20 @@ public class LineSearchConditions {
      * @return
      */
     public static boolean checkGoldsteinConditions(ObjectiveFunctionWithGradient objectiveFunction,
-                                                   double[] currentPoint,
-                                                   double[] direction,
+                                                   RealVector currentPoint,
+                                                   RealVector direction,
                                                    double stepSize,
                                                    double c) {
         Preconditions.checkArgument(c > 0 && c < 0.5);
 
         double objectiveFunctionValueAtCurrentPoint = objectiveFunction.computeValue(currentPoint);
-        double[] objectiveFunctionGradientAtCurrentPoint = objectiveFunction.computeGradient(currentPoint);
+        RealVector objectiveFunctionGradientAtCurrentPoint = objectiveFunction.computeGradient(currentPoint);
 
-        double newObjectiveFunctionValue = objectiveFunction.computeValue(
-                Vector.add(
-                        currentPoint,
-                        Vector.multiply(
-                                stepSize,
-                                direction
-                        )
-                )
-        );
-        double lowerBound = objectiveFunctionValueAtCurrentPoint
-                + (1 - c) * stepSize * Vector.computeDotProduct(objectiveFunctionGradientAtCurrentPoint, direction);
-        double upperBound = objectiveFunctionValueAtCurrentPoint
-                + c * stepSize * Vector.computeDotProduct(objectiveFunctionGradientAtCurrentPoint, direction);
+        double newObjectiveFunctionValue =
+                objectiveFunction.computeValue(currentPoint.add(direction.mapMultiply(stepSize)));
+        double scaledSearchDirection = stepSize * objectiveFunctionGradientAtCurrentPoint.dotProduct(direction);
+        double lowerBound = objectiveFunctionValueAtCurrentPoint + (1 - c) * scaledSearchDirection;
+        double upperBound = objectiveFunctionValueAtCurrentPoint + c * scaledSearchDirection;
 
         return lowerBound <= newObjectiveFunctionValue && newObjectiveFunctionValue <= upperBound;
     }

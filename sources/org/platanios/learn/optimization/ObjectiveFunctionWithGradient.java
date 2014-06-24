@@ -1,5 +1,7 @@
 package org.platanios.learn.optimization;
 
+import org.apache.commons.math3.linear.RealVector;
+
 /**
  * An interface specifying the methods that all classes defined as possible objective functions for a numerical
  * optimization problem should implement.
@@ -14,5 +16,5 @@ public interface ObjectiveFunctionWithGradient extends ObjectiveFunction {
      * @return                          The values of the first derivatives of the objective function, evaluated at the
      *                                  given point.
      */
-    double[] computeGradient(double[] optimizationVariables);
+    RealVector computeGradient(RealVector optimizationVariables);
 }

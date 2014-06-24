@@ -1,17 +1,18 @@
 package org.platanios.learn.optimization;
 
 import com.google.common.base.Preconditions;
+import org.apache.commons.math3.linear.RealVector;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
 public class BacktrackingLineSearchAlgorithm implements LineSearchAlgorithm {
-    private final ObjectiveFunction objectiveFunction;
+    private final ObjectiveFunctionWithGradient objectiveFunction;
     private final double initialStepSize;
     private final double contraptionFactor;
     private final double c;
 
-    public BacktrackingLineSearchAlgorithm(ObjectiveFunction objectiveFunction,
+    public BacktrackingLineSearchAlgorithm(ObjectiveFunctionWithGradient objectiveFunction,
                                            double initialStepSize,
                                            double contraptionFactor,
                                            double c) {
@@ -32,14 +33,14 @@ public class BacktrackingLineSearchAlgorithm implements LineSearchAlgorithm {
      * @param   direction
      * @return
      */
-    public double computeStepSize(double[] currentPoint,
-                                  double[] direction) {
+    public double computeStepSize(RealVector currentPoint,
+                                  RealVector direction) {
         Preconditions.checkArgument(initialStepSize > 0);
         Preconditions.checkArgument(contraptionFactor > 0 && contraptionFactor < 1);
         Preconditions.checkArgument(c > 0 && c < 1);
 
         double objectiveFunctionValueAtCurrentPoint = objectiveFunction.computeValue(currentPoint);
-        double[] objectiveFunctionGradientAtCurrentPoint = objectiveFunction.computeGradient(currentPoint);
+        RealVector objectiveFunctionGradientAtCurrentPoint = objectiveFunction.computeGradient(currentPoint);
 
         double currentStepSize = initialStepSize;
 

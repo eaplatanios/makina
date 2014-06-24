@@ -1,5 +1,8 @@
 package org.platanios.learn.optimization;
 
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
+
 /**
  * An interface specifying the methods that all classes defined as possible objective functions for a numerical
  * optimization problem should implement.
@@ -14,5 +17,5 @@ public interface ObjectiveFunctionWithGradientAndHessian extends ObjectiveFuncti
      * @return                          The value of the Hessian matrix of the objective function, evaluated at the
      *                                  given point.
      */
-    double[][] computeHessian(double[] optimizationVariables);
+    RealMatrix computeHessian(RealVector optimizationVariables);
 }
