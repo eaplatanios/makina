@@ -1,6 +1,5 @@
-package org.platanios.learn.optimization;
+package org.platanios.learn.optimization.linesearch;
 
-import com.google.common.base.Preconditions;
 import org.apache.commons.math3.linear.RealVector;
 import org.platanios.learn.optimization.function.QuadraticFunction;
 

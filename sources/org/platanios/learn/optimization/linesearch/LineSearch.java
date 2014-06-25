@@ -1,4 +1,4 @@
-package org.platanios.learn.optimization;
+package org.platanios.learn.optimization.linesearch;
 
 import org.apache.commons.math3.linear.RealVector;
 

@@ -4,6 +4,7 @@ import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.platanios.learn.optimization.function.Function;
+import org.platanios.learn.optimization.linesearch.LineSearch;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -17,7 +18,8 @@ public class NewtonsMethodSolver extends AbstractSolver {
     public NewtonsMethodSolver(Function objectiveFunction,
                                double[] initialPoint,
                                LineSearch lineSearch) {
-        super(objectiveFunction, initialPoint, lineSearch);
+        super(objectiveFunction, initialPoint);
+        setLineSearch(lineSearch);
     }
 
     /**
@@ -32,6 +34,6 @@ public class NewtonsMethodSolver extends AbstractSolver {
     }
 
     public void updatePoint() {
-        currentPoint = currentPoint.add(currentDirection.mapMultiply(stepSizes.get(currentIteration)));
+        currentPoint = currentPoint.add(currentDirection.mapMultiply(currentStepSize));
     }
 }
