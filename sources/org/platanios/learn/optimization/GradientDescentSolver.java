@@ -6,13 +6,13 @@ import org.platanios.learn.optimization.linesearch.LineSearch;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class SteepestDescentSolver extends AbstractSolver {
-    public SteepestDescentSolver(Function objectiveFunction,
+public class GradientDescentSolver extends AbstractSolver {
+    public GradientDescentSolver(Function objectiveFunction,
                                  double[] initialPoint) {
         super(objectiveFunction, initialPoint);
     }
 
-    public SteepestDescentSolver(Function objectiveFunction,
+    public GradientDescentSolver(Function objectiveFunction,
                                  double[] initialPoint,
                                  LineSearch lineSearch) {
         super(objectiveFunction, initialPoint);

@@ -48,12 +48,13 @@ public abstract class AbstractSolver implements Solver {
         if (objectiveFunction.getClass() == QuadraticFunction.class) {
             this.lineSearch = new ExactLineSearch((QuadraticFunction) objectiveFunction);
         } else {
-            stepSizeInitializationMethod = StepSizeInitializationMethod.CONSERVE_FIRST_ORDER_CHANGE;
-            this.lineSearch =
-                    new BacktrackingLineSearch(objectiveFunction,
-                                               stepSizeInitializationMethod,
-                                               0.9,
-                                               1e-4);
+            stepSizeInitializationMethod = StepSizeInitializationMethod.UNIT;
+//            this.lineSearch =
+//                    new BacktrackingLineSearch(objectiveFunction,
+//                                               stepSizeInitializationMethod,
+//                                               0.9,
+//                                               1e-4);
+            this.lineSearch = new ArmijoInterpolationLineSearch(objectiveFunction, stepSizeInitializationMethod, 1e-4);
         }
     }
 

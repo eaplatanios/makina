@@ -13,6 +13,8 @@ public abstract class IterativeLineSearch implements LineSearch {
     final StepSizeInitializationMethod stepSizeInitializationMethod;
     final double initialStepSize;
 
+    double currentStepSize;
+
     public IterativeLineSearch(Function objectiveFunction,
                                StepSizeInitializationMethod stepSizeInitializationMethod) {
         this.objectiveFunction = objectiveFunction;
@@ -42,9 +44,8 @@ public abstract class IterativeLineSearch implements LineSearch {
         }
     }
 
-    public double initializeStepSize() {
-        double currentStepSize;
-
+    public double computeStepSize(RealVector currentPoint,
+                                  RealVector currentDirection) {
         switch (stepSizeInitializationMethod) {
             case UNIT:
                 currentStepSize = 1.0;
@@ -57,13 +58,16 @@ public abstract class IterativeLineSearch implements LineSearch {
                         "to compute the initial step size using the selected method!");
         }
 
+        performLineSearch(currentPoint, currentDirection);
+
         return currentStepSize;
     }
 
-    public double initializeStepSize(double objectiveValueAtCurrentPoint,
-                                     RealVector previousPoint,
-                                     RealVector previousDirection) {
-        double currentStepSize;
+    public double computeStepSize(RealVector currentPoint,
+                                  RealVector currentDirection,
+                                  RealVector previousPoint,
+                                  RealVector previousDirection) {
+        double objectiveValueAtCurrentPoint = objectiveFunction.computeValue(currentPoint);
 
         switch (stepSizeInitializationMethod) {
             case UNIT:
@@ -107,16 +111,18 @@ public abstract class IterativeLineSearch implements LineSearch {
                 throw new NotImplementedException();
         }
 
+        performLineSearch(currentPoint, currentDirection);
+
         return currentStepSize;
     }
 
-    public double initializeStepSize(double objectiveValueAtCurrentPoint,
-                                     RealVector objectiveGradientAtCurrentPoint,
+    public double computeStepSize(RealVector currentPoint,
                                      RealVector currentDirection,
                                      RealVector previousPoint,
                                      RealVector previousDirection,
                                      double previousStepSize) {
-        double currentStepSize;
+        double objectiveValueAtCurrentPoint = objectiveFunction.computeValue(currentPoint);
+        RealVector objectiveGradientAtCurrentPoint = objectiveFunction.computeGradient(currentPoint);
 
         switch (stepSizeInitializationMethod) {
             case UNIT:
@@ -172,26 +178,10 @@ public abstract class IterativeLineSearch implements LineSearch {
                 throw new NotImplementedException();
         }
 
+        performLineSearch(currentPoint, currentDirection);
+
         return currentStepSize;
     }
 
-    /**
-     * Computes the step size value using the implemented algorithm.
-     *
-     * @param   currentPoint
-     * @param   direction
-     * @return
-     */
-    public abstract double computeStepSize(RealVector currentPoint, RealVector direction);
-
-    public abstract double computeStepSize(RealVector currentPoint,
-                                           RealVector currentDirection,
-                                           RealVector previousPoint,
-                                           RealVector previousDirection);
-
-    public abstract double computeStepSize(RealVector currentPoint,
-                                           RealVector currentDirection,
-                                           RealVector previousPoint,
-                                           RealVector previousDirection,
-                                           double previousStepSize);
+    public abstract void performLineSearch(RealVector currentPoint, RealVector direction);
 }

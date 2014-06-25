@@ -50,11 +50,10 @@ public class BacktrackingLineSearch extends IterativeLineSearch {
      * @param   currentDirection
      * @return
      */
-    public double computeStepSize(RealVector currentPoint,
-                                  RealVector currentDirection) {
+    public void performLineSearch(RealVector currentPoint,
+                                    RealVector currentDirection) {
         double objectiveValueAtCurrentPoint = objectiveFunction.computeValue(currentPoint);
         RealVector objectiveGradientAtCurrentPoint = objectiveFunction.computeGradient(currentPoint);
-        double currentStepSize = initializeStepSize();
 
         while (!LineSearchConditions.checkArmijoCondition(objectiveFunction,
                                                           currentPoint,
@@ -65,55 +64,5 @@ public class BacktrackingLineSearch extends IterativeLineSearch {
                                                           objectiveGradientAtCurrentPoint)) {
             currentStepSize *= contraptionFactor;
         }
-
-        return currentStepSize;
-    }
-
-    public double computeStepSize(RealVector currentPoint,
-                                  RealVector currentDirection,
-                                  RealVector previousPoint,
-                                  RealVector previousDirection) {
-        double objectiveValueAtCurrentPoint = objectiveFunction.computeValue(currentPoint);
-        RealVector objectiveGradientAtCurrentPoint = objectiveFunction.computeGradient(currentPoint);
-        double currentStepSize = initializeStepSize(objectiveValueAtCurrentPoint, previousPoint, previousDirection);
-
-        while (!LineSearchConditions.checkArmijoCondition(objectiveFunction,
-                                                          currentPoint,
-                                                          currentDirection,
-                                                          currentStepSize,
-                                                          c,
-                                                          objectiveValueAtCurrentPoint,
-                                                          objectiveGradientAtCurrentPoint)) {
-            currentStepSize *= contraptionFactor;
-        }
-
-        return currentStepSize;
-    }
-
-    public double computeStepSize(RealVector currentPoint,
-                                  RealVector currentDirection,
-                                  RealVector previousPoint,
-                                  RealVector previousDirection,
-                                  double previousStepSize) {
-        double objectiveValueAtCurrentPoint = objectiveFunction.computeValue(currentPoint);
-        RealVector objectiveGradientAtCurrentPoint = objectiveFunction.computeGradient(currentPoint);
-        double currentStepSize = initializeStepSize(objectiveValueAtCurrentPoint,
-                                                    objectiveGradientAtCurrentPoint,
-                                                    currentDirection,
-                                                    previousPoint,
-                                                    previousDirection,
-                                                    previousStepSize);
-
-        while (!LineSearchConditions.checkArmijoCondition(objectiveFunction,
-                currentPoint,
-                currentDirection,
-                currentStepSize,
-                c,
-                objectiveValueAtCurrentPoint,
-                objectiveGradientAtCurrentPoint)) {
-            currentStepSize *= contraptionFactor;
-        }
-
-        return currentStepSize;
     }
 }
