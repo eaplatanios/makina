@@ -12,8 +12,8 @@ import java.text.DecimalFormat;
  * @author Emmanouil Antonios Platanios
  */
 public abstract class AbstractSolver implements Solver {
-    final Function objectiveFunction;
-    final DecimalFormat decimalFormat;
+    final Function objective;
+    static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.##E0");;
 
     /** Default value: If quadratic or linear function it is ExactLineSearch, otherwise it is BacktrackingLineSearch
      * with CONSERVE_FIRST_ORDER_CHANGE for the step size initialization method. */
@@ -37,24 +37,18 @@ public abstract class AbstractSolver implements Solver {
     boolean gradientConverged = false;
     boolean objectiveConverged = false;
 
-    public AbstractSolver(Function objectiveFunction,
+    public AbstractSolver(Function objective,
                           double[] initialPoint) {
-        this.objectiveFunction = objectiveFunction;
+        this.objective = objective;
         this.currentPoint = new ArrayRealVector(initialPoint);
-        currentObjectiveValue = objectiveFunction.computeValue(currentPoint);
-        decimalFormat = new DecimalFormat("0.##E0");
+        currentObjectiveValue = objective.computeValue(currentPoint);
         currentIteration = 0;
 
-        if (objectiveFunction.getClass() == QuadraticFunction.class) {
-            this.lineSearch = new ExactLineSearch((QuadraticFunction) objectiveFunction);
+        if (objective.getClass() == QuadraticFunction.class) {
+            this.lineSearch = new ExactLineSearch((QuadraticFunction) objective);
         } else {
-            stepSizeInitializationMethod = StepSizeInitializationMethod.UNIT;
-//            this.lineSearch =
-//                    new BacktrackingLineSearch(objectiveFunction,
-//                                               stepSizeInitializationMethod,
-//                                               0.9,
-//                                               1e-4);
-            this.lineSearch = new ArmijoInterpolationLineSearch(objectiveFunction, stepSizeInitializationMethod, 1e-4);
+            stepSizeInitializationMethod = StepSizeInitializationMethod.CONSERVE_FIRST_ORDER_CHANGE;
+            this.lineSearch = new ArmijoInterpolationLineSearch(objective, stepSizeInitializationMethod, 1e-4);
         }
     }
 
@@ -93,7 +87,7 @@ public abstract class AbstractSolver implements Solver {
         objectiveChange = Math.abs((previousObjectiveValue - currentObjectiveValue) / previousObjectiveValue);
         pointL2NormConverged = pointL2NormChange <= pointL2NormChangeTolerance;
         objectiveConverged = objectiveChange <= objectiveChangeTolerance;
-        gradientConverged = objectiveFunction.computeGradient(currentPoint).getNorm() == 0.0;
+        gradientConverged = objective.computeGradient(currentPoint).getNorm() == 0.0;
 
         return pointL2NormConverged || objectiveConverged || gradientConverged;
     }
@@ -120,7 +114,7 @@ public abstract class AbstractSolver implements Solver {
 
             updatePoint();
 
-            currentObjectiveValue = objectiveFunction.computeValue(currentPoint);
+            currentObjectiveValue = objective.computeValue(currentPoint);
             currentIteration++;
 
             printIteration();
@@ -128,16 +122,16 @@ public abstract class AbstractSolver implements Solver {
 
         if (pointL2NormConverged) {
             System.out.println("The L2 norm of the point change, "
-                    + decimalFormat.format(pointL2NormChange)
+                    + DECIMAL_FORMAT.format(pointL2NormChange)
                     + ", was below the convergence threshold of "
-                    + decimalFormat.format(pointL2NormChangeTolerance)
+                    + DECIMAL_FORMAT.format(pointL2NormChangeTolerance)
                     + "!\n");
         }
         if (objectiveConverged) {
             System.out.println("The relative change of the objective function value, "
-                    + decimalFormat.format(objectiveChange)
+                    + DECIMAL_FORMAT.format(objectiveChange)
                     + ", was below the convergence threshold of "
-                    + decimalFormat.format(objectiveChangeTolerance)
+                    + DECIMAL_FORMAT.format(objectiveChangeTolerance)
                     + "!\n");
         }
         if (gradientConverged) {

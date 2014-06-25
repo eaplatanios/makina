@@ -10,15 +10,15 @@ import org.platanios.learn.optimization.linesearch.LineSearch;
  * @author Emmanouil Antonios Platanios
  */
 public class NewtonsMethodSolver extends AbstractSolver {
-    public NewtonsMethodSolver(Function objectiveFunction,
+    public NewtonsMethodSolver(Function objective,
                                double[] initialPoint) {
-        super(objectiveFunction, initialPoint);
+        super(objective, initialPoint);
     }
 
-    public NewtonsMethodSolver(Function objectiveFunction,
+    public NewtonsMethodSolver(Function objective,
                                double[] initialPoint,
                                LineSearch lineSearch) {
-        super(objectiveFunction, initialPoint);
+        super(objective, initialPoint);
         setLineSearch(lineSearch);
     }
 
@@ -27,9 +27,9 @@ public class NewtonsMethodSolver extends AbstractSolver {
      * property holds for it and we have global convergence for Newton's method.
      */
     public void updateDirection() {
-        RealMatrix hessian = objectiveFunction.computeHessian(currentPoint);
+        RealMatrix hessian = objective.computeHessian(currentPoint);
         // TODO: Check Hessian for positive definiteness and modify if necessary.
-        RealVector gradient = objectiveFunction.computeGradient(currentPoint);
+        RealVector gradient = objective.computeGradient(currentPoint);
         currentDirection = new LUDecomposition(hessian).getSolver().getInverse().operate(gradient).mapMultiply(-1);
     }
 

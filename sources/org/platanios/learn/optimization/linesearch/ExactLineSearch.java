@@ -7,18 +7,18 @@ import org.platanios.learn.optimization.function.QuadraticFunction;
  * @author Emmanouil Antonios Platanios
  */
 public class ExactLineSearch implements LineSearch {
-    private final QuadraticFunction objectiveFunction;
+    private final QuadraticFunction objective;
 
     // TODO: Implement for linear function as well, apart from only quadratic.
-    public ExactLineSearch(QuadraticFunction objectiveFunction) {
-        this.objectiveFunction = objectiveFunction;
+    public ExactLineSearch(QuadraticFunction objective) {
+        this.objective = objective;
     }
 
     public double computeStepSize(RealVector currentPoint,
                                   RealVector direction) {
-        RealVector objectiveFunctionGradientAtCurrentPoint = objectiveFunction.computeGradient(currentPoint);
+        RealVector objectiveFunctionGradientAtCurrentPoint = objective.computeGradient(currentPoint);
         double stepSize = - 0.5 * objectiveFunctionGradientAtCurrentPoint.dotProduct(direction);
-        stepSize /= objectiveFunction.getQ().preMultiply(direction).dotProduct(direction);
+        stepSize /= objective.getQ().preMultiply(direction).dotProduct(direction);
         return stepSize;
     }
 }

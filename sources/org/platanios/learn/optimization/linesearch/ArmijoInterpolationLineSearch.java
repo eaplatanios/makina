@@ -8,46 +8,47 @@ import org.platanios.learn.optimization.function.Function;
  * @author Emmanouil Antonios Platanios
  */
 public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
-    private final double MINIMUM_STEP_SIZE_CHANGE_THRESHOLD = 1e-3;
-    private final double MINIMUM_STEP_SIZE_RATIO_THRESHOLD = 1e-1;
-    private final double C;
+    private static final double MINIMUM_STEP_SIZE_CHANGE_THRESHOLD = 1e-3;
+    private static final double MINIMUM_STEP_SIZE_RATIO_THRESHOLD = 1e-1;
+
+    private final double c;
 
     private double[] mostRecentStepSizes; // [0] is the previous one and [1] is the one before that one
 
-    public ArmijoInterpolationLineSearch(Function objectiveFunction,
+    public ArmijoInterpolationLineSearch(Function objective,
                                          StepSizeInitializationMethod stepSizeInitializationMethod,
                                          double c) {
-        super(objectiveFunction, stepSizeInitializationMethod);
+        super(objective, stepSizeInitializationMethod);
         Preconditions.checkArgument(c > 0 && c < 1);
-        this.C = c;
+        this.c = c;
         mostRecentStepSizes = new double[2];
     }
 
-    public ArmijoInterpolationLineSearch(Function objectiveFunction,
+    public ArmijoInterpolationLineSearch(Function objective,
                                          StepSizeInitializationMethod stepSizeInitializationMethod,
-                                         double C,
+                                         double c,
                                          double initialStepSize) {
-        super(objectiveFunction, stepSizeInitializationMethod, initialStepSize);
-        Preconditions.checkArgument(C > 0 && C < 1);
+        super(objective, stepSizeInitializationMethod, initialStepSize);
+        Preconditions.checkArgument(c > 0 && c < 1);
         Preconditions.checkArgument(initialStepSize > 0);
-        this.C = C;
+        this.c = c;
         mostRecentStepSizes = new double[2];
     }
 
     public void performLineSearch(RealVector currentPoint,
                                    RealVector currentDirection) {
-        double objectiveValueAtCurrentPoint = objectiveFunction.computeValue(currentPoint);
-        RealVector objectiveGradientAtCurrentPoint = objectiveFunction.computeGradient(currentPoint);
+        double objectiveValueAtCurrentPoint = objective.computeValue(currentPoint);
+        RealVector objectiveGradientAtCurrentPoint = objective.computeGradient(currentPoint);
         double dotProductOfObjectiveGradientAndDirection = objectiveGradientAtCurrentPoint.dotProduct(currentDirection);
 
         mostRecentStepSizes[0] = currentStepSize;
         boolean firstIteration = true;
 
-        while (!LineSearchConditions.checkArmijoCondition(objectiveFunction,
+        while (!LineSearchConditions.checkArmijoCondition(objective,
                 currentPoint,
                 currentDirection,
                 mostRecentStepSizes[0],
-                C,
+                c,
                 objectiveValueAtCurrentPoint,
                 objectiveGradientAtCurrentPoint)) {
             if (firstIteration) {
@@ -76,7 +77,7 @@ public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
                                                double phi0,
                                                double phiPrime0) {
         double a0 = mostRecentStepSizes[0];
-        double phiA0 = objectiveFunction.computeValue(currentPoint.add(currentDirection.mapMultiply(a0)));
+        double phiA0 = objective.computeValue(currentPoint.add(currentDirection.mapMultiply(a0)));
         mostRecentStepSizes[1] = mostRecentStepSizes[0];
         mostRecentStepSizes[0] = - phiPrime0 * Math.pow(a0, 2) / (2 * (phiA0 - phi0 - a0 * phiPrime0));
 
@@ -98,8 +99,8 @@ public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
         double a1Sq = Math.pow(a1, 2);
         double a0Cub = Math.pow(a0, 3);
         double a1Cub = Math.pow(a1, 3);
-        double phiA0 = objectiveFunction.computeValue(currentPoint.add(currentDirection.mapMultiply(a0)));
-        double phiA1 = objectiveFunction.computeValue(currentPoint.add(currentDirection.mapMultiply(a1)));
+        double phiA0 = objective.computeValue(currentPoint.add(currentDirection.mapMultiply(a0)));
+        double phiA1 = objective.computeValue(currentPoint.add(currentDirection.mapMultiply(a1)));
         double denominator = a0Sq * a1Sq * (a1 - a0);
         double a = (a0Sq * (phiA1 - phi0 - a1 * phiPrime0) - a1Sq * (phiA0 - phi0 - a0 * phiPrime0)) / denominator;
         double b = (- a0Cub * (phiA1 - phi0 - a1 * phiPrime0) + a1Cub * (phiA0 - phi0 - a0 * phiPrime0)) / denominator;

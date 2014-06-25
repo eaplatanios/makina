@@ -7,20 +7,20 @@ import org.platanios.learn.optimization.linesearch.LineSearch;
  * @author Emmanouil Antonios Platanios
  */
 public class GradientDescentSolver extends AbstractSolver {
-    public GradientDescentSolver(Function objectiveFunction,
+    public GradientDescentSolver(Function objective,
                                  double[] initialPoint) {
-        super(objectiveFunction, initialPoint);
+        super(objective, initialPoint);
     }
 
-    public GradientDescentSolver(Function objectiveFunction,
+    public GradientDescentSolver(Function objective,
                                  double[] initialPoint,
                                  LineSearch lineSearch) {
-        super(objectiveFunction, initialPoint);
+        super(objective, initialPoint);
         setLineSearch(lineSearch);
     }
 
     public void updateDirection() {
-        currentDirection = objectiveFunction.computeGradient(currentPoint).mapMultiply(-1);
+        currentDirection = objective.computeGradient(currentPoint).mapMultiply(-1);
     }
 
     public void updatePoint() {

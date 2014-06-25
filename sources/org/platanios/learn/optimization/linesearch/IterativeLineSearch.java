@@ -9,15 +9,15 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  * @author Emmanouil Antonios Platanios
  */
 public abstract class IterativeLineSearch implements LineSearch {
-    final Function objectiveFunction;
+    final Function objective;
     final StepSizeInitializationMethod stepSizeInitializationMethod;
     final double initialStepSize;
 
     double currentStepSize;
 
-    public IterativeLineSearch(Function objectiveFunction,
+    public IterativeLineSearch(Function objective,
                                StepSizeInitializationMethod stepSizeInitializationMethod) {
-        this.objectiveFunction = objectiveFunction;
+        this.objective = objective;
         this.stepSizeInitializationMethod = stepSizeInitializationMethod;
         this.initialStepSize = 1;
 
@@ -27,12 +27,12 @@ public abstract class IterativeLineSearch implements LineSearch {
         }
     }
 
-    public IterativeLineSearch(Function objectiveFunction,
+    public IterativeLineSearch(Function objective,
                                StepSizeInitializationMethod stepSizeInitializationMethod,
                                double initialStepSize) {
         Preconditions.checkArgument(initialStepSize > 0);
 
-        this.objectiveFunction = objectiveFunction;
+        this.objective = objective;
         this.stepSizeInitializationMethod = stepSizeInitializationMethod;
 
         if (stepSizeInitializationMethod == StepSizeInitializationMethod.CONSTANT) {
@@ -67,7 +67,7 @@ public abstract class IterativeLineSearch implements LineSearch {
                                   RealVector currentDirection,
                                   RealVector previousPoint,
                                   RealVector previousDirection) {
-        double objectiveValueAtCurrentPoint = objectiveFunction.computeValue(currentPoint);
+        double objectiveValueAtCurrentPoint = objective.computeValue(currentPoint);
 
         switch (stepSizeInitializationMethod) {
             case UNIT:
@@ -87,8 +87,8 @@ public abstract class IterativeLineSearch implements LineSearch {
                 if (previousDirection != null) {
                     currentStepSize = StepSizeInitialization.computeByQuadraticInterpolation(
                             objectiveValueAtCurrentPoint,
-                            objectiveFunction.computeValue(previousPoint),
-                            objectiveFunction.computeGradient(previousPoint),
+                            objective.computeValue(previousPoint),
+                            objective.computeGradient(previousPoint),
                             previousDirection
                     );
                 } else {
@@ -99,8 +99,8 @@ public abstract class IterativeLineSearch implements LineSearch {
                 if (previousDirection != null) {
                     currentStepSize = StepSizeInitialization.computeByModifiedQuadraticInterpolation(
                             objectiveValueAtCurrentPoint,
-                            objectiveFunction.computeValue(previousPoint),
-                            objectiveFunction.computeGradient(previousPoint),
+                            objective.computeValue(previousPoint),
+                            objective.computeGradient(previousPoint),
                             previousDirection
                     );
                 } else {
@@ -121,8 +121,8 @@ public abstract class IterativeLineSearch implements LineSearch {
                                      RealVector previousPoint,
                                      RealVector previousDirection,
                                      double previousStepSize) {
-        double objectiveValueAtCurrentPoint = objectiveFunction.computeValue(currentPoint);
-        RealVector objectiveGradientAtCurrentPoint = objectiveFunction.computeGradient(currentPoint);
+        double objectiveValueAtCurrentPoint = objective.computeValue(currentPoint);
+        RealVector objectiveGradientAtCurrentPoint = objective.computeGradient(currentPoint);
 
         switch (stepSizeInitializationMethod) {
             case UNIT:
@@ -140,7 +140,7 @@ public abstract class IterativeLineSearch implements LineSearch {
                     currentStepSize = StepSizeInitialization.computeByConservingFirstOrderChange(
                             objectiveGradientAtCurrentPoint,
                             currentDirection,
-                            objectiveFunction.computeGradient(previousPoint),
+                            objective.computeGradient(previousPoint),
                             previousDirection,
                             previousStepSize
                     );
@@ -152,8 +152,8 @@ public abstract class IterativeLineSearch implements LineSearch {
                 if (previousDirection != null) {
                     currentStepSize = StepSizeInitialization.computeByQuadraticInterpolation(
                             objectiveValueAtCurrentPoint,
-                            objectiveFunction.computeValue(previousPoint),
-                            objectiveFunction.computeGradient(previousPoint),
+                            objective.computeValue(previousPoint),
+                            objective.computeGradient(previousPoint),
                             previousDirection
                     );
                 } else {
@@ -166,8 +166,8 @@ public abstract class IterativeLineSearch implements LineSearch {
                 if (previousDirection != null) {
                     currentStepSize = StepSizeInitialization.computeByModifiedQuadraticInterpolation(
                             objectiveValueAtCurrentPoint,
-                            objectiveFunction.computeValue(previousPoint),
-                            objectiveFunction.computeGradient(previousPoint),
+                            objective.computeValue(previousPoint),
+                            objective.computeGradient(previousPoint),
                             previousDirection
                     );
                 } else {
