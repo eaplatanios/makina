@@ -51,7 +51,7 @@ public class BacktrackingLineSearch extends IterativeLineSearch {
      * @return
      */
     public void performLineSearch(RealVector currentPoint,
-                                    RealVector currentDirection) {
+                                  RealVector currentDirection) {
         double objectiveValueAtCurrentPoint = objectiveFunction.computeValue(currentPoint);
         RealVector objectiveGradientAtCurrentPoint = objectiveFunction.computeGradient(currentPoint);
 

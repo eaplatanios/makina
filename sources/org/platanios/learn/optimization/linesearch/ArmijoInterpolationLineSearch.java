@@ -8,7 +8,9 @@ import org.platanios.learn.optimization.function.Function;
  * @author Emmanouil Antonios Platanios
  */
 public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
-    private final double c;
+    private final double MINIMUM_STEP_SIZE_CHANGE_THRESHOLD = 1e-3;
+    private final double MINIMUM_STEP_SIZE_RATIO_THRESHOLD = 1e-1;
+    private final double C;
 
     private double[] mostRecentStepSizes; // [0] is the previous one and [1] is the one before that one
 
@@ -17,18 +19,18 @@ public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
                                          double c) {
         super(objectiveFunction, stepSizeInitializationMethod);
         Preconditions.checkArgument(c > 0 && c < 1);
-        this.c = c;
+        this.C = c;
         mostRecentStepSizes = new double[2];
     }
 
     public ArmijoInterpolationLineSearch(Function objectiveFunction,
                                          StepSizeInitializationMethod stepSizeInitializationMethod,
-                                         double c,
+                                         double C,
                                          double initialStepSize) {
         super(objectiveFunction, stepSizeInitializationMethod, initialStepSize);
-        Preconditions.checkArgument(c > 0 && c < 1);
+        Preconditions.checkArgument(C > 0 && C < 1);
         Preconditions.checkArgument(initialStepSize > 0);
-        this.c = c;
+        this.C = C;
         mostRecentStepSizes = new double[2];
     }
 
@@ -39,22 +41,23 @@ public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
         double dotProductOfObjectiveGradientAndDirection = objectiveGradientAtCurrentPoint.dotProduct(currentDirection);
 
         mostRecentStepSizes[0] = currentStepSize;
-        int iterationNumber = 0;
+        boolean firstIteration = true;
 
         while (!LineSearchConditions.checkArmijoCondition(objectiveFunction,
                 currentPoint,
                 currentDirection,
                 mostRecentStepSizes[0],
-                c,
+                C,
                 objectiveValueAtCurrentPoint,
                 objectiveGradientAtCurrentPoint)) {
-            if (iterationNumber == 0) {
+            if (firstIteration) {
                 performQuadraticInterpolation(
                         currentPoint,
                         currentDirection,
                         objectiveValueAtCurrentPoint,
                         dotProductOfObjectiveGradientAndDirection
                 );
+                firstIteration = false;
             } else {
                 performCubicInterpolation(
                         currentPoint,
@@ -63,10 +66,6 @@ public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
                         dotProductOfObjectiveGradientAndDirection
                 );
             }
-            iterationNumber++;
-            if (iterationNumber >= 10) {
-                break;
-            }
         }
 
         currentStepSize = mostRecentStepSizes[0];
@@ -74,48 +73,43 @@ public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
 
     private void performQuadraticInterpolation(RealVector currentPoint,
                                                RealVector currentDirection,
-                                               double objectiveValueAtCurrentPoint,
-                                               double dotProductOfObjectiveGradientAndDirection) {
-        RealVector pointWithA0 = currentPoint.add(currentDirection.mapMultiply(mostRecentStepSizes[0]));
-        double phiA0 = objectiveFunction.computeValue(pointWithA0);
+                                               double phi0,
+                                               double phiPrime0) {
+        double a0 = mostRecentStepSizes[0];
+        double phiA0 = objectiveFunction.computeValue(currentPoint.add(currentDirection.mapMultiply(a0)));
         mostRecentStepSizes[1] = mostRecentStepSizes[0];
-        mostRecentStepSizes[0] = - dotProductOfObjectiveGradientAndDirection
-                * Math.pow(mostRecentStepSizes[1], 2)
-                / (2 * (phiA0
-                    - objectiveValueAtCurrentPoint
-                    - mostRecentStepSizes[1] * dotProductOfObjectiveGradientAndDirection));
+        mostRecentStepSizes[0] = - phiPrime0 * Math.pow(a0, 2) / (2 * (phiA0 - phi0 - a0 * phiPrime0));
+
+        // Ensure that we make reasonable progress and that the final step size is not too small
+        if (Math.abs(mostRecentStepSizes[0] - mostRecentStepSizes[1]) <= MINIMUM_STEP_SIZE_CHANGE_THRESHOLD
+                || mostRecentStepSizes[0] / mostRecentStepSizes[1] <= MINIMUM_STEP_SIZE_RATIO_THRESHOLD) {
+            mostRecentStepSizes[0] = mostRecentStepSizes[1] / 2;
+        }
      }
 
     private void performCubicInterpolation(RealVector currentPoint,
                                            RealVector currentDirection,
-                                           double objectiveValueAtCurrentPoint,
-                                           double dotProductOfObjectiveGradientAndDirection) {
+                                           double phi0,
+                                           double phiPrime0) {
         double previousStepSize = mostRecentStepSizes[0];
         double a0 = mostRecentStepSizes[1];
         double a1 = mostRecentStepSizes[0];
-        double a0_squared = Math.pow(a0, 2);
-        double a1_squared = Math.pow(a1, 2);
-        double a0_cubed = Math.pow(a0, 3);
-        double a1_cubed = Math.pow(a1, 3);
-        RealVector pointWithA0 = currentPoint.add(currentDirection.mapMultiply(a0));
-        RealVector pointWithA1 = currentPoint.add(currentDirection.mapMultiply(a1));
-        double phiA0 = objectiveFunction.computeValue(pointWithA0);
-        double phiA1 = objectiveFunction.computeValue(pointWithA1);
+        double a0Sq = Math.pow(a0, 2);
+        double a1Sq = Math.pow(a1, 2);
+        double a0Cub = Math.pow(a0, 3);
+        double a1Cub = Math.pow(a1, 3);
+        double phiA0 = objectiveFunction.computeValue(currentPoint.add(currentDirection.mapMultiply(a0)));
+        double phiA1 = objectiveFunction.computeValue(currentPoint.add(currentDirection.mapMultiply(a1)));
+        double denominator = a0Sq * a1Sq * (a1 - a0);
+        double a = (a0Sq * (phiA1 - phi0 - a1 * phiPrime0) - a1Sq * (phiA0 - phi0 - a0 * phiPrime0)) / denominator;
+        double b = (- a0Cub * (phiA1 - phi0 - a1 * phiPrime0) + a1Cub * (phiA0 - phi0 - a0 * phiPrime0)) / denominator;
 
-        double denominator = a0_squared * a1_squared * (a1 - a0);
-        double a = (a0_squared * (phiA1 - objectiveValueAtCurrentPoint - a1 * dotProductOfObjectiveGradientAndDirection)
-                - a1_squared * (phiA0 - objectiveValueAtCurrentPoint - a0 * dotProductOfObjectiveGradientAndDirection))
-                / denominator;
-        double b = (- a0_cubed * (phiA1 - objectiveValueAtCurrentPoint - a1 * dotProductOfObjectiveGradientAndDirection)
-                + a1_cubed * (phiA0 - objectiveValueAtCurrentPoint - a0 * dotProductOfObjectiveGradientAndDirection))
-                / denominator;
-
-        mostRecentStepSizes[0] = - (b - Math.sqrt(Math.pow(b, 2) - 3 * a * dotProductOfObjectiveGradientAndDirection))
-                / (3 * a);
+        mostRecentStepSizes[0] = - (b - Math.sqrt(Math.pow(b, 2) - 3 * a * phiPrime0)) / (3 * a);
         mostRecentStepSizes[1] = previousStepSize;
 
-        if (Math.abs(mostRecentStepSizes[0] - mostRecentStepSizes[1]) <= 1e-3
-                || mostRecentStepSizes[0] / mostRecentStepSizes[1] <= 1e-1) {
+        // Ensure that we make reasonable progress and that the final step size is not too small
+        if (Math.abs(mostRecentStepSizes[0] - mostRecentStepSizes[1]) <= MINIMUM_STEP_SIZE_CHANGE_THRESHOLD
+                || mostRecentStepSizes[0] / mostRecentStepSizes[1] <= MINIMUM_STEP_SIZE_RATIO_THRESHOLD) {
             mostRecentStepSizes[0] = mostRecentStepSizes[1] / 2;
         }
     }
