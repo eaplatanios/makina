@@ -58,9 +58,7 @@ public abstract class IterativeLineSearch implements LineSearch {
                         "to compute the initial step size using the selected method!");
         }
 
-        performLineSearch(currentPoint, currentDirection);
-
-        return currentStepSize;
+        return performLineSearch(currentPoint, currentDirection);
     }
 
     public double computeStepSize(RealVector currentPoint,
@@ -111,9 +109,7 @@ public abstract class IterativeLineSearch implements LineSearch {
                 throw new NotImplementedException();
         }
 
-        performLineSearch(currentPoint, currentDirection);
-
-        return currentStepSize;
+        return performLineSearch(currentPoint, currentDirection);
     }
 
     public double computeStepSize(RealVector currentPoint,
@@ -178,10 +174,12 @@ public abstract class IterativeLineSearch implements LineSearch {
                 throw new NotImplementedException();
         }
 
-        performLineSearch(currentPoint, currentDirection);
-
-        return currentStepSize;
+        return performLineSearch(currentPoint, currentDirection);
     }
 
-    public abstract void performLineSearch(RealVector currentPoint, RealVector direction);
+    public abstract double performLineSearch(RealVector currentPoint, RealVector direction);
+
+    public StepSizeInitializationMethod getStepSizeInitializationMethod() {
+        return stepSizeInitializationMethod;
+    }
 }

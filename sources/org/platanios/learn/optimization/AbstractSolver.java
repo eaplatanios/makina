@@ -13,9 +13,9 @@ import java.text.DecimalFormat;
  */
 public abstract class AbstractSolver implements Solver {
     final Function objective;
-    static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.##E0");;
+    static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.##E0");
 
-    /** Default value: If quadratic or linear function it is ExactLineSearch, otherwise it is BacktrackingLineSearch
+    /** Default value: If quadratic or linear function it is ExactLineSearch, otherwise it is StrongWolfeLineSearch
      * with CONSERVE_FIRST_ORDER_CHANGE for the step size initialization method. */
     private LineSearch lineSearch;
 
@@ -24,7 +24,6 @@ public abstract class AbstractSolver implements Solver {
     RealVector previousDirection;
     double currentStepSize;
     double previousStepSize;
-    StepSizeInitializationMethod stepSizeInitializationMethod;
     RealVector currentPoint;
     RealVector previousPoint;
     double currentObjectiveValue;
@@ -47,8 +46,13 @@ public abstract class AbstractSolver implements Solver {
         if (objective.getClass() == QuadraticFunction.class) {
             this.lineSearch = new ExactLineSearch((QuadraticFunction) objective);
         } else {
-            stepSizeInitializationMethod = StepSizeInitializationMethod.CONSERVE_FIRST_ORDER_CHANGE;
-            this.lineSearch = new ArmijoInterpolationLineSearch(objective, stepSizeInitializationMethod, 1e-4);
+            this.lineSearch = new StrongWolfeLineSearch(
+                    objective,
+                    StepSizeInitializationMethod.CONSERVE_FIRST_ORDER_CHANGE,
+                    1e-4,
+                    0.9,
+                    10
+            );
         }
     }
 
@@ -58,8 +62,9 @@ public abstract class AbstractSolver implements Solver {
             return;
         }
 
-        switch (stepSizeInitializationMethod) {
-            case UNIT: case CONSTANT:
+        switch (((IterativeLineSearch) this.lineSearch).getStepSizeInitializationMethod()) {
+            case UNIT:
+            case CONSTANT:
                 currentStepSize = lineSearch.computeStepSize(currentPoint, currentDirection);
                 break;
             case CONSERVE_FIRST_ORDER_CHANGE:

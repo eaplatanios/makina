@@ -35,8 +35,8 @@ public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
         mostRecentStepSizes = new double[2];
     }
 
-    public void performLineSearch(RealVector currentPoint,
-                                   RealVector currentDirection) {
+    public double performLineSearch(RealVector currentPoint,
+                                    RealVector currentDirection) {
         double objectiveValueAtCurrentPoint = objective.computeValue(currentPoint);
         RealVector objectiveGradientAtCurrentPoint = objective.computeGradient(currentPoint);
         double dotProductOfObjectiveGradientAndDirection = objectiveGradientAtCurrentPoint.dotProduct(currentDirection);
@@ -69,7 +69,7 @@ public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
             }
         }
 
-        currentStepSize = mostRecentStepSizes[0];
+        return mostRecentStepSizes[0];
     }
 
     private void performQuadraticInterpolation(RealVector currentPoint,
@@ -78,6 +78,7 @@ public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
                                                double phiPrime0) {
         double a0 = mostRecentStepSizes[0];
         double phiA0 = objective.computeValue(currentPoint.add(currentDirection.mapMultiply(a0)));
+
         mostRecentStepSizes[1] = mostRecentStepSizes[0];
         mostRecentStepSizes[0] = - phiPrime0 * Math.pow(a0, 2) / (2 * (phiA0 - phi0 - a0 * phiPrime0));
 

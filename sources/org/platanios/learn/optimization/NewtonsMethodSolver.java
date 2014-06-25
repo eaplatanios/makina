@@ -5,6 +5,8 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.platanios.learn.optimization.function.Function;
 import org.platanios.learn.optimization.linesearch.LineSearch;
+import org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod;
+import org.platanios.learn.optimization.linesearch.StrongWolfeLineSearch;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -13,6 +15,15 @@ public class NewtonsMethodSolver extends AbstractSolver {
     public NewtonsMethodSolver(Function objective,
                                double[] initialPoint) {
         super(objective, initialPoint);
+        setLineSearch(
+                new StrongWolfeLineSearch(
+                        objective,
+                        StepSizeInitializationMethod.CONSERVE_FIRST_ORDER_CHANGE,
+                        1e-4,
+                        0.9,
+                        10
+                )
+        );
     }
 
     public NewtonsMethodSolver(Function objective,
