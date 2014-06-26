@@ -110,7 +110,7 @@ public class BacktrackingLineSearch extends IterativeLineSearch {
         while (!LineSearchConditions.checkArmijoCondition(objective,
                                                           point,
                                                           direction,
-                                                          initialStepSize,
+                                                          currentStepSize,
                                                           c,
                                                           objectiveValueAtCurrentPoint,
                                                           objectiveGradientAtCurrentPoint)) {
