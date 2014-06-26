@@ -11,7 +11,7 @@ import org.platanios.learn.optimization.linesearch.StrongWolfeLineSearch;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class NewtonsMethodSolver extends AbstractSolver {
+public class NewtonsMethodSolver extends AbstractLineSearchSolver {
     public NewtonsMethodSolver(Function objective,
                                double[] initialPoint) {
         super(objective, initialPoint);

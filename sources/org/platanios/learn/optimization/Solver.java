@@ -2,13 +2,18 @@ package org.platanios.learn.optimization;
 
 import org.apache.commons.math3.linear.RealVector;
 
+import java.text.DecimalFormat;
+
 /**
  * @author Emmanouil Antonios Platanios
  */
 public interface Solver {
-    public void updateDirection();
-    public void updateStepSize();
-    public void updatePoint();
-    public boolean checkForConvergence();
+    static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.##E0");
+
+    public boolean checkTerminationConditions();
+    public void iterationUpdate();
+    public void printHeader();
+    public void printIteration();
+    public void printTerminationMessage();
     public RealVector solve();
 }
