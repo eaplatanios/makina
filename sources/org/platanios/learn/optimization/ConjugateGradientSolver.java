@@ -16,7 +16,6 @@ import org.platanios.learn.optimization.function.QuadraticFunction;
 public class ConjugateGradientSolver extends AbstractSolver {
     private final QuadraticFunction objective;
     private final RealMatrix A;
-    private final RealVector b;
 
     private RealVector previousPoint;
     private RealVector currentResidual;
@@ -27,17 +26,10 @@ public class ConjugateGradientSolver extends AbstractSolver {
 
     private double residualTolerance = 1e-10;
 
-    // The following variables are used locally within iteration but are initialized here in order to make the code more
-    // clear.
-    private double stepSize;
-    private double previousResidualNormSquared;
-    private double residualNormsRatio;
-
     public ConjugateGradientSolver(QuadraticFunction objective,
                                    double[] initialPoint) {
         this.objective = objective;
         A = objective.getA();
-        b = objective.getB();
         currentPoint = new ArrayRealVector(initialPoint);
         currentResidual = objective.computeGradient(currentPoint);
         currentDirection = currentResidual.mapMultiply(-1);
@@ -53,11 +45,11 @@ public class ConjugateGradientSolver extends AbstractSolver {
         previousPoint = currentPoint;
         previousResidual = currentResidual;
         previousDirection = currentDirection;
-        previousResidualNormSquared = previousResidual.dotProduct(previousResidual);
-        stepSize = previousResidualNormSquared / A.preMultiply(previousDirection).dotProduct(previousDirection);
+        double previousResidualNormSquared = previousResidual.dotProduct(previousResidual);
+        double stepSize = previousResidualNormSquared / A.preMultiply(previousDirection).dotProduct(previousDirection);
         currentPoint = previousPoint.add(previousDirection.mapMultiply(stepSize));
         currentResidual = previousResidual.add(A.operate(previousDirection).mapMultiply(stepSize));
-        residualNormsRatio = currentResidual.dotProduct(currentResidual) / previousResidualNormSquared;
+        double residualNormsRatio = currentResidual.dotProduct(currentResidual) / previousResidualNormSquared;
         currentDirection = currentResidual.mapMultiply(-1).add(previousDirection.mapMultiply(residualNormsRatio));
     }
 
