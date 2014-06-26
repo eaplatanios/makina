@@ -4,33 +4,33 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 
 /**
- * A quadratic function of the form f(x) = x'Qx + b'x.
+ * A quadratic function of the form f(x) = 1/2 x'Ax - b'x.
  *
  * Created by Anthony on 6/24/14.
  */
 public class QuadraticFunction implements Function {
-    private final RealMatrix Q;
+    private final RealMatrix A;
     private final RealVector b;
 
-    public QuadraticFunction(RealMatrix Q, RealVector b) {
-        this.Q = Q;
+    public QuadraticFunction(RealMatrix A, RealVector b) {
+        this.A = A;
         this.b = b;
     }
 
     public double computeValue(RealVector x) {
-        return Q.preMultiply(x).dotProduct(x) + b.dotProduct(x);
+        return 0.5 * A.preMultiply(x).dotProduct(x) - b.dotProduct(x);
     }
 
     public RealVector computeGradient(RealVector x) {
-        return Q.operate(x).mapMultiply(2).add(b);
+        return A.operate(x).subtract(b);
     }
 
     public RealMatrix computeHessian(RealVector x) {
-        return Q.scalarMultiply(2);
+        return A;
     }
 
-    public RealMatrix getQ() {
-        return Q;
+    public RealMatrix getA() {
+        return A;
     }
 
     public RealVector getB() {
