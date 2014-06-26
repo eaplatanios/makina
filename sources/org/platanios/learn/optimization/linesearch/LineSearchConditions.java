@@ -5,133 +5,146 @@ import org.apache.commons.math3.linear.RealVector;
 import org.platanios.learn.optimization.function.Function;
 
 /**
+ * A collection of static methods that check whether a selected step size value satisfies certain conditions for the
+ * given optimization problem.
+ *
  * @author Emmanouil Antonios Platanios
  */
 public class LineSearchConditions {
     /**
      * Checks whether the Armijo condition (also known as the sufficient decrease condition) is satisfied for a given
-     * step size and descent direction. The Armijo condition makes sure that the reduction in the objective function
-     * value is proportional to both the step size and the directional derivative. A typical value for the
-     * proportionality constant, {@code c}, is 1e-4.
+     * objective function, point, direction and step size. The Armijo condition makes sure that the reduction in the
+     * objective function value is proportional to both the step size and the directional derivative. A typical value
+     * for the proportionality constant, {@code c}, is 1e-4.
      *
-     * @param   objectiveFunction
-     * @param   currentPoint
-     * @param   direction
-     * @param   stepSize
-     * @param   c
-     * @param   objectiveFunctionValueAtCurrentPoint
-     * @param   objectiveFunctionGradientAtCurrentPoint
-     * @return
+     * @param   objective                       The objective function instance.
+     * @param   point                           The point at which we check whether the Armijo condition is satisfied.
+     * @param   direction                       The direction for which we check whether the Armijo condition is
+     *                                          satisfied.
+     * @param   stepSize                        The value of the step size for which we check whether the Armijo
+     *                                          condition is satisfied.
+     * @param   c                               The proportionality constant used for the Armijo condition.
+     * @param   objectiveValueAtCurrentPoint    The value of the objective function at the current point.
+     * @param   objectiveGradientAtCurrentPoint The gradient of the objective function evaluated at the current point.
+     * @return                                  A boolean value indicating whether the Armijo condition is satisfied for
+     *                                          the given objective, point, direction and step size.
      */
-    public static boolean checkArmijoCondition(Function objectiveFunction,
-                                               RealVector currentPoint,
+    public static boolean checkArmijoCondition(Function objective,
+                                               RealVector point,
                                                RealVector direction,
                                                double stepSize,
                                                double c,
-                                               double objectiveFunctionValueAtCurrentPoint,
-                                               RealVector objectiveFunctionGradientAtCurrentPoint) {
+                                               double objectiveValueAtCurrentPoint,
+                                               RealVector objectiveGradientAtCurrentPoint) {
         Preconditions.checkArgument(c > 0 && c < 1);
 
-        double newObjectiveFunctionValue =
-                objectiveFunction.computeValue(direction.mapMultiply(stepSize).add(currentPoint));
-        double upperBound = objectiveFunctionValueAtCurrentPoint
-                + c * stepSize * objectiveFunctionGradientAtCurrentPoint.dotProduct(direction);
+        double newObjectiveValue = objective.computeValue(direction.mapMultiply(stepSize).add(point));
 
-        return newObjectiveFunctionValue <= upperBound;
+        return newObjectiveValue <=
+                objectiveValueAtCurrentPoint + c * stepSize * objectiveGradientAtCurrentPoint.dotProduct(direction);
     }
 
     /**
-     * Checks whether the Wolfe conditions are satisfied for a given step size, direction and objective function. The
-     * Wolfe conditions consist of the Armijo condition (also known as the sufficient decrease condition) and the
+     * Checks whether the Wolfe conditions are satisfied for a given objective function, point, direction and step size.
+     * The Wolfe conditions consist of the Armijo condition (also known as the sufficient decrease condition) and the
      * curvature condition. The Armijo condition makes sure that the reduction in the objective function value is
      * proportional to both the step size and the directional derivative. This condition is satisfied for all
      * sufficiently small values of the step size and so, in order to ensure that the optimization algorithm makes
      * sufficient progress, we also check for the curvature condition. Typical values for the proportionality constants
-     * are: for c1, 1e-4, and for c2, 0.9 when the search direction is chosen by a Newton or quasi-Newton method and
-     * 0.1 when the search direction is obtained from a nonlinear conjugate gradient method.
+     * are: for {@code c1}, 1e-4, and for {@code c2}, 0.9 when the search direction is chosen by a Newton or
+     * quasi-Newton method and 0.1 when the search direction is obtained from a nonlinear conjugate gradient method.
      *
-     * @param   objectiveFunction
-     * @param   currentPoint
-     * @param   direction
-     * @param   stepSize
-     * @param   c1
-     * @param   c2
-     * @param   strong              The different with the curvature condition of the simple Wolfe conditions is that in
-     *                              this case we exclude points from the search that are far from the exact line search
-     *                              solution.
-     * @return
+     * @param   objective                       The objective function instance.
+     * @param   point                           The point at which we check whether the Wolfe conditions are satisfied.
+     * @param   direction                       The direction for which we check whether the Wolfe conditions are
+     *                                          satisfied.
+     * @param   stepSize                        The value of the step size for which we check whether the Wolfe
+     *                                          conditions are satisfied.
+     * @param   c1                              The proportionality constant used for the first of the two Wolfe
+     *                                          conditions (that is, the Armijo condition).
+     * @param   c2                              The proportionality constant used for the second of the two Wolfe
+     *                                          conditions (that is, the curvature condition).
+     * @param   strong                          A boolean value indicating whether or not to check for the strong Wolfe
+     *                                          conditions. The only difference is actually on the curvature condition
+     *                                          and, when we use the strong Wolfe conditions instead of the simple Wolfe
+     *                                          conditions, we effectively exclude points from the search that are far
+     *                                          from the exact line search solution.
+     * @param   objectiveValueAtCurrentPoint    The value of the objective function at the current point.
+     * @param   objectiveGradientAtCurrentPoint The gradient of the objective function evaluated at the current point.
+     * @return                                  A boolean value ind objective, point, direction and step size.
      */
-    public static boolean checkWolfeConditions(Function objectiveFunction,
-                                               RealVector currentPoint,
+    public static boolean checkWolfeConditions(Function objective,
+                                               RealVector point,
                                                RealVector direction,
                                                double stepSize,
                                                double c1,
                                                double c2,
-                                               boolean strong) {
+                                               boolean strong,
+                                               double objectiveValueAtCurrentPoint,
+                                               RealVector objectiveGradientAtCurrentPoint) {
         Preconditions.checkArgument(c1 > 0 && c1 < 1);
         Preconditions.checkArgument(c2 > c1 && c2 < 1);
 
-        double objectiveFunctionValueAtCurrentPoint = objectiveFunction.computeValue(currentPoint);
-        RealVector objectiveFunctionGradientAtCurrentPoint = objectiveFunction.computeGradient(currentPoint);
-
         // Check the Armijo condition
         boolean armijoConditionSatisfied = checkArmijoCondition(
-                objectiveFunction,
-                currentPoint,
+                objective,
+                point,
                 direction,
                 stepSize,
                 c1,
-                objectiveFunctionValueAtCurrentPoint,
-                objectiveFunctionGradientAtCurrentPoint
+                objectiveValueAtCurrentPoint,
+                objectiveGradientAtCurrentPoint
         );
 
         // Check the curvature condition
-        double curvatureConditionTerm1 = objectiveFunction.computeGradient(
-                currentPoint.add(direction.mapMultiply(stepSize))
-        ).dotProduct(direction);
-        double curvatureConditionTerm2 = objectiveFunctionGradientAtCurrentPoint.dotProduct(direction);
+        double leftTerm = objective.computeGradient(point.add(direction.mapMultiply(stepSize))).dotProduct(direction);
+        double rightTerm = objectiveGradientAtCurrentPoint.dotProduct(direction);
         boolean curvatureConditionSatisfied;
         if (strong) {
-            curvatureConditionSatisfied = Math.abs(curvatureConditionTerm1) >= c2 * Math.abs(curvatureConditionTerm2);
+            curvatureConditionSatisfied = Math.abs(leftTerm) >= c2 * Math.abs(rightTerm);
         } else {
-            curvatureConditionSatisfied = curvatureConditionTerm1 >= c2 * curvatureConditionTerm2;
+            curvatureConditionSatisfied = leftTerm >= c2 * rightTerm;
         }
 
         return armijoConditionSatisfied && curvatureConditionSatisfied;
     }
 
     /**
-     * Checks whether the Goldstein conditions are satisfied for a given step size, direction and objective function.
-     * The Goldstein conditions are similar to the Wolfe conditions and they can also be stated as a pair of
+     * Checks whether the Goldstein conditions are satisfied for a given objective function, point, direction and step
+     * size. The Goldstein conditions are similar to the Wolfe conditions and they can also be stated as a pair of
      * inequalities: one inequality corresponding to the Armijo condition (also known as the sufficient decrease
-     * condition) and another inequality used to bound step size from below. However, that second inequality in the case
-     * of the Goldstein conditions might exclude all points from the search that are solutions to the exact line search
-     * problem. The Goldstein conditions are often used in Newton-type methods but are not well suited for quasi-Newton
-     * methods that maintain a positive definite Hessian approximation.
+     * condition) and another inequality used to bound the step size from below. However, that second inequality in the
+     * case of the Goldstein conditions might exclude all points from the search that are solutions to the exact line
+     * search problem. The Goldstein conditions are often used in Newton-type methods but are not well suited for
+     * quasi-Newton methods that maintain a positive definite Hessian approximation.
      *
-     * @param   objectiveFunction
-     * @param   currentPoint
-     * @param   direction
-     * @param   stepSize
-     * @param   c
-     * @return
+     * @param   objective                       The objective function instance.
+     * @param   point                           The point at which we check whether the Goldstein conditions are
+     *                                          satisfied.
+     * @param   direction                       The direction for which we check whether the Goldstein conditions are
+     *                                          satisfied.
+     * @param   stepSize                        The value of the step size for which we check whether the Goldstein
+     *                                          conditions are satisfied.
+     * @param   c                               The proportionality constant used for the Goldstein conditions.
+     * @param   objectiveValueAtCurrentPoint    The value of the objective function at the current point.
+     * @param   objectiveGradientAtCurrentPoint The gradient of the objective function evaluated at the current point.
+     * @return                                  A boolean value indicating whether the Goldstein conditions are
+     *                                          satisfied for the given objective, point, direction and step size.
      */
-    public static boolean checkGoldsteinConditions(Function objectiveFunction,
-                                                   RealVector currentPoint,
+    public static boolean checkGoldsteinConditions(Function objective,
+                                                   RealVector point,
                                                    RealVector direction,
                                                    double stepSize,
-                                                   double c) {
+                                                   double c,
+                                                   double objectiveValueAtCurrentPoint,
+                                                   RealVector objectiveGradientAtCurrentPoint) {
         Preconditions.checkArgument(c > 0 && c < 0.5);
 
-        double objectiveFunctionValueAtCurrentPoint = objectiveFunction.computeValue(currentPoint);
-        RealVector objectiveFunctionGradientAtCurrentPoint = objectiveFunction.computeGradient(currentPoint);
+        double newObjectiveValue = objective.computeValue(point.add(direction.mapMultiply(stepSize)));
+        double scaledSearchDirection = stepSize * objectiveGradientAtCurrentPoint.dotProduct(direction);
+        double lowerBound = objectiveValueAtCurrentPoint + (1 - c) * scaledSearchDirection;
+        double upperBound = objectiveValueAtCurrentPoint + c * scaledSearchDirection;
 
-        double newObjectiveFunctionValue =
-                objectiveFunction.computeValue(currentPoint.add(direction.mapMultiply(stepSize)));
-        double scaledSearchDirection = stepSize * objectiveFunctionGradientAtCurrentPoint.dotProduct(direction);
-        double lowerBound = objectiveFunctionValueAtCurrentPoint + (1 - c) * scaledSearchDirection;
-        double upperBound = objectiveFunctionValueAtCurrentPoint + c * scaledSearchDirection;
-
-        return lowerBound <= newObjectiveFunctionValue && newObjectiveFunctionValue <= upperBound;
+        return lowerBound <= newObjectiveValue && newObjectiveValue <= upperBound;
     }
 }
