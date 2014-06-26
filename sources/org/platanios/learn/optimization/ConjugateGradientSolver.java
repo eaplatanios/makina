@@ -6,19 +6,32 @@ import org.apache.commons.math3.linear.RealVector;
 import org.platanios.learn.optimization.function.QuadraticFunction;
 
 /**
+ * Matrix A in this case needs to be symmetric and positive definite. The biconjugate gradient does not have that
+ * requirement.
+ *
+ * TODO: Implement the preconditioned conjugate gradient method and a few preconditioning strategies.
+ *
  * @author Emmanouil Antonios Platanios
  */
 public class ConjugateGradientSolver extends AbstractSolver {
-    final QuadraticFunction objective;
-    final RealMatrix A;
-    final RealVector b;
+    private final QuadraticFunction objective;
+    private final RealMatrix A;
+    private final RealVector b;
 
-    RealVector previousPoint;
-    RealVector currentResidual;
-    RealVector previousResidual;
-    RealVector currentDirection;
-    RealVector previousDirection;
-    double currentObjectiveValue;
+    private RealVector previousPoint;
+    private RealVector currentResidual;
+    private RealVector previousResidual;
+    private RealVector currentDirection;
+    private RealVector previousDirection;
+    private double currentObjectiveValue;
+
+    private double residualTolerance = 1e-10;
+
+    // The following variables are used locally within iteration but are initialized here in order to make the code more
+    // clear.
+    private double stepSize;
+    private double previousResidualNormSquared;
+    private double residualNormsRatio;
 
     public ConjugateGradientSolver(QuadraticFunction objective,
                                    double[] initialPoint) {
@@ -26,31 +39,26 @@ public class ConjugateGradientSolver extends AbstractSolver {
         A = objective.getA();
         b = objective.getB();
         currentPoint = new ArrayRealVector(initialPoint);
-        currentResidual = computeResidual(currentPoint);
+        currentResidual = objective.computeGradient(currentPoint);
         currentDirection = currentResidual.mapMultiply(-1);
         currentObjectiveValue = objective.computeValue(currentPoint);
         currentIteration = 0;
     }
 
-    private RealVector computeResidual(RealVector point) {
-        return A.operate(point).subtract(b);
-    }
-
     public boolean checkTerminationConditions() {
-        return currentResidual.getNorm() == 0;
+        return currentResidual.getNorm() <= residualTolerance;
     }
 
     public void iterationUpdate() {
         previousPoint = currentPoint;
         previousResidual = currentResidual;
         previousDirection = currentDirection;
-        double previousResidualNormSquared = previousResidual.dotProduct(previousResidual);
-        double stepSize = previousResidualNormSquared / A.preMultiply(previousDirection).dotProduct(previousDirection);
-        currentPoint = previousPoint.add(currentDirection.mapMultiply(stepSize));
+        previousResidualNormSquared = previousResidual.dotProduct(previousResidual);
+        stepSize = previousResidualNormSquared / A.preMultiply(previousDirection).dotProduct(previousDirection);
+        currentPoint = previousPoint.add(previousDirection.mapMultiply(stepSize));
         currentResidual = previousResidual.add(A.operate(previousDirection).mapMultiply(stepSize));
-        double residualNormsRatio = currentResidual.dotProduct(currentResidual) / previousResidualNormSquared;
+        residualNormsRatio = currentResidual.dotProduct(currentResidual) / previousResidualNormSquared;
         currentDirection = currentResidual.mapMultiply(-1).add(previousDirection.mapMultiply(residualNormsRatio));
-        currentObjectiveValue = objective.computeValue(currentPoint); // TODO: Not necessary to compute the objective function value at each iteration.
     }
 
     public void printHeader() {
@@ -59,10 +67,19 @@ public class ConjugateGradientSolver extends AbstractSolver {
     }
 
     public void printIteration() {
+        currentObjectiveValue = objective.computeValue(currentPoint); // TODO: Not necessary to compute the objective function value at each iteration.
         System.out.format("%d\t\t\t%.10f\t%.5f\n", currentIteration, currentObjectiveValue, currentPoint.getEntry(0));
     }
 
     public void printTerminationMessage() {
         System.out.println("The residual became equal to 0 and thus the solution has been found!");
+    }
+
+    public double getResidualTolerance() {
+        return residualTolerance;
+    }
+
+    public void setResidualTolerance(double residualTolerance) {
+        this.residualTolerance = residualTolerance;
     }
 }

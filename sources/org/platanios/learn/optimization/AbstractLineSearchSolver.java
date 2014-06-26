@@ -23,13 +23,18 @@ public abstract class AbstractLineSearchSolver extends AbstractSolver {
     RealVector previousPoint;
     double currentObjectiveValue;
     double previousObjectiveValue;
-    double pointL2NormChange;
-    double objectiveChange;
-    double pointL2NormChangeTolerance = 1e-10;
-    double objectiveChangeTolerance = 1e-10;
-    boolean pointL2NormConverged = false;
-    boolean gradientConverged = false;
-    boolean objectiveConverged = false;
+
+    private double pointChangeTolerance = 1e-10;
+    private double objectiveChangeTolerance = 1e-10;
+    private double gradientTolerance = 1e-10;
+
+    private double pointChange;
+    private double objectiveChange;
+    private double gradientNorm;
+
+    private boolean pointConverged = false;
+    private boolean gradientConverged = false;
+    private boolean objectiveConverged = false;
 
     public AbstractLineSearchSolver(Function objective,
                                     double[] initialPoint) {
@@ -38,7 +43,7 @@ public abstract class AbstractLineSearchSolver extends AbstractSolver {
         currentObjectiveValue = objective.computeValue(currentPoint);
         currentIteration = 0;
 
-        if (objective.getClass() == QuadraticFunction.class) {
+        if (objective instanceof QuadraticFunction) {
             this.lineSearch = new ExactLineSearch((QuadraticFunction) objective);
         } else {
             this.lineSearch = new StrongWolfeLineSearch(
@@ -52,13 +57,15 @@ public abstract class AbstractLineSearchSolver extends AbstractSolver {
     }
     public boolean checkTerminationConditions() {
         if (currentIteration > 0) {
-            pointL2NormChange = currentPoint.subtract(previousPoint).getNorm();
+            pointChange = currentPoint.subtract(previousPoint).getNorm();
             objectiveChange = Math.abs((previousObjectiveValue - currentObjectiveValue) / previousObjectiveValue);
-            pointL2NormConverged = pointL2NormChange <= pointL2NormChangeTolerance;
-            objectiveConverged = objectiveChange <= objectiveChangeTolerance;
-            gradientConverged = objective.computeGradient(currentPoint).getNorm() == 0.0;
+            gradientNorm = objective.computeGradient(currentPoint).getNorm();
 
-            return pointL2NormConverged || objectiveConverged || gradientConverged;
+            pointConverged = pointChange <= pointChangeTolerance;
+            objectiveConverged = objectiveChange <= objectiveChangeTolerance;
+            gradientConverged = gradientNorm <= gradientTolerance;
+
+            return pointConverged || objectiveConverged || gradientConverged;
         } else {
             return false;
         }
@@ -85,11 +92,11 @@ public abstract class AbstractLineSearchSolver extends AbstractSolver {
     }
 
     public void printTerminationMessage() {
-        if (pointL2NormConverged) {
+        if (pointConverged) {
             System.out.println("The L2 norm of the point change, "
-                                       + DECIMAL_FORMAT.format(pointL2NormChange)
+                                       + DECIMAL_FORMAT.format(pointChange)
                                        + ", was below the convergence threshold of "
-                                       + DECIMAL_FORMAT.format(pointL2NormChangeTolerance)
+                                       + DECIMAL_FORMAT.format(pointChangeTolerance)
                                        + "!\n");
         }
         if (objectiveConverged) {
@@ -100,7 +107,11 @@ public abstract class AbstractLineSearchSolver extends AbstractSolver {
                                        + "!\n");
         }
         if (gradientConverged) {
-            System.out.println("The gradient became 0!\n");
+            System.out.println("The gradient norm became "
+                                       + DECIMAL_FORMAT.format(gradientNorm)
+                                       + ", which is less than the convergence threshold of "
+                                       + DECIMAL_FORMAT.format(gradientTolerance)
+                                       + "!\n");
         }
     }
 
@@ -115,7 +126,35 @@ public abstract class AbstractLineSearchSolver extends AbstractSolver {
     public abstract void updateDirection();
     public abstract void updatePoint();
 
+    public LineSearch getLineSearch() {
+        return lineSearch;
+    }
+
     public void setLineSearch(LineSearch lineSearch) {
         this.lineSearch = lineSearch;
+    }
+
+    public double getPointChangeTolerance() {
+        return pointChangeTolerance;
+    }
+
+    public void setPointChangeTolerance(double pointChangeTolerance) {
+        this.pointChangeTolerance = pointChangeTolerance;
+    }
+
+    public double getObjectiveChangeTolerance() {
+        return objectiveChangeTolerance;
+    }
+
+    public void setObjectiveChangeTolerance(double objectiveChangeTolerance) {
+        this.objectiveChangeTolerance = objectiveChangeTolerance;
+    }
+
+    public double getGradientTolerance() {
+        return gradientTolerance;
+    }
+
+    public void setGradientTolerance(double gradientTolerance) {
+        this.gradientTolerance = gradientTolerance;
     }
 }

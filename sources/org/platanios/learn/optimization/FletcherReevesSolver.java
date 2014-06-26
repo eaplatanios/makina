@@ -13,25 +13,33 @@ import org.platanios.learn.optimization.linesearch.StrongWolfeLineSearch;
  * @author Emmanouil Antonios Platanios
  */
 public class FletcherReevesSolver extends AbstractSolver {
-    final Function objective;
+    private final Function objective;
 
     /** Default value: If quadratic or linear function it is ExactLineSearch, otherwise it is StrongWolfeLineSearch
      * with CONSERVE_FIRST_ORDER_CHANGE for the step size initialization method. */
     private LineSearch lineSearch;
 
-    RealVector previousPoint;
-    RealVector currentGradient;
-    RealVector previousGradient;
-    RealVector currentDirection;
-    RealVector previousDirection;
-    double currentStepSize;
-    double previousStepSize;
-    double currentObjectiveValue;
-    double previousObjectiveValue;
+    private RealVector previousPoint;
+    private RealVector currentGradient;
+    private RealVector previousGradient;
+    private RealVector currentDirection;
+    private RealVector previousDirection;
+    private double currentStepSize;
+    private double previousStepSize;
+    private double currentObjectiveValue;
+    private double previousObjectiveValue;
 
-    private double pointTolerance = 1e-10;
+    private double pointChangeTolerance = 1e-10;
     private double objectiveChangeTolerance = 1e-10;
     private double gradientTolerance = 1e-10;
+
+    private double pointChange;
+    private double objectiveChange;
+    private double gradientNorm;
+
+    private boolean pointConverged = false;
+    private boolean gradientConverged = false;
+    private boolean objectiveConverged = false;
 
     // The following variables are used locally within iteration but are initialized here in order to make the code more
     // clear.
@@ -61,11 +69,13 @@ public class FletcherReevesSolver extends AbstractSolver {
 
     public boolean checkTerminationConditions() {
         if (currentIteration > 0) {
-            double pointChange = currentPoint.subtract(previousPoint).getNorm();
-            double objectiveChange = Math.abs((previousObjectiveValue - currentObjectiveValue) / previousObjectiveValue);
-            boolean pointConverged = pointChange <= pointTolerance;
-            boolean objectiveConverged = objectiveChange <= objectiveChangeTolerance;
-            boolean gradientConverged = currentGradient.getNorm() <= gradientTolerance;
+            pointChange = currentPoint.subtract(previousPoint).getNorm();
+            objectiveChange = Math.abs((previousObjectiveValue - currentObjectiveValue) / previousObjectiveValue);
+            gradientNorm = currentGradient.getNorm();
+
+            pointConverged = pointChange <= pointChangeTolerance;
+            objectiveConverged = objectiveChange <= objectiveChangeTolerance;
+            gradientConverged = gradientNorm <= gradientTolerance;
 
             return pointConverged || objectiveConverged || gradientConverged;
         } else {
@@ -102,7 +112,27 @@ public class FletcherReevesSolver extends AbstractSolver {
     }
 
     public void printTerminationMessage() {
-        System.out.println("The residual became equal to 0 and thus the solution has been found!");
+        if (pointConverged) {
+            System.out.println("The L2 norm of the point change, "
+                                       + DECIMAL_FORMAT.format(pointChange)
+                                       + ", was below the convergence threshold of "
+                                       + DECIMAL_FORMAT.format(pointChangeTolerance)
+                                       + "!\n");
+        }
+        if (objectiveConverged) {
+            System.out.println("The relative change of the objective function value, "
+                                       + DECIMAL_FORMAT.format(objectiveChange)
+                                       + ", was below the convergence threshold of "
+                                       + DECIMAL_FORMAT.format(objectiveChangeTolerance)
+                                       + "!\n");
+        }
+        if (gradientConverged) {
+            System.out.println("The gradient norm became "
+                                       + DECIMAL_FORMAT.format(gradientNorm)
+                                       + ", which is less than the convergence threshold of "
+                                       + DECIMAL_FORMAT.format(gradientTolerance)
+                                       + "!\n");
+        }
     }
 
     public LineSearch getLineSearch() {
@@ -113,12 +143,12 @@ public class FletcherReevesSolver extends AbstractSolver {
         this.lineSearch = lineSearch;
     }
 
-    public double getPointTolerance() {
-        return pointTolerance;
+    public double getPointChangeTolerance() {
+        return pointChangeTolerance;
     }
 
-    public void setPointTolerance(double pointTolerance) {
-        this.pointTolerance = pointTolerance;
+    public void setPointChangeTolerance(double pointChangeTolerance) {
+        this.pointChangeTolerance = pointChangeTolerance;
     }
 
     public double getObjectiveChangeTolerance() {
