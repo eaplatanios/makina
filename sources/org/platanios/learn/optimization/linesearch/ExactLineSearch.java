@@ -4,21 +4,33 @@ import org.apache.commons.math3.linear.RealVector;
 import org.platanios.learn.optimization.function.QuadraticFunction;
 
 /**
+ * Class implementing an exact line search algorithm. It currently requires the objective function to be a quadratic
+ * function. TODO: Implement for linear function as well, apart from only quadratic.
+ *
  * @author Emmanouil Antonios Platanios
  */
 public class ExactLineSearch implements LineSearch {
+    /** The objective function instance. */
     private final QuadraticFunction objective;
 
-    // TODO: Implement for linear function as well, apart from only quadratic.
+    /**
+     * Constructs an exact line search solver for the given objective function instance.
+     *
+     * @param   objective   The objective function instance.
+     */
     public ExactLineSearch(QuadraticFunction objective) {
         this.objective = objective;
     }
 
-    public double computeStepSize(RealVector currentPoint,
-                                  RealVector direction) {
-        RealVector objectiveFunctionGradientAtCurrentPoint = objective.computeGradient(currentPoint);
-        double stepSize = - 0.5 * objectiveFunctionGradientAtCurrentPoint.dotProduct(direction);
-        stepSize /= objective.getQ().preMultiply(direction).dotProduct(direction);
-        return stepSize;
+    /**
+     * {@inheritDoc}
+     */
+    public double computeStepSize(RealVector point,
+                                  RealVector direction,
+                                  RealVector previousPoint,
+                                  RealVector previousDirection,
+                                  double previousStepSize) {
+        return - 0.5 * objective.computeGradient(point).dotProduct(direction)
+                / objective.getQ().preMultiply(direction).dotProduct(direction);
     }
 }
