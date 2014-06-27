@@ -72,6 +72,9 @@ class NonlinearConjugateGradientSolver extends AbstractSolver {
     }
 
     public double computeBeta() {
+        RealVector gradientsDifference;
+        double denominator;
+
         switch (method) {
             case FLETCHER_RIEVES:
                 return currentGradient.dotProduct(currentGradient) / previousGradient.dotProduct(previousGradient);
@@ -82,9 +85,31 @@ class NonlinearConjugateGradientSolver extends AbstractSolver {
                 return Math.max(currentGradient.dotProduct(currentGradient.subtract(previousGradient))
                                         / previousGradient.dotProduct(previousGradient), 0);
             case HESTENES_STIEFEL:
-                RealVector gradientsDifference = currentGradient.subtract(previousGradient);
+                gradientsDifference = currentGradient.subtract(previousGradient);
                 return currentGradient.dotProduct(gradientsDifference)
                         / gradientsDifference.dotProduct(previousDirection);
+            case FLETCHER_RIEVES_POLAK_RIBIERE:
+                denominator = previousGradient.dotProduct(previousGradient);
+                double betaFR = currentGradient.dotProduct(currentGradient) / denominator;
+                double betaPR = currentGradient.dotProduct(currentGradient.subtract(previousGradient)) / denominator;
+                if (betaPR < -betaFR) {
+                    return -betaFR;
+                } else if (betaPR > betaFR) {
+                    return betaFR;
+                } else {
+                    return betaPR;
+                }
+            case DAI_YUAN:
+                return currentGradient.dotProduct(currentGradient)
+                        / currentGradient.subtract(previousGradient).dotProduct(previousDirection);
+            case HAGER_ZHANG:
+                gradientsDifference = currentGradient.subtract(previousGradient);
+                denominator = gradientsDifference.dotProduct(previousDirection);
+                RealVector temporaryTerm = gradientsDifference.subtract(
+                        previousDirection.mapMultiply(2 * gradientsDifference.dotProduct(gradientsDifference)
+                                                              / denominator)
+                );
+                return temporaryTerm.dotProduct(currentGradient) / denominator;
             default:
                 throw new NotImplementedException();
         }
