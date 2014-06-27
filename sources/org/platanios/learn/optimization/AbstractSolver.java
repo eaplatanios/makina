@@ -20,7 +20,7 @@ abstract class AbstractSolver implements Solver {
 
     double pointChangeTolerance = 1e-10;
     double objectiveChangeTolerance = 1e-10;
-    double gradientTolerance = 1e-3;
+    double gradientTolerance = 1e-5;
 
     boolean checkForPointConvergence = true;
     boolean checkForObjectiveConvergence = true;
@@ -55,7 +55,7 @@ abstract class AbstractSolver implements Solver {
             objectiveConverged = objectiveChange <= objectiveChangeTolerance;
 
             if (this instanceof NonlinearConjugateGradientSolver) {
-                gradientNorm = currentGradient.getNorm();
+                gradientNorm = Math.abs(currentGradient.getMaxValue()) / (1 + Math.abs(currentObjectiveValue));
                 gradientConverged = gradientNorm <= gradientTolerance;
             } else {
                 gradientNorm = currentDirection.getNorm();
