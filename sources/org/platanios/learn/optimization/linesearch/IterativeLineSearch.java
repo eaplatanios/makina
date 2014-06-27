@@ -10,7 +10,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  *
  * @author Emmanouil Antonios Platanios
  */
-public abstract class IterativeLineSearch implements LineSearch {
+abstract class IterativeLineSearch implements LineSearch {
     /** The objective function instance. */
     final Function objective;
     /** The step size initialization method. */

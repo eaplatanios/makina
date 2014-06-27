@@ -12,7 +12,7 @@ import org.apache.commons.math3.linear.RealVector;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class StepSizeInitialization {
+class StepSizeInitialization {
     /**
      * Computes a value for the initial step size (used by iterative line search algorithms) by assuming that the first
      * order change in the objective function at the current iterate/point will be the same as the one obtained in the
