@@ -54,7 +54,7 @@ abstract class AbstractSolver implements Solver {
             objectiveChange = Math.abs((previousObjectiveValue - currentObjectiveValue) / previousObjectiveValue);
             objectiveConverged = objectiveChange <= objectiveChangeTolerance;
 
-            if (this instanceof AbstractNonlinearConjugateGradientSolver) {
+            if (this instanceof NonlinearConjugateGradientSolver) {
                 gradientNorm = currentGradient.getNorm();
                 gradientConverged = gradientNorm <= gradientTolerance;
             } else {
