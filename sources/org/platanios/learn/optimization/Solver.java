@@ -7,7 +7,7 @@ import java.text.DecimalFormat;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public interface Solver {
+interface Solver {
     static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.##E0");
 
     public boolean checkTerminationConditions();

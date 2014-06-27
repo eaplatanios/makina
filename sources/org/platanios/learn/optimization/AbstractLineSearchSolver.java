@@ -9,7 +9,7 @@ import org.platanios.learn.optimization.linesearch.*;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public abstract class AbstractLineSearchSolver extends AbstractSolver {
+abstract class AbstractLineSearchSolver extends AbstractSolver {
     final Function objective;
 
     /** Default value: If quadratic or linear function it is ExactLineSearch, otherwise it is StrongWolfeLineSearch

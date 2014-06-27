@@ -12,7 +12,7 @@ import org.platanios.learn.optimization.linesearch.StrongWolfeLineSearch;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public abstract class AbstractNonlinearConjugateGradientSolver extends AbstractSolver {
+abstract class AbstractNonlinearConjugateGradientSolver extends AbstractSolver {
     private final Function objective;
 
     /** Default value: If quadratic or linear function it is ExactLineSearch, otherwise it is StrongWolfeLineSearch

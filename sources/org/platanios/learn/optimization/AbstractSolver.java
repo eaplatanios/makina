@@ -5,7 +5,7 @@ import org.apache.commons.math3.linear.RealVector;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public abstract class AbstractSolver implements Solver {
+abstract class AbstractSolver implements Solver {
     int currentIteration;
     RealVector currentPoint;
 
