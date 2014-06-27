@@ -33,16 +33,16 @@ public class OptimizationTest {
     @Test
     public void testNewtonsMethodSolver() {
         System.out.println("Rosenbrock Function Newton's Method:\n");
-        NewtonsMethodSolver newtonsMethodSolver = new NewtonsMethodSolver(new RosenbrockFunction(), new double[] { -1.2, 1 });
-        double[] actualResult = newtonsMethodSolver.solve().toArray();
+        NewtonRaphsonSolver newtonRaphsonSolver = new NewtonRaphsonSolver(new RosenbrockFunction(), new double[] { -1.2, 1 });
+        double[] actualResult = newtonRaphsonSolver.solve().toArray();
         double[] expectedResult = new double[] { 1, 1 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 
         System.out.println("Quadratic Function Newton's Method:\n");
         RealMatrix A = new Array2DRowRealMatrix(new double[][] { { 1, 1 }, { -3, 1 } });
         RealVector b = new ArrayRealVector(new double[] { 6, 2 });
-        newtonsMethodSolver = new NewtonsMethodSolver(new QuadraticFunction(A, b), new double[] { 0, 0 });
-        actualResult = newtonsMethodSolver.solve().toArray();
+        newtonRaphsonSolver = new NewtonRaphsonSolver(new QuadraticFunction(A, b), new double[] { 0, 0 });
+        actualResult = newtonRaphsonSolver.solve().toArray();
         expectedResult = new double[] { 1, 5 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
     }
@@ -61,7 +61,10 @@ public class OptimizationTest {
     @Test
     public void testFletcherReevesSolver() {
         System.out.println("Rosenbrock Function Fletcher-Reeves Solver:\n");
-        FletcherReevesSolver fletcherReevesSolver = new FletcherReevesSolver(new RosenbrockFunction(), new double[] { -1.2, 1 });
+        NonlinearConjugateGradientSolver fletcherReevesSolver =
+                new NonlinearConjugateGradientSolver(new RosenbrockFunction(),
+                                                     new double[] { -1.2, 1 },
+                                                     NonlinearConjugateGradientMethod.FLETCHER_RIEVES);
         double[] actualResult = fletcherReevesSolver.solve().toArray();
         double[] expectedResult = new double[] { 1, 1 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
@@ -70,7 +73,10 @@ public class OptimizationTest {
     @Test
     public void testPolakRibiereSolver() {
         System.out.println("Rosenbrock Function Polak-Ribiere Solver:\n");
-        PolakRibiereSolver polakRibiereSolver = new PolakRibiereSolver(new RosenbrockFunction(), new double[] { -1.2, 1 });
+        NonlinearConjugateGradientSolver polakRibiereSolver =
+                new NonlinearConjugateGradientSolver(new RosenbrockFunction(),
+                                                     new double[] { -1.2, 1 },
+                                                     NonlinearConjugateGradientMethod.POLAK_RIBIERE);
         double[] actualResult = polakRibiereSolver.solve().toArray();
         double[] expectedResult = new double[] { 1, 1 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
@@ -79,7 +85,10 @@ public class OptimizationTest {
     @Test
     public void testPolakRibierePlusSolver() {
         System.out.println("Rosenbrock Function Polak-Ribiere+ Solver:\n");
-        PolakRibierePlusSolver polakRibierePlusSolver = new PolakRibierePlusSolver(new RosenbrockFunction(), new double[] { -1.2, 1 });
+        NonlinearConjugateGradientSolver polakRibierePlusSolver =
+                new NonlinearConjugateGradientSolver(new RosenbrockFunction(),
+                                                     new double[] { -1.2, 1 },
+                                                     NonlinearConjugateGradientMethod.POLAK_RIBIERE_PLUS);
         double[] actualResult = polakRibierePlusSolver.solve().toArray();
         double[] expectedResult = new double[] { 1, 1 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
@@ -88,7 +97,10 @@ public class OptimizationTest {
     @Test
     public void testHestenesStiefelSolver() {
         System.out.println("Rosenbrock Function Hestenes-Stiefel Solver:\n");
-        HestenesStiefelSolver hestenesStiefelSolver = new HestenesStiefelSolver(new RosenbrockFunction(), new double[] { -1.2, 1 });
+        NonlinearConjugateGradientSolver hestenesStiefelSolver = new
+                NonlinearConjugateGradientSolver(new RosenbrockFunction(),
+                                                 new double[] { -1.2, 1 },
+                                                 NonlinearConjugateGradientMethod.HESTENES_STIEFEL);
         double[] actualResult = hestenesStiefelSolver.solve().toArray();
         double[] expectedResult = new double[] { 1, 1 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);

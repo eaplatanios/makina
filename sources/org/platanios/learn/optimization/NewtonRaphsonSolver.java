@@ -11,13 +11,13 @@ import org.platanios.learn.optimization.linesearch.StrongWolfeInterpolationLineS
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class NewtonsMethodSolver extends AbstractLineSearchSolver {
-    public NewtonsMethodSolver(Function objective,
+public class NewtonRaphsonSolver extends AbstractLineSearchSolver {
+    public NewtonRaphsonSolver(Function objective,
                                double[] initialPoint) {
         super(objective, initialPoint);
     }
 
-    public NewtonsMethodSolver(Function objective,
+    public NewtonRaphsonSolver(Function objective,
                                double[] initialPoint,
                                LineSearch lineSearch) {
         super(objective, initialPoint);
