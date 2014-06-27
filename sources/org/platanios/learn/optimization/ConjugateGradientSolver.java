@@ -9,7 +9,9 @@ import org.platanios.learn.optimization.function.QuadraticFunction;
  * Matrix A in this case needs to be symmetric and positive definite. The biconjugate gradient does not have that
  * requirement.
  *
- * TODO: Implement the preconditioned conjugate gradient method and a few preconditioning strategies.
+ * TODO: Implement the preconditioned conjugate gradient method and a few preconditioning strategies. Support for
+ * preconditioning should be added as a flag to this algorithm, possibly with an extra argument in the constructor for
+ * the preconditioning matrix or the preconditioning method.
  *
  * @author Emmanouil Antonios Platanios
  */
