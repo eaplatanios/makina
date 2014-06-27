@@ -33,7 +33,7 @@ abstract class AbstractNonlinearConjugateGradientSolver extends AbstractSolver {
         if (objective instanceof QuadraticFunction) {
             this.lineSearch = new ExactLineSearch((QuadraticFunction) objective);
         } else {
-            this.lineSearch = new StrongWolfeLineSearch(
+            this.lineSearch = new StrongWolfeInterpolationLineSearch(
                     objective,
                     StepSizeInitializationMethod.CONSERVE_FIRST_ORDER_CHANGE,
                     1e-4,

@@ -8,7 +8,7 @@ import org.apache.commons.math3.linear.RealVector;
  *
  * @author Emmanouil Antonios Platanios
  */
-interface LineSearch {
+public interface LineSearch {
     /**
      * Computes the step size value using the implemented algorithm.
      *
