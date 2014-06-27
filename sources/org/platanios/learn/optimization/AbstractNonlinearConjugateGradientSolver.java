@@ -20,7 +20,7 @@ abstract class AbstractNonlinearConjugateGradientSolver extends AbstractSolver {
     private LineSearch lineSearch;
 
     private RealVector previousPoint;
-    private RealVector previousDirection;
+    private RealVector currentDirection;
     private double currentStepSize;
     private double previousStepSize;
     private double currentObjectiveValue;
@@ -42,7 +42,7 @@ abstract class AbstractNonlinearConjugateGradientSolver extends AbstractSolver {
     // computeBeta() function in classes that extend this class.
     RealVector currentGradient;
     RealVector previousGradient;
-    RealVector currentDirection;
+    RealVector previousDirection;
 
     // The following variables are used locally within iteration but are initialized here in order to make the code more
     // clear.
