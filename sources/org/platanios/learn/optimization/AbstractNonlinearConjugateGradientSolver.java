@@ -30,13 +30,17 @@ abstract class AbstractNonlinearConjugateGradientSolver extends AbstractSolver {
     private double objectiveChangeTolerance = 1e-10;
     private double gradientTolerance = 1e-10;
 
+    private boolean checkForPointConvergence = false;
+    private boolean checkForObjectiveConvergence = false;
+    private boolean checkForGradientConvergence = true;
+
     private double pointChange;
     private double objectiveChange;
     private double gradientNorm;
 
     private boolean pointConverged = false;
-    private boolean gradientConverged = false;
     private boolean objectiveConverged = false;
+    private boolean gradientConverged = false;
 
     // The following variables are not defined as private because they are used in some implementation of the
     // computeBeta() function in classes that extend this class.
@@ -80,7 +84,9 @@ abstract class AbstractNonlinearConjugateGradientSolver extends AbstractSolver {
             objectiveConverged = objectiveChange <= objectiveChangeTolerance;
             gradientConverged = gradientNorm <= gradientTolerance;
 
-            return pointConverged || objectiveConverged || gradientConverged;
+            return (checkForPointConvergence && pointConverged)
+                    || (checkForObjectiveConvergence && objectiveConverged)
+                    || (checkForGradientConvergence && gradientConverged);
         } else {
             return false;
         }
@@ -169,5 +175,29 @@ abstract class AbstractNonlinearConjugateGradientSolver extends AbstractSolver {
 
     public void setGradientTolerance(double gradientTolerance) {
         this.gradientTolerance = gradientTolerance;
+    }
+
+    public boolean isCheckForPointConvergence() {
+        return checkForPointConvergence;
+    }
+
+    public void setCheckForPointConvergence(boolean checkForPointConvergence) {
+        this.checkForPointConvergence = checkForPointConvergence;
+    }
+
+    public boolean isCheckForObjectiveConvergence() {
+        return checkForObjectiveConvergence;
+    }
+
+    public void setCheckForObjectiveConvergence(boolean checkForObjectiveConvergence) {
+        this.checkForObjectiveConvergence = checkForObjectiveConvergence;
+    }
+
+    public boolean isCheckForGradientConvergence() {
+        return checkForGradientConvergence;
+    }
+
+    public void setCheckForGradientConvergence(boolean checkForGradientConvergence) {
+        this.checkForGradientConvergence = checkForGradientConvergence;
     }
 }
