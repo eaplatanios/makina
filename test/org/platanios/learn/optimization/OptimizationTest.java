@@ -58,17 +58,31 @@ public class OptimizationTest {
 //        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 //    }
 //
-//    @Test
-//    public void testFletcherReevesSolver() {
-//        System.out.println("Rosenbrock Function Fletcher-Reeves Solver:\n");
-//        NonlinearConjugateGradientSolver fletcherReevesSolver =
-//                new NonlinearConjugateGradientSolver(new RosenbrockFunction(),
-//                                                     new double[] { -1.2, 1 },
-//                                                     NonlinearConjugateGradientMethod.FLETCHER_RIEVES);
-//        double[] actualResult = fletcherReevesSolver.solve().toArray();
-//        double[] expectedResult = new double[] { 1, 1 };
-//        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
-//    }
+    @Test
+    public void testFletcherReevesSolver() {
+        System.out.println("Rosenbrock Function Fletcher-Reeves No-Restart Solver:\n");
+        NonlinearConjugateGradientSolver fletcherReevesSolver =
+                new NonlinearConjugateGradientSolver(
+                        new RosenbrockFunction(),
+                        new double[] { -1.2, 1 },
+                        NonlinearConjugateGradientMethod.FLETCHER_RIEVES,
+                        NonlinearConjugateGradientRestartMethod.NO_RESTART
+                );
+        double[] actualResult = fletcherReevesSolver.solve().toArray();
+        double[] expectedResult = new double[] { 1, 1 };
+        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
+
+        System.out.println("Rosenbrock Function Fletcher-Reeves Gradients-Orthogonality-Check-Restart Solver:\n");
+        fletcherReevesSolver =
+                new NonlinearConjugateGradientSolver(
+                        new RosenbrockFunction(),
+                        new double[] { -1.2, 1 },
+                        NonlinearConjugateGradientMethod.FLETCHER_RIEVES,
+                        NonlinearConjugateGradientRestartMethod.GRADIENTS_ORTHOGONALITY_CHECK
+                );
+        actualResult = fletcherReevesSolver.solve().toArray();
+        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
+    }
 //
 //    @Test
 //    public void testPolakRibiereSolver() {
@@ -82,17 +96,17 @@ public class OptimizationTest {
 //        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 //    }
 //
-    @Test
-    public void testPolakRibierePlusSolver() {
-        System.out.println("Rosenbrock Function Polak-Ribiere+ Solver:\n");
-        NonlinearConjugateGradientSolver polakRibierePlusSolver =
-                new NonlinearConjugateGradientSolver(new RosenbrockFunction(),
-                                                     new double[] { -1.2, 1 },
-                                                     NonlinearConjugateGradientMethod.POLAK_RIBIERE_PLUS);
-        double[] actualResult = polakRibierePlusSolver.solve().toArray();
-        double[] expectedResult = new double[] { 1, 1 };
-        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
-    }
+//    @Test
+//    public void testPolakRibierePlusSolver() {
+//        System.out.println("Rosenbrock Function Polak-Ribiere+ Solver:\n");
+//        NonlinearConjugateGradientSolver polakRibierePlusSolver =
+//                new NonlinearConjugateGradientSolver(new RosenbrockFunction(),
+//                                                     new double[] { -1.2, 1 },
+//                                                     NonlinearConjugateGradientMethod.POLAK_RIBIERE_PLUS);
+//        double[] actualResult = polakRibierePlusSolver.solve().toArray();
+//        double[] expectedResult = new double[] { 1, 1 };
+//        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
+//    }
 //
 //    @Test
 //    public void testHestenesStiefelSolver() {
