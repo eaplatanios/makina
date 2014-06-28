@@ -29,8 +29,9 @@ public class NewtonSolver extends AbstractLineSearchSolver {
     public void updateDirection() {
         RealMatrix hessian = objective.computeHessian(currentPoint);
         // TODO: Check Hessian for positive definiteness and modify if necessary.
-        RealVector gradient = objective.computeGradient(currentPoint);
-        currentDirection = new LUDecomposition(hessian).getSolver().getInverse().operate(gradient).mapMultiply(-1);
+        currentGradient = objective.computeGradient(currentPoint);
+        currentDirection =
+                new LUDecomposition(hessian).getSolver().getInverse().operate(currentGradient).mapMultiply(-1);
     }
 
     public void updatePoint() {

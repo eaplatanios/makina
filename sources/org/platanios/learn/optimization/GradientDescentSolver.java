@@ -20,7 +20,8 @@ public class GradientDescentSolver extends AbstractLineSearchSolver {
     }
 
     public void updateDirection() {
-        currentDirection = objective.computeGradient(currentPoint).mapMultiply(-1);
+        currentGradient = objective.computeGradient(currentPoint);
+        currentDirection = currentGradient.mapMultiply(-1);
     }
 
     public void updatePoint() {

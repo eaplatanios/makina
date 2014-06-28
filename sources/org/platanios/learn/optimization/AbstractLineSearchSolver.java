@@ -36,12 +36,13 @@ abstract class AbstractLineSearchSolver extends AbstractSolver {
     }
 
     public void iterationUpdate() {
+        previousGradient = currentGradient;
         previousDirection = currentDirection;
         updateDirection();
 
         // This check makes sure that we do not try to compute a step size using exact line search when the gradient
         // gets very small (i.e. when the algorithm has converged).
-        if (currentDirection.getNorm() <= gradientTolerance) {
+        if (currentGradient.getNorm() <= gradientTolerance) {
             return;
         }
 
