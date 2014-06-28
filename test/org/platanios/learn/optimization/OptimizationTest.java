@@ -7,7 +7,6 @@ import org.apache.commons.math3.linear.RealVector;
 import org.junit.Assert;
 import org.junit.Test;
 import org.platanios.learn.optimization.function.Function;
-import org.platanios.learn.optimization.function.QuadraticFunction;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -58,31 +57,31 @@ public class OptimizationTest {
 //        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 //    }
 //
-    @Test
-    public void testFletcherReevesSolver() {
-        System.out.println("Rosenbrock Function Fletcher-Reeves No-Restart Solver:\n");
-        NonlinearConjugateGradientSolver fletcherReevesSolver =
-                new NonlinearConjugateGradientSolver(
-                        new RosenbrockFunction(),
-                        new double[] { -1.2, 1 },
-                        NonlinearConjugateGradientMethod.FLETCHER_RIEVES,
-                        NonlinearConjugateGradientRestartMethod.NO_RESTART
-                );
-        double[] actualResult = fletcherReevesSolver.solve().toArray();
-        double[] expectedResult = new double[] { 1, 1 };
-        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
-
-        System.out.println("Rosenbrock Function Fletcher-Reeves Gradients-Orthogonality-Check-Restart Solver:\n");
-        fletcherReevesSolver =
-                new NonlinearConjugateGradientSolver(
-                        new RosenbrockFunction(),
-                        new double[] { -1.2, 1 },
-                        NonlinearConjugateGradientMethod.FLETCHER_RIEVES,
-                        NonlinearConjugateGradientRestartMethod.GRADIENTS_ORTHOGONALITY_CHECK
-                );
-        actualResult = fletcherReevesSolver.solve().toArray();
-        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
-    }
+//    @Test
+//    public void testFletcherReevesSolver() {
+//        System.out.println("Rosenbrock Function Fletcher-Reeves No-Restart Solver:\n");
+//        NonlinearConjugateGradientSolver fletcherReevesSolver =
+//                new NonlinearConjugateGradientSolver(
+//                        new RosenbrockFunction(),
+//                        new double[] { -1.2, 1 },
+//                        NonlinearConjugateGradientMethod.FLETCHER_RIEVES,
+//                        NonlinearConjugateGradientRestartMethod.NO_RESTART
+//                );
+//        double[] actualResult = fletcherReevesSolver.solve().toArray();
+//        double[] expectedResult = new double[] { 1, 1 };
+//        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
+//
+//        System.out.println("Rosenbrock Function Fletcher-Reeves Gradients-Orthogonality-Check-Restart Solver:\n");
+//        fletcherReevesSolver =
+//                new NonlinearConjugateGradientSolver(
+//                        new RosenbrockFunction(),
+//                        new double[] { -1.2, 1 },
+//                        NonlinearConjugateGradientMethod.FLETCHER_RIEVES,
+//                        NonlinearConjugateGradientRestartMethod.GRADIENTS_ORTHOGONALITY_CHECK
+//                );
+//        actualResult = fletcherReevesSolver.solve().toArray();
+//        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
+//    }
 //
 //    @Test
 //    public void testPolakRibiereSolver() {
@@ -155,6 +154,39 @@ public class OptimizationTest {
 //        double[] expectedResult = new double[] { 1, 1 };
 //        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 //    }
+//
+    @Test
+    public void testQuasiNewtonDFPSolver() {
+        System.out.println("Rosenbrock Function Quasi-Newton DFP Solver:\n");
+        QuasiNewtonSolver quasiNewtonDFPSolver = new QuasiNewtonSolver(new RosenbrockFunction(),
+                                                                        new double[] { -1.2, 1 },
+                                                                        QuasiNewtonMethod.DAVIDON_FLETCHER_POWELL);
+        double[] actualResult = quasiNewtonDFPSolver.solve().toArray();
+        double[] expectedResult = new double[] { 1, 1 };
+        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
+    }
+
+    @Test
+    public void testQuasiNewtonBFGSSolver() {
+        System.out.println("Rosenbrock Function Quasi-Newton BFGS Solver:\n");
+        QuasiNewtonSolver quasiNewtonBFGSSolver = new QuasiNewtonSolver(new RosenbrockFunction(),
+                                                                        new double[] { -1.2, 1 },
+                                                                        QuasiNewtonMethod.BROYDEN_FLETCHER_GOLDFARB_SHANNO);
+        double[] actualResult = quasiNewtonBFGSSolver.solve().toArray();
+        double[] expectedResult = new double[] { 1, 1 };
+        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
+    }
+
+    @Test
+    public void testQuasiNewtonSR1Solver() {
+        System.out.println("Rosenbrock Function Quasi-Newton SR1 Solver:\n");
+        QuasiNewtonSolver quasiNewtonSR1Solver = new QuasiNewtonSolver(new RosenbrockFunction(),
+                                                                        new double[] { -1.2, 1 },
+                                                                        QuasiNewtonMethod.SYMMETRIC_RANK_ONE);
+        double[] actualResult = quasiNewtonSR1Solver.solve().toArray();
+        double[] expectedResult = new double[] { 1, 1 };
+        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
+    }
 
     class RosenbrockFunction implements Function {
         public double computeValue(RealVector optimizationVariables) {
