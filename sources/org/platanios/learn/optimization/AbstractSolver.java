@@ -73,9 +73,22 @@ abstract class AbstractSolver implements Solver {
     }
 
     public void printHeader() {
-        System.out.println("|-----------------------------------------------------------------------------------------------------------|");
-        System.out.format("| %13s | %20s | %20s | %20s | %20s |%n", "Iteration #", "Objective Value", "Objective Change", "Point Change", "Gradient Norm");
-        System.out.println("|===============|======================|======================|======================|======================|");
+        System.out.println("|----------------" +
+                                   "-----------------------" +
+                                   "-----------------------" +
+                                   "-----------------------" +
+                                   "----------------------|");
+        System.out.format("| %13s | %20s | %20s | %20s | %20s |%n",
+                          "Iteration #",
+                          "Objective Value",
+                          "Objective Change",
+                          "Point Change",
+                          "Gradient Norm");
+        System.out.println("|===============|" +
+                                   "======================|" +
+                                   "======================|" +
+                                   "======================|" +
+                                   "======================|");
     }
 
     public void printIteration() {
@@ -88,7 +101,11 @@ abstract class AbstractSolver implements Solver {
     }
 
     public void printTerminationMessage() {
-        System.out.println("|-----------------------------------------------------------------------------------------------------------|\n");
+        System.out.println("|----------------" +
+                                   "-----------------------" +
+                                   "-----------------------" +
+                                   "-----------------------" +
+                                   "----------------------|\n");
 
         if (pointConverged) {
             System.out.println("The L2 norm of the point change, "
