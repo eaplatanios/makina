@@ -2,6 +2,8 @@ package org.platanios.learn.optimization;
 
 import org.apache.commons.math3.linear.RealVector;
 
+import java.text.DecimalFormat;
+
 /**
  * @author Emmanouil Antonios Platanios
  */
@@ -70,27 +72,44 @@ abstract class AbstractSolver implements Solver {
         }
     }
 
+    public void printHeader() {
+        System.out.println("|-----------------------------------------------------------------------------------------------------------|");
+        System.out.format("| %13s | %20s | %20s | %20s | %20s |%n", "Iteration #", "Objective Value", "Objective Change", "Point Change", "Gradient Norm");
+        System.out.println("|===============|======================|======================|======================|======================|");
+    }
+
+    public void printIteration() {
+        System.out.format("| %13d | %20s | %20s | %20s | %20s |%n",
+                          currentIteration,
+                          DECIMAL_FORMAT.format(currentObjectiveValue),
+                          DECIMAL_FORMAT.format(objectiveChange),
+                          DECIMAL_FORMAT.format(pointChange),
+                          DECIMAL_FORMAT.format(gradientNorm));
+    }
+
     public void printTerminationMessage() {
+        System.out.println("|-----------------------------------------------------------------------------------------------------------|\n");
+
         if (pointConverged) {
             System.out.println("The L2 norm of the point change, "
                                        + DECIMAL_FORMAT.format(pointChange)
                                        + ", was below the convergence threshold of "
                                        + DECIMAL_FORMAT.format(pointChangeTolerance)
-                                       + "!\n");
+                                       + "!");
         }
         if (objectiveConverged) {
             System.out.println("The relative change of the objective function value, "
                                        + DECIMAL_FORMAT.format(objectiveChange)
                                        + ", was below the convergence threshold of "
                                        + DECIMAL_FORMAT.format(objectiveChangeTolerance)
-                                       + "!\n");
+                                       + "!");
         }
         if (gradientConverged) {
             System.out.println("The gradient norm became "
                                        + DECIMAL_FORMAT.format(gradientNorm)
                                        + ", which is less than the convergence threshold of "
                                        + DECIMAL_FORMAT.format(gradientTolerance)
-                                       + "!\n");
+                                       + "!");
         }
     }
 

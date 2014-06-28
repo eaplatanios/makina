@@ -24,7 +24,6 @@ public class ConjugateGradientSolver extends AbstractSolver {
     private RealVector previousResidual;
     private RealVector currentDirection;
     private RealVector previousDirection;
-    private double currentObjectiveValue;
 
     private double residualTolerance = 1e-10;
 
@@ -53,20 +52,7 @@ public class ConjugateGradientSolver extends AbstractSolver {
         currentResidual = previousResidual.add(A.operate(previousDirection).mapMultiply(stepSize));
         double residualNormsRatio = currentResidual.dotProduct(currentResidual) / previousResidualNormSquared;
         currentDirection = currentResidual.mapMultiply(-1).add(previousDirection.mapMultiply(residualNormsRatio));
-    }
-
-    public void printHeader() {
-        System.out.println("Iteration #\tObjective Value\tPoint");
-        System.out.println("===========\t===============\t=====");
-    }
-
-    public void printIteration() {
-        currentObjectiveValue = objective.computeValue(currentPoint); // TODO: Not necessary to compute the objective function value at each iteration.
-        System.out.format("%d\t\t\t%.10f\t%.5f\n", currentIteration, currentObjectiveValue, currentPoint.getEntry(0));
-    }
-
-    public void printTerminationMessage() {
-        System.out.println("The residual became equal to 0 and thus the solution has been found!");
+        currentObjectiveValue = objective.computeValue(currentPoint);
     }
 
     public double getResidualTolerance() {

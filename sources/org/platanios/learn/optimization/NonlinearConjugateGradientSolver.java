@@ -155,15 +155,6 @@ class NonlinearConjugateGradientSolver extends AbstractSolver {
         }
     }
 
-    public void printHeader() {
-        System.out.println("Iteration #\tObjective Value\tPoint");
-        System.out.println("===========\t===============\t=====");
-    }
-
-    public void printIteration() {
-        System.out.format("%d\t\t\t%.10f\t%.5f\n", currentIteration, currentObjectiveValue, currentPoint.getEntry(0));
-    }
-
     public LineSearch getLineSearch() {
         return lineSearch;
     }
