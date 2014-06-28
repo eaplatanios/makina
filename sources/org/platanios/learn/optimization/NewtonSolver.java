@@ -2,9 +2,10 @@ package org.platanios.learn.optimization;
 
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
 import org.platanios.learn.optimization.function.Function;
 import org.platanios.learn.optimization.linesearch.LineSearch;
+import org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod;
+import org.platanios.learn.optimization.linesearch.StrongWolfeInterpolationLineSearch;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -12,7 +13,13 @@ import org.platanios.learn.optimization.linesearch.LineSearch;
 public class NewtonSolver extends AbstractLineSearchSolver {
     public NewtonSolver(Function objective,
                         double[] initialPoint) {
-        super(objective, initialPoint);
+        this(objective,
+             initialPoint,
+             new StrongWolfeInterpolationLineSearch(objective,
+                                                    StepSizeInitializationMethod.UNIT,
+                                                    1e-4,
+                                                    0.9,
+                                                    1));
     }
 
     public NewtonSolver(Function objective,
