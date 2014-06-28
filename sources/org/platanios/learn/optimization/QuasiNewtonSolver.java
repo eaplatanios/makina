@@ -2,6 +2,7 @@ package org.platanios.learn.optimization;
 
 import org.apache.commons.math3.linear.*;
 import org.platanios.learn.optimization.function.Function;
+import org.platanios.learn.optimization.linesearch.BacktrackingLineSearch;
 import org.platanios.learn.optimization.linesearch.LineSearch;
 import org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod;
 import org.platanios.learn.optimization.linesearch.StrongWolfeInterpolationLineSearch;
@@ -73,8 +74,11 @@ public class QuasiNewtonSolver extends AbstractLineSearchSolver {
         RealVector y = currentGradient.subtract(previousGradient);
         double rho = 1 / y.dotProduct(s);
 
-        // Simple trick to initialize the inverse Hessian matrix approximation.
+        // Simple trick to initialize the inverse Hessian matrix approximation. This scaling tries to make the size of H
+        // similar to the size of the actual Hessian matrix inverse.
         if (currentIteration == 0) {
+//            previousH = currentH.scalarMultiply(0.1);
+//            previousH = currentH.scalarMultiply(1e-1 / currentGradient.getNorm());
             previousH = currentH.scalarMultiply(y.dotProduct(s) / y.dotProduct(y));
         } else {
             previousH = currentH;
