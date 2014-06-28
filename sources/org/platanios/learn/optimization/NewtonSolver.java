@@ -5,21 +5,19 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.platanios.learn.optimization.function.Function;
 import org.platanios.learn.optimization.linesearch.LineSearch;
-import org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod;
-import org.platanios.learn.optimization.linesearch.StrongWolfeInterpolationLineSearch;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class NewtonRaphsonSolver extends AbstractLineSearchSolver {
-    public NewtonRaphsonSolver(Function objective,
-                               double[] initialPoint) {
+public class NewtonSolver extends AbstractLineSearchSolver {
+    public NewtonSolver(Function objective,
+                        double[] initialPoint) {
         super(objective, initialPoint);
     }
 
-    public NewtonRaphsonSolver(Function objective,
-                               double[] initialPoint,
-                               LineSearch lineSearch) {
+    public NewtonSolver(Function objective,
+                        double[] initialPoint,
+                        LineSearch lineSearch) {
         super(objective, initialPoint);
         setLineSearch(lineSearch);
     }
