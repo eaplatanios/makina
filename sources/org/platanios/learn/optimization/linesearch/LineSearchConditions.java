@@ -101,7 +101,7 @@ public class LineSearchConditions {
         double rightTerm = objectiveGradientAtCurrentPoint.dotProduct(direction);
         boolean curvatureConditionSatisfied;
         if (strong) {
-            curvatureConditionSatisfied = Math.abs(leftTerm) >= c2 * Math.abs(rightTerm);
+            curvatureConditionSatisfied = Math.abs(leftTerm) <= c2 * Math.abs(rightTerm);
         } else {
             curvatureConditionSatisfied = leftTerm >= c2 * rightTerm;
         }
