@@ -2,7 +2,6 @@ package org.platanios.learn.optimization;
 
 import org.apache.commons.math3.linear.*;
 import org.platanios.learn.optimization.function.Function;
-import org.platanios.learn.optimization.linesearch.BacktrackingLineSearch;
 import org.platanios.learn.optimization.linesearch.LineSearch;
 import org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod;
 import org.platanios.learn.optimization.linesearch.StrongWolfeInterpolationLineSearch;
@@ -17,11 +16,17 @@ public class QuasiNewtonSolver extends AbstractLineSearchSolver {
 
     private RealMatrix currentH;
     private RealMatrix previousH;
+    RealVector[] s;
+    RealVector[] y;
+    private int m;
+    private RealVector initialHessianInverseDiagonal = new ArrayRealVector(currentPoint.getDimension(), 1);
 
     private double symmetricRankOneSkippingParameter = 1e-8;
 
     /**
-     * BROYDEN_FLETCHER_GOLDFARB_SHANNO method chosen by default.
+     * BROYDEN_FLETCHER_GOLDFARB_SHANNO method chosen by default. The default value used for the memory parameter,
+     * {@code m}, is 10 for L-BFGS (for all other methods it is 1, since they store the whole approximation matrix and
+     * do not need to store any previous vectors to re-construct it using limited memory).
      *
      * @param objective
      * @param initialPoint
@@ -61,53 +66,75 @@ public class QuasiNewtonSolver extends AbstractLineSearchSolver {
         identityMatrix = MatrixUtils.createRealIdentityMatrix(initialPoint.length);
         currentH = identityMatrix;
         currentGradient = objective.computeGradient(currentPoint);
-    }
-
-    public void updateDirection() {
-        currentDirection = currentH.operate(currentGradient).mapMultiply(-1);
-    }
-
-    public void updatePoint() {
-        currentPoint = currentPoint.add(currentDirection.mapMultiply(currentStepSize));
-        currentGradient = objective.computeGradient(currentPoint);
-        RealVector s = currentPoint.subtract(previousPoint);
-        RealVector y = currentGradient.subtract(previousGradient);
-        double rho = 1 / y.dotProduct(s);
-
-        // Simple trick to initialize the inverse Hessian matrix approximation. This scaling tries to make the size of H
-        // similar to the size of the actual Hessian matrix inverse.
-        if (currentIteration == 0) {
-//            previousH = currentH.scalarMultiply(0.1);
-//            previousH = currentH.scalarMultiply(1e-1 / currentGradient.getNorm());
-            previousH = currentH.scalarMultiply(y.dotProduct(s) / y.dotProduct(y));
+        if (method != QuasiNewtonMethod.LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO) {
+            m = 1;
         } else {
-            previousH = currentH;
+            m = 10;
         }
+        s = new RealVector[m];
+        y = new RealVector[m];
+    }
+
+    @Override
+    public void updateDirection() {
+        if (method != QuasiNewtonMethod.LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO) {
+            if (currentIteration > 0) {
+                // Simple trick to initialize the inverse Hessian matrix approximation. This scaling tries to make the
+                // size of H similar to the size of the actual Hessian matrix inverse (the scaling factor attempts to
+                // estimate the size of the true Hessian matrix along the most recent search direction. This choice
+                // helps to ensure that the search direction is well scaled and as a result the step length value 1 is
+                // accepted in most iterations.
+                if (currentIteration == 1) {
+                    previousH = currentH.scalarMultiply(y[0].dotProduct(s[0]) / y[0].dotProduct(y[0]));
+                } else {
+                    previousH = currentH;
+                }
+                updateHessianInverseApproximation();
+            }
+            currentDirection = currentH.operate(currentGradient).mapMultiply(-1);
+        } else {
+            // Same trick to initialize the inverse Hessian matrix approximation as that used above for the other
+            // methods.
+            if (currentIteration > 0) {
+                initialHessianInverseDiagonal =
+                        (new ArrayRealVector(currentPoint.getDimension(), 1))
+                                .mapMultiply(s[0].dotProduct(y[0]) / y[0].dotProduct(y[0]));
+            }
+            currentDirection = approximateHessianInverseVectorProduct(currentGradient).mapMultiply(-1);
+        }
+    }
+
+    @Override
+    public void updatePoint() {
+        currentPoint = previousPoint.add(currentDirection.mapMultiply(currentStepSize));
+        currentGradient = objective.computeGradient(currentPoint);
+        updateStoredVectors();
+    }
+
+    /** Used from all methods apart from the LBFGS method. */
+    private void updateHessianInverseApproximation() {
+        double rho = 1 / y[0].dotProduct(s[0]);
 
         switch (method) {
             case DAVIDON_FLETCHER_POWELL:
-                currentH = previousH.subtract(
-                        previousH.multiply(
-                                y.mapMultiply(1 / previousH.preMultiply(y).dotProduct(y))
-                                        .outerProduct(y)
-                                        .multiply(previousH)
-                        )
-                ).add(s.mapMultiply(rho).outerProduct(s));
+                currentH = previousH.subtract(previousH.multiply(
+                        y[0].mapMultiply(1 / previousH.preMultiply(y[0]).dotProduct(y[0]))
+                                .outerProduct(y[0])
+                                .multiply(previousH)
+                )).add(s[0].mapMultiply(rho).outerProduct(s[0]));
                 break;
             case BROYDEN_FLETCHER_GOLDFARB_SHANNO:
-                currentH =
-                        previousH.preMultiply(
-                                identityMatrix.subtract(s.mapMultiply(rho).outerProduct(y))
-                        ).multiply(
-                                identityMatrix.subtract(y.mapMultiply(rho).outerProduct(s))
-                        ).add(s.mapMultiply(rho).outerProduct(s));
+                currentH = previousH
+                        .preMultiply(identityMatrix.subtract(s[0].mapMultiply(rho).outerProduct(y[0])))
+                        .multiply(identityMatrix.subtract(y[0].mapMultiply(rho).outerProduct(s[0])))
+                        .add(s[0].mapMultiply(rho).outerProduct(s[0]));
                 break;
             case SYMMETRIC_RANK_ONE:
-                RealVector tempVector = s.subtract(previousH.operate(y));
-                if (Math.abs(tempVector.dotProduct(y))
-                        >= symmetricRankOneSkippingParameter * y.getNorm() * tempVector.getNorm()) {
+                RealVector tempVector = s[0].subtract(previousH.operate(y[0]));
+                if (Math.abs(tempVector.dotProduct(y[0]))
+                        >= symmetricRankOneSkippingParameter * y[0].getNorm() * tempVector.getNorm()) {
                     currentH = previousH.add(
-                            tempVector.mapMultiply(1 / tempVector.dotProduct(y)).outerProduct(tempVector)
+                            tempVector.mapMultiply(1 / tempVector.dotProduct(y[0])).outerProduct(tempVector)
                     );
                 } else {
                     currentH = previousH;
@@ -116,6 +143,40 @@ public class QuasiNewtonSolver extends AbstractLineSearchSolver {
             default:
                 throw new NotImplementedException();
         }
+    }
+
+    /** Used only for the LBFGS method. */
+    private RealVector approximateHessianInverseVectorProduct(RealVector q) {
+        double[] a = new double[m];
+        double[] rho = new double[m];
+        for (int i = 0; i < Math.min(m, currentIteration); i++) {
+            rho[i] = 1 / y[i].dotProduct(s[i]);
+            a[i] = rho[i] * s[i].dotProduct(q);
+            q = q.subtract(y[i].mapMultiply(a[i]));
+        }
+        RealVector result = q.ebeMultiply(initialHessianInverseDiagonal);
+        for (int i = Math.min(m, currentIteration) - 1; i >= 0; i--) {
+            result = result.add(s[i].mapMultiply(a[i] - rho[i] * y[i].dotProduct(result)));
+        }
+        return result;
+    }
+
+    /** m != 1 only for the LBFGS method. */
+    private void updateStoredVectors() {
+        for (int i = m - 1; i > 0; i--) {
+            s[i] = s[i-1];
+            y[i] = y[i-1];
+        }
+        s[0] = currentPoint.subtract(previousPoint);
+        y[0] = currentGradient.subtract(previousGradient);
+    }
+
+    public int getM() {
+        return m;
+    }
+
+    public void setM(int m) {
+        this.m = m;
     }
 
     public double getSymmetricRankOneSkippingParameter() {

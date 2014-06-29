@@ -13,5 +13,6 @@ public enum QuasiNewtonMethod {
     /** The Symmetric-Rank-1 algorithm. This method may produce indefinite Hessian approximations. Furthermore, the
      * basic SYMMETRIC_RANK_ONE method may break down and that is why here it has been implemented with a skipping method to help
      * prevent such cases. */
-    SYMMETRIC_RANK_ONE
+    SYMMETRIC_RANK_ONE,
+    LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO
 }
