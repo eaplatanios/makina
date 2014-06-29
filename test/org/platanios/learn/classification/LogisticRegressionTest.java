@@ -9,8 +9,7 @@ import org.junit.Test;
 public class LogisticRegressionTest {
     @Test
     public void testLogisticRegression() {
-//        String filename = LogisticRegressionTest.class.getResource("resources/FisherIris.csv").getPath();
-        String filename = "/Users/Anthony/Development/GitHub/learn/test/org/platanios/learn/classification/resources/FishersIris.csv";
+        String filename = LogisticRegressionTest.class.getResource("resources/FishersIris.csv").getPath();
         TrainingData data = DataPreprocessing.parseLabeledDataFromCSVFile(filename);
         LogisticRegression classifier = new LogisticRegression(data.getData(), data.getLabels());
         classifier.train();
