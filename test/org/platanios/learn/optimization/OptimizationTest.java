@@ -188,10 +188,21 @@ public class OptimizationTest {
 //        double[] expectedResult = new double[] { 1, 1 };
 //        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 //    }
+//
+//    @Test
+//    public void testQuasiNewtonBroydenSolver() {
+//        System.out.println("Rosenbrock Function Quasi-Newton Broyden Solver:\n");
+//        QuasiNewtonSolver quasiNewtonBroydenSolver = new QuasiNewtonSolver(new RosenbrockFunction(),
+//                                                                         new double[] { -1.2, 1 },
+//                                                                         QuasiNewtonMethod.BROYDEN);
+//        double[] actualResult = quasiNewtonBroydenSolver.solve().toArray();
+//        double[] expectedResult = new double[] { 1, 1 };
+//        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
+//    }
 
     @Test
     public void testQuasiNewtonLBFGSSolver() {
-        System.out.println("Rosenbrock Function Quasi-Newton LBFGS Solver:\n");
+        System.out.println("Rosenbrock Function Quasi-Newton L-BFGS Solver:\n");
         QuasiNewtonSolver quasiNewtonLBFGSSolver = new QuasiNewtonSolver(new RosenbrockFunction(),
                                                                         new double[] { -1.2, 1 },
                                                                         QuasiNewtonMethod.LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO);

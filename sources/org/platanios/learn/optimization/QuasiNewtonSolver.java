@@ -140,6 +140,13 @@ public class QuasiNewtonSolver extends AbstractLineSearchSolver {
                     currentH = previousH;
                 }
                 break;
+            case BROYDEN:
+                currentH = previousH.add(
+                        s[0].subtract(previousH.operate(y[0]))
+                                .outerProduct(previousH.preMultiply(s[0]))
+                                .scalarMultiply(1 / previousH.preMultiply(s[0]).dotProduct(y[0]))
+                );
+                break;
             default:
                 throw new NotImplementedException();
         }
