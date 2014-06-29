@@ -5,7 +5,7 @@ import org.platanios.learn.optimization.function.QuadraticFunction;
 
 /**
  * Class implementing an exact line search algorithm. It currently requires the objective function to be a quadratic
- * function. TODO: Implement for linear function as well, apart from only quadratic.
+ * function.
  *
  * @author Emmanouil Antonios Platanios
  */
@@ -30,7 +30,7 @@ public class ExactLineSearch implements LineSearch {
                                   RealVector previousPoint,
                                   RealVector previousDirection,
                                   double previousStepSize) {
-        return - objective.computeGradient(point).dotProduct(direction)
+        return -objective.computeGradient(point).dotProduct(direction)
                 / objective.getA().preMultiply(direction).dotProduct(direction);
     }
 }
