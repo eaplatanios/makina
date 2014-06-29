@@ -101,6 +101,7 @@ public class BacktrackingLineSearch extends IterativeLineSearch {
     /**
      * {@inheritDoc}
      */
+    @Override
     public double performLineSearch(RealVector point,
                                     RealVector direction) {
         double objectiveValueAtCurrentPoint = objective.computeValue(point);

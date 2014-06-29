@@ -107,6 +107,7 @@ abstract class IterativeLineSearch implements LineSearch {
     /**
      * {@inheritDoc}
      */
+    @Override
     public double computeStepSize(RealVector point,
                                   RealVector direction,
                                   RealVector previousPoint,

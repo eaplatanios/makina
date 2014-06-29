@@ -124,6 +124,7 @@ public class StrongWolfeInterpolationLineSearch extends IterativeLineSearch {
      *
      * @return  A step size value that satisfies the strong Wolfe conditions.
      */
+    @Override
     public double performLineSearch(RealVector point,
                                     RealVector direction) {
         double phi0 = objective.computeValue(point);

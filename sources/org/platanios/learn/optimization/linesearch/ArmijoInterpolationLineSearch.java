@@ -96,6 +96,7 @@ public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
      *
      * @return  A step size value that satisfies the Armijo condition (also known as the sufficient decrease condition).
      */
+    @Override
     public double performLineSearch(RealVector point,
                                     RealVector direction) {
         double phi0 = objective.computeValue(point);
