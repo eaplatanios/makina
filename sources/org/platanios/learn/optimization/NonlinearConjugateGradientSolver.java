@@ -8,6 +8,9 @@ import org.platanios.learn.optimization.linesearch.*;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
+ * These solvers are good for large scale problems and, on certain applications, competitive with limited-memory
+ * quasi-Newton methods as well.
+ *
  * @author Emmanouil Antonios Platanios
  */
 public class NonlinearConjugateGradientSolver extends AbstractSolver {
@@ -79,6 +82,7 @@ public class NonlinearConjugateGradientSolver extends AbstractSolver {
         }
     }
 
+    @Override
     public void iterationUpdate() {
         previousPoint = currentPoint;
         previousGradient = currentGradient;

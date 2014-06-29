@@ -33,6 +33,7 @@ public class NewtonSolver extends AbstractLineSearchSolver {
      * Here, if the Hessian matrix is not positive definite, we modify it so that the bounded modified factorization
      * property holds for it and we have global convergence for Newton's method.
      */
+    @Override
     public void updateDirection() {
         RealMatrix hessian = objective.computeHessian(currentPoint);
         // TODO: Check Hessian for positive definiteness and modify if necessary.
@@ -41,6 +42,7 @@ public class NewtonSolver extends AbstractLineSearchSolver {
                 new LUDecomposition(hessian).getSolver().getInverse().operate(currentGradient).mapMultiply(-1);
     }
 
+    @Override
     public void updatePoint() {
         currentPoint = currentPoint.add(currentDirection.mapMultiply(currentStepSize));
     }

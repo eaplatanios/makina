@@ -34,6 +34,7 @@ abstract class AbstractSolver implements Solver {
     boolean objectiveConverged = false;
     boolean gradientConverged = false;
 
+    @Override
     public RealVector solve() {
         printHeader();
         while (!checkTerminationConditions()) {
@@ -47,6 +48,7 @@ abstract class AbstractSolver implements Solver {
         return currentPoint;
     }
 
+    @Override
     public boolean checkTerminationConditions() {
         if (currentIteration > 0) {
             pointChange = currentPoint.subtract(previousPoint).getNorm();
@@ -70,6 +72,7 @@ abstract class AbstractSolver implements Solver {
         }
     }
 
+    @Override
     public void printHeader() {
         System.out.println("|----------------" +
                                    "-----------------------" +
@@ -89,6 +92,7 @@ abstract class AbstractSolver implements Solver {
                                    "======================|");
     }
 
+    @Override
     public void printIteration() {
         System.out.format("| %13d | %20s | %20s | %20s | %20s |%n",
                           currentIteration,
@@ -98,6 +102,7 @@ abstract class AbstractSolver implements Solver {
                           DECIMAL_FORMAT.format(gradientNorm));
     }
 
+    @Override
     public void printTerminationMessage() {
         System.out.println("|----------------" +
                                    "-----------------------" +

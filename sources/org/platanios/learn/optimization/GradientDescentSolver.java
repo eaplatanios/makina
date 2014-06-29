@@ -19,11 +19,13 @@ public class GradientDescentSolver extends AbstractLineSearchSolver {
         setLineSearch(lineSearch);
     }
 
+    @Override
     public void updateDirection() {
         currentGradient = objective.computeGradient(currentPoint);
         currentDirection = currentGradient.mapMultiply(-1);
     }
 
+    @Override
     public void updatePoint() {
         currentPoint = currentPoint.add(currentDirection.mapMultiply(currentStepSize));
     }

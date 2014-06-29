@@ -35,6 +35,7 @@ abstract class AbstractLineSearchSolver extends AbstractSolver {
         }
     }
 
+    @Override
     public void iterationUpdate() {
         previousGradient = currentGradient;
         previousDirection = currentDirection;
