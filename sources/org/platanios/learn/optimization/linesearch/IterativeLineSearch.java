@@ -46,9 +46,8 @@ abstract class IterativeLineSearch implements LineSearch {
      * step size value as the initial step size. If another step size initialization method is required, then the
      * alternative constructor must be used that receives the step size initialization method as its second argument.
      *
-     * @param   objective                       The objective function instance.
-     * @param   initialStepSize                 The initial step size value to use (it must have a value greater than
-     *                                          zero).
+     * @param   objective           The objective function instance.
+     * @param   initialStepSize     The initial step size value to use (it must have a value greater than zero).
      */
     public IterativeLineSearch(Function objective,
                                double initialStepSize) {
