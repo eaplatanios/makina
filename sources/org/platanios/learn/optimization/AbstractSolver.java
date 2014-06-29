@@ -2,8 +2,6 @@ package org.platanios.learn.optimization;
 
 import org.apache.commons.math3.linear.RealVector;
 
-import java.text.DecimalFormat;
-
 /**
  * @author Emmanouil Antonios Platanios
  */
@@ -60,7 +58,7 @@ abstract class AbstractSolver implements Solver {
                 gradientNorm = Math.abs(currentGradient.getMaxValue()) / (1 + Math.abs(currentObjectiveValue));
                 gradientConverged = gradientNorm <= gradientTolerance;
             } else {
-                gradientNorm = currentDirection.getNorm();
+                gradientNorm = currentGradient.getNorm();
                 gradientConverged = gradientNorm <= gradientTolerance;
             }
 

@@ -10,7 +10,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 /**
  * @author Emmanouil Antonios Platanios
  */
-class NonlinearConjugateGradientSolver extends AbstractSolver {
+public class NonlinearConjugateGradientSolver extends AbstractSolver {
     private final Function objective;
     private final NonlinearConjugateGradientMethod method;
     private final NonlinearConjugateGradientRestartMethod restartMethod;
