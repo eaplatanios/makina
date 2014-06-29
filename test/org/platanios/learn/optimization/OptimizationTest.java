@@ -33,7 +33,7 @@ public class OptimizationTest {
 //    @Test
 //    public void testNewtonsMethodSolver() {
 //        System.out.println("Rosenbrock Function Newton's Method:\n");
-//        NewtonRaphsonSolver newtonRaphsonSolver = new NewtonRaphsonSolver(new RosenbrockFunction(), new double[] { -1.2, 1 });
+//        NewtonSolver newtonRaphsonSolver = new NewtonSolver(new RosenbrockFunction(), new double[] { -1.2, 1 });
 //        double[] actualResult = newtonRaphsonSolver.solve().toArray();
 //        double[] expectedResult = new double[] { 1, 1 };
 //        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
@@ -41,7 +41,7 @@ public class OptimizationTest {
 //        System.out.println("Quadratic Function Newton's Method:\n");
 //        RealMatrix A = new Array2DRowRealMatrix(new double[][] { { 1, 1 }, { -3, 1 } });
 //        RealVector b = new ArrayRealVector(new double[] { 6, 2 });
-//        newtonRaphsonSolver = new NewtonRaphsonSolver(new QuadraticFunction(A, b), new double[] { 0, 0 });
+//        newtonRaphsonSolver = new NewtonSolver(new QuadraticFunction(A, b), new double[] { 0, 0 });
 //        actualResult = newtonRaphsonSolver.solve().toArray();
 //        expectedResult = new double[] { 1, 5 };
 //        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
@@ -119,7 +119,7 @@ public class OptimizationTest {
 //        double[] expectedResult = new double[] { 1, 1 };
 //        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 //    }
-
+//
 //    @Test
 //    public void testFletcherRievesPolakRibiereSolver() {
 //        System.out.println("Rosenbrock Function Fletcher-Rieves-Polak-Ribiere Solver:\n");
@@ -131,7 +131,7 @@ public class OptimizationTest {
 //        double[] expectedResult = new double[] { 1, 1 };
 //        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 //    }
-
+//
 //    @Test
 //    public void testDaiYuanSolver() {
 //        System.out.println("Rosenbrock Function Dai-Yuan Solver:\n");
@@ -143,7 +143,7 @@ public class OptimizationTest {
 //        double[] expectedResult = new double[] { 1, 1 };
 //        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 //    }
-
+//
 //    @Test
 //    public void testHagerZhangSolver() {
 //        System.out.println("Rosenbrock Function Hager-Zhang Solver:\n");
@@ -190,7 +190,7 @@ public class OptimizationTest {
 //    }
 
     @Test
-    public void testQuasiNewtonBFGSSolver() {
+    public void testQuasiNewtonLBFGSSolver() {
         System.out.println("Rosenbrock Function Quasi-Newton LBFGS Solver:\n");
         QuasiNewtonSolver quasiNewtonLBFGSSolver = new QuasiNewtonSolver(new RosenbrockFunction(),
                                                                         new double[] { -1.2, 1 },
