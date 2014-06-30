@@ -31,7 +31,7 @@ public class ExactLineSearch implements LineSearch {
                                   RealVector previousPoint,
                                   RealVector previousDirection,
                                   double previousStepSize) {
-        return -objective.computeGradient(point).dotProduct(direction)
+        return -objective.getGradient(point).dotProduct(direction)
                 / objective.getA().preMultiply(direction).dotProduct(direction);
     }
 }

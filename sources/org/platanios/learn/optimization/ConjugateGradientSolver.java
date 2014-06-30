@@ -15,7 +15,6 @@ import org.platanios.learn.optimization.function.QuadraticFunction;
  * @author Emmanouil Antonios Platanios
  */
 public class ConjugateGradientSolver extends AbstractSolver {
-    private final QuadraticFunction objective;
     private final RealMatrix A;
 
     public ConjugateGradientSolver(QuadraticFunction objective,
@@ -23,9 +22,9 @@ public class ConjugateGradientSolver extends AbstractSolver {
         this.objective = objective;
         A = objective.getA();
         currentPoint = new ArrayRealVector(initialPoint);
-        currentGradient = objective.computeGradient(currentPoint);
+        currentGradient = objective.getGradient(currentPoint);
         currentDirection = currentGradient.mapMultiply(-1);
-        currentObjectiveValue = objective.computeValue(currentPoint);
+        currentObjectiveValue = objective.getValue(currentPoint);
         currentIteration = 0;
     }
 
@@ -40,6 +39,6 @@ public class ConjugateGradientSolver extends AbstractSolver {
         currentGradient = previousGradient.add(A.operate(previousDirection).mapMultiply(stepSize));
         double residualNormsRatio = currentGradient.dotProduct(currentGradient) / previousResidualNormSquared;
         currentDirection = currentGradient.mapMultiply(-1).add(previousDirection.mapMultiply(residualNormsRatio));
-        currentObjectiveValue = objective.computeValue(currentPoint);
+        currentObjectiveValue = objective.getValue(currentPoint);
     }
 }

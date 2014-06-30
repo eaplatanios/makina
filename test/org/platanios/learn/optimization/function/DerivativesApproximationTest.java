@@ -18,7 +18,7 @@ public class DerivativesApproximationTest {
                 new DerivativesApproximation(function, DerivativesApproximationMethod.FORWARD_DIFFERENCE);
         RealVector point = new ArrayRealVector(new double[] { -1.2, 1 });
         double[] actualResult = derivativesApproximation.approximateGradient(point).toArray();
-        double[] expectedResult = function.computeGradient(point).toArray();
+        double[] expectedResult = function.getGradient(point).toArray();
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-5);
     }
 
@@ -29,7 +29,7 @@ public class DerivativesApproximationTest {
                 new DerivativesApproximation(function, DerivativesApproximationMethod.CENTRAL_DIFFERENCE);
         RealVector point = new ArrayRealVector(new double[] { -1.2, 1 });
         double[] actualResult = derivativesApproximation.approximateGradient(point).toArray();
-        double[] expectedResult = function.computeGradient(point).toArray();
+        double[] expectedResult = function.getGradient(point).toArray();
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-7);
     }
 
@@ -40,7 +40,7 @@ public class DerivativesApproximationTest {
                 new DerivativesApproximation(function, DerivativesApproximationMethod.FORWARD_DIFFERENCE);
         RealVector point = new ArrayRealVector(new double[] { -1.2, 1 });
         double[][] actualResultTemp = derivativesApproximation.approximateHessian(point).getData();
-        double[][] expectedResultTemp = function.computeHessian(point).getData();
+        double[][] expectedResultTemp = function.getHessian(point).getData();
         double[] actualResult = new double[actualResultTemp.length * actualResultTemp[0].length];
         double[] expectedResult = new double[expectedResultTemp.length * expectedResultTemp[0].length];
         for (int i = 0; i < actualResultTemp.length; i++) {
@@ -59,7 +59,7 @@ public class DerivativesApproximationTest {
                 new DerivativesApproximation(function, DerivativesApproximationMethod.CENTRAL_DIFFERENCE);
         RealVector point = new ArrayRealVector(new double[] { -1.2, 1 });
         double[][] actualResultTemp = derivativesApproximation.approximateHessian(point).getData();
-        double[][] expectedResultTemp = function.computeHessian(point).getData();
+        double[][] expectedResultTemp = function.getHessian(point).getData();
         double[] actualResult = new double[actualResultTemp.length * actualResultTemp[0].length];
         double[] expectedResult = new double[expectedResultTemp.length * expectedResultTemp[0].length];
         for (int i = 0; i < actualResultTemp.length; i++) {
@@ -78,7 +78,7 @@ public class DerivativesApproximationTest {
                 new DerivativesApproximation(function, DerivativesApproximationMethod.FORWARD_DIFFERENCE);
         RealVector point = new ArrayRealVector(new double[] { -1.2, 1 });
         double[][] actualResultTemp = derivativesApproximation.approximateHessianGivenGradient(point).getData();
-        double[][] expectedResultTemp = function.computeHessian(point).getData();
+        double[][] expectedResultTemp = function.getHessian(point).getData();
         double[] actualResult = new double[actualResultTemp.length * actualResultTemp[0].length];
         double[] expectedResult = new double[expectedResultTemp.length * expectedResultTemp[0].length];
         for (int i = 0; i < actualResultTemp.length; i++) {
@@ -97,7 +97,7 @@ public class DerivativesApproximationTest {
                 new DerivativesApproximation(function, DerivativesApproximationMethod.CENTRAL_DIFFERENCE);
         RealVector point = new ArrayRealVector(new double[] { -1.2, 1 });
         double[][] actualResultTemp = derivativesApproximation.approximateHessianGivenGradient(point).getData();
-        double[][] expectedResultTemp = function.computeHessian(point).getData();
+        double[][] expectedResultTemp = function.getHessian(point).getData();
         double[] actualResult = new double[actualResultTemp.length * actualResultTemp[0].length];
         double[] expectedResult = new double[expectedResultTemp.length * expectedResultTemp[0].length];
         for (int i = 0; i < actualResultTemp.length; i++) {
@@ -118,7 +118,7 @@ public class DerivativesApproximationTest {
         RealVector p = new ArrayRealVector(new double[] { 1.21, 0.53 });
         double[] actualResult =
                 derivativesApproximation.approximateHessianVectorProductGivenGradient(point, p).toArray();
-        double[] expectedResult = function.computeHessian(point).operate(p).toArray();
+        double[] expectedResult = function.getHessian(point).operate(p).toArray();
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-4);
     }
 

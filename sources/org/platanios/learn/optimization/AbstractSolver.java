@@ -1,11 +1,14 @@
 package org.platanios.learn.optimization;
 
 import org.apache.commons.math3.linear.RealVector;
+import org.platanios.learn.optimization.function.AbstractFunction;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
 abstract class AbstractSolver implements Solver {
+    AbstractFunction objective;
+
     int currentIteration;
     RealVector currentPoint;
     RealVector previousPoint;
@@ -75,17 +78,20 @@ abstract class AbstractSolver implements Solver {
     @Override
     public void printHeader() {
         System.out.println("|----------------" +
+                                   "----------------" +
                                    "-----------------------" +
                                    "-----------------------" +
                                    "-----------------------" +
                                    "----------------------|");
-        System.out.format("| %13s | %20s | %20s | %20s | %20s |%n",
+        System.out.format("| %13s | %13s | %20s | %20s | %20s | %20s |%n",
                           "Iteration #",
+                          "Func. Eval. #",
                           "Objective Value",
                           "Objective Change",
                           "Point Change",
                           "Gradient Norm");
         System.out.println("|===============|" +
+                                   "===============|" +
                                    "======================|" +
                                    "======================|" +
                                    "======================|" +
@@ -94,8 +100,9 @@ abstract class AbstractSolver implements Solver {
 
     @Override
     public void printIteration() {
-        System.out.format("| %13d | %20s | %20s | %20s | %20s |%n",
+        System.out.format("| %13d | %13s | %20s | %20s | %20s | %20s |%n",
                           currentIteration,
+                          objective.getNumberOfFunctionEvaluations(),
                           DECIMAL_FORMAT.format(currentObjectiveValue),
                           DECIMAL_FORMAT.format(objectiveChange),
                           DECIMAL_FORMAT.format(pointChange),
@@ -105,6 +112,7 @@ abstract class AbstractSolver implements Solver {
     @Override
     public void printTerminationMessage() {
         System.out.println("|----------------" +
+                                   "----------------" +
                                    "-----------------------" +
                                    "-----------------------" +
                                    "-----------------------" +

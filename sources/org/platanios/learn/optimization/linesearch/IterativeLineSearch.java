@@ -122,9 +122,9 @@ abstract class IterativeLineSearch implements LineSearch {
                 // of the optimization algorithm).
                 if (previousDirection != null) {
                     initialStepSize = StepSizeInitialization.computeByConservingFirstOrderChange(
-                            objective.computeGradient(point),
+                            objective.getGradient(point),
                             direction,
-                            objective.computeGradient(previousPoint),
+                            objective.getGradient(previousPoint),
                             previousDirection,
                             previousStepSize
                     );
@@ -137,9 +137,9 @@ abstract class IterativeLineSearch implements LineSearch {
                 // of the optimization algorithm).
                 if (previousDirection != null) {
                     initialStepSize = StepSizeInitialization.computeByQuadraticInterpolation(
-                            objective.computeValue(point),
-                            objective.computeValue(previousPoint),
-                            objective.computeGradient(previousPoint),
+                            objective.getValue(point),
+                            objective.getValue(previousPoint),
+                            objective.getGradient(previousPoint),
                             previousDirection
                     );
                 } else {
@@ -151,9 +151,9 @@ abstract class IterativeLineSearch implements LineSearch {
                 // of the optimization algorithm).
                 if (previousDirection != null) {
                     initialStepSize = StepSizeInitialization.computeByModifiedQuadraticInterpolation(
-                            objective.computeValue(point),
-                            objective.computeValue(previousPoint),
-                            objective.computeGradient(previousPoint),
+                            objective.getValue(point),
+                            objective.getValue(previousPoint),
+                            objective.getGradient(previousPoint),
                             previousDirection
                     );
                 } else {

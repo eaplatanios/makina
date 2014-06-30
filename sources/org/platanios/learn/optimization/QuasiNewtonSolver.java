@@ -65,7 +65,7 @@ public class QuasiNewtonSolver extends AbstractLineSearchSolver {
         setLineSearch(lineSearch);
         identityMatrix = MatrixUtils.createRealIdentityMatrix(initialPoint.length);
         currentH = identityMatrix;
-        currentGradient = objective.computeGradient(currentPoint);
+        currentGradient = objective.getGradient(currentPoint);
         if (method != QuasiNewtonMethod.LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO) {
             m = 1;
         } else {
@@ -107,7 +107,7 @@ public class QuasiNewtonSolver extends AbstractLineSearchSolver {
     @Override
     public void updatePoint() {
         currentPoint = previousPoint.add(currentDirection.mapMultiply(currentStepSize));
-        currentGradient = objective.computeGradient(currentPoint);
+        currentGradient = objective.getGradient(currentPoint);
         updateStoredVectors();
     }
 

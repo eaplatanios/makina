@@ -104,8 +104,8 @@ public class BacktrackingLineSearch extends IterativeLineSearch {
     @Override
     public double performLineSearch(RealVector point,
                                     RealVector direction) {
-        double objectiveValueAtCurrentPoint = objective.computeValue(point);
-        RealVector objectiveGradientAtCurrentPoint = objective.computeGradient(point);
+        double objectiveValueAtCurrentPoint = objective.getValue(point);
+        RealVector objectiveGradientAtCurrentPoint = objective.getGradient(point);
         double currentStepSize = initialStepSize;
 
         while (!LineSearchConditions.checkArmijoCondition(objective,

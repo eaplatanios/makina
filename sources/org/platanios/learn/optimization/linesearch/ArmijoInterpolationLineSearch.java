@@ -99,8 +99,8 @@ public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
     @Override
     public double performLineSearch(RealVector point,
                                     RealVector direction) {
-        double phi0 = objective.computeValue(point);
-        RealVector objectiveGradientAtCurrentPoint = objective.computeGradient(point);
+        double phi0 = objective.getValue(point);
+        RealVector objectiveGradientAtCurrentPoint = objective.getGradient(point);
         double phiPrime0 = objectiveGradientAtCurrentPoint.dotProduct(direction);
 
         aNew = initialStepSize;
@@ -148,7 +148,7 @@ public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
                                                double phi0,
                                                double phiPrime0) {
         aOld = aNew;
-        double phiA0 = objective.computeValue(point.add(direction.mapMultiply(aOld)));
+        double phiA0 = objective.getValue(point.add(direction.mapMultiply(aOld)));
         aNew = -phiPrime0 * Math.pow(aOld, 2) / (2 * (phiA0 - phi0 - aOld * phiPrime0));
 
         // Ensure that we make reasonable progress and that the final step size is not too small.
@@ -177,8 +177,8 @@ public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
         double a1Square = Math.pow(aNew, 2);
         double a0Cube = Math.pow(aOld, 3);
         double a1Cube = Math.pow(aNew, 3);
-        double phiA0 = objective.computeValue(point.add(direction.mapMultiply(aOld)));
-        double phiA1 = objective.computeValue(point.add(direction.mapMultiply(aNew)));
+        double phiA0 = objective.getValue(point.add(direction.mapMultiply(aOld)));
+        double phiA1 = objective.getValue(point.add(direction.mapMultiply(aNew)));
         double denominator = a0Square * a1Square * (aNew - aOld);
         double a = (a0Square * (phiA1 - phi0 - aNew * phiPrime0) - a1Square * (phiA0 - phi0 - aOld * phiPrime0))
                 / denominator;

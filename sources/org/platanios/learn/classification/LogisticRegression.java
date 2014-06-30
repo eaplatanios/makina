@@ -4,10 +4,8 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
-import org.platanios.learn.optimization.GradientDescentSolver;
 import org.platanios.learn.optimization.NonlinearConjugateGradientSolver;
-import org.platanios.learn.optimization.QuasiNewtonSolver;
-import org.platanios.learn.optimization.function.Function;
+import org.platanios.learn.optimization.function.AbstractFunction;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -46,7 +44,7 @@ public class LogisticRegression {
         return predictions;
     }
 
-    private class LikelihoodFunction implements Function {
+    private class LikelihoodFunction extends AbstractFunction {
         public double computeValue(RealVector weights) {
             double likelihood = 0;
             for (int n = 0; n < trainingDataSize; n++) {
@@ -66,10 +64,6 @@ public class LogisticRegression {
                 );
             }
             return gradient;
-        }
-
-        public RealMatrix computeHessian(RealVector optimizationVariables) {
-            return null;
         }
     }
 }

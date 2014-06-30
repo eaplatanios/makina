@@ -9,8 +9,6 @@ import org.platanios.learn.optimization.linesearch.*;
  * @author Emmanouil Antonios Platanios
  */
 abstract class AbstractLineSearchSolver extends AbstractSolver {
-    final AbstractFunction objective;
-
     /** Default value: If quadratic or linear function it is ExactLineSearch, otherwise it is StrongWolfeLineSearch
      * with CONSERVE_FIRST_ORDER_CHANGE for the step size initialization method. */
     private LineSearch lineSearch;
@@ -19,7 +17,7 @@ abstract class AbstractLineSearchSolver extends AbstractSolver {
                                     double[] initialPoint) {
         this.objective = objective;
         this.currentPoint = new ArrayRealVector(initialPoint);
-        currentObjectiveValue = objective.computeValue(currentPoint);
+        currentObjectiveValue = objective.getValue(currentPoint);
         currentIteration = 0;
 
         if (objective instanceof QuadraticFunction) {
@@ -52,7 +50,7 @@ abstract class AbstractLineSearchSolver extends AbstractSolver {
         previousPoint = currentPoint;
         previousObjectiveValue = currentObjectiveValue;
         updatePoint();
-        currentObjectiveValue = objective.computeValue(currentPoint);
+        currentObjectiveValue = objective.getValue(currentPoint);
     }
 
     public void updateStepSize() {

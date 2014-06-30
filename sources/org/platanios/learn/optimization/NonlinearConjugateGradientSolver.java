@@ -62,9 +62,9 @@ public class NonlinearConjugateGradientSolver extends AbstractSolver {
         this.method = method;
         this.restartMethod = restartMethod;
         currentPoint = new ArrayRealVector(initialPoint);
-        currentGradient = objective.computeGradient(currentPoint);
+        currentGradient = objective.getGradient(currentPoint);
         currentDirection = currentGradient.mapMultiply(-1);
-        currentObjectiveValue = objective.computeValue(currentPoint);
+        currentObjectiveValue = objective.getValue(currentPoint);
         currentIteration = 0;
         checkForPointConvergence = false;
         checkForObjectiveConvergence = false;
@@ -95,10 +95,10 @@ public class NonlinearConjugateGradientSolver extends AbstractSolver {
                                                      previousDirection,
                                                      previousStepSize);
         currentPoint = previousPoint.add(previousDirection.mapMultiply(currentStepSize));
-        currentGradient = objective.computeGradient(currentPoint);
+        currentGradient = objective.getGradient(currentPoint);
         beta = checkForRestart() ? 0 : computeBeta();
         currentDirection = currentGradient.mapMultiply(-1).add(previousDirection.mapMultiply(beta));
-        currentObjectiveValue = objective.computeValue(currentPoint);
+        currentObjectiveValue = objective.getValue(currentPoint);
     }
 
     private boolean checkForRestart() {
