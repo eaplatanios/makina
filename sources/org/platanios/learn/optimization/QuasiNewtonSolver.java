@@ -33,11 +33,12 @@ public class QuasiNewtonSolver extends AbstractLineSearchSolver {
     public QuasiNewtonSolver(AbstractFunction objective,
                              double[] initialPoint) {
         super(objective, initialPoint);
-        setLineSearch(new StrongWolfeInterpolationLineSearch(objective,
-                                                             StepSizeInitializationMethod.UNIT,
-                                                             1e-4,
-                                                             0.9,
-                                                             1000));
+        StrongWolfeInterpolationLineSearch lineSearch = new StrongWolfeInterpolationLineSearch(objective,
+                                                                                               1e-4,
+                                                                                               0.9,
+                                                                                               1000);
+        lineSearch.setStepSizeInitializationMethod(StepSizeInitializationMethod.UNIT);
+        setLineSearch(lineSearch);
         identityMatrix = MatrixUtils.createRealIdentityMatrix(initialPoint.length);
         currentH = identityMatrix;
         currentGradient = objective.getGradient(currentPoint);

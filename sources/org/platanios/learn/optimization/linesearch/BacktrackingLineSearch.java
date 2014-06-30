@@ -19,80 +19,19 @@ public class BacktrackingLineSearch extends IterativeLineSearch {
 
     /**
      * Constructs a backtracking line search solver for the provided objective function instance and using the provided
-     * step size initialization method to compute the initial step size. If the selected step size initialization method
-     * is simply a constant value, then the alternative constructor must be used that receives the initial step size
-     * value as its second argument.
+     * parameters.
      *
-     * @param   objective                       The objective function instance.
-     * @param   stepSizeInitializationMethod    The step size initialization method.
-     * @param   contraptionFactor               The contraption factor to use during the step size update on each
-     *                                          failure to satisfy the Armijo condition.
-     * @param   c                               The proportionality constant to use for the Armijo condition.
+     * @param   objective           The objective function instance.
+     * @param   contraptionFactor   The contraption factor to use during the step size update on each failure to satisfy
+     *                              the Armijo condition. The value provided must lie between 0 and 1.
+     * @param   c                   The proportionality constant to use for the Armijo condition. The value provided
+     *                              must lie between 0 and 1.
      */
-    public BacktrackingLineSearch(AbstractFunction objective,
-                                  StepSizeInitializationMethod stepSizeInitializationMethod,
-                                  double contraptionFactor,
-                                  double c) {
-        super(objective, stepSizeInitializationMethod);
+    public BacktrackingLineSearch(AbstractFunction objective, double contraptionFactor, double c) {
+        super(objective);
 
         Preconditions.checkArgument(contraptionFactor > 0 && contraptionFactor < 1);
         Preconditions.checkArgument(c > 0 && c < 1);
-
-        this.contraptionFactor = contraptionFactor;
-        this.c = c;
-    }
-
-    /**
-     * Constructs a backtracking line search solver for the provided objective function instance and using the provided
-     * step size value as the initial step size. If another step size initialization method is required, then the
-     * alternative constructor must be used that receives the step size initialization method as its second argument.
-     *
-     * @param   objective                       The objective function instance.
-     * @param   contraptionFactor               The contraption factor to use during the step size update on each
-     *                                          failure to satisfy the Armijo condition.
-     * @param   c                               The proportionality constant to use for the Armijo condition.
-     * @param   initialStepSize                 The initial step size value to use (it must have a value greater than
-     *                                          zero).
-     */
-    public BacktrackingLineSearch(AbstractFunction objective,
-                                  double contraptionFactor,
-                                  double c,
-                                  double initialStepSize) {
-        super(objective, initialStepSize);
-
-        Preconditions.checkArgument(contraptionFactor > 0 && contraptionFactor < 1);
-        Preconditions.checkArgument(c > 0 && c < 1);
-        Preconditions.checkArgument(initialStepSize > 0);
-
-        this.contraptionFactor = contraptionFactor;
-        this.c = c;
-    }
-
-    /**
-     * Constructs a backtracking line search solver for the provided objective function instance and using the provided
-     * step size initialization method and the provided initial step size. Using this constructor only makes sense if
-     * the selected step size initialization method is CONSTANT. For all other cases the extra initial step size
-     * argument is not required. Furthermore, if the selected step size initialization method is not CONSTANT, then that
-     * extra argument is completely ignored!
-     *
-     * @param   objective                       The objective function instance.
-     * @param   stepSizeInitializationMethod    The step size initialization method.
-     * @param   contraptionFactor               The contraption factor to use during the step size update on each
-     *                                          failure to satisfy the Armijo condition.
-     * @param   c                               The proportionality constant to use for the Armijo condition.
-     * @param   initialStepSize                 The initial step size value to use (it must have a value greater than
-     *                                          zero).
-     */
-    public BacktrackingLineSearch(AbstractFunction objective,
-                                  StepSizeInitializationMethod stepSizeInitializationMethod,
-                                  double contraptionFactor,
-                                  double c,
-                                  double initialStepSize) {
-        super(objective, stepSizeInitializationMethod, initialStepSize);
-
-        Preconditions.checkArgument(contraptionFactor > 0 && contraptionFactor < 1);
-        Preconditions.checkArgument(c > 0 && c < 1);
-        Preconditions.checkArgument(initialStepSize > 0);
 
         this.contraptionFactor = contraptionFactor;
         this.c = c;

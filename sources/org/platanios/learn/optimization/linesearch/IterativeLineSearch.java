@@ -13,95 +13,20 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 abstract class IterativeLineSearch implements LineSearch {
     /** The objective function instance. */
     final AbstractFunction objective;
-    /** The step size initialization method. */
-    final StepSizeInitializationMethod stepSizeInitializationMethod;
 
+    /** The step size initialization method. */
+    StepSizeInitializationMethod stepSizeInitializationMethod = StepSizeInitializationMethod.UNIT;
     /** The value of the initial step size (this value is set automatically using the chosen step size initialization
      * method). */
-    double initialStepSize;
+    double initialStepSize = 1;
 
     /**
-     * Constructs an iterative line search solver for the provided objective function instance and using the provided
-     * step size initialization method to compute the initial step size. If the selected step size initialization method
-     * is simply a constant value, then the alternative constructor must be used that receives the initial step size
-     * value as its second argument.
+     * Constructs an iterative line search solver for the provided objective function instance.
      *
-     * @param   objective                       The objective function instance.
-     * @param   stepSizeInitializationMethod    The step size initialization method.
+     * @param   objective   The objective function instance.
      */
-    public IterativeLineSearch(AbstractFunction objective,
-                               StepSizeInitializationMethod stepSizeInitializationMethod) {
+    public IterativeLineSearch(AbstractFunction objective) {
         this.objective = objective;
-        this.stepSizeInitializationMethod = stepSizeInitializationMethod;
-        this.initialStepSize = 1;
-
-        if (stepSizeInitializationMethod == StepSizeInitializationMethod.CONSTANT) {
-            throw new IllegalArgumentException("An initial step size value is required " +
-                    "when the step size initialization method is set to CONSTANT!");
-        }
-    }
-
-    /**
-     * Constructs an iterative line search solver for the provided objective function instance and using the provided
-     * step size value as the initial step size. If another step size initialization method is required, then the
-     * alternative constructor must be used that receives the step size initialization method as its second argument.
-     *
-     * @param   objective           The objective function instance.
-     * @param   initialStepSize     The initial step size value to use (it must have a value greater than zero).
-     */
-    public IterativeLineSearch(AbstractFunction objective,
-                               double initialStepSize) {
-        Preconditions.checkArgument(initialStepSize > 0);
-
-        this.objective = objective;
-        this.stepSizeInitializationMethod = StepSizeInitializationMethod.CONSTANT;
-        this.initialStepSize = initialStepSize;
-    }
-
-    /**
-     * Constructs an iterative line search solver for the provided objective function instance and using the provided
-     * step size initialization method and the provided initial step size. Using this constructor only makes sense if
-     * the selected step size initialization method is CONSTANT. For all other cases the extra initial step size
-     * argument is not required. Furthermore, if the selected step size initialization method is not CONSTANT, then that
-     * extra argument is completely ignored!
-     *
-     * @param   objective                       The objective function instance.
-     * @param   stepSizeInitializationMethod    The step size initialization method.
-     * @param   initialStepSize                 The initial step size value to use (it must have a value greater than
-     *                                          zero).
-     */
-    public IterativeLineSearch(AbstractFunction objective,
-                               StepSizeInitializationMethod stepSizeInitializationMethod,
-                               double initialStepSize) {
-        Preconditions.checkArgument(initialStepSize > 0);
-
-        this.objective = objective;
-        this.stepSizeInitializationMethod = stepSizeInitializationMethod;
-
-        switch (stepSizeInitializationMethod) {
-            case UNIT:
-                this.initialStepSize = 1;
-                if (initialStepSize != 1) {
-                    System.err.println("WARNING: The selected step size initialization method is UNIT, but the " +
-                            "selected initial step size is not 1.0! A value of 1.0 will be used for the initial " +
-                            "step size!");
-                } else {
-                    System.out.println("An initial step size value is not required when the selected step size " +
-                            "initialization method is UNIT.");
-                }
-                break;
-            case CONSTANT:
-                this.initialStepSize = initialStepSize;
-                if (initialStepSize == 1) {
-                    System.out.println("The selected step size initialization method is CONSTANT and the initial" +
-                            "step size value is 1. That is equivalent to simply using UNIT as the selected step size" +
-                            "initialization method.");
-                }
-                break;
-            default:
-                System.out.println("An initial step size value is not required when the selected step size " +
-                        "initialization method is not CONSTANT.");
-        }
     }
 
     /**
@@ -114,8 +39,10 @@ abstract class IterativeLineSearch implements LineSearch {
                                   RealVector previousDirection,
                                   double previousStepSize) {
         switch (stepSizeInitializationMethod) {
-            case UNIT:      // Initial step size for this case was set in the constructor.
-            case CONSTANT:  // Initial step size for this case was set in the constructor.
+            case UNIT:
+                initialStepSize = 1;
+                break;
+            case CONSTANT:  // Initial step size for this case was set using the relevant setter method.
                 break;
             case CONSERVE_FIRST_ORDER_CHANGE:
                 // Check whether the previous direction is set (if it is not it means that we are on the first iteration
@@ -176,4 +103,51 @@ abstract class IterativeLineSearch implements LineSearch {
      * @return              A step size value that satisfies certain criteria that depend on the algorithm choice.
      */
     public abstract double performLineSearch(RealVector point, RealVector direction);
+
+    /**
+     * Gets the step size initialization method used by this iterative line search instance.
+     *
+     * @return  The step size initialization method used by this iterative line search instance.
+     */
+    public StepSizeInitializationMethod getStepSizeInitializationMethod() {
+        return stepSizeInitializationMethod;
+    }
+
+    /**
+     * Sets the step size initialization method for this iterative line search instance. If the selected method is
+     * CONSTANT and the desired initial step size value to be used is not 1, then {@link #setInitialStepSize(double)}
+     * must be called as well to set the constant value of the initial step size.
+     *
+     * @param   stepSizeInitializationMethod    The step size initialization method to be used.
+     */
+    public void setStepSizeInitializationMethod(StepSizeInitializationMethod stepSizeInitializationMethod) {
+        this.stepSizeInitializationMethod = stepSizeInitializationMethod;
+    }
+
+    /**
+     * Gets the initial step size value used by this iterative line search instance. If the selected step size
+     * initialization method is CONSTANT, then the initial step value can have any positive real number value.
+     * Otherwise, the initial step size value that is returned by this method is not actually being used by this
+     * iterative line search instance. Note that if the step size initialization method is UNIT, then the initial step
+     * size value that is always used by this iterative line search instance is 1.
+     *
+     * @return  The value of the initial step size.
+     */
+    public double getInitialStepSize() {
+        return initialStepSize;
+    }
+
+    /**
+     * Sets the initial step size value used by this iterative line search instance. This method is only useful if the
+     * selected step size initialization method is CONSTANT. Otherwise, the initial step size variable is not actually
+     * being used by this iterative line search instance. Note that if the step size initialization method is UNIT, then
+     * the initial step size value that is always used by this iterative line search instance is 1.
+     *
+     * @param   initialStepSize     The initial step size value to use. The value provided must be a positive real
+     *                              number.
+     */
+    public void setInitialStepSize(double initialStepSize) {
+        Preconditions.checkArgument(initialStepSize > 0);
+        this.initialStepSize = initialStepSize;
+    }
 }

@@ -23,7 +23,8 @@ public class LineSearchConditions {
      *                                          satisfied.
      * @param   stepSize                        The value of the step size for which we check whether the Armijo
      *                                          condition is satisfied.
-     * @param   c                               The proportionality constant used for the Armijo condition.
+     * @param   c                               The proportionality constant used for the Armijo condition. The value
+     *                                          provided must lie between 0 and 1.
      * @param   objectiveValueAtCurrentPoint    The value of the objective function at the current point.
      * @param   objectiveGradientAtCurrentPoint The gradient of the objective function evaluated at the current point.
      * @return                                  A boolean value indicating whether the Armijo condition is satisfied for
@@ -61,9 +62,11 @@ public class LineSearchConditions {
      * @param   stepSize                        The value of the step size for which we check whether the Wolfe
      *                                          conditions are satisfied.
      * @param   c1                              The proportionality constant used for the first of the two Wolfe
-     *                                          conditions (that is, the Armijo condition).
+     *                                          conditions (that is, the Armijo condition). The value provided must lie
+     *                                          between 0 and 1.
      * @param   c2                              The proportionality constant used for the second of the two Wolfe
-     *                                          conditions (that is, the curvature condition).
+     *                                          conditions (that is, the curvature condition). The value provided must
+     *                                          lie between {@code c1} and 1.
      * @param   strong                          A boolean value indicating whether or not to check for the strong Wolfe
      *                                          conditions. The only difference is actually on the curvature condition
      *                                          and, when we use the strong Wolfe conditions instead of the simple Wolfe
@@ -125,7 +128,8 @@ public class LineSearchConditions {
      *                                          satisfied.
      * @param   stepSize                        The value of the step size for which we check whether the Goldstein
      *                                          conditions are satisfied.
-     * @param   c                               The proportionality constant used for the Goldstein conditions.
+     * @param   c                               The proportionality constant used for the Goldstein conditions. The
+     *                                          value provided must lie between 0 and 0.5.
      * @param   objectiveValueAtCurrentPoint    The value of the objective function at the current point.
      * @param   objectiveGradientAtCurrentPoint The gradient of the objective function evaluated at the current point.
      * @return                                  A boolean value indicating whether the Goldstein conditions are

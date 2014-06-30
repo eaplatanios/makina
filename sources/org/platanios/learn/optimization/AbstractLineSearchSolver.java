@@ -19,13 +19,9 @@ abstract class AbstractLineSearchSolver extends AbstractSolver {
         if (objective instanceof QuadraticFunction) {
             lineSearch = new ExactLineSearch((QuadraticFunction) objective);
         } else {
-            lineSearch = new StrongWolfeInterpolationLineSearch(
-                    objective,
-                    StepSizeInitializationMethod.CONSERVE_FIRST_ORDER_CHANGE,
-                    1e-4,
-                    0.9,
-                    10
-            );
+            lineSearch = new StrongWolfeInterpolationLineSearch(objective, 1e-4, 0.9, 10);
+            ((StrongWolfeInterpolationLineSearch) lineSearch)
+                    .setStepSizeInitializationMethod(StepSizeInitializationMethod.CONSERVE_FIRST_ORDER_CHANGE);
         }
     }
 

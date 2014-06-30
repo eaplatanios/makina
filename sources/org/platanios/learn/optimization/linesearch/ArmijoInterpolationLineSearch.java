@@ -27,66 +27,16 @@ public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
 
     /**
      * Constructs an Armijo interpolation based line search solver for the provided objective function instance, using
-     * the provided step size initialization method to compute the initial value of the step size and the provided
-     * parameters. If the selected step size initialization method is simply a constant value, then the alternative
-     * constructor must be used that receives the initial step size value as its second argument.
+     * the provided parameter for the Armijo condition.
      *
-     * @param   objective                       The objective function instance.
-     * @param   stepSizeInitializationMethod    The step size initialization method.
-     * @param   c                               The proportionality constant used for the Armijo condition.
+     * @param   objective   The objective function instance.
+     * @param   c           The proportionality constant used for the Armijo condition. The value provided must lie
+     *                      between 0 and 1.
      */
-    public ArmijoInterpolationLineSearch(AbstractFunction objective,
-                                         StepSizeInitializationMethod stepSizeInitializationMethod,
-                                         double c) {
-        super(objective, stepSizeInitializationMethod);
+    public ArmijoInterpolationLineSearch(AbstractFunction objective, double c) {
+        super(objective);
 
         Preconditions.checkArgument(c > 0 && c < 1);
-
-        this.c = c;
-    }
-
-    /**
-     * Constructs an Armijo interpolation based line search solver for the provided objective function instance, using
-     * the provided initial value for the step size and the provided parameters. If another step size initialization
-     * method is required, then the alternative constructor must be used that receives the step size initialization
-     * method as its second argument.
-     *
-     * @param   objective           The objective function instance.
-     * @param   initialStepSize     The initial step size value to use (it must have a value greater than zero).
-     * @param   c                   The proportionality constant used for the Armijo condition.
-     */
-    public ArmijoInterpolationLineSearch(AbstractFunction objective,
-                                         double initialStepSize,
-                                         double c) {
-        super(objective, initialStepSize);
-
-        Preconditions.checkArgument(c > 0 && c < 1);
-        Preconditions.checkArgument(initialStepSize > 0);
-
-        this.c = c;
-    }
-
-    /**
-     * Constructs an Armijo interpolation based line search solver for the provided objective function instance, using
-     * the provided step size initialization method, the provided initial step size and the provided parameters. Using
-     * this constructor only makes sense if the selected step size initialization method is CONSTANT. For all other
-     * cases the extra initial step size argument is not required. Furthermore, if the selected step size initialization
-     * method is not CONSTANT, then that extra argument is completely ignored!
-     *
-     * @param   objective                       The objective function instance.
-     * @param   stepSizeInitializationMethod    The step size initialization method.
-     * @param   c                               The proportionality constant used for the Armijo condition.
-     * @param   initialStepSize                 The initial step size value to use (it must have a value greater than
-     *                                          zero).
-     */
-    public ArmijoInterpolationLineSearch(AbstractFunction objective,
-                                         StepSizeInitializationMethod stepSizeInitializationMethod,
-                                         double c,
-                                         double initialStepSize) {
-        super(objective, stepSizeInitializationMethod, initialStepSize);
-
-        Preconditions.checkArgument(c > 0 && c < 1);
-        Preconditions.checkArgument(initialStepSize > 0);
 
         this.c = c;
     }

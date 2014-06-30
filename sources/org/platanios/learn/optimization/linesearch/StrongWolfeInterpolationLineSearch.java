@@ -26,89 +26,21 @@ public class StrongWolfeInterpolationLineSearch extends IterativeLineSearch {
     private final double aMax;
 
     /**
-     * Constructs a strong Wolfe interpolation based line search solver for the provided objective function instance,
-     * using the provided step size initialization method to compute the initial value of the step size and the provided
-     * parameters. If the selected step size initialization method is simply a constant value, then the alternative
-     * constructor must be used that receives the initial step size value as its second argument.
+     * Constructs a strong Wolfe interpolation based line search solver for the provided objective function instance and
+     * using the provided parameters.
      *
-     * @param   objective                       The objective function instance.
-     * @param   stepSizeInitializationMethod    The step size initialization method.
-     * @param   c1                              The proportionality constant used for the first of the two Wolfe
-     *                                          conditions (that is, the Armijo condition).
-     * @param   c2                              The proportionality constant used for the second of the two Wolfe
-     *                                          conditions (that is, the curvature condition).
-     * @param   aMax                            The maximum allowed value for the step size.
+     * @param   objective   The objective function instance.
+     * @param   c1          The proportionality constant used for the first of the two Wolfe conditions (that is, the
+     *                      Armijo condition). The value provided must lie between 0 and 1.
+     * @param   c2          The proportionality constant used for the second of the two Wolfe conditions (that is, the
+     *                      curvature condition). The value provided must lie between {@code c1} and 1.
+     * @param   aMax        The maximum allowed value for the step size.
      */
     public StrongWolfeInterpolationLineSearch(AbstractFunction objective,
-                                              StepSizeInitializationMethod stepSizeInitializationMethod,
                                               double c1,
                                               double c2,
                                               double aMax) {
-        super(objective, stepSizeInitializationMethod);
-
-        Preconditions.checkArgument(c1 > 0 && c1 < 1);
-        Preconditions.checkArgument(c2 > c1 && c2 < 1);
-        Preconditions.checkArgument(aMax > 0);
-
-        this.c1 = c1;
-        this.c2 = c2;
-        this.aMax = aMax;
-    }
-
-    /**
-     * Constructs a strong Wolfe interpolation based line search solver for the provided objective function instance,
-     * using the provided initial value for the step size and the provided parameters. If another step size
-     * initialization method is required, then the alternative constructor must be used that receives the step size
-     * initialization method as its second argument.
-     *
-     * @param   objective           The objective function instance.
-     * @param   initialStepSize     The initial step size value to use (it must have a value greater than zero).
-     * @param   c1                  The proportionality constant used for the first of the two Wolfe conditions (that
-     *                              is, the Armijo condition).
-     * @param   c2                  The proportionality constant used for the second of the two Wolfe conditions (that
-     *                              is, the curvature condition).
-     * @param   aMax                The maximum allowed value for the step size.
-     */
-    public StrongWolfeInterpolationLineSearch(AbstractFunction objective,
-                                              double initialStepSize,
-                                              double c1,
-                                              double c2,
-                                              double aMax) {
-        super(objective, initialStepSize);
-
-        Preconditions.checkArgument(c1 > 0 && c1 < 1);
-        Preconditions.checkArgument(c2 > c1 && c2 < 1);
-        Preconditions.checkArgument(aMax > 0);
-
-        this.c1 = c1;
-        this.c2 = c2;
-        this.aMax = aMax;
-    }
-
-    /**
-     * Constructs a strong Wolfe interpolation based line search solver for the provided objective function instance,
-     * using the provided step size initialization method, the provided initial step size and the provided parameters.
-     * Using this constructor only makes sense if the selected step size initialization method is CONSTANT. For all
-     * other cases the extra initial step size argument is not required. Furthermore, if the selected step size
-     * initialization method is not CONSTANT, then that extra argument is completely ignored!
-     *
-     * @param   objective                       The objective function instance.
-     * @param   stepSizeInitializationMethod    The step size initialization method.
-     * @param   c1                              The proportionality constant used for the first of the two Wolfe
-     *                                          conditions (that is, the Armijo condition).
-     * @param   c2                              The proportionality constant used for the second of the two Wolfe
-     *                                          conditions (that is, the curvature condition).
-     * @param   aMax                            The maximum allowed value for the step size.
-     * @param   initialStepSize                 The initial step size value to use (it must have a value greater than
-     *                                          zero).
-     */
-    public StrongWolfeInterpolationLineSearch(AbstractFunction objective,
-                                              StepSizeInitializationMethod stepSizeInitializationMethod,
-                                              double c1,
-                                              double c2,
-                                              double aMax,
-                                              double initialStepSize) {
-        super(objective, stepSizeInitializationMethod, initialStepSize);
+        super(objective);
 
         Preconditions.checkArgument(c1 > 0 && c1 < 1);
         Preconditions.checkArgument(c2 > c1 && c2 < 1);

@@ -13,11 +13,9 @@ public class NewtonSolver extends AbstractLineSearchSolver {
     public NewtonSolver(AbstractFunction objective,
                         double[] initialPoint) {
         super(objective, initialPoint);
-        setLineSearch(new StrongWolfeInterpolationLineSearch(objective,
-                                                             StepSizeInitializationMethod.UNIT,
-                                                             1e-4,
-                                                             0.9,
-                                                             1));
+        StrongWolfeInterpolationLineSearch lineSearch = new StrongWolfeInterpolationLineSearch(objective, 1e-4, 0.9, 1);
+        lineSearch.setStepSizeInitializationMethod(StepSizeInitializationMethod.UNIT);
+        setLineSearch(lineSearch);
     }
 
     /**
