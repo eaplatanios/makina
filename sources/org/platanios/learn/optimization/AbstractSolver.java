@@ -7,6 +7,9 @@ import org.platanios.learn.optimization.function.AbstractFunction;
  * @author Emmanouil Antonios Platanios
  */
 abstract class AbstractSolver implements Solver {
+    private int maximumNumberOfIterations = 1000;
+    private int maximumNumberOfFunctionEvaluations = 100000;
+
     AbstractFunction objective;
 
     int currentIteration;
@@ -54,6 +57,14 @@ abstract class AbstractSolver implements Solver {
     @Override
     public boolean checkTerminationConditions() {
         if (currentIteration > 0) {
+            if (currentIteration >= maximumNumberOfIterations) {
+                return true;
+            }
+
+            if (objective.getNumberOfFunctionEvaluations() >= maximumNumberOfFunctionEvaluations) {
+                return true;
+            }
+
             pointChange = currentPoint.subtract(previousPoint).getNorm();
             pointConverged = pointChange <= pointChangeTolerance;
             objectiveChange = Math.abs((previousObjectiveValue - currentObjectiveValue) / previousObjectiveValue);
@@ -139,6 +150,33 @@ abstract class AbstractSolver implements Solver {
                                        + DECIMAL_FORMAT.format(gradientTolerance)
                                        + "!");
         }
+        if (currentIteration >= maximumNumberOfIterations) {
+            System.out.println("Reached the maximum number of allowed iterations ("
+                                       + maximumNumberOfIterations
+                                       + ")!");
+        }
+
+        if (objective.getNumberOfFunctionEvaluations() >= maximumNumberOfFunctionEvaluations) {
+            System.out.println("Reached the maximum number of allowed objective function evaluations ("
+                                       + maximumNumberOfFunctionEvaluations
+                                       + ")!");
+        }
+    }
+
+    public int getMaximumNumberOfIterations() {
+        return maximumNumberOfIterations;
+    }
+
+    public void setMaximumNumberOfIterations(int maximumNumberOfIterations) {
+        this.maximumNumberOfIterations = maximumNumberOfIterations;
+    }
+
+    public int getMaximumNumberOfFunctionEvaluations() {
+        return maximumNumberOfFunctionEvaluations;
+    }
+
+    public void setMaximumNumberOfFunctionEvaluations(int maximumNumberOfFunctionEvaluations) {
+        this.maximumNumberOfFunctionEvaluations = maximumNumberOfFunctionEvaluations;
     }
 
     public double getPointChangeTolerance() {
