@@ -14,11 +14,112 @@ public class DerivativeApproximationTest {
     @Test
     public void testForwardDifferenceGradientApproximation() {
         Function function = new RosenbrockFunction();
-        DerivativeApproximation derivativeApproximation = new DerivativeApproximation(function);
+        DerivativeApproximation derivativeApproximation =
+                new DerivativeApproximation(function, DerivativeApproximationMethod.FORWARD_DIFFERENCE);
         RealVector point = new ArrayRealVector(new double[] { -1.2, 1 });
         double[] actualResult = derivativeApproximation.approximateGradient(point).toArray();
         double[] expectedResult = function.computeGradient(point).toArray();
-        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
+        Assert.assertArrayEquals(expectedResult, actualResult, 1e-5);
+    }
+
+    @Test
+    public void testCentralDifferenceGradientApproximation() {
+        Function function = new RosenbrockFunction();
+        DerivativeApproximation derivativeApproximation =
+                new DerivativeApproximation(function, DerivativeApproximationMethod.CENTRAL_DIFFERENCE);
+        RealVector point = new ArrayRealVector(new double[] { -1.2, 1 });
+        double[] actualResult = derivativeApproximation.approximateGradient(point).toArray();
+        double[] expectedResult = function.computeGradient(point).toArray();
+        Assert.assertArrayEquals(expectedResult, actualResult, 1e-7);
+    }
+
+    @Test
+    public void testForwardDifferenceHessianApproximation() {
+        Function function = new RosenbrockFunction();
+        DerivativeApproximation derivativeApproximation =
+                new DerivativeApproximation(function, DerivativeApproximationMethod.FORWARD_DIFFERENCE);
+        RealVector point = new ArrayRealVector(new double[] { -1.2, 1 });
+        double[][] actualResultTemp = derivativeApproximation.approximateHessian(point).getData();
+        double[][] expectedResultTemp = function.computeHessian(point).getData();
+        double[] actualResult = new double[actualResultTemp.length * actualResultTemp[0].length];
+        double[] expectedResult = new double[expectedResultTemp.length * expectedResultTemp[0].length];
+        for (int i = 0; i < actualResultTemp.length; i++) {
+            for (int j = 0; j < actualResultTemp[0].length; j++) {
+                actualResult[i * actualResultTemp.length + j] = actualResultTemp[i][j];
+                expectedResult[i * expectedResultTemp.length + j] = expectedResultTemp[i][j];
+            }
+        }
+        Assert.assertArrayEquals(expectedResult, actualResult, 1e2);
+    }
+
+    @Test
+    public void testCentralDifferenceHessianApproximation() {
+        Function function = new RosenbrockFunction();
+        DerivativeApproximation derivativeApproximation =
+                new DerivativeApproximation(function, DerivativeApproximationMethod.CENTRAL_DIFFERENCE);
+        RealVector point = new ArrayRealVector(new double[] { -1.2, 1 });
+        double[][] actualResultTemp = derivativeApproximation.approximateHessian(point).getData();
+        double[][] expectedResultTemp = function.computeHessian(point).getData();
+        double[] actualResult = new double[actualResultTemp.length * actualResultTemp[0].length];
+        double[] expectedResult = new double[expectedResultTemp.length * expectedResultTemp[0].length];
+        for (int i = 0; i < actualResultTemp.length; i++) {
+            for (int j = 0; j < actualResultTemp[0].length; j++) {
+                actualResult[i * actualResultTemp.length + j] = actualResultTemp[i][j];
+                expectedResult[i * expectedResultTemp.length + j] = expectedResultTemp[i][j];
+            }
+        }
+        Assert.assertArrayEquals(expectedResult, actualResult, 1e-3);
+    }
+
+    @Test
+    public void testForwardDifferenceHessianApproximationGivenGradient() {
+        Function function = new RosenbrockFunction();
+        DerivativeApproximation derivativeApproximation =
+                new DerivativeApproximation(function, DerivativeApproximationMethod.FORWARD_DIFFERENCE);
+        RealVector point = new ArrayRealVector(new double[] { -1.2, 1 });
+        double[][] actualResultTemp = derivativeApproximation.approximateHessianGivenGradient(point).getData();
+        double[][] expectedResultTemp = function.computeHessian(point).getData();
+        double[] actualResult = new double[actualResultTemp.length * actualResultTemp[0].length];
+        double[] expectedResult = new double[expectedResultTemp.length * expectedResultTemp[0].length];
+        for (int i = 0; i < actualResultTemp.length; i++) {
+            for (int j = 0; j < actualResultTemp[0].length; j++) {
+                actualResult[i * actualResultTemp.length + j] = actualResultTemp[i][j];
+                expectedResult[i * expectedResultTemp.length + j] = expectedResultTemp[i][j];
+            }
+        }
+        Assert.assertArrayEquals(expectedResult, actualResult, 1e-4);
+    }
+
+    @Test
+    public void testCentralDifferenceHessianApproximationGivenGradient() {
+        Function function = new RosenbrockFunction();
+        DerivativeApproximation derivativeApproximation =
+                new DerivativeApproximation(function, DerivativeApproximationMethod.CENTRAL_DIFFERENCE);
+        RealVector point = new ArrayRealVector(new double[] { -1.2, 1 });
+        double[][] actualResultTemp = derivativeApproximation.approximateHessianGivenGradient(point).getData();
+        double[][] expectedResultTemp = function.computeHessian(point).getData();
+        double[] actualResult = new double[actualResultTemp.length * actualResultTemp[0].length];
+        double[] expectedResult = new double[expectedResultTemp.length * expectedResultTemp[0].length];
+        for (int i = 0; i < actualResultTemp.length; i++) {
+            for (int j = 0; j < actualResultTemp[0].length; j++) {
+                actualResult[i * actualResultTemp.length + j] = actualResultTemp[i][j];
+                expectedResult[i * expectedResultTemp.length + j] = expectedResultTemp[i][j];
+            }
+        }
+        Assert.assertArrayEquals(expectedResult, actualResult, 1e-8);
+    }
+
+    @Test
+    public void testForwardDifferenceHessianVectorProductApproximationGivenGradient() {
+        Function function = new RosenbrockFunction();
+        DerivativeApproximation derivativeApproximation =
+                new DerivativeApproximation(function, DerivativeApproximationMethod.FORWARD_DIFFERENCE);
+        RealVector point = new ArrayRealVector(new double[] { -1.2, 1 });
+        RealVector p = new ArrayRealVector(new double[] { 1.21, 0.53 });
+        double[] actualResult =
+                derivativeApproximation.approximateHessianVectorProductGivenGradient(point, p).toArray();
+        double[] expectedResult = function.computeHessian(point).operate(p).toArray();
+        Assert.assertArrayEquals(expectedResult, actualResult, 1e-4);
     }
 
     class RosenbrockFunction implements Function {
