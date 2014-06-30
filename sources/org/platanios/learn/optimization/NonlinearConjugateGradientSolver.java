@@ -1,6 +1,6 @@
 package org.platanios.learn.optimization;
 
-import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.linear.*;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.QuadraticFunction;
 import org.platanios.learn.optimization.linesearch.*;
@@ -34,12 +34,20 @@ public class NonlinearConjugateGradientSolver extends AbstractSolver {
         currentDirection = currentGradient.mapMultiply(-1);
 
         if (objective instanceof QuadraticFunction) {
-            lineSearch = new ExactLineSearch((QuadraticFunction) objective);
-        } else {
-            lineSearch = new StrongWolfeInterpolationLineSearch(objective, 1e-4, 0.9, 10);
-            ((StrongWolfeInterpolationLineSearch) lineSearch)
-                    .setStepSizeInitializationMethod(StepSizeInitializationMethod.CONSERVE_FIRST_ORDER_CHANGE);
+            RealMatrix quadraticFactorMatrix = ((QuadraticFunction) objective).getA();
+            if (MatrixUtils.isSymmetric(quadraticFactorMatrix, 1e-8)) {
+                DecompositionSolver choleskyDecompositionSolver =
+                        new CholeskyDecomposition(quadraticFactorMatrix).getSolver();
+                if (choleskyDecompositionSolver.isNonSingular()) {
+                    lineSearch = new ExactLineSearch((QuadraticFunction) objective);
+                    return;
+                }
+            }
         }
+
+        lineSearch = new StrongWolfeInterpolationLineSearch(objective, 1e-4, 0.9, 10);
+        ((StrongWolfeInterpolationLineSearch) lineSearch)
+                .setStepSizeInitializationMethod(StepSizeInitializationMethod.CONSERVE_FIRST_ORDER_CHANGE);
     }
 
     @Override
