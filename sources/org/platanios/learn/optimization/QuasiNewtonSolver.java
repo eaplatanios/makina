@@ -2,7 +2,6 @@ package org.platanios.learn.optimization;
 
 import org.apache.commons.math3.linear.*;
 import org.platanios.learn.optimization.function.AbstractFunction;
-import org.platanios.learn.optimization.linesearch.LineSearch;
 import org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod;
 import org.platanios.learn.optimization.linesearch.StrongWolfeInterpolationLineSearch;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -11,7 +10,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  * @author Emmanouil Antonios Platanios
  */
 public class QuasiNewtonSolver extends AbstractLineSearchSolver {
-    private final QuasiNewtonMethod method;
+    private QuasiNewtonMethod method = QuasiNewtonMethod.BROYDEN_FLETCHER_GOLDFARB_SHANNO;
     private final RealMatrix identityMatrix;
 
     private RealMatrix currentH;
@@ -33,39 +32,16 @@ public class QuasiNewtonSolver extends AbstractLineSearchSolver {
      */
     public QuasiNewtonSolver(AbstractFunction objective,
                              double[] initialPoint) {
-        this(objective,
-             initialPoint,
-             QuasiNewtonMethod.BROYDEN_FLETCHER_GOLDFARB_SHANNO,
-             new StrongWolfeInterpolationLineSearch(objective,
-                                                    StepSizeInitializationMethod.UNIT,
-                                                    1e-4,
-                                                    0.9,
-                                                    1000));
-    }
-
-    public QuasiNewtonSolver(AbstractFunction objective,
-                             double[] initialPoint,
-                             QuasiNewtonMethod method) {
-        this(objective,
-             initialPoint,
-             method,
-             new StrongWolfeInterpolationLineSearch(objective,
-                                                    StepSizeInitializationMethod.UNIT,
-                                                    1e-4,
-                                                    0.9,
-                                                    1000));
-    }
-
-    public QuasiNewtonSolver(AbstractFunction objective,
-                             double[] initialPoint,
-                             QuasiNewtonMethod method,
-                             LineSearch lineSearch) {
         super(objective, initialPoint);
-        this.method = method;
-        setLineSearch(lineSearch);
+        setLineSearch(new StrongWolfeInterpolationLineSearch(objective,
+                                                             StepSizeInitializationMethod.UNIT,
+                                                             1e-4,
+                                                             0.9,
+                                                             1000));
         identityMatrix = MatrixUtils.createRealIdentityMatrix(initialPoint.length);
         currentH = identityMatrix;
         currentGradient = objective.getGradient(currentPoint);
+
         if (method != QuasiNewtonMethod.LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO) {
             m = 1;
         } else {
@@ -176,6 +152,14 @@ public class QuasiNewtonSolver extends AbstractLineSearchSolver {
         }
         s[0] = currentPoint.subtract(previousPoint);
         y[0] = currentGradient.subtract(previousGradient);
+    }
+
+    public QuasiNewtonMethod getMethod() {
+        return method;
+    }
+
+    public void setMethod(QuasiNewtonMethod method) {
+        this.method = method;
     }
 
     public int getM() {

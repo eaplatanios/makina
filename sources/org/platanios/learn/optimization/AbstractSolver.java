@@ -1,5 +1,6 @@
 package org.platanios.learn.optimization;
 
+import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
 import org.platanios.learn.optimization.function.AbstractFunction;
 
@@ -27,7 +28,6 @@ abstract class AbstractSolver implements Solver {
     private boolean gradientConverged = false;
 
     AbstractFunction objective;
-
     int currentIteration;
     RealVector currentPoint;
     RealVector previousPoint;
@@ -39,6 +39,15 @@ abstract class AbstractSolver implements Solver {
     double previousStepSize;
     double currentObjectiveValue;
     double previousObjectiveValue;
+
+    public AbstractSolver(AbstractFunction objective,
+                          double[] initialPoint) {
+        this.objective = objective;
+        currentPoint = new ArrayRealVector(initialPoint);
+        currentGradient = objective.getGradient(currentPoint);
+        currentObjectiveValue = objective.getValue(currentPoint);
+        currentIteration = 0;
+    }
 
     @Override
     public RealVector solve() {
@@ -65,17 +74,24 @@ abstract class AbstractSolver implements Solver {
                 return true;
             }
 
-            pointChange = currentPoint.subtract(previousPoint).getNorm();
-            pointConverged = pointChange <= pointChangeTolerance;
-            objectiveChange = Math.abs((previousObjectiveValue - currentObjectiveValue) / previousObjectiveValue);
-            objectiveConverged = objectiveChange <= objectiveChangeTolerance;
+            if (checkForPointConvergence) {
+                pointChange = currentPoint.subtract(previousPoint).getNorm();
+                pointConverged = pointChange <= pointChangeTolerance;
+            }
 
-            if (this instanceof NonlinearConjugateGradientSolver) {
-                gradientNorm = Math.abs(currentGradient.getMaxValue()) / (1 + Math.abs(currentObjectiveValue));
-                gradientConverged = gradientNorm <= gradientTolerance;
-            } else {
-                gradientNorm = currentGradient.getNorm();
-                gradientConverged = gradientNorm <= gradientTolerance;
+            if (checkForObjectiveConvergence) {
+                objectiveChange = Math.abs((previousObjectiveValue - currentObjectiveValue) / previousObjectiveValue);
+                objectiveConverged = objectiveChange <= objectiveChangeTolerance;
+            }
+
+            if (checkForGradientConvergence) {
+                if (this instanceof NonlinearConjugateGradientSolver) {
+                    gradientNorm = Math.abs(currentGradient.getMaxValue()) / (1 + Math.abs(currentObjectiveValue));
+                    gradientConverged = gradientNorm <= gradientTolerance;
+                } else {
+                    gradientNorm = currentGradient.getNorm();
+                    gradientConverged = gradientNorm <= gradientTolerance;
+                }
             }
 
             return (checkForPointConvergence && pointConverged)

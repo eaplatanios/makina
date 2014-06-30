@@ -1,6 +1,5 @@
 package org.platanios.learn.optimization;
 
-import org.apache.commons.math3.linear.ArrayRealVector;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.QuadraticFunction;
 import org.platanios.learn.optimization.linesearch.*;
@@ -15,16 +14,12 @@ abstract class AbstractLineSearchSolver extends AbstractSolver {
 
     public AbstractLineSearchSolver(AbstractFunction objective,
                                     double[] initialPoint) {
-        this.objective = objective;
-        this.currentPoint = new ArrayRealVector(initialPoint);
-        currentObjectiveValue = objective.getValue(currentPoint);
-        currentGradient = objective.getGradient(currentPoint);
-        currentIteration = 0;
+        super(objective, initialPoint);
 
         if (objective instanceof QuadraticFunction) {
-            this.lineSearch = new ExactLineSearch((QuadraticFunction) objective);
+            lineSearch = new ExactLineSearch((QuadraticFunction) objective);
         } else {
-            this.lineSearch = new StrongWolfeInterpolationLineSearch(
+            lineSearch = new StrongWolfeInterpolationLineSearch(
                     objective,
                     StepSizeInitializationMethod.CONSERVE_FIRST_ORDER_CHANGE,
                     1e-4,

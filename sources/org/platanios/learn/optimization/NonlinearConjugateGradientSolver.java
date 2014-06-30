@@ -1,6 +1,5 @@
 package org.platanios.learn.optimization;
 
-import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.QuadraticFunction;
@@ -14,8 +13,8 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  * @author Emmanouil Antonios Platanios
  */
 public class NonlinearConjugateGradientSolver extends AbstractSolver {
-    private final NonlinearConjugateGradientMethod method;
-    private final NonlinearConjugateGradientRestartMethod restartMethod;
+    private NonlinearConjugateGradientMethod method = NonlinearConjugateGradientMethod.POLAK_RIBIERE_PLUS;
+    private NonlinearConjugateGradientRestartMethod restartMethod = NonlinearConjugateGradientRestartMethod.GRADIENTS_ORTHOGONALITY_CHECK;
 
     /** Default value: If quadratic or linear function it is ExactLineSearch, otherwise it is StrongWolfeLineSearch
      * with CONSERVE_FIRST_ORDER_CHANGE for the step size initialization method. */
@@ -29,49 +28,15 @@ public class NonlinearConjugateGradientSolver extends AbstractSolver {
 
     public NonlinearConjugateGradientSolver(AbstractFunction objective,
                                             double[] initialPoint) {
-        this(objective,
-             initialPoint,
-             NonlinearConjugateGradientMethod.POLAK_RIBIERE_PLUS,
-             NonlinearConjugateGradientRestartMethod.GRADIENTS_ORTHOGONALITY_CHECK);
-    }
-
-    public NonlinearConjugateGradientSolver(AbstractFunction objective,
-                                            double[] initialPoint,
-                                            NonlinearConjugateGradientMethod method) {
-        this(objective,
-             initialPoint,
-             method,
-             NonlinearConjugateGradientRestartMethod.GRADIENTS_ORTHOGONALITY_CHECK);
-    }
-
-    public NonlinearConjugateGradientSolver(AbstractFunction objective,
-                                            double[] initialPoint,
-                                            NonlinearConjugateGradientRestartMethod restartMethod) {
-        this(objective,
-             initialPoint,
-             NonlinearConjugateGradientMethod.POLAK_RIBIERE_PLUS,
-             restartMethod);
-    }
-
-    public NonlinearConjugateGradientSolver(AbstractFunction objective,
-                                            double[] initialPoint,
-                                            NonlinearConjugateGradientMethod method,
-                                            NonlinearConjugateGradientRestartMethod restartMethod) {
-        this.objective = objective;
-        this.method = method;
-        this.restartMethod = restartMethod;
-        this.setCheckForPointConvergence(false);
-        this.setCheckForObjectiveConvergence(false);
-        currentPoint = new ArrayRealVector(initialPoint);
-        currentGradient = objective.getGradient(currentPoint);
+        super(objective, initialPoint);
+        setCheckForPointConvergence(false);
+        setCheckForObjectiveConvergence(false);
         currentDirection = currentGradient.mapMultiply(-1);
-        currentObjectiveValue = objective.getValue(currentPoint);
-        currentIteration = 0;
 
         if (objective instanceof QuadraticFunction) {
-            this.lineSearch = new ExactLineSearch((QuadraticFunction) objective);
+            lineSearch = new ExactLineSearch((QuadraticFunction) objective);
         } else {
-            this.lineSearch = new StrongWolfeInterpolationLineSearch(
+            lineSearch = new StrongWolfeInterpolationLineSearch(
                     objective,
                     StepSizeInitializationMethod.CONSERVE_FIRST_ORDER_CHANGE,
                     1e-4,
@@ -156,6 +121,22 @@ public class NonlinearConjugateGradientSolver extends AbstractSolver {
             default:
                 throw new NotImplementedException();
         }
+    }
+
+    public NonlinearConjugateGradientMethod getMethod() {
+        return method;
+    }
+
+    public void setMethod(NonlinearConjugateGradientMethod method) {
+        this.method = method;
+    }
+
+    public NonlinearConjugateGradientRestartMethod getRestartMethod() {
+        return restartMethod;
+    }
+
+    public void setRestartMethod(NonlinearConjugateGradientRestartMethod restartMethod) {
+        this.restartMethod = restartMethod;
     }
 
     public LineSearch getLineSearch() {

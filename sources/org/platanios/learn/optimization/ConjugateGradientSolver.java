@@ -1,6 +1,5 @@
 package org.platanios.learn.optimization;
 
-import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.platanios.learn.optimization.function.QuadraticFunction;
 
@@ -19,13 +18,9 @@ public class ConjugateGradientSolver extends AbstractSolver {
 
     public ConjugateGradientSolver(QuadraticFunction objective,
                                    double[] initialPoint) {
-        this.objective = objective;
+        super(objective, initialPoint);
         A = objective.getA();
-        currentPoint = new ArrayRealVector(initialPoint);
-        currentGradient = objective.getGradient(currentPoint);
         currentDirection = currentGradient.mapMultiply(-1);
-        currentObjectiveValue = objective.getValue(currentPoint);
-        currentIteration = 0;
     }
 
     @Override

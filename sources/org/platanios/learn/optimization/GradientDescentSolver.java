@@ -12,13 +12,6 @@ public class GradientDescentSolver extends AbstractLineSearchSolver {
         super(objective, initialPoint);
     }
 
-    public GradientDescentSolver(AbstractFunction objective,
-                                 double[] initialPoint,
-                                 LineSearch lineSearch) {
-        super(objective, initialPoint);
-        setLineSearch(lineSearch);
-    }
-
     @Override
     public void updateDirection() {
         currentGradient = objective.getGradient(currentPoint);
