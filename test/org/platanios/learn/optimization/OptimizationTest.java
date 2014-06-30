@@ -160,8 +160,8 @@ public class OptimizationTest {
 //    public void testQuasiNewtonDFPSolver() {
 //        System.out.println("Rosenbrock Function Quasi-Newton DFP Solver:\n");
 //        QuasiNewtonSolver quasiNewtonDFPSolver = new QuasiNewtonSolver(new RosenbrockFunction(),
-//                                                                        new double[] { -1.2, 1 },
-//                                                                        QuasiNewtonMethod.DAVIDON_FLETCHER_POWELL);
+//                                                                       new double[] { -1.2, 1 },
+//                                                                       QuasiNewtonMethod.DAVIDON_FLETCHER_POWELL);
 //        double[] actualResult = quasiNewtonDFPSolver.solve().toArray();
 //        double[] expectedResult = new double[] { 1, 1 };
 //        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
@@ -182,8 +182,8 @@ public class OptimizationTest {
 //    public void testQuasiNewtonSR1Solver() {
 //        System.out.println("Rosenbrock Function Quasi-Newton SR1 Solver:\n");
 //        QuasiNewtonSolver quasiNewtonSR1Solver = new QuasiNewtonSolver(new RosenbrockFunction(),
-//                                                                        new double[] { -1.2, 1 },
-//                                                                        QuasiNewtonMethod.SYMMETRIC_RANK_ONE);
+//                                                                       new double[] { -1.2, 1 },
+//                                                                       QuasiNewtonMethod.SYMMETRIC_RANK_ONE);
 //        double[] actualResult = quasiNewtonSR1Solver.solve().toArray();
 //        double[] expectedResult = new double[] { 1, 1 };
 //        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
@@ -193,8 +193,8 @@ public class OptimizationTest {
 //    public void testQuasiNewtonBroydenSolver() {
 //        System.out.println("Rosenbrock Function Quasi-Newton Broyden Solver:\n");
 //        QuasiNewtonSolver quasiNewtonBroydenSolver = new QuasiNewtonSolver(new RosenbrockFunction(),
-//                                                                         new double[] { -1.2, 1 },
-//                                                                         QuasiNewtonMethod.BROYDEN);
+//                                                                           new double[] { -1.2, 1 },
+//                                                                           QuasiNewtonMethod.BROYDEN);
 //        double[] actualResult = quasiNewtonBroydenSolver.solve().toArray();
 //        double[] expectedResult = new double[] { 1, 1 };
 //        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
@@ -204,8 +204,8 @@ public class OptimizationTest {
     public void testQuasiNewtonLBFGSSolver() {
         System.out.println("Rosenbrock Function Quasi-Newton L-BFGS Solver:\n");
         QuasiNewtonSolver quasiNewtonLBFGSSolver = new QuasiNewtonSolver(new RosenbrockFunction(),
-                                                                        new double[] { -1.2, 1 },
-                                                                        QuasiNewtonMethod.LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO);
+                                                                         new double[] { -1.2, 1 },
+                                                                         QuasiNewtonMethod.LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO);
         double[] actualResult = quasiNewtonLBFGSSolver.solve().toArray();
         double[] expectedResult = new double[] { 1, 1 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);

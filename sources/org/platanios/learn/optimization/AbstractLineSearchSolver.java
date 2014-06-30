@@ -18,6 +18,7 @@ abstract class AbstractLineSearchSolver extends AbstractSolver {
         this.objective = objective;
         this.currentPoint = new ArrayRealVector(initialPoint);
         currentObjectiveValue = objective.getValue(currentPoint);
+        currentGradient = objective.getGradient(currentPoint);
         currentIteration = 0;
 
         if (objective instanceof QuadraticFunction) {
@@ -38,13 +39,6 @@ abstract class AbstractLineSearchSolver extends AbstractSolver {
         previousGradient = currentGradient;
         previousDirection = currentDirection;
         updateDirection();
-
-        // This check makes sure that we do not try to compute a step size using exact line search when the gradient
-        // gets very small (i.e. when the algorithm has converged).
-        if (currentGradient.getNorm() <= gradientTolerance) {
-            return;
-        }
-
         previousStepSize = currentStepSize;
         updateStepSize();
         previousPoint = currentPoint;

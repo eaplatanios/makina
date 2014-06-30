@@ -1,6 +1,8 @@
 package org.platanios.learn.optimization.function;
 
 /**
+ * TODO: Add support for other methods that involve interpolation or automatic differentiation.
+ *
  * @author Emmanouil Antonios Platanios
  */
 public enum DerivativesApproximationMethod {

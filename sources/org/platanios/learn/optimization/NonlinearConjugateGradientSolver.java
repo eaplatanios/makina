@@ -14,7 +14,6 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  * @author Emmanouil Antonios Platanios
  */
 public class NonlinearConjugateGradientSolver extends AbstractSolver {
-    private final AbstractFunction objective;
     private final NonlinearConjugateGradientMethod method;
     private final NonlinearConjugateGradientRestartMethod restartMethod;
 
@@ -61,13 +60,13 @@ public class NonlinearConjugateGradientSolver extends AbstractSolver {
         this.objective = objective;
         this.method = method;
         this.restartMethod = restartMethod;
+        this.setCheckForPointConvergence(false);
+        this.setCheckForObjectiveConvergence(false);
         currentPoint = new ArrayRealVector(initialPoint);
         currentGradient = objective.getGradient(currentPoint);
         currentDirection = currentGradient.mapMultiply(-1);
         currentObjectiveValue = objective.getValue(currentPoint);
         currentIteration = 0;
-        checkForPointConvergence = false;
-        checkForObjectiveConvergence = false;
 
         if (objective instanceof QuadraticFunction) {
             this.lineSearch = new ExactLineSearch((QuadraticFunction) objective);

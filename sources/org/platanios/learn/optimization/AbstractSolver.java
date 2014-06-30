@@ -7,8 +7,24 @@ import org.platanios.learn.optimization.function.AbstractFunction;
  * @author Emmanouil Antonios Platanios
  */
 abstract class AbstractSolver implements Solver {
-    private int maximumNumberOfIterations = 1000;
-    private int maximumNumberOfFunctionEvaluations = 100000;
+    private int maximumNumberOfIterations = 10000;
+    private int maximumNumberOfFunctionEvaluations = 1000000;
+
+    private double pointChangeTolerance = 1e-10;
+    private double objectiveChangeTolerance = 1e-10;
+    private double gradientTolerance = 1e-5;
+
+    private boolean checkForPointConvergence = true;
+    private boolean checkForObjectiveConvergence = true;
+    private boolean checkForGradientConvergence = true;
+
+    private double pointChange;
+    private double objectiveChange;
+    private double gradientNorm;
+
+    private boolean pointConverged = false;
+    private boolean objectiveConverged = false;
+    private boolean gradientConverged = false;
 
     AbstractFunction objective;
 
@@ -23,22 +39,6 @@ abstract class AbstractSolver implements Solver {
     double previousStepSize;
     double currentObjectiveValue;
     double previousObjectiveValue;
-
-    double pointChangeTolerance = 1e-10;
-    double objectiveChangeTolerance = 1e-10;
-    double gradientTolerance = 1e-5;
-
-    boolean checkForPointConvergence = true;
-    boolean checkForObjectiveConvergence = true;
-    boolean checkForGradientConvergence = true;
-
-    double pointChange;
-    double objectiveChange;
-    double gradientNorm;
-
-    boolean pointConverged = false;
-    boolean objectiveConverged = false;
-    boolean gradientConverged = false;
 
     @Override
     public RealVector solve() {

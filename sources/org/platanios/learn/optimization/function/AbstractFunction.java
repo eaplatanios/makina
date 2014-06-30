@@ -10,6 +10,7 @@ public abstract class AbstractFunction {
     private int numberOfFunctionEvaluations = 0;
     private int numberOfGradientEvaluations = 0;
     private int numberOfHessianEvaluations = 0;
+    private boolean computeGradientMethodOverridden = true;
 
     private DerivativesApproximation derivativesApproximation =
             new DerivativesApproximation(this, DerivativesApproximationMethod.CENTRAL_DIFFERENCE);
@@ -39,6 +40,10 @@ public abstract class AbstractFunction {
     }
 
     public RealVector computeGradient(RealVector point) {
+        if (computeGradientMethodOverridden) {
+            computeGradientMethodOverridden = false;
+        }
+
         return derivativesApproximation.approximateGradient(point);
     }
 
@@ -54,14 +59,6 @@ public abstract class AbstractFunction {
     }
 
     public RealMatrix computeHessian(RealVector point) {
-        boolean computeGradientMethodOverridden = false;
-        try {
-            computeGradientMethodOverridden =
-                    this.getClass().getMethod("computeGradient", RealVector.class).getDeclaringClass() != AbstractFunction.class;
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-
         if (computeGradientMethodOverridden) {
             return derivativesApproximation.approximateHessianGivenGradient(point);
         } else {
