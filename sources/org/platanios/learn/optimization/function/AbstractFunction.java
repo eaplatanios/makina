@@ -7,8 +7,8 @@ import org.apache.commons.math3.linear.RealVector;
  * @author Emmanouil Antonios Platanios
  */
 public abstract class AbstractFunction {
-    private DerivativeApproximation derivativeApproximation =
-            new DerivativeApproximation(this, DerivativeApproximationMethod.CENTRAL_DIFFERENCE);
+    private DerivativesApproximation derivativesApproximation =
+            new DerivativesApproximation(this, DerivativesApproximationMethod.CENTRAL_DIFFERENCE);
 
     /**
      * Computes the objective function value and the constraints values at a particular point.
@@ -25,7 +25,7 @@ public abstract class AbstractFunction {
      * @return          The values of the first derivatives of the objective function, evaluated at the given point.
      */
     public RealVector computeGradient(RealVector point) {
-        return derivativeApproximation.approximateGradient(point);
+        return derivativesApproximation.approximateGradient(point);
     }
 
     /**
@@ -44,9 +44,17 @@ public abstract class AbstractFunction {
         }
 
         if (computeGradientMethodOverridden) {
-            return derivativeApproximation.approximateHessianGivenGradient(point);
+            return derivativesApproximation.approximateHessianGivenGradient(point);
         } else {
-            return derivativeApproximation.approximateHessian(point);
+            return derivativesApproximation.approximateHessian(point);
         }
+    }
+
+    public DerivativesApproximationMethod getDerivativesApproximationMethod() {
+        return derivativesApproximation.getMethod();
+    }
+
+    public void setDerivativesApproximationMethod(DerivativesApproximationMethod method) {
+        derivativesApproximation.setMethod(method);
     }
 }

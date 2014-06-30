@@ -9,12 +9,13 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class DerivativeApproximation {
+public class DerivativesApproximation {
     private final AbstractFunction function;
-    private final DerivativeApproximationMethod method;
     private final double epsilon;
 
-    public DerivativeApproximation(AbstractFunction function, DerivativeApproximationMethod method) {
+    private DerivativesApproximationMethod method;
+
+    public DerivativesApproximation(AbstractFunction function, DerivativesApproximationMethod method) {
         this.function = function;
         this.method = method;
 
@@ -185,5 +186,13 @@ public class DerivativeApproximation {
             epsilon /= 2;
         }
         return epsilon;
+    }
+
+    public DerivativesApproximationMethod getMethod() {
+        return method;
+    }
+
+    public void setMethod(DerivativesApproximationMethod method) {
+        this.method = method;
     }
 }
