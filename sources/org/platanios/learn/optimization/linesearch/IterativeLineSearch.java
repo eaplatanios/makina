@@ -2,7 +2,7 @@ package org.platanios.learn.optimization.linesearch;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.math3.linear.RealVector;
-import org.platanios.learn.optimization.function.Function;
+import org.platanios.learn.optimization.function.AbstractFunction;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
@@ -12,7 +12,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  */
 abstract class IterativeLineSearch implements LineSearch {
     /** The objective function instance. */
-    final Function objective;
+    final AbstractFunction objective;
     /** The step size initialization method. */
     final StepSizeInitializationMethod stepSizeInitializationMethod;
 
@@ -29,7 +29,7 @@ abstract class IterativeLineSearch implements LineSearch {
      * @param   objective                       The objective function instance.
      * @param   stepSizeInitializationMethod    The step size initialization method.
      */
-    public IterativeLineSearch(Function objective,
+    public IterativeLineSearch(AbstractFunction objective,
                                StepSizeInitializationMethod stepSizeInitializationMethod) {
         this.objective = objective;
         this.stepSizeInitializationMethod = stepSizeInitializationMethod;
@@ -49,7 +49,7 @@ abstract class IterativeLineSearch implements LineSearch {
      * @param   objective           The objective function instance.
      * @param   initialStepSize     The initial step size value to use (it must have a value greater than zero).
      */
-    public IterativeLineSearch(Function objective,
+    public IterativeLineSearch(AbstractFunction objective,
                                double initialStepSize) {
         Preconditions.checkArgument(initialStepSize > 0);
 
@@ -70,7 +70,7 @@ abstract class IterativeLineSearch implements LineSearch {
      * @param   initialStepSize                 The initial step size value to use (it must have a value greater than
      *                                          zero).
      */
-    public IterativeLineSearch(Function objective,
+    public IterativeLineSearch(AbstractFunction objective,
                                StepSizeInitializationMethod stepSizeInitializationMethod,
                                double initialStepSize) {
         Preconditions.checkArgument(initialStepSize > 0);

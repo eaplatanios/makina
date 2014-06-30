@@ -13,7 +13,7 @@ import org.junit.Test;
 public class DerivativeApproximationTest {
     @Test
     public void testForwardDifferenceGradientApproximation() {
-        Function function = new RosenbrockFunction();
+        AbstractFunction function = new RosenbrockFunction();
         DerivativeApproximation derivativeApproximation =
                 new DerivativeApproximation(function, DerivativeApproximationMethod.FORWARD_DIFFERENCE);
         RealVector point = new ArrayRealVector(new double[] { -1.2, 1 });
@@ -24,7 +24,7 @@ public class DerivativeApproximationTest {
 
     @Test
     public void testCentralDifferenceGradientApproximation() {
-        Function function = new RosenbrockFunction();
+        AbstractFunction function = new RosenbrockFunction();
         DerivativeApproximation derivativeApproximation =
                 new DerivativeApproximation(function, DerivativeApproximationMethod.CENTRAL_DIFFERENCE);
         RealVector point = new ArrayRealVector(new double[] { -1.2, 1 });
@@ -35,7 +35,7 @@ public class DerivativeApproximationTest {
 
     @Test
     public void testForwardDifferenceHessianApproximation() {
-        Function function = new RosenbrockFunction();
+        AbstractFunction function = new RosenbrockFunction();
         DerivativeApproximation derivativeApproximation =
                 new DerivativeApproximation(function, DerivativeApproximationMethod.FORWARD_DIFFERENCE);
         RealVector point = new ArrayRealVector(new double[] { -1.2, 1 });
@@ -54,7 +54,7 @@ public class DerivativeApproximationTest {
 
     @Test
     public void testCentralDifferenceHessianApproximation() {
-        Function function = new RosenbrockFunction();
+        AbstractFunction function = new RosenbrockFunction();
         DerivativeApproximation derivativeApproximation =
                 new DerivativeApproximation(function, DerivativeApproximationMethod.CENTRAL_DIFFERENCE);
         RealVector point = new ArrayRealVector(new double[] { -1.2, 1 });
@@ -73,7 +73,7 @@ public class DerivativeApproximationTest {
 
     @Test
     public void testForwardDifferenceHessianApproximationGivenGradient() {
-        Function function = new RosenbrockFunction();
+        AbstractFunction function = new RosenbrockFunction();
         DerivativeApproximation derivativeApproximation =
                 new DerivativeApproximation(function, DerivativeApproximationMethod.FORWARD_DIFFERENCE);
         RealVector point = new ArrayRealVector(new double[] { -1.2, 1 });
@@ -92,7 +92,7 @@ public class DerivativeApproximationTest {
 
     @Test
     public void testCentralDifferenceHessianApproximationGivenGradient() {
-        Function function = new RosenbrockFunction();
+        AbstractFunction function = new RosenbrockFunction();
         DerivativeApproximation derivativeApproximation =
                 new DerivativeApproximation(function, DerivativeApproximationMethod.CENTRAL_DIFFERENCE);
         RealVector point = new ArrayRealVector(new double[] { -1.2, 1 });
@@ -111,7 +111,7 @@ public class DerivativeApproximationTest {
 
     @Test
     public void testForwardDifferenceHessianVectorProductApproximationGivenGradient() {
-        Function function = new RosenbrockFunction();
+        AbstractFunction function = new RosenbrockFunction();
         DerivativeApproximation derivativeApproximation =
                 new DerivativeApproximation(function, DerivativeApproximationMethod.FORWARD_DIFFERENCE);
         RealVector point = new ArrayRealVector(new double[] { -1.2, 1 });
@@ -122,7 +122,7 @@ public class DerivativeApproximationTest {
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-4);
     }
 
-    class RosenbrockFunction implements Function {
+    class RosenbrockFunction extends AbstractFunction {
         public double computeValue(RealVector optimizationVariables) {
             double x1 = optimizationVariables.getEntry(0);
             double x2 = optimizationVariables.getEntry(1);

@@ -2,7 +2,7 @@ package org.platanios.learn.optimization.linesearch;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.math3.linear.RealVector;
-import org.platanios.learn.optimization.function.Function;
+import org.platanios.learn.optimization.function.AbstractFunction;
 
 /**
  * Implements an interpolation based line search algorithm that returns a step size value that satisfies the strong
@@ -39,7 +39,7 @@ public class StrongWolfeInterpolationLineSearch extends IterativeLineSearch {
      *                                          conditions (that is, the curvature condition).
      * @param   aMax                            The maximum allowed value for the step size.
      */
-    public StrongWolfeInterpolationLineSearch(Function objective,
+    public StrongWolfeInterpolationLineSearch(AbstractFunction objective,
                                               StepSizeInitializationMethod stepSizeInitializationMethod,
                                               double c1,
                                               double c2,
@@ -69,7 +69,7 @@ public class StrongWolfeInterpolationLineSearch extends IterativeLineSearch {
      *                              is, the curvature condition).
      * @param   aMax                The maximum allowed value for the step size.
      */
-    public StrongWolfeInterpolationLineSearch(Function objective,
+    public StrongWolfeInterpolationLineSearch(AbstractFunction objective,
                                               double initialStepSize,
                                               double c1,
                                               double c2,
@@ -102,7 +102,7 @@ public class StrongWolfeInterpolationLineSearch extends IterativeLineSearch {
      * @param   initialStepSize                 The initial step size value to use (it must have a value greater than
      *                                          zero).
      */
-    public StrongWolfeInterpolationLineSearch(Function objective,
+    public StrongWolfeInterpolationLineSearch(AbstractFunction objective,
                                               StepSizeInitializationMethod stepSizeInitializationMethod,
                                               double c1,
                                               double c2,

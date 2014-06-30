@@ -1,7 +1,7 @@
 package org.platanios.learn.optimization;
 
 import org.apache.commons.math3.linear.*;
-import org.platanios.learn.optimization.function.Function;
+import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.linesearch.LineSearch;
 import org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod;
 import org.platanios.learn.optimization.linesearch.StrongWolfeInterpolationLineSearch;
@@ -31,7 +31,7 @@ public class QuasiNewtonSolver extends AbstractLineSearchSolver {
      * @param objective
      * @param initialPoint
      */
-    public QuasiNewtonSolver(Function objective,
+    public QuasiNewtonSolver(AbstractFunction objective,
                              double[] initialPoint) {
         this(objective,
              initialPoint,
@@ -43,7 +43,7 @@ public class QuasiNewtonSolver extends AbstractLineSearchSolver {
                                                     1000));
     }
 
-    public QuasiNewtonSolver(Function objective,
+    public QuasiNewtonSolver(AbstractFunction objective,
                              double[] initialPoint,
                              QuasiNewtonMethod method) {
         this(objective,
@@ -56,7 +56,7 @@ public class QuasiNewtonSolver extends AbstractLineSearchSolver {
                                                     1000));
     }
 
-    public QuasiNewtonSolver(Function objective,
+    public QuasiNewtonSolver(AbstractFunction objective,
                              double[] initialPoint,
                              QuasiNewtonMethod method,
                              LineSearch lineSearch) {

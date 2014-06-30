@@ -2,7 +2,7 @@ package org.platanios.learn.optimization.linesearch;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.math3.linear.RealVector;
-import org.platanios.learn.optimization.function.Function;
+import org.platanios.learn.optimization.function.AbstractFunction;
 
 /**
  * Implements a simple backtracking line search algorithm. This algorithm starts from some initial step size value and
@@ -29,7 +29,7 @@ public class BacktrackingLineSearch extends IterativeLineSearch {
      *                                          failure to satisfy the Armijo condition.
      * @param   c                               The proportionality constant to use for the Armijo condition.
      */
-    public BacktrackingLineSearch(Function objective,
+    public BacktrackingLineSearch(AbstractFunction objective,
                                   StepSizeInitializationMethod stepSizeInitializationMethod,
                                   double contraptionFactor,
                                   double c) {
@@ -54,7 +54,7 @@ public class BacktrackingLineSearch extends IterativeLineSearch {
      * @param   initialStepSize                 The initial step size value to use (it must have a value greater than
      *                                          zero).
      */
-    public BacktrackingLineSearch(Function objective,
+    public BacktrackingLineSearch(AbstractFunction objective,
                                   double contraptionFactor,
                                   double c,
                                   double initialStepSize) {
@@ -83,7 +83,7 @@ public class BacktrackingLineSearch extends IterativeLineSearch {
      * @param   initialStepSize                 The initial step size value to use (it must have a value greater than
      *                                          zero).
      */
-    public BacktrackingLineSearch(Function objective,
+    public BacktrackingLineSearch(AbstractFunction objective,
                                   StepSizeInitializationMethod stepSizeInitializationMethod,
                                   double contraptionFactor,
                                   double c,

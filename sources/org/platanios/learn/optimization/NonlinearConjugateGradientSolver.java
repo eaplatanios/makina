@@ -2,7 +2,7 @@ package org.platanios.learn.optimization;
 
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
-import org.platanios.learn.optimization.function.Function;
+import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.QuadraticFunction;
 import org.platanios.learn.optimization.linesearch.*;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -14,7 +14,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  * @author Emmanouil Antonios Platanios
  */
 public class NonlinearConjugateGradientSolver extends AbstractSolver {
-    private final Function objective;
+    private final AbstractFunction objective;
     private final NonlinearConjugateGradientMethod method;
     private final NonlinearConjugateGradientRestartMethod restartMethod;
 
@@ -28,7 +28,7 @@ public class NonlinearConjugateGradientSolver extends AbstractSolver {
     // clear.
     double beta;
 
-    public NonlinearConjugateGradientSolver(Function objective,
+    public NonlinearConjugateGradientSolver(AbstractFunction objective,
                                             double[] initialPoint) {
         this(objective,
              initialPoint,
@@ -36,7 +36,7 @@ public class NonlinearConjugateGradientSolver extends AbstractSolver {
              NonlinearConjugateGradientRestartMethod.GRADIENTS_ORTHOGONALITY_CHECK);
     }
 
-    public NonlinearConjugateGradientSolver(Function objective,
+    public NonlinearConjugateGradientSolver(AbstractFunction objective,
                                             double[] initialPoint,
                                             NonlinearConjugateGradientMethod method) {
         this(objective,
@@ -45,7 +45,7 @@ public class NonlinearConjugateGradientSolver extends AbstractSolver {
              NonlinearConjugateGradientRestartMethod.GRADIENTS_ORTHOGONALITY_CHECK);
     }
 
-    public NonlinearConjugateGradientSolver(Function objective,
+    public NonlinearConjugateGradientSolver(AbstractFunction objective,
                                             double[] initialPoint,
                                             NonlinearConjugateGradientRestartMethod restartMethod) {
         this(objective,
@@ -54,7 +54,7 @@ public class NonlinearConjugateGradientSolver extends AbstractSolver {
              restartMethod);
     }
 
-    public NonlinearConjugateGradientSolver(Function objective,
+    public NonlinearConjugateGradientSolver(AbstractFunction objective,
                                             double[] initialPoint,
                                             NonlinearConjugateGradientMethod method,
                                             NonlinearConjugateGradientRestartMethod restartMethod) {

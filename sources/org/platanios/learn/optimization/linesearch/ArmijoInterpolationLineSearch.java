@@ -2,7 +2,7 @@ package org.platanios.learn.optimization.linesearch;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.math3.linear.RealVector;
-import org.platanios.learn.optimization.function.Function;
+import org.platanios.learn.optimization.function.AbstractFunction;
 
 /**
  * Implements an interpolation based line search algorithm that returns a step size value that satisfies the Armijo
@@ -35,7 +35,7 @@ public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
      * @param   stepSizeInitializationMethod    The step size initialization method.
      * @param   c                               The proportionality constant used for the Armijo condition.
      */
-    public ArmijoInterpolationLineSearch(Function objective,
+    public ArmijoInterpolationLineSearch(AbstractFunction objective,
                                          StepSizeInitializationMethod stepSizeInitializationMethod,
                                          double c) {
         super(objective, stepSizeInitializationMethod);
@@ -55,7 +55,7 @@ public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
      * @param   initialStepSize     The initial step size value to use (it must have a value greater than zero).
      * @param   c                   The proportionality constant used for the Armijo condition.
      */
-    public ArmijoInterpolationLineSearch(Function objective,
+    public ArmijoInterpolationLineSearch(AbstractFunction objective,
                                          double initialStepSize,
                                          double c) {
         super(objective, initialStepSize);
@@ -79,7 +79,7 @@ public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
      * @param   initialStepSize                 The initial step size value to use (it must have a value greater than
      *                                          zero).
      */
-    public ArmijoInterpolationLineSearch(Function objective,
+    public ArmijoInterpolationLineSearch(AbstractFunction objective,
                                          StepSizeInitializationMethod stepSizeInitializationMethod,
                                          double c,
                                          double initialStepSize) {

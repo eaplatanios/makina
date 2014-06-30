@@ -2,7 +2,7 @@ package org.platanios.learn.optimization.linesearch;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.math3.linear.RealVector;
-import org.platanios.learn.optimization.function.Function;
+import org.platanios.learn.optimization.function.AbstractFunction;
 
 /**
  * A collection of static methods that check whether a selected step size value satisfies certain conditions for the
@@ -29,7 +29,7 @@ public class LineSearchConditions {
      * @return                                  A boolean value indicating whether the Armijo condition is satisfied for
      *                                          the given objective, point, direction and step size.
      */
-    public static boolean checkArmijoCondition(Function objective,
+    public static boolean checkArmijoCondition(AbstractFunction objective,
                                                RealVector point,
                                                RealVector direction,
                                                double stepSize,
@@ -73,7 +73,7 @@ public class LineSearchConditions {
      * @param   objectiveGradientAtCurrentPoint The gradient of the objective function evaluated at the current point.
      * @return                                  A boolean value ind objective, point, direction and step size.
      */
-    public static boolean checkWolfeConditions(Function objective,
+    public static boolean checkWolfeConditions(AbstractFunction objective,
                                                RealVector point,
                                                RealVector direction,
                                                double stepSize,
@@ -131,7 +131,7 @@ public class LineSearchConditions {
      * @return                                  A boolean value indicating whether the Goldstein conditions are
      *                                          satisfied for the given objective, point, direction and step size.
      */
-    public static boolean checkGoldsteinConditions(Function objective,
+    public static boolean checkGoldsteinConditions(AbstractFunction objective,
                                                    RealVector point,
                                                    RealVector direction,
                                                    double stepSize,

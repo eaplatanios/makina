@@ -8,7 +8,7 @@ import org.apache.commons.math3.linear.RealVector;
  *
  * Created by Anthony on 6/24/14.
  */
-public class QuadraticFunction implements Function {
+public class QuadraticFunction extends AbstractFunction {
     private final RealMatrix A;
     private final RealVector b;
 

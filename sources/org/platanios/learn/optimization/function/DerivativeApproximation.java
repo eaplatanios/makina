@@ -10,11 +10,11 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  * @author Emmanouil Antonios Platanios
  */
 public class DerivativeApproximation {
-    private final Function function;
+    private final AbstractFunction function;
     private final DerivativeApproximationMethod method;
     private final double epsilon;
 
-    public DerivativeApproximation(Function function, DerivativeApproximationMethod method) {
+    public DerivativeApproximation(AbstractFunction function, DerivativeApproximationMethod method) {
         this.function = function;
         this.method = method;
 

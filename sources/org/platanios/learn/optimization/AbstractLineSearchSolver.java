@@ -1,7 +1,7 @@
 package org.platanios.learn.optimization;
 
 import org.apache.commons.math3.linear.ArrayRealVector;
-import org.platanios.learn.optimization.function.Function;
+import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.QuadraticFunction;
 import org.platanios.learn.optimization.linesearch.*;
 
@@ -9,13 +9,13 @@ import org.platanios.learn.optimization.linesearch.*;
  * @author Emmanouil Antonios Platanios
  */
 abstract class AbstractLineSearchSolver extends AbstractSolver {
-    final Function objective;
+    final AbstractFunction objective;
 
     /** Default value: If quadratic or linear function it is ExactLineSearch, otherwise it is StrongWolfeLineSearch
      * with CONSERVE_FIRST_ORDER_CHANGE for the step size initialization method. */
     private LineSearch lineSearch;
 
-    public AbstractLineSearchSolver(Function objective,
+    public AbstractLineSearchSolver(AbstractFunction objective,
                                     double[] initialPoint) {
         this.objective = objective;
         this.currentPoint = new ArrayRealVector(initialPoint);
