@@ -159,6 +159,26 @@ public class DerivativeApproximation {
         return hessian;
     }
 
+    public RealVector approximateHessianVectorProductGivenGradient(RealVector point, RealVector p) {
+        RealVector result;
+        RealVector forwardGradientValue = function.computeGradient(point.add(p.mapMultiply(epsilon)));
+
+        switch(method) {
+            case FORWARD_DIFFERENCE:
+                RealVector currentGradientValue = function.computeGradient(point);
+                result = forwardGradientValue.subtract(currentGradientValue).mapMultiply(1 / epsilon);
+                break;
+            case CENTRAL_DIFFERENCE:
+                RealVector backwardGradientValue = function.computeGradient(point.subtract(p.mapMultiply(epsilon)));
+                result = forwardGradientValue.subtract(backwardGradientValue).mapMultiply(1 / (2 * epsilon));
+                break;
+            default:
+                throw new NotImplementedException();
+        }
+
+        return result;
+    }
+
     private static double calculateMachineEpsilonDouble() {
         double epsilon = 1;
         while (1 + epsilon / 2 > 1.0) {
