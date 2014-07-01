@@ -6,7 +6,8 @@ import org.apache.commons.math3.linear.RealVector;
  * An implementation of several step size initialization methods used for computing the initial step size value for
  * iterative line search algorithms. For methods that do not produce well scaled search directions, such as the steepest
  * descent and conjugate gradient methods, it is important to use current information about the problem and the
- * algorithm to make the initial guess. For Newton and quasi-Newton methods, the UNIT step size initialization method
+ * algorithm to make the initial guess. For Newton and quasi-Newton methods, the
+ * {@link org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod#UNIT} step size initialization method
  * should always be selected. This choice ensures that unit step lengths are taken whenever they satisfy the termination
  * conditions and allows the rapid rate of convergence properties of these methods to take effect.
  *

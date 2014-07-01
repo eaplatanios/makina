@@ -5,8 +5,8 @@ package org.platanios.learn.optimization.linesearch;
  * iterative line search algorithms, that are currently supported by our implementation. For methods that do not produce
  * well scaled search directions, such as the steepest descent and conjugate gradient methods, it is important to use
  * current information about the problem and the algorithm to make the initial guess. For Newton and quasi-Newton
- * methods, the UNIT step size initialization method should always be selected. This choice ensures that unit step
- * lengths are taken whenever they satisfy the termination conditions and allows the rapid rate of convergence
+ * methods, the {@link #UNIT} step size initialization method should always be selected. This choice ensures that unit
+ * step lengths are taken whenever they satisfy the termination conditions and allows the rapid rate of convergence
  * properties of these methods to take effect.
  *
  * @author Emmanouil Antonios Platanios
