@@ -13,7 +13,7 @@ import org.platanios.learn.optimization.function.QuadraticFunction;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class ConjugateGradientSolver extends AbstractSolver {
+public class ConjugateGradientSolver extends AbstractIterativeSolver {
     private final RealMatrix A;
 
     public ConjugateGradientSolver(QuadraticFunction objective,

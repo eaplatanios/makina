@@ -7,7 +7,7 @@ import org.platanios.learn.optimization.function.AbstractFunction;
 /**
  * @author Emmanouil Antonios Platanios
  */
-abstract class AbstractSolver implements Solver {
+abstract class AbstractIterativeSolver implements Solver {
     private int maximumNumberOfIterations = 10000;
     private int maximumNumberOfFunctionEvaluations = 1000000;
 
@@ -40,8 +40,8 @@ abstract class AbstractSolver implements Solver {
     double currentObjectiveValue;
     double previousObjectiveValue;
 
-    public AbstractSolver(AbstractFunction objective,
-                          double[] initialPoint) {
+    public AbstractIterativeSolver(AbstractFunction objective,
+                                   double[] initialPoint) {
         this.objective = objective;
         currentPoint = new ArrayRealVector(initialPoint);
         currentGradient = objective.getGradient(currentPoint);
@@ -63,7 +63,6 @@ abstract class AbstractSolver implements Solver {
         return currentPoint;
     }
 
-    @Override
     public boolean checkTerminationConditions() {
         if (currentIteration > 0) {
             if (currentIteration >= maximumNumberOfIterations) {
@@ -102,7 +101,6 @@ abstract class AbstractSolver implements Solver {
         }
     }
 
-    @Override
     public void printHeader() {
         System.out.println("|----------------" +
                                    "----------------" +
@@ -125,7 +123,6 @@ abstract class AbstractSolver implements Solver {
                                    "======================|");
     }
 
-    @Override
     public void printIteration() {
         System.out.format("| %13d | %13s | %20s | %20s | %20s | %20s |%n",
                           currentIteration,
@@ -136,7 +133,6 @@ abstract class AbstractSolver implements Solver {
                           DECIMAL_FORMAT.format(gradientNorm));
     }
 
-    @Override
     public void printTerminationMessage() {
         System.out.println("|----------------" +
                                    "----------------" +
@@ -178,6 +174,8 @@ abstract class AbstractSolver implements Solver {
                                        + ")!");
         }
     }
+
+    abstract public void iterationUpdate();
 
     public int getMaximumNumberOfIterations() {
         return maximumNumberOfIterations;

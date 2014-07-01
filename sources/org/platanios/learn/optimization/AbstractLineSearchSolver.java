@@ -11,7 +11,7 @@ import org.platanios.learn.optimization.linesearch.*;
 /**
  * @author Emmanouil Antonios Platanios
  */
-abstract class AbstractLineSearchSolver extends AbstractSolver {
+abstract class AbstractLineSearchSolver extends AbstractIterativeSolver {
     /** Default value: If quadratic or linear function it is ExactLineSearch, otherwise it is StrongWolfeLineSearch
      * with CONSERVE_FIRST_ORDER_CHANGE for the step size initialization method. */
     private LineSearch lineSearch;

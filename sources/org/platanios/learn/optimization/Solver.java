@@ -10,10 +10,5 @@ import java.text.DecimalFormat;
 interface Solver {
     static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.0000000000E0");
 
-    public boolean checkTerminationConditions();
-    public void iterationUpdate();
-    public void printHeader();
-    public void printIteration();
-    public void printTerminationMessage();
     public RealVector solve();
 }

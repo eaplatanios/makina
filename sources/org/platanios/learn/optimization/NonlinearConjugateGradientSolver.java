@@ -15,7 +15,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class NonlinearConjugateGradientSolver extends AbstractSolver {
+public class NonlinearConjugateGradientSolver extends AbstractIterativeSolver {
     private NonlinearConjugateGradientMethod method = NonlinearConjugateGradientMethod.POLAK_RIBIERE_PLUS;
     private NonlinearConjugateGradientRestartMethod restartMethod = NonlinearConjugateGradientRestartMethod.GRADIENTS_ORTHOGONALITY_CHECK;
 

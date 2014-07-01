@@ -4,9 +4,9 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 
 /**
- * A quadratic function of the form f(x) = 1/2 x'Ax - b'x.
+ * A quadratic function of the form \(f(x)=\frac{1}{2}x^TAx-b^Tx\).
  *
- * Created by Anthony on 6/24/14.
+ * @author Emmanouil Antonios Platanios
  */
 public class QuadraticFunction extends AbstractFunction {
     private final RealMatrix A;

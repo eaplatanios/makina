@@ -11,6 +11,11 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 /**
  * This is a derivative-free optimization algorithm.
  *
+ * TODO: Implement a pattern-search solver.
+ * TODO: Implement the DFO conjugate direction solver.
+ * TODO: Implement the Nelder-Mead solver.
+ * TODO: Implement the implicit filtering solver.
+ *
  * @author Emmanouil Antonios Platanios
  */
 public class CoordinateDescentSolver extends AbstractLineSearchSolver {
