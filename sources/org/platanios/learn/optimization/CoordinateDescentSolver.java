@@ -2,6 +2,7 @@ package org.platanios.learn.optimization;
 
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
+import org.platanios.learn.math.Utilities;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod;
 import org.platanios.learn.optimization.linesearch.StrongWolfeInterpolationLineSearch;
@@ -13,7 +14,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  * @author Emmanouil Antonios Platanios
  */
 public class CoordinateDescentSolver extends AbstractLineSearchSolver {
-    private final double epsilon = Math.sqrt(calculateMachineEpsilonDouble());
+    private final double epsilon = Math.sqrt(Utilities.calculateMachineEpsilonDouble());
     private final int numberOfDimensions;
 
     private CoordinateDescentMethod method = CoordinateDescentMethod.CYCLE_AND_JOIN_ENDPOINTS;
@@ -105,15 +106,6 @@ public class CoordinateDescentSolver extends AbstractLineSearchSolver {
                 cycleEndPoint = currentPoint;
             }
         }
-    }
-
-    // TODO: Move this method to a utils class - it is also used in the DerivativesApproximation class.
-    private static double calculateMachineEpsilonDouble() {
-        double epsilon = 1;
-        while (1 + epsilon / 2 > 1.0) {
-            epsilon /= 2;
-        }
-        return epsilon;
     }
 
     public CoordinateDescentMethod getMethod() {

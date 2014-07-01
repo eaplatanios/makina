@@ -3,7 +3,10 @@ package org.platanios.learn.optimization;
 import org.apache.commons.math3.linear.*;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.QuadraticFunction;
-import org.platanios.learn.optimization.linesearch.*;
+import org.platanios.learn.optimization.linesearch.ExactLineSearch;
+import org.platanios.learn.optimization.linesearch.LineSearch;
+import org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod;
+import org.platanios.learn.optimization.linesearch.StrongWolfeInterpolationLineSearch;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**

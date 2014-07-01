@@ -4,6 +4,7 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
+import org.platanios.learn.math.Utilities;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
@@ -21,10 +22,10 @@ public class DerivativesApproximation {
 
         switch (method) {
             case FORWARD_DIFFERENCE:
-                epsilon = Math.sqrt(calculateMachineEpsilonDouble());
+                epsilon = Math.sqrt(Utilities.calculateMachineEpsilonDouble());
                 break;
             case CENTRAL_DIFFERENCE:
-                epsilon = Math.cbrt(calculateMachineEpsilonDouble());
+                epsilon = Math.cbrt(Utilities.calculateMachineEpsilonDouble());
                 break;
             default:
                 throw new NotImplementedException();
@@ -178,14 +179,6 @@ public class DerivativesApproximation {
         }
 
         return result;
-    }
-
-    private static double calculateMachineEpsilonDouble() {
-        double epsilon = 1;
-        while (1 + epsilon / 2 > 1.0) {
-            epsilon /= 2;
-        }
-        return epsilon;
     }
 
     public DerivativesApproximationMethod getMethod() {
