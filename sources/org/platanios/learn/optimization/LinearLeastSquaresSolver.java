@@ -9,6 +9,8 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  * Solves the linear least squares problem of the form: \(min_{x}{\|Jx-y\|^2}\). We assume that
  * \(J\in\mathbb{R}^{m\times n}\) and \(m\geq n\).
  *
+ * TODO: Make J dimensionality checks and positive-definiteness checks in case the Cholesky decomposition method is used.
+ *
  * @author Emmanouil Antonios Platanios
  */
 public class LinearLeastSquaresSolver implements Solver {

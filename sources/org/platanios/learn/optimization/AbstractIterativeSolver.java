@@ -175,7 +175,7 @@ abstract class AbstractIterativeSolver implements Solver {
         }
     }
 
-    abstract public void iterationUpdate();
+    public abstract void iterationUpdate();
 
     public int getMaximumNumberOfIterations() {
         return maximumNumberOfIterations;

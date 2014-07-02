@@ -2,7 +2,6 @@ package org.platanios.learn.classification;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.platanios.learn.optimization.NonlinearConjugateGradientSolver;
 import org.platanios.learn.optimization.function.AbstractFunction;
