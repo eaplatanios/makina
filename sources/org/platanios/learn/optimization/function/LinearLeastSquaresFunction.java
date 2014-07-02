@@ -8,7 +8,7 @@ import org.apache.commons.math3.linear.RealVector;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class LinearLeastSquaresFunction {
+public class LinearLeastSquaresFunction extends AbstractLeastSquaresFunction {
     private final RealMatrix J;
     private final RealVector y;
 
@@ -17,18 +17,12 @@ public class LinearLeastSquaresFunction {
         this.y = y;
     }
 
-    public double computeValue(RealVector x) {
-        RealVector r = J.operate(x).subtract(y);
-        return 0.5 * r.dotProduct(r);
+    public RealVector computeResiduals(RealVector point) {
+        return J.operate(point).subtract(y);
     }
 
-    public RealVector computeGradient(RealVector x) {
-        RealVector r = J.operate(x).subtract(y);
-        return J.transpose().operate(r);
-    }
-
-    public RealMatrix computeHessian(RealVector x) {
-        return J.transpose().multiply(J);
+    public RealMatrix computeJacobian(RealVector point) {
+        return J;
     }
 
     public RealMatrix getJ() {
