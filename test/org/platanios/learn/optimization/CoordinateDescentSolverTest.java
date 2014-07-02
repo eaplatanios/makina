@@ -17,7 +17,7 @@ public class CoordinateDescentSolverTest {
         System.out.println("Rosenbrock Function Coordinate Descent (Cycle Method):\n");
         CoordinateDescentSolver coordinateDescentSolver = new CoordinateDescentSolver(new RosenbrockFunction(),
                                                                                       new double[] { -1.2, 1 });
-        coordinateDescentSolver.setMethod(CoordinateDescentMethod.CYCLE);
+        coordinateDescentSolver.setMethod(CoordinateDescentSolver.Method.CYCLE);
         double[] actualResult = coordinateDescentSolver.solve().toArray();
         double[] expectedResult = new double[] { 1, 1 };
         Assert.assertArrayEquals(expectedResult, actualResult, 0.2);
@@ -26,7 +26,7 @@ public class CoordinateDescentSolverTest {
         RealMatrix A = new Array2DRowRealMatrix(new double[][] { { 1, 0.5 }, { 0.5, 1 } });
         RealVector b = new ArrayRealVector(new double[] { 1, 2 });
         coordinateDescentSolver = new CoordinateDescentSolver(new QuadraticFunction(A, b), new double[] { 0, 0 });
-        coordinateDescentSolver.setMethod(CoordinateDescentMethod.CYCLE);
+        coordinateDescentSolver.setMethod(CoordinateDescentSolver.Method.CYCLE);
         actualResult = coordinateDescentSolver.solve().toArray();
         expectedResult = new double[] { 0, 2 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
@@ -37,7 +37,7 @@ public class CoordinateDescentSolverTest {
         System.out.println("Rosenbrock Function Coordinate Descent (Back and Forth Method):\n");
         CoordinateDescentSolver coordinateDescentSolver = new CoordinateDescentSolver(new RosenbrockFunction(),
                                                                                       new double[] { -1.2, 1 });
-        coordinateDescentSolver.setMethod(CoordinateDescentMethod.BACK_AND_FORTH);
+        coordinateDescentSolver.setMethod(CoordinateDescentSolver.Method.BACK_AND_FORTH);
         double[] actualResult = coordinateDescentSolver.solve().toArray();
         double[] expectedResult = new double[] { 1, 1 };
         Assert.assertArrayEquals(expectedResult, actualResult, 0.2);
@@ -46,7 +46,7 @@ public class CoordinateDescentSolverTest {
         RealMatrix A = new Array2DRowRealMatrix(new double[][] { { 1, 0.5 }, { 0.5, 1 } });
         RealVector b = new ArrayRealVector(new double[] { 1, 2 });
         coordinateDescentSolver = new CoordinateDescentSolver(new QuadraticFunction(A, b), new double[] { 0, 0 });
-        coordinateDescentSolver.setMethod(CoordinateDescentMethod.BACK_AND_FORTH);
+        coordinateDescentSolver.setMethod(CoordinateDescentSolver.Method.BACK_AND_FORTH);
         actualResult = coordinateDescentSolver.solve().toArray();
         expectedResult = new double[] { 0, 2 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
@@ -57,7 +57,7 @@ public class CoordinateDescentSolverTest {
         System.out.println("Rosenbrock Function Coordinate Descent (Cycle and Join Endpoints Method):\n");
         CoordinateDescentSolver coordinateDescentSolver = new CoordinateDescentSolver(new RosenbrockFunction(),
                                                                                       new double[] { -1.2, 1 });
-        coordinateDescentSolver.setMethod(CoordinateDescentMethod.CYCLE_AND_JOIN_ENDPOINTS);
+        coordinateDescentSolver.setMethod(CoordinateDescentSolver.Method.CYCLE_AND_JOIN_ENDPOINTS);
         double[] actualResult = coordinateDescentSolver.solve().toArray();
         double[] expectedResult = new double[] { 1, 1 };
         Assert.assertArrayEquals(expectedResult, actualResult, 0.2);
@@ -66,7 +66,7 @@ public class CoordinateDescentSolverTest {
         RealMatrix A = new Array2DRowRealMatrix(new double[][] { { 1, 0.5 }, { 0.5, 1 } });
         RealVector b = new ArrayRealVector(new double[] { 1, 2 });
         coordinateDescentSolver = new CoordinateDescentSolver(new QuadraticFunction(A, b), new double[] { 0, 0 });
-        coordinateDescentSolver.setMethod(CoordinateDescentMethod.CYCLE_AND_JOIN_ENDPOINTS);
+        coordinateDescentSolver.setMethod(CoordinateDescentSolver.Method.CYCLE_AND_JOIN_ENDPOINTS);
         actualResult = coordinateDescentSolver.solve().toArray();
         expectedResult = new double[] { 0, 2 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
