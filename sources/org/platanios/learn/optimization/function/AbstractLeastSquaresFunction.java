@@ -7,17 +7,20 @@ import org.apache.commons.math3.linear.RealVector;
  * @author Emmanouil Antonios Platanios
  */
 public abstract class AbstractLeastSquaresFunction extends AbstractFunction {
+    @Override
     public double computeValue(RealVector point) {
         RealVector residuals = computeResiduals(point);
         return 0.5 * residuals.dotProduct(residuals);
     }
 
+    @Override
     public RealVector computeGradient(RealVector point) {
         RealVector residuals = computeResiduals(point);
         RealMatrix jacobian = computeJacobian(point);
         return jacobian.transpose().operate(residuals);
     }
 
+    @Override
     public RealMatrix computeHessian(RealVector point) {
         RealMatrix jacobian = computeJacobian(point);
         return jacobian.transpose().multiply(jacobian);

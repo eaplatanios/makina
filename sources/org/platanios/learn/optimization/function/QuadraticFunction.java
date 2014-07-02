@@ -17,15 +17,18 @@ public class QuadraticFunction extends AbstractFunction {
         this.b = b;
     }
 
-    public double computeValue(RealVector x) {
-        return 0.5 * A.preMultiply(x).dotProduct(x) - b.dotProduct(x);
+    @Override
+    public double computeValue(RealVector point) {
+        return 0.5 * A.preMultiply(point).dotProduct(point) - b.dotProduct(point);
     }
 
-    public RealVector computeGradient(RealVector x) {
-        return A.operate(x).subtract(b);
+    @Override
+    public RealVector computeGradient(RealVector point) {
+        return A.operate(point).subtract(b);
     }
 
-    public RealMatrix computeHessian(RealVector x) {
+    @Override
+    public RealMatrix computeHessian(RealVector point) {
         return A;
     }
 
