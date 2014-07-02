@@ -1,6 +1,7 @@
 package org.platanios.learn.optimization;
 
 import org.apache.commons.math3.linear.RealMatrix;
+import org.platanios.learn.optimization.function.LinearLeastSquaresFunction;
 import org.platanios.learn.optimization.function.QuadraticFunction;
 
 /**
@@ -15,11 +16,21 @@ import org.platanios.learn.optimization.function.QuadraticFunction;
  */
 public class ConjugateGradientSolver extends AbstractIterativeSolver {
     private final RealMatrix A;
+    private final boolean isLinearLeastSquaresProblem;
 
     public ConjugateGradientSolver(QuadraticFunction objective,
                                    double[] initialPoint) {
         super(objective, initialPoint);
         A = objective.getA();
+        isLinearLeastSquaresProblem = false;
+        currentDirection = currentGradient.mapMultiply(-1);
+    }
+
+    public ConjugateGradientSolver(LinearLeastSquaresFunction objective,
+                                   double[] initialPoint) {
+        super(objective, initialPoint);
+        A = objective.getJ();
+        isLinearLeastSquaresProblem = true;
         currentDirection = currentGradient.mapMultiply(-1);
     }
 
@@ -29,9 +40,22 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
         previousGradient = currentGradient;
         previousDirection = currentDirection;
         double previousResidualNormSquared = previousGradient.dotProduct(previousGradient);
-        double stepSize = previousResidualNormSquared / A.preMultiply(previousDirection).dotProduct(previousDirection);
-        currentPoint = previousPoint.add(previousDirection.mapMultiply(stepSize));
-        currentGradient = previousGradient.add(A.operate(previousDirection).mapMultiply(stepSize));
+        double stepSize = previousResidualNormSquared;
+
+        // This conditional is used so that in the linear least squares the algorithm is more efficient. We do not have
+        // to perform the matrix multiplication J^TJ and then multiply J^TJ with a vector; we can instead first multiply
+        // the vector by J and then the resulting vector by J^T.
+        if (isLinearLeastSquaresProblem) {
+            stepSize /= A.transpose().operate(A.operate(previousDirection)).dotProduct(previousDirection);
+            currentPoint = previousPoint.add(previousDirection.mapMultiply(stepSize));
+            currentGradient =
+                    previousGradient.add(A.transpose().operate(A.operate(previousDirection)).mapMultiply(stepSize));
+        } else {
+            stepSize /= A.preMultiply(previousDirection).dotProduct(previousDirection);
+            currentPoint = previousPoint.add(previousDirection.mapMultiply(stepSize));
+            currentGradient = previousGradient.add(A.operate(previousDirection).mapMultiply(stepSize));
+        }
+
         double residualNormsRatio = currentGradient.dotProduct(currentGradient) / previousResidualNormSquared;
         currentDirection = currentGradient.mapMultiply(-1).add(previousDirection.mapMultiply(residualNormsRatio));
         currentObjectiveValue = objective.getValue(currentPoint);
