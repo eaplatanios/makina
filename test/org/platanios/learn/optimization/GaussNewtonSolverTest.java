@@ -12,31 +12,31 @@ import org.platanios.learn.optimization.function.AbstractLeastSquaresFunction;
  * @author Emmanouil Antonios Platanios
  */
 public class GaussNewtonSolverTest {
-//    @Test
-//    public void testGaussNewtonCholeskyDecompositionSolver() {
-//        System.out.println("Exponential Least Squares Function Gauss-Newton (Cholesky Decomposition) Solver:\n");
-//        double[] t = { 1, 2, 4, 5, 8 };
-//        double[] y = { 3.2939, 4.2699, 7.1749, 9.3008, 20.259 };
-//        GaussNewtonSolver gaussNewtonSolver =
-//                new GaussNewtonSolver(new ExponentialLeastSquaresFunction(t, y), new double[] { 0, 0 });
-//        gaussNewtonSolver.setLinearLeastSquaresSubproblemMethod(LinearLeastSquaresSolver.Method.CHOLESKY_DECOMPOSITION);
-//        double[] actualResult = gaussNewtonSolver.solve().toArray();
-//        double[] expectedResult = new double[] { 2.5411, 0.2595 };
-//        Assert.assertArrayEquals(expectedResult, actualResult, 1e-4);
-//    }
-//
-//    @Test
-//    public void testGaussNewtonQRDecompositionSolver() {
-//        System.out.println("Exponential Least Squares Function Gauss-Newton (QR Decomposition) Solver:\n");
-//        double[] t = { 1, 2, 4, 5, 8 };
-//        double[] y = { 3.2939, 4.2699, 7.1749, 9.3008, 20.259 };
-//        GaussNewtonSolver gaussNewtonSolver =
-//                new GaussNewtonSolver(new ExponentialLeastSquaresFunction(t, y), new double[] { 0, 0 });
-//        gaussNewtonSolver.setLinearLeastSquaresSubproblemMethod(LinearLeastSquaresSolver.Method.QR_DECOMPOSITION);
-//        double[] actualResult = gaussNewtonSolver.solve().toArray();
-//        double[] expectedResult = new double[] { 2.5411, 0.2595 };
-//        Assert.assertArrayEquals(expectedResult, actualResult, 1e-4);
-//    }
+    @Test
+    public void testGaussNewtonCholeskyDecompositionSolver() {
+        System.out.println("Exponential Least Squares Function Gauss-Newton (Cholesky Decomposition) Solver:\n");
+        double[] t = { 1, 2, 4, 5, 8 };
+        double[] y = { 3.2939, 4.2699, 7.1749, 9.3008, 20.259 };
+        GaussNewtonSolver gaussNewtonSolver =
+                new GaussNewtonSolver(new ExponentialLeastSquaresFunction(t, y), new double[] { 0, 0 });
+        gaussNewtonSolver.setLinearLeastSquaresSubproblemMethod(LinearLeastSquaresSolver.Method.CHOLESKY_DECOMPOSITION);
+        double[] actualResult = gaussNewtonSolver.solve().toArray();
+        double[] expectedResult = new double[] { 2.5411, 0.2595 };
+        Assert.assertArrayEquals(expectedResult, actualResult, 1e-4);
+    }
+
+    @Test
+    public void testGaussNewtonQRDecompositionSolver() {
+        System.out.println("Exponential Least Squares Function Gauss-Newton (QR Decomposition) Solver:\n");
+        double[] t = { 1, 2, 4, 5, 8 };
+        double[] y = { 3.2939, 4.2699, 7.1749, 9.3008, 20.259 };
+        GaussNewtonSolver gaussNewtonSolver =
+                new GaussNewtonSolver(new ExponentialLeastSquaresFunction(t, y), new double[] { 0, 0 });
+        gaussNewtonSolver.setLinearLeastSquaresSubproblemMethod(LinearLeastSquaresSolver.Method.QR_DECOMPOSITION);
+        double[] actualResult = gaussNewtonSolver.solve().toArray();
+        double[] expectedResult = new double[] { 2.5411, 0.2595 };
+        Assert.assertArrayEquals(expectedResult, actualResult, 1e-4);
+    }
 
     @Test
     public void testGaussNewtonSingularValueDecompositionSolver() {

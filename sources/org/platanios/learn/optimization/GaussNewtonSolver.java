@@ -6,11 +6,14 @@ import org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod;
 import org.platanios.learn.optimization.linesearch.StrongWolfeInterpolationLineSearch;
 
 /**
+ * This is a method for solving nonlinear least squares problems.
+ *
  * @author Emmanouil Antonios Platanios
  */
 public class GaussNewtonSolver extends AbstractLineSearchSolver {
     private LinearLeastSquaresSolver.Method linearLeastSquaresSubproblemMethod =
             LinearLeastSquaresSolver.Method.SINGULAR_VALUE_DECOMPOSITION;
+    // TODO: Add a way to control the preconditioning method of the subproblem solver.
 
     public GaussNewtonSolver(AbstractLeastSquaresFunction objective,
                              double[] initialPoint) {

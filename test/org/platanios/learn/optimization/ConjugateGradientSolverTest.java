@@ -18,7 +18,10 @@ public class ConjugateGradientSolverTest {
         RealMatrix A = new Array2DRowRealMatrix(new double[][] { { 1, 0.5 }, { 0.5, 1 } });
         RealVector b = new ArrayRealVector(new double[] { 1, 2 });
         ConjugateGradientSolver conjugateGradientSolver =
-                new ConjugateGradientSolver(new QuadraticFunction(A, b), new double[] { 0, 0 });
+                new ConjugateGradientSolver(
+                        new QuadraticFunction(A, b),
+                        ConjugateGradientSolver.PreconditioningMethod.IDENTITY,
+                        new double[] { 0, 0 });
         double[] actualResult = conjugateGradientSolver.solve().toArray();
         double[] expectedResult = new double[] { 0, 2 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);

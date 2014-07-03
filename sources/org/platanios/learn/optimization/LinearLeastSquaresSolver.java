@@ -2,7 +2,6 @@ package org.platanios.learn.optimization;
 
 import org.apache.commons.math3.linear.*;
 import org.platanios.learn.optimization.function.LinearLeastSquaresFunction;
-import org.platanios.learn.optimization.function.QuadraticFunction;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
@@ -39,10 +38,13 @@ public class LinearLeastSquaresSolver implements Solver {
                 SingularValueDecomposition singularValueDecomposition = new SingularValueDecomposition(J);
                 return singularValueDecomposition.getSolver().solve(y);
             case CONJUGATE_GRADIENT:
-                QuadraticFunction objective =
-                        new QuadraticFunction(J.transpose().multiply(J), J.transpose().operate(y));
+                LinearLeastSquaresFunction objective = new LinearLeastSquaresFunction(J, y);
                 ConjugateGradientSolver conjugateGradientSolver =
-                        new ConjugateGradientSolver(objective, new double[n]);
+                        new ConjugateGradientSolver(
+                                objective,
+                                ConjugateGradientSolver.PreconditioningMethod.SYMMETRIC_SUCCESSIVE_OVER_RELAXATION,
+                                new double[n]
+                        );
                 return conjugateGradientSolver.solve();
             default:
                 throw new NotImplementedException();
@@ -83,7 +85,7 @@ public class LinearLeastSquaresSolver implements Solver {
         SINGULAR_VALUE_DECOMPOSITION,
         /** This method uses the (iterative) conjugate gradient numerical optimization solver. It is better than the
          * matrix decomposition based methods when dealing with large-scale problems (in those cases it should be much
-         * faster). */
+         * faster). In this case, the matrix \(J^TJ\) has to be symmetric and positive definite. */
         CONJUGATE_GRADIENT
     }
 }
