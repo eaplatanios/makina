@@ -168,7 +168,13 @@ public class QuasiNewtonSolver extends AbstractLineSearchSolver {
     }
 
     public void setM(int m) {
-        this.m = m;
+        if (method != Method.LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO) {
+            this.m = 1;
+        } else {
+            this.m = m;
+        }
+        s = new RealVector[m];
+        y = new RealVector[m];
     }
 
     public double getSymmetricRankOneSkippingParameter() {
