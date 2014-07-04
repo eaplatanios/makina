@@ -53,14 +53,24 @@ public class CholeskyDecomposition {
         }
     }
 
-    /** Solves the linear system of equations \(A\boldsymbol{x}=\boldsymbol{b}\) for \(\boldsymbol{x}\) and returns the
-     * result as a new vector. The solution is obtained efficiently by using the Cholesky factor, \(L\). */
+    /**
+     * Solves the linear system of equations \(A\boldsymbol{x}=\boldsymbol{b}\) for \(\boldsymbol{x}\) and returns the
+     * result as a new vector. The solution is obtained efficiently by using the Cholesky factor, \(L\).
+     *
+     * @param   vector  Vector \(\boldsymbol{b}\) in equation \(A\boldsymbol{x}=\boldsymbol{b}\).
+     * @return          The solution of the system of equations.
+     */
     public Vector solve(Vector vector) {
         return new Vector(solve(vector.copyAsMatrix()).getColumnPackedArrayCopy());
     }
 
-    /** Solves the linear system of equations \(AX=B\) for \(X\) and returns the result as a new matrix. The solution is
-     * obtained efficiently by using the Cholesky factor, \(L\). */
+    /**
+     * Solves the linear system of equations \(AX=B\) for \(X\) and returns the result as a new matrix. The solution is
+     * obtained efficiently by using the Cholesky factor, \(L\).
+     *
+     * @param   matrix  Matrix \(B\) in equation \(AX=B\).
+     * @return          The solution of the system of linear equations.
+     */
     public Matrix solve(Matrix matrix) {
         if (matrix.getRowDimension() != dimension) {
             throw new IllegalArgumentException("Matrix row dimensions must agree.");
@@ -70,8 +80,7 @@ public class CholeskyDecomposition {
         }
         double[][] rightHandSideMatrixArray = matrix.getArrayCopy();
         int resultMatrixColumnDimension = matrix.getColumnDimension();
-
-        // Forward substitution solution
+        // Forward substitution solution.
         for (int k = 0; k < dimension; k++) {
             for (int j = 0; j < resultMatrixColumnDimension; j++) {
                 for (int i = 0; i < k ; i++) {
@@ -80,11 +89,10 @@ public class CholeskyDecomposition {
                 rightHandSideMatrixArray[k][j] /= L[k][k];
             }
         }
-
-        // Backward substitution solution
+        // Backward substitution solution.
         for (int k = dimension - 1; k >= 0; k--) {
             for (int j = 0; j < resultMatrixColumnDimension; j++) {
-                for (int i = k+1; i < dimension; i++) {
+                for (int i = k + 1; i < dimension; i++) {
                     rightHandSideMatrixArray[k][j] -= rightHandSideMatrixArray[i][j] * L[i][k];
                 }
                 rightHandSideMatrixArray[k][j] /= L[k][k];
@@ -97,7 +105,7 @@ public class CholeskyDecomposition {
     /**
      * Gets the Cholesky factor, \(L\).
      *
-     * @return  The Cholesky factor, \(L\).
+     * @return  The Cholesky factor, \(L\), as a new matrix.
      */
     public Matrix getL() {
         return new Matrix(L, dimension, dimension);

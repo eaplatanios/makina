@@ -10,9 +10,9 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  * @author Emmanouil Antonios Platanios
  */
 public class Matrix {
-    /** The row dimension of the internal two-dimensional array. */
+    /** The row dimension of the matrix. */
     private final int rowDimension;
-    /** The column dimension of the internal two-dimensional array. */
+    /** The column dimension of the matrix. */
     private final int columnDimension;
 
     /** Array for internal storage of the matrix elements. */

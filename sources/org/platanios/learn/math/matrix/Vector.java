@@ -7,7 +7,7 @@ package org.platanios.learn.math.matrix;
  * @author Emmanouil Antonios Platanios
  */
 public class Vector {
-    /** The dimension of the internal one-dimensional array. */
+    /** The dimension of the vector. */
     private final int dimension;
 
     /** Array for internal storage of the vector elements. */
