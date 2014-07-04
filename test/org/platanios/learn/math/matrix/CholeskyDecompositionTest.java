@@ -34,6 +34,18 @@ public class CholeskyDecompositionTest {
             }
         }
         Assert.assertArrayEquals(expectedResult, actualResult, 0);
+    }
+
+    @Test
+    public void testIsSymmetricAndPositiveDefiniteForSymmetricAndPositiveDefiniteMatrix1() {
+        double[][] testMatrixArray = new double[][] {
+                { 1, 1, 1, 1, 1 },
+                { 1, 2, 3, 4, 5 },
+                { 1, 3, 6, 10, 15 },
+                { 1, 4, 10, 20, 35 },
+                { 1, 5, 15, 35, 70 }
+        };
+        CholeskyDecomposition choleskyDecomposition = new CholeskyDecomposition(new Matrix(testMatrixArray));
         Assert.assertEquals(true, choleskyDecomposition.isSymmetricAndPositiveDefinite());
     }
 
@@ -60,11 +72,21 @@ public class CholeskyDecompositionTest {
             }
         }
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-4);
+    }
+
+    @Test
+    public void testIsSymmetricAndPositiveDefiniteForSymmetricAndPositiveDefiniteMatrix2() {
+        double[][] testMatrixArray = new double[][] {
+                { 28.4100,  11.4400,  21.1100 },
+                { 11.4400,   9.7600,  18.0800 },
+                { 21.1100,  18.0800, 106.5300 }
+        };
+        CholeskyDecomposition choleskyDecomposition = new CholeskyDecomposition(new Matrix(testMatrixArray));
         Assert.assertEquals(true, choleskyDecomposition.isSymmetricAndPositiveDefinite());
     }
 
     @Test
-    public void testLForNonSymmetricAndPositiveDefiniteMatrix() {
+    public void testIsSymmetricAndPositiveDefiniteForNonSymmetricAndPositiveDefiniteMatrix() {
         double[][] testMatrixArray = new double[][] {
                 { 0, 1, 1, 1, 1 },
                 { 1, 2, 3, 4, 5 },
@@ -88,7 +110,6 @@ public class CholeskyDecompositionTest {
         double[] actualResult = choleskyDecomposition.solve(new Vector(tempVectorArray)).getArray();
         double[] expectedResult = new double [] { -0.1913, 0.6795, -0.0577 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-4);
-        Assert.assertEquals(true, choleskyDecomposition.isSymmetricAndPositiveDefinite());
     }
 
     @Test
@@ -119,6 +140,5 @@ public class CholeskyDecompositionTest {
             }
         }
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-4);
-        Assert.assertEquals(true, choleskyDecomposition.isSymmetricAndPositiveDefinite());
     }
 }
