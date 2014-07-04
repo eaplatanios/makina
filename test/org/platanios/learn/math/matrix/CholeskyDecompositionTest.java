@@ -10,9 +10,9 @@ public class CholeskyDecompositionTest {
     @Test
     public void testLForSymmetricAndPositiveDefiniteMatrix1() {
         double[][] testMatrixArray = new double[][] {
-                { 1, 1, 1, 1, 1 },
-                { 1, 2, 3, 4, 5 },
-                { 1, 3, 6, 10, 15 },
+                { 1, 1,  1,  1,  1 },
+                { 1, 2,  3,  4,  5 },
+                { 1, 3,  6, 10, 15 },
                 { 1, 4, 10, 20, 35 },
                 { 1, 5, 15, 35, 70 }
         };
@@ -39,9 +39,9 @@ public class CholeskyDecompositionTest {
     @Test
     public void testIsSymmetricAndPositiveDefiniteForSymmetricAndPositiveDefiniteMatrix1() {
         double[][] testMatrixArray = new double[][] {
-                { 1, 1, 1, 1, 1 },
-                { 1, 2, 3, 4, 5 },
-                { 1, 3, 6, 10, 15 },
+                { 1, 1,  1,  1,  1 },
+                { 1, 2,  3,  4,  5 },
+                { 1, 3,  6, 10, 15 },
                 { 1, 4, 10, 20, 35 },
                 { 1, 5, 15, 35, 70 }
         };
@@ -52,9 +52,9 @@ public class CholeskyDecompositionTest {
     @Test
     public void testLForSymmetricAndPositiveDefiniteMatrix2() {
         double[][] testMatrixArray = new double[][] {
-                { 28.4100,  11.4400,  21.1100 },
-                { 11.4400,   9.7600,  18.0800 },
-                { 21.1100,  18.0800, 106.5300 }
+                { 28.4100, 11.4400,  21.1100 },
+                { 11.4400,  9.7600,  18.0800 },
+                { 21.1100, 18.0800, 106.5300 }
         };
         CholeskyDecomposition choleskyDecomposition = new CholeskyDecomposition(new Matrix(testMatrixArray));
         double[][] actualResultTemp = choleskyDecomposition.getL().getArray();
@@ -77,9 +77,9 @@ public class CholeskyDecompositionTest {
     @Test
     public void testIsSymmetricAndPositiveDefiniteForSymmetricAndPositiveDefiniteMatrix2() {
         double[][] testMatrixArray = new double[][] {
-                { 28.4100,  11.4400,  21.1100 },
-                { 11.4400,   9.7600,  18.0800 },
-                { 21.1100,  18.0800, 106.5300 }
+                { 28.4100, 11.4400,  21.1100 },
+                { 11.4400,  9.7600,  18.0800 },
+                { 21.1100, 18.0800, 106.5300 }
         };
         CholeskyDecomposition choleskyDecomposition = new CholeskyDecomposition(new Matrix(testMatrixArray));
         Assert.assertEquals(true, choleskyDecomposition.isSymmetricAndPositiveDefinite());
@@ -88,9 +88,9 @@ public class CholeskyDecompositionTest {
     @Test
     public void testIsSymmetricAndPositiveDefiniteForNonSymmetricAndPositiveDefiniteMatrix() {
         double[][] testMatrixArray = new double[][] {
-                { 0, 1, 1, 1, 1 },
-                { 1, 2, 3, 4, 5 },
-                { 1, 3, 6, 10, 15 },
+                { 0, 1,  1,  1,  1 },
+                { 1, 2,  3,  4,  5 },
+                { 1, 3,  6, 10, 15 },
                 { 1, 4, 10, 20, 35 },
                 { 1, 5, 15, 35, 70 }
         };
@@ -101,9 +101,9 @@ public class CholeskyDecompositionTest {
     @Test
     public void testVectorSolveForSymmetricAndPositiveDefiniteMatrix() {
         double[][] testMatrixArray = new double[][] {
-                { 28.4100,  11.4400,  21.1100 },
-                { 11.4400,   9.7600,  18.0800 },
-                { 21.1100,  18.0800, 106.5300 }
+                { 28.4100, 11.4400,  21.1100 },
+                { 11.4400,  9.7600,  18.0800 },
+                { 21.1100, 18.0800, 106.5300 }
         };
         double[] tempVectorArray = new double[] { 1.12, 3.40, 2.10 };
         CholeskyDecomposition choleskyDecomposition = new CholeskyDecomposition(new Matrix(testMatrixArray));
@@ -115,9 +115,9 @@ public class CholeskyDecompositionTest {
     @Test
     public void testMatrixSolveForSymmetricAndPositiveDefiniteMatrix() {
         double[][] testMatrixArray1 = new double[][] {
-                { 28.4100,  11.4400,  21.1100 },
-                { 11.4400,   9.7600,  18.0800 },
-                { 21.1100,  18.0800, 106.5300 }
+                { 28.4100, 11.4400,  21.1100 },
+                { 11.4400,  9.7600,  18.0800 },
+                { 21.1100, 18.0800, 106.5300 }
         };
         double[][] tempMatrixArray2 = new double[][] {
                 { 1.12,  5.43 },
