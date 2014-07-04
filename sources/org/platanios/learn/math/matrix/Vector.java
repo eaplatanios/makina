@@ -1,6 +1,9 @@
 package org.platanios.learn.math.matrix;
 
 /**
+ * Implements a class representing vectors and supporting operations related to vectors. Vectors are stored in an
+ * internal one-dimensional array.
+ *
  * @author Emmanouil Antonios Platanios
  */
 public class Vector {
@@ -57,6 +60,15 @@ public class Vector {
         double[] resultVectorArray = resultVector.getArray();
         System.arraycopy(array, 0, resultVectorArray, 0, dimension);
         return resultVector;
+    }
+
+    /**
+     * Copies this vector to a new matrix structure.
+     *
+     * @return  A copy of this vector represented as a new matrix.
+     */
+    public Matrix copyAsMatrix() {
+        return new Matrix(array, array.length);
     }
 
     /**

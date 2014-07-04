@@ -4,6 +4,9 @@ import org.platanios.learn.math.Utilities;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
+ * Implements a class representing matrices and supporting operations related to matrices. Matrices are stored in an
+ * internal two-dimensional array.
+ *
  * @author Emmanouil Antonios Platanios
  */
 public class Matrix {
@@ -44,6 +47,17 @@ public class Matrix {
                 array[i][j] = value;
             }
         }
+    }
+
+    /**
+     * Constructs a matrix from a two-dimensional array.
+     *
+     * @param       array       Two-dimensional array of doubles.
+     *
+     * @exception   IllegalArgumentException    All rows of the input array must have the same length.
+     */
+    public Matrix(double[][] array) {
+        this(array, false);
     }
 
     /**
@@ -807,7 +821,7 @@ public class Matrix {
             }
             for (int i = 0; i < rowDimension; i++) {
                 double[] currentMatrixRowI = array[i];
-                double dotProduct = 0; // TODO: Use compute dot product function for vectors.
+                double dotProduct = 0;
                 for (int k = 0; k < columnDimension; k++) {
                     dotProduct += currentMatrixRowI[k] * matrixColumnJ[k];
                 }
