@@ -8,7 +8,7 @@ import org.junit.Test;
  */
 public class CholeskyDecompositionTest {
     @Test
-    public void testConstructorForSymmetricAndPositiveDefiniteMatrix1() {
+    public void testLForSymmetricAndPositiveDefiniteMatrix1() {
         double[][] testMatrixArray = new double[][] {
                 { 1, 1, 1, 1, 1 },
                 { 1, 2, 3, 4, 5 },
@@ -38,7 +38,7 @@ public class CholeskyDecompositionTest {
     }
 
     @Test
-    public void testConstructorForSymmetricAndPositiveDefiniteMatrix2() {
+    public void testLForSymmetricAndPositiveDefiniteMatrix2() {
         double[][] testMatrixArray = new double[][] {
                 { 28.4100,  11.4400,  21.1100 },
                 { 11.4400,   9.7600,  18.0800 },
@@ -64,7 +64,7 @@ public class CholeskyDecompositionTest {
     }
 
     @Test
-    public void testConstructorForNonSymmetricAndPositiveDefiniteMatrix() {
+    public void testLForNonSymmetricAndPositiveDefiniteMatrix() {
         double[][] testMatrixArray = new double[][] {
                 { 0, 1, 1, 1, 1 },
                 { 1, 2, 3, 4, 5 },

@@ -39,30 +39,30 @@ public class QRDecomposition {
         isFullRank = true;
 
         for (int k = 0; k < columnDimension; k++) {
-            double columnNorm = 0;
+            double columnL2Norm = 0;
             for (int i = k; i < rowDimension; i++) {
-                columnNorm = Utilities.computeSquareRootOfSumOfSquares(columnNorm, QR[i][k]);
+                columnL2Norm = Utilities.computeSquareRootOfSumOfSquares(columnL2Norm, QR[i][k]);
             }
-            if (columnNorm != 0.0) {
+            if (columnL2Norm != 0.0) {
                 if (QR[k][k] < 0) {
-                    columnNorm = -columnNorm;
+                    columnL2Norm = -columnL2Norm;
                 }
                 for (int i = k; i < rowDimension; i++) {
-                    QR[i][k] /= columnNorm;
+                    QR[i][k] /= columnL2Norm;
                 }
                 QR[k][k] += 1.0;
-                for (int j = k+1; j < columnDimension; j++) {
+                for (int j = k + 1; j < columnDimension; j++) {
                     double temporarySum = 0.0;
                     for (int i = k; i < rowDimension; i++) {
-                        temporarySum += QR[i][k] * QR[i][j];
+                        temporarySum -= QR[i][k] * QR[i][j];
                     }
-                    temporarySum = -temporarySum / QR[k][k];
+                    temporarySum /= QR[k][k];
                     for (int i = k; i < rowDimension; i++) {
                         QR[i][j] += temporarySum * QR[i][k];
                     }
                 }
             }
-            rDiagonal[k] = -columnNorm;
+            rDiagonal[k] = -columnL2Norm;
             if (rDiagonal[k] == 0) {
                 isFullRank = false;
             }
@@ -101,9 +101,9 @@ public class QRDecomposition {
             for (int j = 0; j < resultMatrixColumnDimension; j++) {
                 double temporarySum = 0.0;
                 for (int i = k; i < rowDimension; i++) {
-                    temporarySum += QR[i][k] * rightHandSideMatrixArray[i][j];
+                    temporarySum -= QR[i][k] * rightHandSideMatrixArray[i][j];
                 }
-                temporarySum = -temporarySum / QR[k][k];
+                temporarySum /= QR[k][k];
                 for (int i = k; i < rowDimension; i++) {
                     rightHandSideMatrixArray[i][j] += temporarySum * QR[i][k];
                 }
@@ -155,9 +155,9 @@ public class QRDecomposition {
                 if (QR[k][k] != 0) {
                     double temporarySum = 0.0;
                     for (int i = k; i < rowDimension; i++) {
-                        temporarySum += QR[i][k] * qArray[i][j];
+                        temporarySum -= QR[i][k] * qArray[i][j];
                     }
-                    temporarySum = -temporarySum / QR[k][k];
+                    temporarySum /= QR[k][k];
                     for (int i = k; i < rowDimension; i++) {
                         qArray[i][j] += temporarySum * QR[i][k];
                     }
