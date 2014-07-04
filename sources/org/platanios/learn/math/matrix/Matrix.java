@@ -7,20 +7,20 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  * @author Emmanouil Antonios Platanios
  */
 public class Matrix {
-    /** The row dimension of the array. */
+    /** The row dimension of the internal two-dimensional array. */
     private final int rowDimension;
-    /** The column dimension of the array. */
+    /** The column dimension of the internal two-dimensional array. */
     private final int columnDimension;
 
-    /** Array for internal storage of the array elements. */
+    /** Array for internal storage of the matrix elements. */
     private double[][] array;
 
     //region Constructors
     /**
-     * Constructs a array with the given dimensions and fills it with zeros.
+     * Constructs a matrix with the given dimensions and fills it with zeros.
      *
-     * @param   rowDimension        The row dimension of the array.
-     * @param   columnDimension     The column dimension of the array.
+     * @param   rowDimension        The row dimension of the matrix.
+     * @param   columnDimension     The column dimension of the matrix.
      */
     public Matrix(int rowDimension, int columnDimension) {
         this.rowDimension = rowDimension;
@@ -29,11 +29,11 @@ public class Matrix {
     }
 
     /**
-     * Constructs a array with the given dimensions and fills it with the given value.
+     * Constructs a matrix with the given dimensions and fills it with the given value.
      *
-     * @param   rowDimension        The row dimension of the array.
-     * @param   columnDimension     The column dimension of the array.
-     * @param   value               The value with which to fill the array.
+     * @param   rowDimension        The row dimension of the matrix.
+     * @param   columnDimension     The column dimension of the matrix.
+     * @param   value               The value with which to fill the matrix.
      */
     public Matrix(int rowDimension, int columnDimension, double value) {
         this.rowDimension = rowDimension;
@@ -47,9 +47,9 @@ public class Matrix {
     }
 
     /**
-     * Constructs a array from a two-dimensional array.
+     * Constructs a matrix from a two-dimensional array.
      *
-     * @param       array      Two-dimensional array of doubles.
+     * @param       array       Two-dimensional array of doubles.
      * @param       copyArray   Boolean value indicating whether to copy the provided array or use it as it is for the
      *                          internal two-dimensional array of this array.
      *
@@ -77,10 +77,10 @@ public class Matrix {
     }
 
     /**
-     * Constructs a array from a two-dimensional array quickly, without checking the arguments. The provided array is
+     * Constructs a matrix from a two-dimensional array quickly, without checking the arguments. The provided array is
      * used as it is for the internal two-dimensional array of this array.
      *
-     * @param   array  Two-dimensional array of doubles.
+     * @param   array   Two-dimensional array of doubles.
      */
     public Matrix(double[][] array, int rowDimension, int columnDimension) {
         this.rowDimension = rowDimension;
@@ -89,10 +89,10 @@ public class Matrix {
     }
 
     /**
-     * Constructs a array from a one-dimensional packed array (packed by columns, as in FORTRAN).
+     * Constructs a matrix from a one-dimensional packed array (packed by columns, as in FORTRAN).
      *
      * @param   elements        One-dimensional array of doubles, packed by columns (as in FORTRAN).
-     * @param   rowDimension    The row dimension of the array.
+     * @param   rowDimension    The row dimension of the matrix.
      *
      * @exception   IllegalArgumentException    The length of the input array must be a multiple of
      *                                          {@code rowDimension}.
@@ -116,9 +116,9 @@ public class Matrix {
 
     //region Getters, Setters and Other Such Methods
     /**
-     * Copies this array.
+     * Copies this matrix.
      *
-     * @return  A copy of this array.
+     * @return  A copy of this matrix.
      */
     public Matrix copy() {
         Matrix resultMatrix = new Matrix(rowDimension, columnDimension);
@@ -182,25 +182,25 @@ public class Matrix {
     }
 
     /**
-     * Gets the row dimension of this array (that is, the number of rows of this array).
+     * Gets the row dimension of this matrix (that is, the number of rows of this matrix).
      *
-     * @return  The row dimension of this array.
+     * @return  The row dimension of this matrix.
      */
     public int getRowDimension() {
         return rowDimension;
     }
 
     /**
-     * Gets the column dimension of this array (that is, the number of columns of this array).
+     * Gets the column dimension of this matrix (that is, the number of columns of this matrix).
      *
-     * @return  The column dimension of this array.
+     * @return  The column dimension of this matrix.
      */
     public int getColumnDimension() {
         return columnDimension;
     }
 
     /**
-     * Gets the value of the array element at the provided position.
+     * Gets the value of the matrix element at the provided position.
      *
      * @param   row     The row index of the element.
      * @param   column  The column index of the element.
@@ -211,7 +211,7 @@ public class Matrix {
     }
 
     /**
-     * Sets the value of the array element at the provided position to the provided value.
+     * Sets the value of the matrix element at the provided position to the provided value.
      *
      * @param   row     The row index of the element.
      * @param   column  The column index of the element.
@@ -222,15 +222,15 @@ public class Matrix {
     }
 
     /**
-     * Gets a sub-array of this array.
+     * Gets a sub-matrix of this matrix.
      *
      * @param   initialRowIndex     The initial row index.
      * @param   finalRowIndex       The final row index.
      * @param   initialColumnIndex  The initial column index.
      * @param   finalColumnIndex    The final column index.
-     * @return                      The sub-array corresponding to the provided indexes.
+     * @return                      The sub-matrix corresponding to the provided indexes.
      *
-     * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided sub-array indexes are out of bounds.
+     * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided sub-matrix indexes are out of bounds.
      */
     public Matrix getSubMatrix(int initialRowIndex, int finalRowIndex, int initialColumnIndex, int finalColumnIndex) {
         Matrix resultMatrix =
@@ -253,14 +253,14 @@ public class Matrix {
     }
 
     /**
-     * Gets a sub-array of this array.
+     * Gets a sub-matrix of this matrix.
      *
-     * @param   rowIndexes      The row indexes of the rows of this array to be included in the returned sub-array.
-     * @param   columnIndexes   The column indexes of the columns of this array to be included in the returned
-     *                          sub-array.
-     * @return                  The sub-array corresponding to the provided indexes.
+     * @param   rowIndexes      The row indexes of the rows of this matrix to be included in the returned sub-matrix.
+     * @param   columnIndexes   The column indexes of the columns of this matrix to be included in the returned
+     *                          sub-matrix.
+     * @return                  The sub-matrix corresponding to the provided indexes.
      *
-     * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided sub-array indexes are out of bounds.
+     * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided sub-matrix indexes are out of bounds.
      */
     public Matrix getSubMatrix(int[] rowIndexes, int[] columnIndexes) {
         Matrix resultMatrix = new Matrix(rowIndexes.length, columnIndexes.length);
@@ -280,15 +280,15 @@ public class Matrix {
     }
 
     /**
-     * Gets a sub-array of this array.
+     * Gets a sub-matrix of this matrix.
      *
      * @param   initialRowIndex The initial row index.
      * @param   finalRowIndex   The final row index.
-     * @param   columnIndexes   The column indexes of the columns of this array to be included in the returned
-     *                          sub-array.
-     * @return                  The sub-array corresponding to the provided indexes.
+     * @param   columnIndexes   The column indexes of the columns of this matrix to be included in the returned
+     *                          sub-matrix.
+     * @return                  The sub-matrix corresponding to the provided indexes.
      *
-     * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided sub-array indexes are out of bounds.
+     * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided sub-matrix indexes are out of bounds.
      */
     public Matrix getSubMatrix(int initialRowIndex, int finalRowIndex, int[] columnIndexes) {
         Matrix resultMatrix = new Matrix(finalRowIndex - initialRowIndex + 1, columnIndexes.length);
@@ -308,15 +308,15 @@ public class Matrix {
     }
 
     /**
-     * Gets a sub-array of this array.
+     * Gets a sub-matrix of this matrix.
      *
-     * @param   rowIndexes          The row indexes of the rows of this array to be included in the returned
-     *                              sub-array.
+     * @param   rowIndexes          The row indexes of the rows of this matrix to be included in the returned
+     *                              sub-matrix.
      * @param   initialColumnIndex  The initial column index.
      * @param   finalColumnIndex    The final column index.
-     * @return                      The sub-array corresponding to the provided indexes.
+     * @return                      The sub-matrix corresponding to the provided indexes.
      *
-     * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided sub-array indexes are out of bounds.
+     * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided sub-matrix indexes are out of bounds.
      */
     public Matrix getSubMatrix(int[] rowIndexes, int initialColumnIndex, int finalColumnIndex) {
         Matrix resultMatrix = new Matrix(rowIndexes.length, finalColumnIndex - initialColumnIndex + 1);
@@ -338,118 +338,116 @@ public class Matrix {
     }
 
     /**
-     * Sets a sub-array of this array to the provided sub-array values.
+     * Sets a sub-matrix of this matrix to the provided matrix values.
      *
      * @param   initialRowIndex     The initial row index.
      * @param   finalRowIndex       The final row index.
      * @param   initialColumnIndex  The initial column index.
      * @param   finalColumnIndex    The final column index.
-     * @param   subMatrix           The sub-array to whose values we set the values of the specified sub-array of this
-     *                              array.
+     * @param   matrix              The matrix to whose values we set the values of the specified sub-matrix of this
+     *                              matrix.
      *
-     * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided sub-array indexes are out of bounds.
+     * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided matrix indexes are out of bounds.
      */
     public void setSubMatrix(int initialRowIndex,
                              int finalRowIndex,
                              int initialColumnIndex,
                              int finalColumnIndex,
-                             Matrix subMatrix) {
+                             Matrix matrix) {
         try {
             for (int i = initialRowIndex; i <= finalRowIndex; i++) {
                 for (int j = initialColumnIndex; j <= finalColumnIndex; j++) {
-                    array[i][j] = subMatrix.getElement(i - initialRowIndex, j - initialColumnIndex);
+                    array[i][j] = matrix.getElement(i - initialRowIndex, j - initialColumnIndex);
                 }
             }
         } catch(ArrayIndexOutOfBoundsException e) {
             throw new ArrayIndexOutOfBoundsException(
-                    "Some or all of the provided sub-matrix indexes are out of bounds."
+                    "Some or all of the provided matrix indexes are out of bounds."
             );
         }
     }
 
     /**
-     * Sets a sub-array of this array to the provided sub-array values.
+     * Sets a sub-matrix of this matrix to the provided matrix values.
      *
-     * @param   rowIndexes      The row indexes of the rows of this array to be changed to values of the rows of the
-     *                          provided sub-array.
-     * @param   columnIndexes   The column indexes of the columns of this array to be changed to values of the columns
-     *                          of the provided sub-array.
-     * @param   subMatrix       The sub-array to whose values we set the values of the specified sub-array of this
-     *                          array.
+     * @param   rowIndexes      The row indexes of the rows of this matrix to be changed to values of the rows of the
+     *                          provided sub-matrix.
+     * @param   columnIndexes   The column indexes of the columns of this matrix to be changed to values of the columns
+     *                          of the provided sub-matrix.
+     * @param   matrix          The matrix to whose values we set the values of the specified sub-matrix of this matrix.
      *
-     * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided sub-array indexes are out of bounds.
+     * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided matrix indexes are out of bounds.
      */
-    public void setSubMatrix(int[] rowIndexes, int[] columnIndexes, Matrix subMatrix) {
+    public void setSubMatrix(int[] rowIndexes, int[] columnIndexes, Matrix matrix) {
         try {
             for (int i = 0; i < rowIndexes.length; i++) {
                 for (int j = 0; j < columnIndexes.length; j++) {
-                    array[rowIndexes[i]][columnIndexes[j]] = subMatrix.getElement(i, j);
+                    array[rowIndexes[i]][columnIndexes[j]] = matrix.getElement(i, j);
                 }
             }
         } catch(ArrayIndexOutOfBoundsException e) {
             throw new ArrayIndexOutOfBoundsException(
-                    "Some or all of the provided sub-matrix indexes are out of bounds."
+                    "Some or all of the provided matrix indexes are out of bounds."
             );
         }
     }
 
     /**
-     * Sets a sub-array of this array to the provided sub-array values.
+     * Sets a sub-matrix of this matrix to the provided matrix values.
      *
-     * @param   rowIndexes          The row indexes of the rows of this array to be changed to values of the rows of
-     *                              the provided sub-array.
+     * @param   rowIndexes          The row indexes of the rows of this matrix to be changed to values of the rows of
+     *                              the provided sub-matrix.
      * @param   initialColumnIndex  The initial column index.
      * @param   finalColumnIndex    The final column index.
-     * @param   subMatrix           The sub-array to whose values we set the values of the specified sub-array of this
-     *                              array.
+     * @param   matrix              The matrix to whose values we set the values of the specified sub-matrix of this
+     *                              matrix.
      *
-     * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided sub-array indexes are out of bounds.
+     * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided matrix indexes are out of bounds.
      */
-    public void setSubMatrix(int[] rowIndexes, int initialColumnIndex, int finalColumnIndex, Matrix subMatrix) {
+    public void setSubMatrix(int[] rowIndexes, int initialColumnIndex, int finalColumnIndex, Matrix matrix) {
         try {
             for (int i = 0; i < rowIndexes.length; i++) {
                 for (int j = initialColumnIndex; j <= finalColumnIndex; j++) {
-                    array[rowIndexes[i]][j] = subMatrix.getElement(i, j - initialColumnIndex);
+                    array[rowIndexes[i]][j] = matrix.getElement(i, j - initialColumnIndex);
                 }
             }
         } catch(ArrayIndexOutOfBoundsException e) {
             throw new ArrayIndexOutOfBoundsException(
-                    "Some or all of the provided sub-matrix indexes are out of bounds."
+                    "Some or all of the provided matrix indexes are out of bounds."
             );
         }
     }
 
     /**
-     * Sets a sub-array of this array to the provided sub-array values.
+     * Sets a sub-matrix of this matrix to the provided matrix values.
      *
      * @param   initialRowIndex The initial row index.
      * @param   finalRowIndex   The final row index.
-     * @param   columnIndexes   The column indexes of the columns of this array to be changed to values of the columns
-     *                          of the provided sub-array.
-     * @param   subMatrix       The sub-array to whose values we set the values of the specified sub-array of this
-     *                          array.
+     * @param   columnIndexes   The column indexes of the columns of this matrix to be changed to values of the columns
+     *                          of the provided sub-matrix.
+     * @param   matrix          The matrix to whose values we set the values of the specified sub-matrix of this matrix.
      *
-     * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided sub-array indexes are out of bounds.
+     * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided matrix indexes are out of bounds.
      */
-    public void setSubMatrix(int initialRowIndex, int finalRowIndex, int[] columnIndexes, Matrix subMatrix) {
+    public void setSubMatrix(int initialRowIndex, int finalRowIndex, int[] columnIndexes, Matrix matrix) {
         try {
             for (int i = initialRowIndex; i <= finalRowIndex; i++) {
                 for (int j = 0; j < columnIndexes.length; j++) {
-                    array[i][columnIndexes[j]] = subMatrix.getElement(i - initialRowIndex, j);
+                    array[i][columnIndexes[j]] = matrix.getElement(i - initialRowIndex, j);
                 }
             }
         } catch(ArrayIndexOutOfBoundsException e) {
             throw new ArrayIndexOutOfBoundsException(
-                    "Some or all of the provided sub-matrix indexes are out of bounds."
+                    "Some or all of the provided matrix indexes are out of bounds."
             );
         }
     }
     //endregion
 
     /**
-     * Returns the transpose of this array.
+     * Returns the transpose of this matrix.
      *
-     * @return  The transpose of this array.
+     * @return  The transpose of this matrix.
      */
     public Matrix transpose() {
         Matrix resultMatrix = new Matrix(columnDimension, rowDimension);
@@ -462,14 +460,27 @@ public class Matrix {
         return resultMatrix;
     }
 
+    /**
+     * Computes the trace of this matrix. The trace of a matrix is equal to the sum of its diagonal elements.
+     *
+     * @return  The trace of this matrix.
+     */
+    public double trace() {
+        double trace = 0;
+        for (int i = 0; i < Math.min(rowDimension, columnDimension); i++) {
+            trace += array[i][i];
+        }
+        return trace;
+    }
+
     //region Norm Computations
     /**
-     * Computes the \(L_1\) norm of this array. Denoting this array by \(A\in\mathbb{R}^{m\times n}\), its element at
+     * Computes the \(L_1\) norm of this matrix. Denoting this matrix by \(A\in\mathbb{R}^{m\times n}\), its element at
      * row \(i\) and column \(j\) by \(A_{ij}\) and its \(L_1\) norm by \(\|A\|_1\), we have that:
      * \[\|A\|_1=\max_{1\leq j\leq n}{\sum_{i=1}^m{\left|A_{ij}\right|}},\]
-     * which is the maximum absolute column sum of the array.
+     * which is the maximum absolute column sum of the matrix.
      *
-     * @return  The \(L_1\) norm of this array.
+     * @return  The \(L_1\) norm of this matrix.
      */
     public double computeL1Norm() {
         double l1Norm = 0;
@@ -484,22 +495,22 @@ public class Matrix {
     }
 
     /**
-     * Computes the \(L_2\) norm of this array. The \(L_2\) norm of a array is equal to its largest singular value.
+     * Computes the \(L_2\) norm of this matrix. The \(L_2\) norm of a matrix is equal to its largest singular value.
      * For square matrices, the \(L_2\) norm is also known as the spectral norm.
      *
-     * @return  The \(L_2\) norm of this array.
+     * @return  The \(L_2\) norm of this matrix.
      */
     public double computeL2Norm() {
         throw new NotImplementedException(); // TODO: Implement the SVD and then this method.
     }
 
     /**
-     * Computes the \(L_\infty\) norm of this array. Denoting this array by \(A\in\mathbb{R}^{m\times n}\), its
+     * Computes the \(L_\infty\) norm of this matrix. Denoting this matrix by \(A\in\mathbb{R}^{m\times n}\), its
      * element at row \(i\) and column \(j\) by \(A_{ij}\) and its \(L_\infty\) norm by \(\|A\|_\infty\), we have that:
      * \[\|A\|_\infty=\max_{1\leq i\leq m}{\sum_{j=1}^n{\left|A_{ij}\right|}},\]
-     * which is the maximum absolute row sum of the array.
+     * which is the maximum absolute row sum of the matrix.
      *
-     * @return  The \(L_\infty\) norm of this array.
+     * @return  The \(L_\infty\) norm of this matrix.
      */
     public double computeLInfinityNorm() {
         double lInfinityNorm = 0;
@@ -514,11 +525,11 @@ public class Matrix {
     }
 
     /**
-     * Computes the Frobenius norm of this array. Denoting this array by \(A\in\mathbb{R}^{m\times n}\), its element
+     * Computes the Frobenius norm of this matrix. Denoting this matrix by \(A\in\mathbb{R}^{m\times n}\), its element
      * at row \(i\) and column \(j\) by \(A_{ij}\) and its Frobenius norm by \(\|A\|_F\), we have that:
      * \[\|A\|_F=\sqrt{\sum_{i=1}^m{\sum_{j=1}^n{A_{ij}^2}}}.\]
      *
-     * @return  The Frobenius norm of this array.
+     * @return  The Frobenius norm of this matrix.
      */
     public double computeFrobeniusNorm() {
         double frobeniusNorm = 0;
@@ -704,7 +715,7 @@ public class Matrix {
         double[][] resultMatrixArray = resultMatrix.getArray();
         for (int i = 0; i < rowDimension; i++) {
             for (int j = 0; j < columnDimension; j++) {
-                resultMatrixArray[i][j] = scalar * array[i][j];
+                resultMatrixArray[i][j] = array[i][j] * scalar;
             }
         }
         return resultMatrix;
@@ -721,6 +732,58 @@ public class Matrix {
                 array[i][j] *= scalar;
             }
         }
+    }
+
+    /**
+     * Divides the current matrix with a scalar and returns the result in a new matrix.
+     *
+     * @param   scalar  The scalar with which to divide the current matrix.
+     * @return          A new matrix holding the result of the division.
+     */
+    public Matrix divide(double scalar) {
+        Matrix resultMatrix = new Matrix(rowDimension, columnDimension);
+        double[][] resultMatrixArray = resultMatrix.getArray();
+        for (int i = 0; i < rowDimension; i++) {
+            for (int j = 0; j < columnDimension; j++) {
+                resultMatrixArray[i][j] = array[i][j] / scalar;
+            }
+        }
+        return resultMatrix;
+    }
+
+    /**
+     * Divides the current matrix with a scalar and replaces the current matrix with the result.
+     *
+     * @param   scalar  The scalar with which to divide the current matrix.
+     */
+    public void divideEquals(double scalar) {
+        for (int i = 0; i < rowDimension; i++) {
+            for (int j = 0; j < columnDimension; j++) {
+                array[i][j] /= scalar;
+            }
+        }
+    }
+
+    /**
+     * Multiplies the current matrix with a vector and returns the result in a new vector.
+     *
+     * @param   vector  The vector with which to multiply the current matrix.
+     * @return          A new vector holding the result of the multiplication.
+     */
+    public Vector multiply(Vector vector) {
+        if (vector.getDimension() != columnDimension) {
+            throw new IllegalArgumentException(
+                    "The column dimension of the matrix must agree with the dimension of the vector."
+            );
+        }
+        Vector resultVector = new Vector(rowDimension);
+        double[] resultVectorArray = resultVector.getArray();
+        for (int i = 0; i < rowDimension; i++) {
+            for (int j = 0; j < columnDimension; j++) {
+                resultVectorArray[i] += array[i][j] * vector.getElement(j);
+            }
+        }
+        return resultVector;
     }
 
     /**
@@ -753,6 +816,43 @@ public class Matrix {
         }
         return resultMatrix;
     }
+
+    //region Special Matrix "Constructors"
+    /**
+     * Constructs and returns a square identity matrix with the provided dimension.
+     *
+     * @param   dimension   The dimension of the identity matrix (note that the row dimension and the column dimension
+     *                      are equal in this case because the identity matrix is square).
+     * @return              An identity matrix with the given dimension.
+     */
+    public static Matrix generateIdentityMatrix(int dimension) {
+        Matrix identityMatrix = new Matrix(dimension, dimension);
+        double[][] identityMatrixArray = identityMatrix.getArray();
+        for (int i = 0; i < dimension; i++) {
+            identityMatrixArray[i][i] = 1.0;
+        }
+        return identityMatrix;
+    }
+
+    /**
+     * Constructs and returns a random matrix. The returned matrix contains random values ranging from {@code 0.0} to
+     * {@code 1.0}.
+     *
+     * @param   rowDimension        The row dimension of the random matrix.
+     * @param   columnDimension     The column dimension of the random matrix.
+     * @return                      A matrix that contains random values ranging from {@code 0.0} to {@code 1.0}.
+     */
+    public static Matrix generateRandomMatrix(int rowDimension, int columnDimension) {
+        Matrix randomMatrix = new Matrix(rowDimension, columnDimension);
+        double[][] randomMatrixArray = randomMatrix.getArray();
+        for (int i = 0; i < rowDimension; i++) {
+            for (int j = 0; j < columnDimension; j++) {
+                randomMatrixArray[i][j] = Math.random();
+            }
+        }
+        return randomMatrix;
+    }
+    //endregion
 
     /**
      * Checks whether the provided matrix has the same dimensions as this matrix. If the dimensions of the two matrices
