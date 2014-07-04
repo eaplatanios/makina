@@ -45,8 +45,8 @@ public class DerivativesApproximationTest {
         double[] expectedResult = new double[expectedResultTemp.length * expectedResultTemp[0].length];
         for (int i = 0; i < actualResultTemp.length; i++) {
             for (int j = 0; j < actualResultTemp[0].length; j++) {
-                actualResult[i * actualResultTemp.length + j] = actualResultTemp[i][j];
-                expectedResult[i * expectedResultTemp.length + j] = expectedResultTemp[i][j];
+                actualResult[i * actualResultTemp[0].length + j] = actualResultTemp[i][j];
+                expectedResult[i * expectedResultTemp[0].length + j] = expectedResultTemp[i][j];
             }
         }
         Assert.assertArrayEquals(expectedResult, actualResult, 1e2);
@@ -64,8 +64,8 @@ public class DerivativesApproximationTest {
         double[] expectedResult = new double[expectedResultTemp.length * expectedResultTemp[0].length];
         for (int i = 0; i < actualResultTemp.length; i++) {
             for (int j = 0; j < actualResultTemp[0].length; j++) {
-                actualResult[i * actualResultTemp.length + j] = actualResultTemp[i][j];
-                expectedResult[i * expectedResultTemp.length + j] = expectedResultTemp[i][j];
+                actualResult[i * actualResultTemp[0].length + j] = actualResultTemp[i][j];
+                expectedResult[i * expectedResultTemp[0].length + j] = expectedResultTemp[i][j];
             }
         }
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-3);
@@ -83,8 +83,8 @@ public class DerivativesApproximationTest {
         double[] expectedResult = new double[expectedResultTemp.length * expectedResultTemp[0].length];
         for (int i = 0; i < actualResultTemp.length; i++) {
             for (int j = 0; j < actualResultTemp[0].length; j++) {
-                actualResult[i * actualResultTemp.length + j] = actualResultTemp[i][j];
-                expectedResult[i * expectedResultTemp.length + j] = expectedResultTemp[i][j];
+                actualResult[i * actualResultTemp[0].length + j] = actualResultTemp[i][j];
+                expectedResult[i * expectedResultTemp[0].length + j] = expectedResultTemp[i][j];
             }
         }
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-4);
@@ -102,8 +102,8 @@ public class DerivativesApproximationTest {
         double[] expectedResult = new double[expectedResultTemp.length * expectedResultTemp[0].length];
         for (int i = 0; i < actualResultTemp.length; i++) {
             for (int j = 0; j < actualResultTemp[0].length; j++) {
-                actualResult[i * actualResultTemp.length + j] = actualResultTemp[i][j];
-                expectedResult[i * expectedResultTemp.length + j] = expectedResultTemp[i][j];
+                actualResult[i * actualResultTemp[0].length + j] = actualResultTemp[i][j];
+                expectedResult[i * expectedResultTemp[0].length + j] = expectedResultTemp[i][j];
             }
         }
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-8);
