@@ -34,19 +34,19 @@ public class CholeskyDecomposition {
         double[][] matrixArray = matrix.getArray();
         L = new double[dimension][dimension];
         for (int i = 0; i < dimension; i++) {
-            double d = 0.0;
+            double diagonalEntrySquare = 0.0;
             for (int j = 0; j < i; j++) {
-                double s = 0.0;
+                double temporarySum = 0.0;
                 for (int k = 0; k < j; k++) {
-                    s += L[j][k] * L[i][k];
+                    temporarySum += L[j][k] * L[i][k];
                 }
-                L[i][j] = (matrixArray[i][j] - s)/L[j][j];
-                d = d + L[i][j] * L[i][j];
+                L[i][j] = (matrixArray[i][j] - temporarySum)/L[j][j];
+                diagonalEntrySquare += L[i][j] * L[i][j];
                 isSymmetricAndPositiveDefinite &= (matrixArray[j][i] == matrixArray[i][j]);
             }
-            d -= matrixArray[i][i];
-            isSymmetricAndPositiveDefinite &= (d < 0.0);
-            L[i][i] = Math.sqrt(Math.max(-d, 0.0));
+            diagonalEntrySquare -= matrixArray[i][i];
+            isSymmetricAndPositiveDefinite &= (diagonalEntrySquare < 0.0);
+            L[i][i] = Math.sqrt(Math.max(-diagonalEntrySquare, 0.0));
             for (int k = i+1; k < dimension; k++) {
                 L[i][k] = 0.0;
             }
