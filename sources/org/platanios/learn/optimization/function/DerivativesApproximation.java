@@ -24,10 +24,10 @@ public class DerivativesApproximation {
 
         switch (method) {
             case FORWARD_DIFFERENCE:
-                epsilon = Math.sqrt(Utilities.calculateMachineEpsilonDouble());
+                epsilon = Math.sqrt(Utilities.computeMachineEpsilonDouble());
                 break;
             case CENTRAL_DIFFERENCE:
-                epsilon = Math.cbrt(Utilities.calculateMachineEpsilonDouble());
+                epsilon = Math.cbrt(Utilities.computeMachineEpsilonDouble());
                 break;
             default:
                 throw new NotImplementedException();

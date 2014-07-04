@@ -19,7 +19,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  * @author Emmanouil Antonios Platanios
  */
 public class CoordinateDescentSolver extends AbstractLineSearchSolver {
-    private final double epsilon = Math.sqrt(Utilities.calculateMachineEpsilonDouble());
+    private final double epsilon = Math.sqrt(Utilities.computeMachineEpsilonDouble());
     private final int numberOfDimensions;
 
     private Method method = Method.CYCLE_AND_JOIN_ENDPOINTS;
