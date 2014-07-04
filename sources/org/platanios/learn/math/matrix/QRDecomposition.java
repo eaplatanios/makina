@@ -5,7 +5,7 @@ import org.platanios.learn.math.Utilities;
 /**
  * Implements the QR decomposition algorithm for matrix \(A\). Given \(A\in\mathbb{R}^{m\times n}\), with \(m\geq n\),
  * the QR decomposition is an orthogonal matrix \(Q\in\mathbb{R}^{m\times n}\) and an upper triangular matrix
- * \(R\in\mathbb{R}^{n\times n}\), such that \(A=QR\). The QR decompostion always exists, even if the matrix does not
+ * \(R\in\mathbb{R}^{n\times n}\), such that \(A=QR\). The QR decomposition always exists, even if the matrix does not
  * have full rank, and so the constructor of this class will never fail. Furthermore, the primary use of the QR
  * decomposition is in the least squares solution of non-square systems of simultaneous matrix equations. In that case,
  * in order to obtain a solution, the matrix has to have full rank.
@@ -27,7 +27,7 @@ public class QRDecomposition {
 
     /**
      * Constructs a QR decomposition object for the provided matrix. The actual decomposition is computed within this
-     * constructor by using Householder reflections.
+     * constructor using Householder reflections.
      *
      * @param   matrix  The matrix whose QR decomposition is being computed.
      */
