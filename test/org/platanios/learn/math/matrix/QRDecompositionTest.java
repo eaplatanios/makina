@@ -69,7 +69,7 @@ public class QRDecompositionTest {
     }
 
     @Test
-    public void testVectorSolveForFullRankMatrix() {
+    public void testVectorSolveForFullRankMatrix() throws SingularMatrixException {
         double[][] testMatrixArray = new double[][] {
                 { 28.4100, 11.4400,  21.1100 },
                 { 11.4400,  9.7600,  18.0800 },
@@ -83,7 +83,7 @@ public class QRDecompositionTest {
     }
 
     @Test
-    public void testMatrixSolveForFullRankMatrix() {
+    public void testMatrixSolveForFullRankMatrix() throws SingularMatrixException {
         double[][] testMatrixArray1 = new double[][] {
                 { 28.4100, 11.4400,  21.1100 },
                 { 11.4400,  9.7600,  18.0800 },

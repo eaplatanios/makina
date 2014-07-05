@@ -99,7 +99,8 @@ public class CholeskyDecompositionTest {
     }
 
     @Test
-    public void testVectorSolveForSymmetricAndPositiveDefiniteMatrix() {
+    public void testVectorSolveForSymmetricAndPositiveDefiniteMatrix()
+            throws NonSymmetricMatrixException, NonPositiveDefiniteMatrixException {
         double[][] testMatrixArray = new double[][] {
                 { 28.4100, 11.4400,  21.1100 },
                 { 11.4400,  9.7600,  18.0800 },
@@ -113,7 +114,8 @@ public class CholeskyDecompositionTest {
     }
 
     @Test
-    public void testMatrixSolveForSymmetricAndPositiveDefiniteMatrix() {
+    public void testMatrixSolveForSymmetricAndPositiveDefiniteMatrix()
+            throws NonSymmetricMatrixException, NonPositiveDefiniteMatrixException {
         double[][] testMatrixArray1 = new double[][] {
                 { 28.4100, 11.4400,  21.1100 },
                 { 11.4400,  9.7600,  18.0800 },

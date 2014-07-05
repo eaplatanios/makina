@@ -95,7 +95,7 @@ public class LUDecompositionTest {
     }
 
     @Test
-    public void testVectorSolveForNonSingularMatrix() {
+    public void testVectorSolveForNonSingularMatrix() throws SingularMatrixException {
         double[][] testMatrixArray = new double[][] {
                 { 28.4100, 11.4400,  21.1100 },
                 { 11.4400,  9.7600,  18.0800 },
@@ -109,7 +109,7 @@ public class LUDecompositionTest {
     }
 
     @Test
-    public void testMatrixSolveForNonSingularMatrix() {
+    public void testMatrixSolveForNonSingularMatrix() throws SingularMatrixException {
         double[][] testMatrixArray1 = new double[][] {
                 { 28.4100, 11.4400,  21.1100 },
                 { 11.4400,  9.7600,  18.0800 },

@@ -8,8 +8,6 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  * Solves the linear least squares problem of the form: \(min_{x}{\|Jx-y\|^2}\). We assume that
  * \(J\in\mathbb{R}^{m\times n}\) and \(m\geq n\).
  *
- * TODO: Make J dimensionality checks and positive-definiteness checks in case the Cholesky decomposition method is used.
- *
  * @author Emmanouil Antonios Platanios
  */
 public class LinearLeastSquaresSolver implements Solver {
@@ -22,30 +20,58 @@ public class LinearLeastSquaresSolver implements Solver {
         this.method = Method.SINGULAR_VALUE_DECOMPOSITION;
     }
 
-    public org.platanios.learn.math.matrix.Vector solve() {
+    public Vector solve() {
         Matrix J = objective.getJ();
         Vector y = objective.getY();
         int n = J.getColumnDimension();
 
         switch(method) {
             case CHOLESKY_DECOMPOSITION:
-                CholeskyDecomposition choleskyDecomposition = new CholeskyDecomposition(J.transpose().multiply(J));
-                return choleskyDecomposition.solve(J.transpose().multiply(y));
+                    CholeskyDecomposition choleskyDecomposition = new CholeskyDecomposition(J.transpose().multiply(J));
+                try {
+                    return choleskyDecomposition.solve(J.transpose().multiply(y));
+                } catch (NonSymmetricMatrixException e) {
+                    System.err.println("WARNING: Non symmetric matrix in linear least squares problem. " +
+                                               "Trying the singular value decomposition method instead!");
+                    this.method = Method.SINGULAR_VALUE_DECOMPOSITION;
+                    return solve();
+                } catch (NonPositiveDefiniteMatrixException e) {
+                    System.err.println("WARNING: Non positive definite matrix in linear least squares problem. " +
+                                               "Trying the singular value decomposition method instead " +
+                                               "of the Cholesky decomposition method!");
+                    this.method = Method.SINGULAR_VALUE_DECOMPOSITION;
+                    return solve();
+                }
             case QR_DECOMPOSITION:
-                QRDecomposition qrDecomposition = new QRDecomposition(J);
-                return qrDecomposition.solve(y);
+                try {
+                    QRDecomposition qrDecomposition = new QRDecomposition(J);
+                    return qrDecomposition.solve(y);
+                } catch (SingularMatrixException e) {
+                    System.err.println("WARNING: Rank deficient matrix in linear least squares problem. " +
+                                               "Trying the singular value decomposition method instead " +
+                                               "of the QR decomposition method!");
+                    this.method = Method.SINGULAR_VALUE_DECOMPOSITION;
+                    return solve();
+                }
             case SINGULAR_VALUE_DECOMPOSITION:
                 SingularValueDecomposition singularValueDecomposition = new SingularValueDecomposition(J);
                 return singularValueDecomposition.solve(y);
             case CONJUGATE_GRADIENT:
-                LinearLeastSquaresFunction objective = new LinearLeastSquaresFunction(J, y);
-                ConjugateGradientSolver conjugateGradientSolver =
-                        new ConjugateGradientSolver(
-                                objective,
-                                ConjugateGradientSolver.PreconditioningMethod.SYMMETRIC_SUCCESSIVE_OVER_RELAXATION,
-                                new double[n]
-                        );
-                return conjugateGradientSolver.solve();
+                try {
+                    LinearLeastSquaresFunction objective = new LinearLeastSquaresFunction(J, y);
+                    ConjugateGradientSolver conjugateGradientSolver = new ConjugateGradientSolver(
+                            objective,
+                            ConjugateGradientSolver.PreconditioningMethod.SYMMETRIC_SUCCESSIVE_OVER_RELAXATION,
+                            new double[n]
+                    );
+                    return conjugateGradientSolver.solve();
+                } catch (NonPositiveDefiniteMatrixException e) {
+                    System.err.println("WARNING: Non positive definite matrix in linear least squares problem. " +
+                                               "Trying the singular value decomposition method instead " +
+                                               "of the conjugate gradient method!");
+                    this.method = Method.SINGULAR_VALUE_DECOMPOSITION;
+                    return solve();
+                }
             default:
                 throw new NotImplementedException();
         }

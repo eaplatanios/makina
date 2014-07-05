@@ -1,8 +1,6 @@
 package org.platanios.learn.optimization;
 
-import org.platanios.learn.math.matrix.CholeskyDecomposition;
-import org.platanios.learn.math.matrix.Matrix;
-import org.platanios.learn.math.matrix.Vector;
+import org.platanios.learn.math.matrix.*;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.LinearLeastSquaresFunction;
 import org.platanios.learn.optimization.function.QuadraticFunction;
@@ -19,10 +17,10 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  * @author Emmanouil Antonios Platanios
  */
 public class ConjugateGradientSolver extends AbstractIterativeSolver {
-    private final PreconditioningMethod preconditioningMethod;
     // TODO: Add constructors to allow changing this method.
     private final ProblemConversionMethod problemConversionMethod;
 
+    private PreconditioningMethod preconditioningMethod;
     private Matrix A;
     private Matrix oldATranspose; // Used when CONJUGATE_GRADIENT_NORMAL_EQUATION_ERROR is used.
     private Vector b;
@@ -34,7 +32,8 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
     private double omega = 1;
 
     public ConjugateGradientSolver(QuadraticFunction objective,
-                                   double[] initialPoint) {
+                                   double[] initialPoint)
+            throws NonPositiveDefiniteMatrixException {
         this(objective,
              initialPoint,
              PreconditioningMethod.SYMMETRIC_SUCCESSIVE_OVER_RELAXATION,
@@ -43,7 +42,8 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
     }
 
     public ConjugateGradientSolver(LinearLeastSquaresFunction objective,
-                                   double[] initialPoint) {
+                                   double[] initialPoint)
+            throws NonPositiveDefiniteMatrixException {
         this(objective,
              initialPoint,
              PreconditioningMethod.SYMMETRIC_SUCCESSIVE_OVER_RELAXATION,
@@ -53,7 +53,8 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
 
     public ConjugateGradientSolver(QuadraticFunction objective,
                                    PreconditioningMethod preconditioningMethod,
-                                   double[] initialPoint) {
+                                   double[] initialPoint)
+            throws NonPositiveDefiniteMatrixException {
         this(objective,
              initialPoint,
              preconditioningMethod,
@@ -63,7 +64,8 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
 
     public ConjugateGradientSolver(LinearLeastSquaresFunction objective,
                                    PreconditioningMethod preconditioningMethod,
-                                   double[] initialPoint) {
+                                   double[] initialPoint)
+            throws NonPositiveDefiniteMatrixException {
         this(objective,
              initialPoint,
              preconditioningMethod,
@@ -73,7 +75,8 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
 
     public ConjugateGradientSolver(QuadraticFunction objective,
                                    ProblemConversionMethod problemConversionMethod,
-                                   double[] initialPoint) {
+                                   double[] initialPoint)
+            throws NonPositiveDefiniteMatrixException {
         this(objective,
              initialPoint,
              PreconditioningMethod.SYMMETRIC_SUCCESSIVE_OVER_RELAXATION,
@@ -83,7 +86,8 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
 
     public ConjugateGradientSolver(LinearLeastSquaresFunction objective,
                                    ProblemConversionMethod problemConversionMethod,
-                                   double[] initialPoint) {
+                                   double[] initialPoint)
+            throws NonPositiveDefiniteMatrixException {
         this(objective,
              initialPoint,
              PreconditioningMethod.SYMMETRIC_SUCCESSIVE_OVER_RELAXATION,
@@ -94,7 +98,8 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
     public ConjugateGradientSolver(QuadraticFunction objective,
                                    PreconditioningMethod preconditioningMethod,
                                    ProblemConversionMethod problemConversionMethod,
-                                   double[] initialPoint) {
+                                   double[] initialPoint)
+            throws NonPositiveDefiniteMatrixException {
         this(objective,
              initialPoint,
              preconditioningMethod,
@@ -105,7 +110,8 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
     public ConjugateGradientSolver(LinearLeastSquaresFunction objective,
                                    PreconditioningMethod preconditioningMethod,
                                    ProblemConversionMethod problemConversionMethod,
-                                   double[] initialPoint) {
+                                   double[] initialPoint)
+            throws NonPositiveDefiniteMatrixException {
         this(objective,
              initialPoint,
              preconditioningMethod,
@@ -117,7 +123,8 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
                                     double[] initialPoint,
                                     PreconditioningMethod preconditioningMethod,
                                     ProblemConversionMethod problemConversionMethod,
-                                    boolean isLinearLeastSquaresProblem) {
+                                    boolean isLinearLeastSquaresProblem)
+            throws NonPositiveDefiniteMatrixException {
         super(objective, initialPoint);
         this.preconditioningMethod = preconditioningMethod;
         this.problemConversionMethod = problemConversionMethod;
@@ -149,6 +156,13 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
                 default:
                     throw new NotImplementedException();
             }
+
+            choleskyDecomposition = new CholeskyDecomposition(A);
+            if (!choleskyDecomposition.isSymmetricAndPositiveDefinite()) {
+                throw new NonPositiveDefiniteMatrixException(
+                        "Non positive definite matrix after trying changing the conjugate gradient problem to avoid it!"
+                );
+            }
         }
 
         currentGradient = A.multiply(currentPoint).subtract(b);
@@ -168,8 +182,15 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
                 }
                 Matrix D = Matrix.generateDiagonalMatrix(diagonal);
                 Matrix DMinusL = D.subtract((new Matrix(lowerDiagonalMatrix)).multiply(omega));
-                preconditionerMatrixInverse =
-                        DMinusL.multiply(D.computeInverse()).multiply(DMinusL.transpose()).computeInverse();
+                try {
+                    preconditionerMatrixInverse =
+                            DMinusL.multiply(D.computeInverse()).multiply(DMinusL.transpose()).computeInverse();
+                } catch (SingularMatrixException e) {
+                    System.err.println("WARNING: Singular matrix in conjugate gradient problem. " +
+                                               "Trying the Jacobi preconditioning method instead of the " +
+                                               "symmetric successive over-relaxation preconditioning method!");
+                    this.preconditioningMethod = PreconditioningMethod.JACOBI;
+                }
                 break;
         }
 

@@ -3,6 +3,7 @@ package org.platanios.learn.optimization;
 import org.junit.Assert;
 import org.junit.Test;
 import org.platanios.learn.math.matrix.Matrix;
+import org.platanios.learn.math.matrix.NonPositiveDefiniteMatrixException;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.QuadraticFunction;
 
@@ -11,7 +12,7 @@ import org.platanios.learn.optimization.function.QuadraticFunction;
  */
 public class ConjugateGradientSolverTest {
     @Test
-    public void testConjugateGradientSolver() {
+    public void testConjugateGradientSolver() throws NonPositiveDefiniteMatrixException {
         System.out.println("Quadratic Function Conjugate Gradient Solver:\n");
         Matrix A = new Matrix(new double[][] { { 1, 0.5 }, { 0.5, 1 } });
         Vector b = new Vector(new double[] { 1, 2 });

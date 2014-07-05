@@ -1,6 +1,7 @@
 package org.platanios.learn.optimization;
 
 import org.platanios.learn.math.matrix.Matrix;
+import org.platanios.learn.math.matrix.SingularMatrixException;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod;
 import org.platanios.learn.optimization.linesearch.StrongWolfeInterpolationLineSearch;
@@ -26,7 +27,11 @@ public class NewtonSolver extends AbstractLineSearchSolver {
         Matrix hessian = objective.getHessian(currentPoint);
         // TODO: Check Hessian for positive definiteness and modify if necessary.
         currentGradient = objective.getGradient(currentPoint);
-        currentDirection = hessian.solve(currentGradient).multiply(-1);
+        try {
+            currentDirection = hessian.solve(currentGradient).multiply(-1);
+        } catch (SingularMatrixException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
