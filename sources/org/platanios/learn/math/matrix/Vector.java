@@ -1,5 +1,7 @@
 package org.platanios.learn.math.matrix;
 
+import org.platanios.learn.math.Utilities;
+
 /**
  * Implements a class representing vectors and supporting operations related to vectors. Vectors are stored in an
  * internal one-dimensional array.
@@ -245,9 +247,9 @@ public class Vector {
     public double computeL2Norm() {
         double l2Norm = 0;
         for (int i = 0; i < dimension; i++) {
-            l2Norm += array[i] * array[i];
+            l2Norm = Utilities.computeHypotenuse(l2Norm, array[i]);
         }
-        return Math.sqrt(l2Norm);
+        return l2Norm;
     }
 
     /**

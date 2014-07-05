@@ -41,7 +41,7 @@ public class QRDecomposition {
         for (int k = 0; k < columnDimension; k++) {
             double columnL2Norm = 0;
             for (int i = k; i < rowDimension; i++) {
-                columnL2Norm = Utilities.computeSquareRootOfSumOfSquares(columnL2Norm, QR[i][k]);
+                columnL2Norm = Utilities.computeHypotenuse(columnL2Norm, QR[i][k]);
             }
             if (columnL2Norm != 0.0) {
                 if (QR[k][k] < 0) {

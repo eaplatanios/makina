@@ -72,7 +72,7 @@ public class SingularValueDecomposition {
                 // Compute the transformation for the k-th column and place the k-th diagonal in s[k].
                 singularValues[k] = 0;
                 for (int i = k; i < rowDimension; i++) {
-                    singularValues[k] = Utilities.computeSquareRootOfSumOfSquares(singularValues[k], matrixArray[i][k]);
+                    singularValues[k] = Utilities.computeHypotenuse(singularValues[k], matrixArray[i][k]);
                 }
                 if (singularValues[k] != 0) {
                     if (matrixArray[k][k] < 0) {
@@ -110,7 +110,7 @@ public class SingularValueDecomposition {
                 // Compute the k-th row transformation and place the k-th super-diagonal in e[k].
                 e[k] = 0;
                 for (int i = k + 1; i < columnDimension; i++) {
-                    e[k] = Utilities.computeSquareRootOfSumOfSquares(e[k], e[i]);
+                    e[k] = Utilities.computeHypotenuse(e[k], e[i]);
                 }
                 if (e[k] != 0) {
                     if (e[k + 1] < 0) {
@@ -263,7 +263,7 @@ public class SingularValueDecomposition {
                     f = e[p - 2];
                     e[p - 2] = 0;
                     for (int j = p - 2; j >= k; j--) {
-                        double t = Utilities.computeSquareRootOfSumOfSquares(singularValues[j], f);
+                        double t = Utilities.computeHypotenuse(singularValues[j], f);
                         final double cs = singularValues[j] / t;
                         final double sn = f / t;
                         singularValues[j] = t;
@@ -282,7 +282,7 @@ public class SingularValueDecomposition {
                     f = e[k - 1];
                     e[k - 1] = 0;
                     for (int j = k; j < p; j++) {
-                        double t = Utilities.computeSquareRootOfSumOfSquares(singularValues[j], f);
+                        double t = Utilities.computeHypotenuse(singularValues[j], f);
                         final double cs = singularValues[j] / t;
                         final double sn = f / t;
                         singularValues[j] = t;
@@ -327,7 +327,7 @@ public class SingularValueDecomposition {
                     double g = sk * ek;
                     // Chase zeros.
                     for (int j = k; j < p - 1; j++) {
-                        double t = Utilities.computeSquareRootOfSumOfSquares(f, g);
+                        double t = Utilities.computeHypotenuse(f, g);
                         double cs = f / t;
                         double sn = g / t;
                         if (j != k) {
@@ -342,7 +342,7 @@ public class SingularValueDecomposition {
                             tempV[i][j + 1] = -sn * tempV[i][j] + cs * tempV[i][j + 1];
                             tempV[i][j] = t;
                         }
-                        t = Utilities.computeSquareRootOfSumOfSquares(f, g);
+                        t = Utilities.computeHypotenuse(f, g);
                         cs = f / t;
                         sn = g / t;
                         singularValues[j] = t;

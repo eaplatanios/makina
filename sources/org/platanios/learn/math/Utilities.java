@@ -18,15 +18,16 @@ public class Utilities {
     }
 
     /**
-     * Computes the square root of the sum of the squares of two numbers without having an underflow or an overflow.
-     * Denoting the two numbers by \(a\) and \(b\), respectively, this function computes the quantity:
+     * Computes the square root of the sum of the squares of two numbers (that is equivalent to computing length of the
+     * hypotenuse of a right triangle given the lengths of the other two sides) without having an underflow or an
+     * overflow. Denoting the two numbers by \(a\) and \(b\), respectively, this function computes the quantity:
      * \[\sqrt{a^2+b^2}.\]
      *
      * @param   a   The first number.
      * @param   b   The second number.
      * @return      The square root of the sum of the squares of the two provided numbers.
      */
-    public static double computeSquareRootOfSumOfSquares(double a, double b) {
+    public static double computeHypotenuse(double a, double b) {
         double result;
         if (Math.abs(a) > Math.abs(b)) {
             result = b / a;

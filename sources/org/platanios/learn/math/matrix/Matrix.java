@@ -597,7 +597,7 @@ public class Matrix {
         double frobeniusNorm = 0;
         for (int i = 0; i < rowDimension; i++) {
             for (int j = 0; j < columnDimension; j++) {
-                frobeniusNorm = Utilities.computeSquareRootOfSumOfSquares(frobeniusNorm, array[i][j]);
+                frobeniusNorm = Utilities.computeHypotenuse(frobeniusNorm, array[i][j]);
             }
         }
         return frobeniusNorm;
