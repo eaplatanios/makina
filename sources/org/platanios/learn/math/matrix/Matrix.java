@@ -961,6 +961,22 @@ public class Matrix {
     }
 
     /**
+     * Constructs and returns a diagonal matrix whose diagonal elements match the provided one-dimensional array
+     * elements.
+     *
+     * @param   diagonal    One-dimensional array containing the diagonal matrix elements.
+     * @return              A diagonal matrix with the provided diagonal elements on its diagonal.
+     */
+    public static Matrix generateDiagonalMatrix(double[] diagonal) {
+        Matrix diagonalMatrix = new Matrix(diagonal.length, diagonal.length);
+        double[][] diagonalMatrixArray = diagonalMatrix.getArray();
+        for (int i = 0; i < diagonal.length; i++) {
+            diagonalMatrixArray[i][i] = diagonal[i];
+        }
+        return diagonalMatrix;
+    }
+
+    /**
      * Constructs and returns a random matrix. The returned matrix contains random values ranging from {@code 0.0} to
      * {@code 1.0}.
      *
