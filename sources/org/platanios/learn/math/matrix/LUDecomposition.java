@@ -94,7 +94,7 @@ public class LUDecomposition {
      * @param   vector  Vector \(\boldsymbol{b}\) in equation \(A\boldsymbol{x}=\boldsymbol{b}\).
      * @return          The solution of the system of equations.
      */
-    public Vector solve(Vector vector) {
+    public Vector solve(Vector vector) throws SingularMatrixException {
         return new Vector(solve(vector.copyAsMatrix()).getColumnPackedArrayCopy());
     }
 
@@ -105,12 +105,14 @@ public class LUDecomposition {
      * @param   matrix  Matrix \(B\) in equation \(AX=B\).
      * @return          The solution of the system of linear equations.
      */
-    public Matrix solve(Matrix matrix) {
+    public Matrix solve(Matrix matrix) throws SingularMatrixException {
         if (matrix.getRowDimension() != rowDimension) {
             throw new IllegalArgumentException("Matrix row dimensions must agree.");
         }
         if (!isNonSingular) {
-            throw new RuntimeException("Matrix is singular.");
+            throw new SingularMatrixException(
+                    "Singular matrix! A solution cannot be obtained using the LU decomposition!"
+            );
         }
         int resultMatrixColumnDimension = matrix.getColumnDimension();
         Matrix resultMatrix = matrix.getSubMatrix(pivot, 0, resultMatrixColumnDimension - 1);

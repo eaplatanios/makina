@@ -535,7 +535,7 @@ public class Matrix {
      *
      * @return  The inverse of this matrix.
      */
-    public Matrix computeInverse() {
+    public Matrix computeInverse() throws SingularMatrixException {
         return solve(generateIdentityMatrix(rowDimension));
     }
 
@@ -918,7 +918,7 @@ public class Matrix {
      * @param   vector  Vector \(\boldsymbol{b}\) in equation \(A\boldsymbol{x}=\boldsymbol{b}\).
      * @return          The solution of the system of equations.
      */
-    public Vector solve(Vector vector) {
+    public Vector solve(Vector vector) throws SingularMatrixException {
         return new Vector(solve(vector.copyAsMatrix()).getColumnPackedArrayCopy());
     }
 
@@ -929,7 +929,7 @@ public class Matrix {
      * @param   matrix  Matrix \(B\) in equation \(AX=B\).
      * @return          The solution of the system of linear equations.
      */
-    public Matrix solve(Matrix matrix) {
+    public Matrix solve(Matrix matrix) throws SingularMatrixException {
         return (rowDimension == columnDimension ?
                 (new LUDecomposition(this)).solve(matrix) : (new QRDecomposition(this)).solve(matrix));
     }

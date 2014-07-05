@@ -15,9 +15,10 @@ public class CholeskyDecomposition {
      * requires a square matrix and so the row dimension and the column dimension of \(A\) are equal. */
     private final int dimension;
 
-    /** A boolean value indicating whether the matrix whose decomposition is computed is symmetric and positive definite
-     * or not. */
-    private boolean isSymmetricAndPositiveDefinite;
+    /** A boolean value indicating whether the matrix whose decomposition is computed is symmetric. */
+    private boolean isSymmetric;
+    /** A boolean value indicating whether the matrix whose decomposition is computed is positive definite. */
+    private boolean isPositiveDefinite;
 
     /**
      * Constructs a Cholesky decomposition object for the provided matrix. The actual decomposition is computed within
@@ -27,8 +28,9 @@ public class CholeskyDecomposition {
      */
     public CholeskyDecomposition(Matrix matrix) {
         dimension = matrix.getRowDimension();
-        isSymmetricAndPositiveDefinite = matrix.getColumnDimension() == dimension;
-        if (!isSymmetricAndPositiveDefinite) {
+        isSymmetric = matrix.getColumnDimension() == dimension;
+        isPositiveDefinite = isSymmetric;
+        if (!isSymmetric) {
             throw new IllegalArgumentException("The matrix has to be square.");
         }
         double[][] matrixArray = matrix.getArray();
@@ -42,10 +44,10 @@ public class CholeskyDecomposition {
                 }
                 L[i][j] = (matrixArray[i][j] - temporarySum)/L[j][j];
                 diagonalEntrySquare += L[i][j] * L[i][j];
-                isSymmetricAndPositiveDefinite &= (matrixArray[j][i] == matrixArray[i][j]);
+                isSymmetric &= (matrixArray[j][i] == matrixArray[i][j]);
             }
             diagonalEntrySquare -= matrixArray[i][i];
-            isSymmetricAndPositiveDefinite &= (diagonalEntrySquare < 0.0);
+            isPositiveDefinite &= (diagonalEntrySquare < 0.0);
             L[i][i] = Math.sqrt(Math.max(-diagonalEntrySquare, 0.0));
             for (int k = i+1; k < dimension; k++) {
                 L[i][k] = 0.0;
@@ -60,7 +62,7 @@ public class CholeskyDecomposition {
      * @param   vector  Vector \(\boldsymbol{b}\) in equation \(A\boldsymbol{x}=\boldsymbol{b}\).
      * @return          The solution of the system of equations.
      */
-    public Vector solve(Vector vector) {
+    public Vector solve(Vector vector) throws NonSymmetricMatrixException, NonPositiveDefiniteMatrixException {
         return new Vector(solve(vector.copyAsMatrix()).getColumnPackedArrayCopy());
     }
 
@@ -71,12 +73,19 @@ public class CholeskyDecomposition {
      * @param   matrix  Matrix \(B\) in equation \(AX=B\).
      * @return          The solution of the system of linear equations.
      */
-    public Matrix solve(Matrix matrix) {
+    public Matrix solve(Matrix matrix) throws NonSymmetricMatrixException, NonPositiveDefiniteMatrixException {
         if (matrix.getRowDimension() != dimension) {
             throw new IllegalArgumentException("Matrix row dimensions must agree.");
         }
-        if (!isSymmetricAndPositiveDefinite) {
-            throw new RuntimeException("Matrix is not symmetric positive definite.");
+        if (!isSymmetric) {
+            throw new NonSymmetricMatrixException(
+                    "Non symmetric matrix! A solution cannot be obtained using the Cholesky decomposition!"
+            );
+        }
+        if (!isPositiveDefinite) {
+            throw new NonPositiveDefiniteMatrixException(
+                    "Non positive definite matrix! A solution cannot be obtained using the Cholesky decomposition!"
+            );
         }
         double[][] rightHandSideMatrixArray = matrix.getArrayCopy();
         int resultMatrixColumnDimension = matrix.getColumnDimension();
@@ -113,12 +122,34 @@ public class CholeskyDecomposition {
 
     /**
      * Gets the boolean value indicating whether or not the matrix whose decomposition is being computed (that is,
+     * \(A\)) is symmetric.
+     *
+     * @return  A boolean value indicating whether or not the matrix whose decomposition is being computed (that is,
+     * \(A\)) is symmetric.
+     */
+    public boolean isSymmetric() {
+        return isSymmetric;
+    }
+
+    /**
+     * Gets the boolean value indicating whether or not the matrix whose decomposition is being computed (that is,
+     * \(A\)) is positive definite.
+     *
+     * @return  A boolean value indicating whether or not the matrix whose decomposition is being computed (that is,
+     * \(A\)) is positive definite.
+     */
+    public boolean isPositiveDefinite() {
+        return isPositiveDefinite;
+    }
+
+    /**
+     * Gets the boolean value indicating whether or not the matrix whose decomposition is being computed (that is,
      * \(A\)) is symmetric and positive definite.
      *
      * @return  A boolean value indicating whether or not the matrix whose decomposition is being computed (that is,
      * \(A\)) is symmetric and positive definite.
      */
     public boolean isSymmetricAndPositiveDefinite() {
-        return isSymmetricAndPositiveDefinite;
+        return isSymmetric && isPositiveDefinite;
     }
 }

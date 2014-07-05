@@ -76,7 +76,7 @@ public class QRDecomposition {
      * @param   vector  Vector \(\boldsymbol{b}\) in equation \(A\boldsymbol{x}=\boldsymbol{b}\).
      * @return          The solution of the system of equations.
      */
-    public Vector solve(Vector vector) {
+    public Vector solve(Vector vector) throws SingularMatrixException {
         return new Vector(solve(vector.copyAsMatrix()).getColumnPackedArrayCopy());
     }
 
@@ -87,12 +87,14 @@ public class QRDecomposition {
      * @param   matrix  Matrix \(B\) in equation \(AX=B\).
      * @return          The solution of the system of linear equations.
      */
-    public Matrix solve(Matrix matrix) {
+    public Matrix solve(Matrix matrix) throws SingularMatrixException {
         if (matrix.getRowDimension() != rowDimension) {
             throw new IllegalArgumentException("Matrix row dimensions must agree.");
         }
         if (!isFullRank) {
-            throw new RuntimeException("Matrix is rank deficient.");
+            throw new SingularMatrixException(
+                    "Rank deficient matrix! A solution cannot be obtained using the QR decomposition!"
+            );
         }
         double[][] rightHandSideMatrixArray = matrix.getArrayCopy();
         int resultMatrixColumnDimension = matrix.getColumnDimension();
