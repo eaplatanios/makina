@@ -1,7 +1,6 @@
 package org.platanios.learn.math.matrix;
 
 import org.platanios.learn.math.Utilities;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Implements a class representing matrices and supporting operations related to matrices. Matrices are stored in an
@@ -458,6 +457,7 @@ public class Matrix {
     }
     //endregion
 
+    //region Unary Operations
     /**
      * Returns the transpose of this matrix.
      *
@@ -487,7 +487,42 @@ public class Matrix {
         return trace;
     }
 
-    //region Norm Computations
+    /**
+     * Computes the inverse of this matrix.
+     *
+     * @return  The inverse of this matrix.
+     */
+    public Matrix computeInverse() {
+        return solve(generateIdentityMatrix(rowDimension));
+    }
+
+    /**
+     * Computes the determinant of this matrix.
+     *
+     * @return  The determinant of this matrix.
+     */
+    public double computeDeterminant() {
+        return new LUDecomposition(this).computeDeterminant();
+    }
+
+    /**
+     * Computes the effective numerical rank of this matrix.
+     *
+     * @return  The effective numerical rank of this matrix.
+     */
+    public int computeRank() {
+        return new SingularValueDecomposition(this).computeEffectiveNumericalRank();
+    }
+
+    /**
+     * Computes the condition number of this matrix.
+     *
+     * @return  The condition number of this matrix.
+     */
+    public double computeConditionNumber() {
+        return new SingularValueDecomposition(this).computeConditionNumber();
+    }
+
     /**
      * Computes the \(L_1\) norm of this matrix. Denoting this matrix by \(A\in\mathbb{R}^{m\times n}\), its element at
      * row \(i\) and column \(j\) by \(A_{ij}\) and its \(L_1\) norm by \(\|A\|_1\), we have that:
@@ -515,7 +550,7 @@ public class Matrix {
      * @return  The \(L_2\) norm of this matrix.
      */
     public double computeL2Norm() {
-        throw new NotImplementedException(); // TODO: Implement the SVD and then this method.
+        return new SingularValueDecomposition(this).computeL2Norm();
     }
 
     /**
@@ -556,7 +591,7 @@ public class Matrix {
     }
     //endregion
 
-    //region Element-wise Operations
+    //region Element-wise Binary Operations
     /**
      * Adds another matrix to the current matrix and returns the result in a new matrix.
      *
@@ -718,6 +753,7 @@ public class Matrix {
     }
     //endregion
 
+    //region Other Binary Operations
     /**
      * Multiplies the current matrix with a scalar and returns the result in a new matrix.
      *
@@ -830,6 +866,69 @@ public class Matrix {
         }
         return resultMatrix;
     }
+
+    /**
+     * Solves the linear system of equations \(A\boldsymbol{x}=\boldsymbol{b}\) for \(\boldsymbol{x}\) and returns the
+     * result as a new vector. The current matrix "plays" the role of \(A\) and \(\boldsymbol{b}\) is the provided
+     * vector.
+     *
+     * @param   vector  Vector \(\boldsymbol{b}\) in equation \(A\boldsymbol{x}=\boldsymbol{b}\).
+     * @return          The solution of the system of equations.
+     */
+    public Vector solve(Vector vector) {
+        return new Vector(solve(vector.copyAsMatrix()).getColumnPackedArrayCopy());
+    }
+
+    /**
+     * Solves the linear system of equations \(AX=B\) for \(X\) and returns the result as a new vector. The current
+     * matrix "plays" the role of \(A\) and \(B\) is the provided matrix.
+     *
+     * @param   matrix  Matrix \(B\) in equation \(AX=B\).
+     * @return          The solution of the system of linear equations.
+     */
+    public Matrix solve(Matrix matrix) {
+        return (rowDimension == columnDimension ?
+                (new LUDecomposition(this)).solve(matrix) : (new QRDecomposition(this)).solve(matrix));
+    }
+    //endregion
+
+    //region Matrix Decomposition Methods
+    /**
+     * Computes the Cholesky decomposition of this matrix.
+     *
+     * @return  The Cholesky decomposition of this matrix.
+     */
+    public CholeskyDecomposition computeCholeskyDecomposition() {
+        return new CholeskyDecomposition(this);
+    }
+
+    /**
+     * Computes the LU decomposition of this matrix.
+     *
+     * @return  The LU decomposition of this matrix.
+     */
+    public LUDecomposition computeLUDecomposition() {
+        return new LUDecomposition(this);
+    }
+
+    /**
+     * Computes the QR decomposition of this matrix.
+     *
+     * @return  The QR decomposition of this matrix.
+     */
+    public QRDecomposition computeQRDecomposition() {
+        return new QRDecomposition(this);
+    }
+
+    /**
+     * Computes the singular value decomposition of this matrix.
+     *
+     * @return  The singular value decomposition of this matrix.
+     */
+    public SingularValueDecomposition computeSingularValueDecomposition() {
+        return new SingularValueDecomposition(this);
+    }
+    //endregion
 
     //region Special Matrix "Constructors"
     /**
