@@ -1,8 +1,7 @@
 package org.platanios.learn.optimization;
 
-import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.RealVector;
 import org.platanios.learn.math.Utilities;
+import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod;
 import org.platanios.learn.optimization.linesearch.StrongWolfeInterpolationLineSearch;
@@ -25,8 +24,8 @@ public class CoordinateDescentSolver extends AbstractLineSearchSolver {
     private Method method = Method.CYCLE_AND_JOIN_ENDPOINTS;
     private int currentDimension = 0;
     private boolean completedCycle = false;
-    private RealVector cycleStartPoint;
-    private RealVector cycleEndPoint;
+    private Vector cycleStartPoint;
+    private Vector cycleEndPoint;
 
     /**
      * Default method is the CYCLE_AND_JOIN_ENDPOINTS method because empirically it seems to perform better than the
@@ -50,11 +49,11 @@ public class CoordinateDescentSolver extends AbstractLineSearchSolver {
 
     @Override
     public void updateDirection() {
-        currentDirection = new ArrayRealVector(numberOfDimensions, 0);
+        currentDirection = new Vector(numberOfDimensions, 0);
 
         switch (method) {
             case CYCLE:
-                currentDirection.setEntry(currentDimension, 1);
+                currentDirection.setElement(currentDimension, 1);
                 if (currentDimension >= numberOfDimensions - 1) {
                     currentDimension = 0;
                 } else {
@@ -63,10 +62,10 @@ public class CoordinateDescentSolver extends AbstractLineSearchSolver {
                 break;
             case BACK_AND_FORTH:
                 if (currentDimension < numberOfDimensions) {
-                    currentDirection.setEntry(currentDimension, 1);
+                    currentDirection.setElement(currentDimension, 1);
                     currentDimension++;
                 } else {
-                    currentDirection.setEntry(2 * numberOfDimensions - currentDimension - 2, 1);
+                    currentDirection.setElement(2 * numberOfDimensions - currentDimension - 2, 1);
                     if (currentDimension >= 2 * numberOfDimensions - 2) {
                         currentDimension = 1;
                     } else {
@@ -76,7 +75,7 @@ public class CoordinateDescentSolver extends AbstractLineSearchSolver {
                 break;
             case CYCLE_AND_JOIN_ENDPOINTS:
                 if (!completedCycle) {
-                    currentDirection.setEntry(currentDimension, 1);
+                    currentDirection.setElement(currentDimension, 1);
                     if (currentDimension >= numberOfDimensions - 1) {
                         completedCycle = true;
                         currentDimension++;
@@ -94,15 +93,15 @@ public class CoordinateDescentSolver extends AbstractLineSearchSolver {
         }
 
         // Check to see on which side along the current direction the objective function value is decreasing.
-        if (!(objective.computeValue(currentPoint.add(currentDirection.mapMultiply(epsilon))) - currentObjectiveValue
+        if (!(objective.computeValue(currentPoint.add(currentDirection.multiply(epsilon))) - currentObjectiveValue
                 < 0)) {
-            currentDirection = currentDirection.mapMultiply(-1);
+            currentDirection = currentDirection.multiply(-1);
         }
     }
 
     @Override
     public void updatePoint() {
-        currentPoint = currentPoint.add(currentDirection.mapMultiply(currentStepSize));
+        currentPoint = currentPoint.add(currentDirection.multiply(currentStepSize));
 
         if (method == Method.CYCLE_AND_JOIN_ENDPOINTS) {
             if (currentDimension == 0) {

@@ -1,7 +1,7 @@
 package org.platanios.learn.optimization.function;
 
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
+import org.platanios.learn.math.matrix.Matrix;
+import org.platanios.learn.math.matrix.Vector;
 
 /**
  * A linear least squares function of the form \(f(x)=\frac{1}{2}\|Jx-y\|^2\).
@@ -9,27 +9,27 @@ import org.apache.commons.math3.linear.RealVector;
  * @author Emmanouil Antonios Platanios
  */
 public class LinearLeastSquaresFunction extends AbstractLeastSquaresFunction {
-    private final RealMatrix J;
-    private final RealVector y;
+    private final Matrix J;
+    private final Vector y;
 
-    public LinearLeastSquaresFunction(RealMatrix J, RealVector y) {
+    public LinearLeastSquaresFunction(Matrix J, Vector y) {
         this.J = J;
         this.y = y;
     }
 
-    public RealVector computeResiduals(RealVector point) {
-        return J.operate(point).subtract(y);
+    public Vector computeResiduals(Vector point) {
+        return J.multiply(point).subtract(y);
     }
 
-    public RealMatrix computeJacobian(RealVector point) {
+    public Matrix computeJacobian(Vector point) {
         return J;
     }
 
-    public RealMatrix getJ() {
+    public Matrix getJ() {
         return J;
     }
 
-    public RealVector getY() {
+    public Vector getY() {
         return y;
     }
 }

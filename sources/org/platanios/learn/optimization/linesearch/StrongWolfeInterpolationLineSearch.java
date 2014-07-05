@@ -1,7 +1,7 @@
 package org.platanios.learn.optimization.linesearch;
 
 import com.google.common.base.Preconditions;
-import org.apache.commons.math3.linear.RealVector;
+import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
 
 /**
@@ -55,12 +55,14 @@ public class StrongWolfeInterpolationLineSearch extends IterativeLineSearch {
      * {@inheritDoc}
      *
      * @return  A step size value that satisfies the strong Wolfe conditions.
+     * @param point
+     * @param direction
      */
     @Override
-    public double performLineSearch(RealVector point,
-                                    RealVector direction) {
+    public double performLineSearch(Vector point,
+                                    Vector direction) {
         double phi0 = objective.getValue(point);
-        double phiPrime0 = objective.getGradient(point).dotProduct(direction);
+        double phiPrime0 = objective.getGradient(point).innerProduct(direction);
         double a0 = 0;
         double a1 = initialStepSize;
 
@@ -71,13 +73,13 @@ public class StrongWolfeInterpolationLineSearch extends IterativeLineSearch {
         boolean firstIteration = true;
 
         while (true) {
-            RealVector a1Point = point.add(direction.mapMultiply(a1));
+            Vector a1Point = point.add(direction.multiply(a1));
             double phiA1 = objective.getValue(a1Point);
-            double phiA0 = objective.getValue(point.add(direction.mapMultiply(a0)));
+            double phiA0 = objective.getValue(point.add(direction.multiply(a0)));
             if (phiA1 > phi0 + c1 * a1 * phiPrime0 || (phiA1 >= phiA0 && !firstIteration)) {
                 return zoom(point, direction, a0, a1);
             }
-            double phiPrimeA1 = objective.getGradient(a1Point).dotProduct(direction);
+            double phiPrimeA1 = objective.getGradient(a1Point).innerProduct(direction);
             if (Math.abs(phiPrimeA1) <= -c2 * phiPrime0) {
                 return a1;
             } else if (phiPrimeA1 >= 0) {
@@ -120,19 +122,19 @@ public class StrongWolfeInterpolationLineSearch extends IterativeLineSearch {
      * @return              A step size value that lies in the interval {@code [aLow, aHigh]} and satisfies the strong
      *                      Wolfe conditions.
      */
-    private double zoom(RealVector point,
-                        RealVector direction,
+    private double zoom(Vector point,
+                        Vector direction,
                         double aLow,
                         double aHigh) {
         double phi0 = objective.getValue(point);
-        double phiPrime0 = objective.getGradient(point).dotProduct(direction);
+        double phiPrime0 = objective.getGradient(point).innerProduct(direction);
 
         // Declare variables used in the loop that follows.
         double aNew;
         double phiANew;
         double phiALow;
         double phiPrimeANew;
-        RealVector aNewPoint;
+        Vector aNewPoint;
 
         // Declare and initialize variables used to test for convergence of the objective function value.
         double minimumObjectiveValue = Double.MAX_VALUE;
@@ -141,14 +143,14 @@ public class StrongWolfeInterpolationLineSearch extends IterativeLineSearch {
 
         while (true) {
             aNew = performCubicInterpolation(point, direction, aLow, aHigh);
-            aNewPoint = point.add(direction.mapMultiply(aNew));
+            aNewPoint = point.add(direction.multiply(aNew));
             phiANew = objective.getValue(aNewPoint);
-            phiALow = objective.getValue(point.add(direction.mapMultiply(aLow)));
+            phiALow = objective.getValue(point.add(direction.multiply(aLow)));
 
             if (phiANew > phi0 + c1 * aNew * phiPrime0 || phiANew >= phiALow) {
                 aHigh = aNew;
             } else {
-                phiPrimeANew = objective.getGradient(aNewPoint).dotProduct(direction);
+                phiPrimeANew = objective.getGradient(aNewPoint).innerProduct(direction);
                 if (Math.abs(phiPrimeANew) <= -c2 * phiPrime0) {
                     return aNew;
                 } else if (phiPrimeANew * (aHigh - aLow) >= 0) {
@@ -181,23 +183,23 @@ public class StrongWolfeInterpolationLineSearch extends IterativeLineSearch {
      * @return              A point in the interval {@code [aLow, aHigh]} that minimizes a cubic interpolation
      *                      approximation of the &phi; function computed using available information.
      */
-    private double performCubicInterpolation(RealVector point,
-                                             RealVector direction,
+    private double performCubicInterpolation(Vector point,
+                                             Vector direction,
                                              double aLow,
                                              double aHigh) {
-        RealVector newPointLow = point.add(direction.mapMultiply(aLow));
-        RealVector newPointHigh = point.add(direction.mapMultiply(aHigh));
+        Vector newPointLow = point.add(direction.multiply(aLow));
+        Vector newPointHigh = point.add(direction.multiply(aHigh));
         double phiALow = objective.getValue(newPointLow);
         double phiAHigh = objective.getValue(newPointHigh);
-        double phiPrimeALow = objective.getGradient(newPointLow).dotProduct(direction);
-        double phiPrimeAHigh = objective.getGradient(newPointHigh).dotProduct(direction);
+        double phiPrimeALow = objective.getGradient(newPointLow).innerProduct(direction);
+        double phiPrimeAHigh = objective.getGradient(newPointHigh).innerProduct(direction);
         double d1 = phiPrimeALow + phiPrimeAHigh - 3 * (phiALow - phiAHigh) / (aLow - aHigh);
         double d2 = Math.signum(aHigh - aLow) * Math.sqrt(Math.pow(d1, 2) - phiPrimeALow * phiPrimeAHigh);
         double aNew = aHigh - (aHigh - aLow) * (phiPrimeAHigh + d2 - d1) / (phiPrimeAHigh - phiPrimeALow + 2 * d2);
 
         // Check whether the minimizer is one of the endpoints of the interval or if it is the newly computed value.
         if (aLow <= aNew && aNew <= aHigh) {
-            double phiANew = objective.getValue(point.add(direction.mapMultiply(aNew)));
+            double phiANew = objective.getValue(point.add(direction.multiply(aNew)));
             if (phiALow <= phiANew) {
                 if (phiALow <= phiAHigh) {
                     aNew = aLow;

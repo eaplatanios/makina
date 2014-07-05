@@ -1,7 +1,6 @@
 package org.platanios.learn.optimization;
 
-import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.RealVector;
+import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
 
 /**
@@ -29,12 +28,12 @@ abstract class AbstractIterativeSolver implements Solver {
 
     AbstractFunction objective;
     int currentIteration;
-    RealVector currentPoint;
-    RealVector previousPoint;
-    RealVector currentGradient;
-    RealVector previousGradient;
-    RealVector currentDirection;
-    RealVector previousDirection;
+    Vector currentPoint;
+    Vector previousPoint;
+    Vector currentGradient;
+    Vector previousGradient;
+    Vector currentDirection;
+    Vector previousDirection;
     double currentStepSize;
     double previousStepSize;
     double currentObjectiveValue;
@@ -43,14 +42,14 @@ abstract class AbstractIterativeSolver implements Solver {
     public AbstractIterativeSolver(AbstractFunction objective,
                                    double[] initialPoint) {
         this.objective = objective;
-        currentPoint = new ArrayRealVector(initialPoint);
+        currentPoint = new Vector(initialPoint);
         currentGradient = objective.getGradient(currentPoint);
         currentObjectiveValue = objective.getValue(currentPoint);
         currentIteration = 0;
     }
 
     @Override
-    public RealVector solve() {
+    public Vector solve() {
         printHeader();
         while (!checkTerminationConditions()) {
             iterationUpdate();
@@ -74,7 +73,7 @@ abstract class AbstractIterativeSolver implements Solver {
             }
 
             if (checkForPointConvergence) {
-                pointChange = currentPoint.subtract(previousPoint).getNorm();
+                pointChange = currentPoint.subtract(previousPoint).computeL2Norm();
                 pointConverged = pointChange <= pointChangeTolerance;
             }
 
@@ -85,10 +84,11 @@ abstract class AbstractIterativeSolver implements Solver {
 
             if (checkForGradientConvergence) {
                 if (this instanceof NonlinearConjugateGradientSolver) {
-                    gradientNorm = Math.abs(currentGradient.getMaxValue()) / (1 + Math.abs(currentObjectiveValue));
+                    gradientNorm =
+                            Math.abs(currentGradient.getMaximumValue()) / (1 + Math.abs(currentObjectiveValue));
                     gradientConverged = gradientNorm <= gradientTolerance;
                 } else {
-                    gradientNorm = currentGradient.getNorm();
+                    gradientNorm = currentGradient.computeL2Norm();
                     gradientConverged = gradientNorm <= gradientTolerance;
                 }
             }

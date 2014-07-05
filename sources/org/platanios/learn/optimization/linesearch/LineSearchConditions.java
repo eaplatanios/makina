@@ -1,7 +1,7 @@
 package org.platanios.learn.optimization.linesearch;
 
 import com.google.common.base.Preconditions;
-import org.apache.commons.math3.linear.RealVector;
+import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
 
 /**
@@ -31,18 +31,18 @@ public class LineSearchConditions {
      *                                          the given objective, point, direction and step size.
      */
     public static boolean checkArmijoCondition(AbstractFunction objective,
-                                               RealVector point,
-                                               RealVector direction,
+                                               Vector point,
+                                               Vector direction,
                                                double stepSize,
                                                double c,
                                                double objectiveValueAtCurrentPoint,
-                                               RealVector objectiveGradientAtCurrentPoint) {
+                                               Vector objectiveGradientAtCurrentPoint) {
         Preconditions.checkArgument(c > 0 && c < 1);
 
-        double newObjectiveValue = objective.getValue(direction.mapMultiply(stepSize).add(point));
+        double newObjectiveValue = objective.getValue(direction.multiply(stepSize).add(point));
 
         return newObjectiveValue <=
-                objectiveValueAtCurrentPoint + c * stepSize * objectiveGradientAtCurrentPoint.dotProduct(direction);
+                objectiveValueAtCurrentPoint + c * stepSize * objectiveGradientAtCurrentPoint.innerProduct(direction);
     }
 
     /**
@@ -77,14 +77,14 @@ public class LineSearchConditions {
      * @return                                  A boolean value ind objective, point, direction and step size.
      */
     public static boolean checkWolfeConditions(AbstractFunction objective,
-                                               RealVector point,
-                                               RealVector direction,
+                                               Vector point,
+                                               Vector direction,
                                                double stepSize,
                                                double c1,
                                                double c2,
                                                boolean strong,
                                                double objectiveValueAtCurrentPoint,
-                                               RealVector objectiveGradientAtCurrentPoint) {
+                                               Vector objectiveGradientAtCurrentPoint) {
         Preconditions.checkArgument(c1 > 0 && c1 < 1);
         Preconditions.checkArgument(c2 > c1 && c2 < 1);
 
@@ -100,8 +100,8 @@ public class LineSearchConditions {
         );
 
         // Check the curvature condition
-        double leftTerm = objective.getGradient(point.add(direction.mapMultiply(stepSize))).dotProduct(direction);
-        double rightTerm = objectiveGradientAtCurrentPoint.dotProduct(direction);
+        double leftTerm = objective.getGradient(point.add(direction.multiply(stepSize))).innerProduct(direction);
+        double rightTerm = objectiveGradientAtCurrentPoint.innerProduct(direction);
         boolean curvatureConditionSatisfied;
         if (strong) {
             curvatureConditionSatisfied = Math.abs(leftTerm) <= c2 * Math.abs(rightTerm);
@@ -136,16 +136,16 @@ public class LineSearchConditions {
      *                                          satisfied for the given objective, point, direction and step size.
      */
     public static boolean checkGoldsteinConditions(AbstractFunction objective,
-                                                   RealVector point,
-                                                   RealVector direction,
+                                                   Vector point,
+                                                   Vector direction,
                                                    double stepSize,
                                                    double c,
                                                    double objectiveValueAtCurrentPoint,
-                                                   RealVector objectiveGradientAtCurrentPoint) {
+                                                   Vector objectiveGradientAtCurrentPoint) {
         Preconditions.checkArgument(c > 0 && c < 0.5);
 
-        double newObjectiveValue = objective.getValue(point.add(direction.mapMultiply(stepSize)));
-        double scaledSearchDirection = stepSize * objectiveGradientAtCurrentPoint.dotProduct(direction);
+        double newObjectiveValue = objective.getValue(point.add(direction.multiply(stepSize)));
+        double scaledSearchDirection = stepSize * objectiveGradientAtCurrentPoint.innerProduct(direction);
         double lowerBound = objectiveValueAtCurrentPoint + (1 - c) * scaledSearchDirection;
         double upperBound = objectiveValueAtCurrentPoint + c * scaledSearchDirection;
 

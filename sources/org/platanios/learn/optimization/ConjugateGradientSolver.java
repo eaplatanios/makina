@@ -1,6 +1,8 @@
 package org.platanios.learn.optimization;
 
-import org.apache.commons.math3.linear.*;
+import org.platanios.learn.math.matrix.CholeskyDecomposition;
+import org.platanios.learn.math.matrix.Matrix;
+import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.LinearLeastSquaresFunction;
 import org.platanios.learn.optimization.function.QuadraticFunction;
@@ -21,14 +23,14 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
     // TODO: Add constructors to allow changing this method.
     private final ProblemConversionMethod problemConversionMethod;
 
-    private RealMatrix A;
-    private RealMatrix oldATranspose; // Used when CONJUGATE_GRADIENT_NORMAL_EQUATION_ERROR is used.
-    private RealVector b;
+    private Matrix A;
+    private Matrix oldATranspose; // Used when CONJUGATE_GRADIENT_NORMAL_EQUATION_ERROR is used.
+    private Vector b;
     /** The preconditioner matrix. */
-    private RealMatrix preconditionerMatrixInverse;
+    private Matrix preconditionerMatrixInverse;
     private double beta;
-    private RealVector currentY;
-    private RealVector previousY;
+    private Vector currentY;
+    private Vector previousY;
     private double omega = 1;
 
     public ConjugateGradientSolver(QuadraticFunction objective,
@@ -120,25 +122,24 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
         this.preconditioningMethod = preconditioningMethod;
         this.problemConversionMethod = problemConversionMethod;
         if (isLinearLeastSquaresProblem) {
-            RealMatrix J = ((LinearLeastSquaresFunction) objective).getJ();
-            RealVector y = ((LinearLeastSquaresFunction) objective).getY();
+            Matrix J = ((LinearLeastSquaresFunction) objective).getJ();
+            Vector y = ((LinearLeastSquaresFunction) objective).getY();
             A = J.transpose().multiply(J);
-            b = J.transpose().operate(y);
+            b = J.transpose().multiply(y);
         } else {
             A = ((QuadraticFunction) objective).getA();
             b = ((QuadraticFunction) objective).getB();
         }
 
         // Check if A is symmetric and positive definite and if it is not make the appropriate changes to the algorithm.
-        try {
-            CholeskyDecomposition choleskyDecomposition = new CholeskyDecomposition(A);
-        } catch (NonSymmetricMatrixException|NonPositiveDefiniteMatrixException e) {
+        CholeskyDecomposition choleskyDecomposition = new CholeskyDecomposition(A);
+        if (!choleskyDecomposition.isSymmetricAndPositiveDefinite()) {
             System.err.println("WARNING: Matrix A is not symmetric. The conjugate gradient normal equation residual " +
                                        "(CGNR) method or the conjugate gradient normal equation error (CGNE) method " +
                                        "will be used, based on the setting specified by the user.");
             switch (problemConversionMethod) {
                 case CONJUGATE_GRADIENT_NORMAL_EQUATION_RESIDUAL:
-                    b = A.transpose().operate(b);
+                    b = A.transpose().multiply(b);
                     A = A.transpose().multiply(A);
                     break;
                 case CONJUGATE_GRADIENT_NORMAL_EQUATION_ERROR:
@@ -150,7 +151,7 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
             }
         }
 
-        currentGradient = A.operate(currentPoint).subtract(b);
+        currentGradient = A.multiply(currentPoint).subtract(b);
 
         switch (preconditioningMethod) {
             case IDENTITY:
@@ -160,24 +161,24 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
                 double[] diagonal = new double[A.getRowDimension()];
                 double[][] lowerDiagonalMatrix = new double[A.getRowDimension()][A.getColumnDimension()];
                 for (int i = 0; i < A.getRowDimension(); i++) {
-                    diagonal[i] = A.getEntry(i, i);
+                    diagonal[i] = A.getElement(i, i);
                     for (int j = 0; j < i; j++) {
-                        lowerDiagonalMatrix[i][j] = A.getEntry(i, j);
+                        lowerDiagonalMatrix[i][j] = A.getElement(i, j);
                     }
                 }
-                RealMatrix D = MatrixUtils.createRealDiagonalMatrix(diagonal);
-                RealMatrix DMinusL = D.subtract((new Array2DRowRealMatrix(lowerDiagonalMatrix)).scalarMultiply(omega));
+                Matrix D = Matrix.generateDiagonalMatrix(diagonal);
+                Matrix DMinusL = D.subtract((new Matrix(lowerDiagonalMatrix)).multiply(omega));
                 preconditionerMatrixInverse =
-                        MatrixUtils.inverse(DMinusL.multiply(MatrixUtils.inverse(D)).multiply(DMinusL.transpose()));
+                        DMinusL.multiply(D.computeInverse()).multiply(DMinusL.transpose()).computeInverse();
                 break;
         }
 
         computePreconditioningSystemSolution();
-        currentDirection = currentY.mapMultiply(-1);
+        currentDirection = currentY.multiply(-1);
     }
 
     @Override
-    public RealVector solve() {
+    public org.platanios.learn.math.matrix.Vector solve() {
         printHeader();
         while (!checkTerminationConditions()) {
             iterationUpdate();
@@ -189,7 +190,7 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
 
         if (problemConversionMethod ==
                 ProblemConversionMethod.CONJUGATE_GRADIENT_NORMAL_EQUATION_ERROR) {
-            currentPoint = oldATranspose.operate(currentPoint);
+            currentPoint = oldATranspose.multiply(currentPoint);
         }
 
         return currentPoint;
@@ -202,13 +203,13 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
         previousDirection = currentDirection;
         previousY = currentY;
         // This procedure can be sped up for the linear least squares case by using Jacobian vector products.
-        currentStepSize = previousGradient.dotProduct(previousY)
-                / A.preMultiply(previousDirection).dotProduct(previousDirection);
-        currentPoint = previousPoint.add(previousDirection.mapMultiply(currentStepSize));
-        currentGradient = previousGradient.add(A.operate(previousDirection).mapMultiply(currentStepSize));
+        currentStepSize = previousGradient.innerProduct(previousY)
+                / previousDirection.multiply(A).innerProduct(previousDirection);
+        currentPoint = previousPoint.add(previousDirection.multiply(currentStepSize));
+        currentGradient = previousGradient.add(A.multiply(previousDirection).multiply(currentStepSize));
         computePreconditioningSystemSolution();
-        beta = currentGradient.dotProduct(currentY) / previousGradient.dotProduct(previousY);
-        currentDirection = currentY.mapMultiply(-1).add(previousDirection.mapMultiply(beta));
+        beta = currentGradient.innerProduct(currentY) / previousGradient.innerProduct(previousY);
+        currentDirection = currentY.multiply(-1).add(previousDirection.multiply(beta));
         currentObjectiveValue = objective.getValue(currentPoint);
     }
 
@@ -220,12 +221,12 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
             case JACOBI:
                 double[] tempY = new double[currentGradient.getDimension()];
                 for (int i = 0; i < tempY.length; i++) {
-                    tempY[i] = currentGradient.getEntry(i) / A.getEntry(i, i);
+                    tempY[i] = currentGradient.getElement(i) / A.getElement(i, i);
                 }
-                currentY = new ArrayRealVector(tempY);
+                currentY = new Vector(tempY);
                 break;
             case SYMMETRIC_SUCCESSIVE_OVER_RELAXATION:
-                currentY = preconditionerMatrixInverse.operate(currentGradient);
+                currentY = preconditionerMatrixInverse.multiply(currentGradient);
                 break;
             default:
                 throw new NotImplementedException();

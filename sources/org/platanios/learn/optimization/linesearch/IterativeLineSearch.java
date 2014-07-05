@@ -1,7 +1,7 @@
 package org.platanios.learn.optimization.linesearch;
 
 import com.google.common.base.Preconditions;
-import org.apache.commons.math3.linear.RealVector;
+import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -33,10 +33,10 @@ abstract class IterativeLineSearch implements LineSearch {
      * {@inheritDoc}
      */
     @Override
-    public double computeStepSize(RealVector point,
-                                  RealVector direction,
-                                  RealVector previousPoint,
-                                  RealVector previousDirection,
+    public double computeStepSize(Vector point,
+                                  Vector direction,
+                                  Vector previousPoint,
+                                  Vector previousDirection,
                                   double previousStepSize) {
         switch (stepSizeInitializationMethod) {
             case UNIT:
@@ -102,7 +102,7 @@ abstract class IterativeLineSearch implements LineSearch {
      * @param   direction   The direction for which we perform the line search.
      * @return              A step size value that satisfies certain criteria that depend on the algorithm choice.
      */
-    public abstract double performLineSearch(RealVector point, RealVector direction);
+    public abstract double performLineSearch(Vector point, Vector direction);
 
     /**
      * Gets the step size initialization method used by this iterative line search instance.

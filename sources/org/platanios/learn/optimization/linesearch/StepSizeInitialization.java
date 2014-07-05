@@ -1,6 +1,6 @@
 package org.platanios.learn.optimization.linesearch;
 
-import org.apache.commons.math3.linear.RealVector;
+import org.platanios.learn.math.matrix.Vector;
 
 /**
  * An implementation of several step size initialization methods used for computing the initial step size value for
@@ -31,14 +31,14 @@ class StepSizeInitialization {
      * @return                                      A value for the initial step size, to be used by iterative line
      *                                              search algorithms.
      */
-    public static double computeByConservingFirstOrderChange(RealVector objectiveGradientAtCurrentPoint,
-                                                             RealVector currentDirection,
-                                                             RealVector objectiveGradientAtPreviousPoint,
-                                                             RealVector previousDirection,
+    public static double computeByConservingFirstOrderChange(Vector objectiveGradientAtCurrentPoint,
+                                                             Vector currentDirection,
+                                                             Vector objectiveGradientAtPreviousPoint,
+                                                             Vector previousDirection,
                                                              double previousStepSize) {
         return previousStepSize
-                * objectiveGradientAtPreviousPoint.dotProduct(previousDirection)
-                /  objectiveGradientAtCurrentPoint.dotProduct(currentDirection);
+                * objectiveGradientAtPreviousPoint.innerProduct(previousDirection)
+                /  objectiveGradientAtCurrentPoint.innerProduct(currentDirection);
     }
 
     /**
@@ -58,10 +58,10 @@ class StepSizeInitialization {
      */
     public static double computeByQuadraticInterpolation(double objectiveValueAtCurrentPoint,
                                                          double objectiveValueAtPreviousPoint,
-                                                         RealVector objectiveGradientAtPreviousPoint,
-                                                         RealVector previousDirection) {
+                                                         Vector objectiveGradientAtPreviousPoint,
+                                                         Vector previousDirection) {
         return 2 * (objectiveValueAtCurrentPoint - objectiveValueAtPreviousPoint)
-                / objectiveGradientAtPreviousPoint.dotProduct(previousDirection);
+                / objectiveGradientAtPreviousPoint.innerProduct(previousDirection);
     }
 
     /**
@@ -82,9 +82,9 @@ class StepSizeInitialization {
      */
     public static double computeByModifiedQuadraticInterpolation(double objectiveValueAtCurrentPoint,
                                                                  double objectiveValueAtPreviousPoint,
-                                                                 RealVector objectiveGradientAtPreviousPoint,
-                                                                 RealVector previousDirection) {
+                                                                 Vector objectiveGradientAtPreviousPoint,
+                                                                 Vector previousDirection) {
         return Math.min(1, 2.02 * (objectiveValueAtCurrentPoint - objectiveValueAtPreviousPoint)
-                / objectiveGradientAtPreviousPoint.dotProduct(previousDirection));
+                / objectiveGradientAtPreviousPoint.innerProduct(previousDirection));
     }
 }

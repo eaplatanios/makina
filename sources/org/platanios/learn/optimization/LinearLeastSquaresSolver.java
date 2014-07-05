@@ -1,6 +1,6 @@
 package org.platanios.learn.optimization;
 
-import org.apache.commons.math3.linear.*;
+import org.platanios.learn.math.matrix.*;
 import org.platanios.learn.optimization.function.LinearLeastSquaresFunction;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -22,21 +22,21 @@ public class LinearLeastSquaresSolver implements Solver {
         this.method = Method.SINGULAR_VALUE_DECOMPOSITION;
     }
 
-    public RealVector solve() {
-        RealMatrix J = objective.getJ();
-        RealVector y = objective.getY();
+    public org.platanios.learn.math.matrix.Vector solve() {
+        Matrix J = objective.getJ();
+        Vector y = objective.getY();
         int n = J.getColumnDimension();
 
         switch(method) {
             case CHOLESKY_DECOMPOSITION:
                 CholeskyDecomposition choleskyDecomposition = new CholeskyDecomposition(J.transpose().multiply(J));
-                return choleskyDecomposition.getSolver().solve(J.transpose().operate(y));
+                return choleskyDecomposition.solve(J.transpose().multiply(y));
             case QR_DECOMPOSITION:
                 QRDecomposition qrDecomposition = new QRDecomposition(J);
-                return qrDecomposition.getSolver().solve(y);
+                return qrDecomposition.solve(y);
             case SINGULAR_VALUE_DECOMPOSITION:
                 SingularValueDecomposition singularValueDecomposition = new SingularValueDecomposition(J);
-                return singularValueDecomposition.getSolver().solve(y);
+                return singularValueDecomposition.solve(y);
             case CONJUGATE_GRADIENT:
                 LinearLeastSquaresFunction objective = new LinearLeastSquaresFunction(J, y);
                 ConjugateGradientSolver conjugateGradientSolver =

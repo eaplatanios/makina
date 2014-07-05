@@ -1,7 +1,5 @@
 package org.platanios.learn.optimization;
 
-import org.apache.commons.math3.linear.RealVector;
-
 import java.text.DecimalFormat;
 
 /**
@@ -10,5 +8,5 @@ import java.text.DecimalFormat;
 interface Solver {
     static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.0000000000E0");
 
-    public RealVector solve();
+    public org.platanios.learn.math.matrix.Vector solve();
 }

@@ -1,11 +1,9 @@
 package org.platanios.learn.optimization;
 
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
 import org.junit.Assert;
 import org.junit.Test;
+import org.platanios.learn.math.matrix.Matrix;
+import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractLeastSquaresFunction;
 
 /**
@@ -20,7 +18,7 @@ public class GaussNewtonSolverTest {
         GaussNewtonSolver gaussNewtonSolver =
                 new GaussNewtonSolver(new ExponentialLeastSquaresFunction(t, y), new double[] { 0, 0 });
         gaussNewtonSolver.setLinearLeastSquaresSubproblemMethod(LinearLeastSquaresSolver.Method.CHOLESKY_DECOMPOSITION);
-        double[] actualResult = gaussNewtonSolver.solve().toArray();
+        double[] actualResult = gaussNewtonSolver.solve().getArray();
         double[] expectedResult = new double[] { 2.5411, 0.2595 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-4);
     }
@@ -33,7 +31,7 @@ public class GaussNewtonSolverTest {
         GaussNewtonSolver gaussNewtonSolver =
                 new GaussNewtonSolver(new ExponentialLeastSquaresFunction(t, y), new double[] { 0, 0 });
         gaussNewtonSolver.setLinearLeastSquaresSubproblemMethod(LinearLeastSquaresSolver.Method.QR_DECOMPOSITION);
-        double[] actualResult = gaussNewtonSolver.solve().toArray();
+        double[] actualResult = gaussNewtonSolver.solve().getArray();
         double[] expectedResult = new double[] { 2.5411, 0.2595 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-4);
     }
@@ -48,7 +46,7 @@ public class GaussNewtonSolverTest {
         gaussNewtonSolver.setLinearLeastSquaresSubproblemMethod(
                 LinearLeastSquaresSolver.Method.SINGULAR_VALUE_DECOMPOSITION
         );
-        double[] actualResult = gaussNewtonSolver.solve().toArray();
+        double[] actualResult = gaussNewtonSolver.solve().getArray();
         double[] expectedResult = new double[] { 2.5411, 0.2595 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-4);
     }
@@ -61,7 +59,7 @@ public class GaussNewtonSolverTest {
         GaussNewtonSolver gaussNewtonSolver =
                 new GaussNewtonSolver(new ExponentialLeastSquaresFunction(t, y), new double[] { 0, 0 });
         gaussNewtonSolver.setLinearLeastSquaresSubproblemMethod(LinearLeastSquaresSolver.Method.CONJUGATE_GRADIENT);
-        double[] actualResult = gaussNewtonSolver.solve().toArray();
+        double[] actualResult = gaussNewtonSolver.solve().getArray();
         double[] expectedResult = new double[] { 2.5411, 0.2595 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-4);
     }
@@ -76,22 +74,22 @@ public class GaussNewtonSolverTest {
         }
 
         @Override
-        public RealVector computeResiduals(RealVector point) {
+        public Vector computeResiduals(Vector point) {
             double[] resultArray = new double[t.length];
             for (int i = 0; i < t.length; i++) {
-                resultArray[i] = point.getEntry(0) * Math.exp(point.getEntry(1) * t[i]) - y[i];
+                resultArray[i] = point.getElement(0) * Math.exp(point.getElement(1) * t[i]) - y[i];
             }
-            return new ArrayRealVector(resultArray);
+            return new Vector(resultArray);
         }
 
         @Override
-        public RealMatrix computeJacobian(RealVector point) {
+        public Matrix computeJacobian(Vector point) {
             double[][] resultArray = new double[t.length][2];
             for (int i = 0; i < t.length; i++) {
-                resultArray[i][0] = Math.exp(point.getEntry(1) * t[i]);
-                resultArray[i][1] = point.getEntry(0) * Math.exp(point.getEntry(1) * t[i]) * t[i];
+                resultArray[i][0] = Math.exp(point.getElement(1) * t[i]);
+                resultArray[i][1] = point.getElement(0) * Math.exp(point.getElement(1) * t[i]) * t[i];
             }
-            return new Array2DRowRealMatrix(resultArray);
+            return new Matrix(resultArray);
         }
     }
 }

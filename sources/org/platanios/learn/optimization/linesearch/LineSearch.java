@@ -1,6 +1,6 @@
 package org.platanios.learn.optimization.linesearch;
 
-import org.apache.commons.math3.linear.RealVector;
+import org.platanios.learn.math.matrix.Vector;
 
 /**
  * Interface specifying the methods for which all classes implementing line search algorithms should have
@@ -23,9 +23,9 @@ public interface LineSearch {
      * @return                      A step size value that satisfies certain criteria that depend on the algorithm
      *                              choice.
      */
-     public double computeStepSize(RealVector point,
-                                   RealVector direction,
-                                   RealVector previousPoint,
-                                   RealVector previousDirection,
+     public double computeStepSize(Vector point,
+                                   Vector direction,
+                                   Vector previousPoint,
+                                   Vector previousDirection,
                                    double previousStepSize);
 }

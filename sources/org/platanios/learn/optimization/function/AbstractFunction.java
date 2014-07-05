@@ -1,7 +1,7 @@
 package org.platanios.learn.optimization.function;
 
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
+import org.platanios.learn.math.matrix.Matrix;
+import org.platanios.learn.math.matrix.Vector;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -21,12 +21,12 @@ public abstract class AbstractFunction {
      * @param   point   The point in which to evaluate the objective function and the constraints.
      * @return          The value of the objective function, evaluated at the given point.
      */
-    public double getValue(RealVector point) {
+    public double getValue(Vector point) {
         numberOfFunctionEvaluations++;
         return computeValue(point);
     }
 
-    abstract public double computeValue(RealVector point);
+    abstract public double computeValue(Vector point);
 
     /**
      * Computes the first derivatives of the objective function and the constraints at a particular point.
@@ -34,12 +34,12 @@ public abstract class AbstractFunction {
      * @param   point   The point in which to evaluate the derivatives.
      * @return          The values of the first derivatives of the objective function, evaluated at the given point.
      */
-    public RealVector getGradient(RealVector point) {
+    public Vector getGradient(Vector point) {
         numberOfGradientEvaluations++;
         return computeGradient(point);
     }
 
-    public RealVector computeGradient(RealVector point) {
+    public Vector computeGradient(Vector point) {
         if (computeGradientMethodOverridden) {
             computeGradientMethodOverridden = false;
         }
@@ -53,12 +53,12 @@ public abstract class AbstractFunction {
      * @param   point   The point in which to evaluate the Hessian.
      * @return          The value of the Hessian matrix of the objective function, evaluated at the given point.
      */
-    public RealMatrix getHessian(RealVector point) {
+    public Matrix getHessian(Vector point) {
         numberOfHessianEvaluations++;
         return computeHessian(point);
     }
 
-    public RealMatrix computeHessian(RealVector point) {
+    public Matrix computeHessian(Vector point) {
         if (computeGradientMethodOverridden) {
             return derivativesApproximation.approximateHessianGivenGradient(point);
         } else {

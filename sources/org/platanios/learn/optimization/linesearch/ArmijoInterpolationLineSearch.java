@@ -1,7 +1,7 @@
 package org.platanios.learn.optimization.linesearch;
 
 import com.google.common.base.Preconditions;
-import org.apache.commons.math3.linear.RealVector;
+import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
 
 /**
@@ -45,13 +45,15 @@ public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
      * {@inheritDoc}
      *
      * @return  A step size value that satisfies the Armijo condition (also known as the sufficient decrease condition).
+     * @param point
+     * @param direction
      */
     @Override
-    public double performLineSearch(RealVector point,
-                                    RealVector direction) {
+    public double performLineSearch(Vector point,
+                                    Vector direction) {
         double phi0 = objective.getValue(point);
-        RealVector objectiveGradientAtCurrentPoint = objective.getGradient(point);
-        double phiPrime0 = objectiveGradientAtCurrentPoint.dotProduct(direction);
+        Vector objectiveGradientAtCurrentPoint = objective.getGradient(point);
+        double phiPrime0 = objectiveGradientAtCurrentPoint.innerProduct(direction);
 
         aNew = initialStepSize;
         boolean firstIteration = true;
@@ -85,20 +87,18 @@ public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
      * &phi; function and returns the step size value that minimizes that approximation. This function is only used for
      * the first iteration of the line search algorithm, when we do not yet have enough information available to perform
      * a cubic interpolation.
-     *
      * @param   point       The point at which we perform the line search.
      * @param   direction   The direction for which we perform the line search.
      * @param   phi0        The value of &phi;(0) (that is, the value of the objective function at the point at which we
-     *                      perform the line search).
+*                      perform the line search).
      * @param   phiPrime0   The value of &phi;'(0) (that is, the value of the objective function gradient at the point
-     *                      at which we perform the line search).
      */
-    private void performQuadraticInterpolation(RealVector point,
-                                               RealVector direction,
+    private void performQuadraticInterpolation(Vector point,
+                                               Vector direction,
                                                double phi0,
                                                double phiPrime0) {
         aOld = aNew;
-        double phiA0 = objective.getValue(point.add(direction.mapMultiply(aOld)));
+        double phiA0 = objective.getValue(point.add(direction.multiply(aOld)));
         aNew = -phiPrime0 * Math.pow(aOld, 2) / (2 * (phiA0 - phi0 - aOld * phiPrime0));
 
         // Ensure that we make reasonable progress and that the final step size is not too small.
@@ -111,24 +111,22 @@ public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
     /**
      * Performs a cubic interpolation using the available information in order to obtain an approximation of the &phi;
      * function and returns the step size value that minimizes that approximation.
-     *
-     * @param   point       The point at which we perform the line search.
+     *  @param   point       The point at which we perform the line search.
      * @param   direction   The direction for which we perform the line search.
      * @param   phi0        The value of &phi;(0) (that is, the value of the objective function at the point at which we
-     *                      perform the line search).
+ *                      perform the line search).
      * @param   phiPrime0   The value of &phi;'(0) (that is, the value of the objective function gradient at the point
-     *                      at which we perform the line search).
      */
-    private void performCubicInterpolation(RealVector point,
-                                           RealVector direction,
+    private void performCubicInterpolation(Vector point,
+                                           Vector direction,
                                            double phi0,
                                            double phiPrime0) {
         double a0Square = Math.pow(aOld, 2);
         double a1Square = Math.pow(aNew, 2);
         double a0Cube = Math.pow(aOld, 3);
         double a1Cube = Math.pow(aNew, 3);
-        double phiA0 = objective.getValue(point.add(direction.mapMultiply(aOld)));
-        double phiA1 = objective.getValue(point.add(direction.mapMultiply(aNew)));
+        double phiA0 = objective.getValue(point.add(direction.multiply(aOld)));
+        double phiA1 = objective.getValue(point.add(direction.multiply(aNew)));
         double denominator = a0Square * a1Square * (aNew - aOld);
         double a = (a0Square * (phiA1 - phi0 - aNew * phiPrime0) - a1Square * (phiA0 - phi0 - aOld * phiPrime0))
                 / denominator;

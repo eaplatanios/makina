@@ -1,31 +1,31 @@
 package org.platanios.learn.optimization.function;
 
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
+import org.platanios.learn.math.matrix.Matrix;
+import org.platanios.learn.math.matrix.Vector;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
 public abstract class AbstractLeastSquaresFunction extends AbstractFunction {
     @Override
-    public double computeValue(RealVector point) {
-        RealVector residuals = computeResiduals(point);
-        return 0.5 * residuals.dotProduct(residuals);
+    public double computeValue(Vector point) {
+        Vector residuals = computeResiduals(point);
+        return 0.5 * residuals.innerProduct(residuals);
     }
 
     @Override
-    public RealVector computeGradient(RealVector point) {
-        RealVector residuals = computeResiduals(point);
-        RealMatrix jacobian = computeJacobian(point);
-        return jacobian.transpose().operate(residuals);
+    public Vector computeGradient(Vector point) {
+        Vector residuals = computeResiduals(point);
+        Matrix jacobian = computeJacobian(point);
+        return jacobian.transpose().multiply(residuals);
     }
 
     @Override
-    public RealMatrix computeHessian(RealVector point) {
-        RealMatrix jacobian = computeJacobian(point);
+    public Matrix computeHessian(Vector point) {
+        Matrix jacobian = computeJacobian(point);
         return jacobian.transpose().multiply(jacobian);
     }
 
-    public abstract RealVector computeResiduals(RealVector point);
-    public abstract RealMatrix computeJacobian(RealVector point);
+    public abstract Vector computeResiduals(Vector point);
+    public abstract Matrix computeJacobian(Vector point);
 }

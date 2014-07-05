@@ -1,7 +1,6 @@
 package org.platanios.learn.classification;
 
-import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.RealVector;
+import org.platanios.learn.math.matrix.Vector;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -19,7 +18,7 @@ public class DataPreprocessing {
 
         int numberOfFeatures;
         List<Integer> labels = new ArrayList<>();
-        List<RealVector> data = new ArrayList<>();
+        List<Vector> data = new ArrayList<>();
 
         BufferedReader br = null;
         String line;
@@ -37,7 +36,7 @@ public class DataPreprocessing {
                 for (int i = 0; i < numberOfFeatures; i++) {
                     dataSample[i] = Double.parseDouble(outputs[i+1]);
                 }
-                data.add(new ArrayRealVector(dataSample));
+                data.add(new Vector(dataSample));
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -53,6 +52,6 @@ public class DataPreprocessing {
             }
         }
 
-        return new TrainingData(data.toArray(new RealVector[data.size()]), labels.toArray(new Integer[labels.size()]));
+        return new TrainingData(data.toArray(new Vector[data.size()]), labels.toArray(new Integer[labels.size()]));
     }
 }

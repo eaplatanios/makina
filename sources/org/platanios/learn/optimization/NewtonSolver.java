@@ -1,7 +1,6 @@
 package org.platanios.learn.optimization;
 
-import org.apache.commons.math3.linear.LUDecomposition;
-import org.apache.commons.math3.linear.RealMatrix;
+import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod;
 import org.platanios.learn.optimization.linesearch.StrongWolfeInterpolationLineSearch;
@@ -24,15 +23,14 @@ public class NewtonSolver extends AbstractLineSearchSolver {
      */
     @Override
     public void updateDirection() {
-        RealMatrix hessian = objective.getHessian(currentPoint);
+        Matrix hessian = objective.getHessian(currentPoint);
         // TODO: Check Hessian for positive definiteness and modify if necessary.
         currentGradient = objective.getGradient(currentPoint);
-        currentDirection =
-                new LUDecomposition(hessian).getSolver().getInverse().operate(currentGradient).mapMultiply(-1);
+        currentDirection = hessian.solve(currentGradient).multiply(-1);
     }
 
     @Override
     public void updatePoint() {
-        currentPoint = currentPoint.add(currentDirection.mapMultiply(currentStepSize));
+        currentPoint = currentPoint.add(currentDirection.multiply(currentStepSize));
     }
 }

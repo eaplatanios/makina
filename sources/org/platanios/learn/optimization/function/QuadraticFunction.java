@@ -1,7 +1,7 @@
 package org.platanios.learn.optimization.function;
 
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
+import org.platanios.learn.math.matrix.Matrix;
+import org.platanios.learn.math.matrix.Vector;
 
 /**
  * A quadratic function of the form \(f(x)=\frac{1}{2}x^TAx-b^Tx\).
@@ -9,34 +9,34 @@ import org.apache.commons.math3.linear.RealVector;
  * @author Emmanouil Antonios Platanios
  */
 public class QuadraticFunction extends AbstractFunction {
-    private final RealMatrix A;
-    private final RealVector b;
+    private final Matrix A;
+    private final Vector b;
 
-    public QuadraticFunction(RealMatrix A, RealVector b) {
+    public QuadraticFunction(Matrix A, Vector b) {
         this.A = A;
         this.b = b;
     }
 
     @Override
-    public double computeValue(RealVector point) {
-        return 0.5 * A.preMultiply(point).dotProduct(point) - b.dotProduct(point);
+    public double computeValue(Vector point) {
+        return 0.5 * point.multiply(A).innerProduct(point) - b.innerProduct(point);
     }
 
     @Override
-    public RealVector computeGradient(RealVector point) {
-        return A.operate(point).subtract(b);
+    public Vector computeGradient(Vector point) {
+        return A.multiply(point).subtract(b);
     }
 
     @Override
-    public RealMatrix computeHessian(RealVector point) {
+    public Matrix computeHessian(Vector point) {
         return A;
     }
 
-    public RealMatrix getA() {
+    public Matrix getA() {
         return A;
     }
 
-    public RealVector getB() {
+    public Vector getB() {
         return b;
     }
 }

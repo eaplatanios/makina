@@ -1,6 +1,8 @@
 package org.platanios.learn.optimization;
 
-import org.apache.commons.math3.linear.*;
+import org.platanios.learn.math.matrix.CholeskyDecomposition;
+import org.platanios.learn.math.matrix.Matrix;
+import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.QuadraticFunction;
 import org.platanios.learn.optimization.linesearch.ExactLineSearch;
@@ -34,17 +36,14 @@ public class NonlinearConjugateGradientSolver extends AbstractIterativeSolver {
         super(objective, initialPoint);
         setCheckForPointConvergence(false);
         setCheckForObjectiveConvergence(false);
-        currentDirection = currentGradient.mapMultiply(-1);
+        currentDirection = currentGradient.multiply(-1);
 
         if (objective instanceof QuadraticFunction) {
-            RealMatrix quadraticFactorMatrix = ((QuadraticFunction) objective).getA();
-            if (MatrixUtils.isSymmetric(quadraticFactorMatrix, 1e-8)) {
-                DecompositionSolver choleskyDecompositionSolver =
-                        new CholeskyDecomposition(quadraticFactorMatrix).getSolver();
-                if (choleskyDecompositionSolver.isNonSingular()) {
-                    lineSearch = new ExactLineSearch((QuadraticFunction) objective);
-                    return;
-                }
+            Matrix quadraticFactorMatrix = ((QuadraticFunction) objective).getA();
+            CholeskyDecomposition choleskyDecomposition = new CholeskyDecomposition(quadraticFactorMatrix);
+            if (choleskyDecomposition.isSymmetricAndPositiveDefinite()) {
+                lineSearch = new ExactLineSearch((QuadraticFunction) objective);
+                return;
             }
         }
 
@@ -65,10 +64,10 @@ public class NonlinearConjugateGradientSolver extends AbstractIterativeSolver {
                                                      previousPoint,
                                                      previousDirection,
                                                      previousStepSize);
-        currentPoint = previousPoint.add(previousDirection.mapMultiply(currentStepSize));
+        currentPoint = previousPoint.add(previousDirection.multiply(currentStepSize));
         currentGradient = objective.getGradient(currentPoint);
         beta = checkForRestart() ? 0 : computeBeta();
-        currentDirection = currentGradient.mapMultiply(-1).add(previousDirection.mapMultiply(beta));
+        currentDirection = currentGradient.multiply(-1).add(previousDirection.multiply(beta));
         currentObjectiveValue = objective.getValue(currentPoint);
     }
 
@@ -79,34 +78,34 @@ public class NonlinearConjugateGradientSolver extends AbstractIterativeSolver {
             case N_STEP:
                 return currentIteration % currentPoint.getDimension() == 0;
             case GRADIENTS_ORTHOGONALITY_CHECK:
-                return Math.abs(currentGradient.dotProduct(previousGradient))
-                        / currentGradient.dotProduct(currentGradient) >= gradientsOrthogonalityCheckThreshold;
+                return Math.abs(currentGradient.innerProduct(previousGradient))
+                        / currentGradient.innerProduct(currentGradient) >= gradientsOrthogonalityCheckThreshold;
             default:
                 throw new NotImplementedException();
         }
     }
 
     private double computeBeta() {
-        RealVector gradientsDifference;
+        Vector gradientsDifference;
         double denominator;
 
         switch (method) {
             case FLETCHER_RIEVES:
-                return currentGradient.dotProduct(currentGradient) / previousGradient.dotProduct(previousGradient);
+                return currentGradient.innerProduct(currentGradient) / previousGradient.innerProduct(previousGradient);
             case POLAK_RIBIERE:
-                return currentGradient.dotProduct(currentGradient.subtract(previousGradient))
-                        / previousGradient.dotProduct(previousGradient);
+                return currentGradient.innerProduct(currentGradient.subtract(previousGradient))
+                        / previousGradient.innerProduct(previousGradient);
             case POLAK_RIBIERE_PLUS:
-                return Math.max(currentGradient.dotProduct(currentGradient.subtract(previousGradient))
-                                        / previousGradient.dotProduct(previousGradient), 0);
+                return Math.max(currentGradient.innerProduct(currentGradient.subtract(previousGradient))
+                                        / previousGradient.innerProduct(previousGradient), 0);
             case HESTENES_STIEFEL:
                 gradientsDifference = currentGradient.subtract(previousGradient);
-                return currentGradient.dotProduct(gradientsDifference)
-                        / gradientsDifference.dotProduct(previousDirection);
+                return currentGradient.innerProduct(gradientsDifference)
+                        / gradientsDifference.innerProduct(previousDirection);
             case FLETCHER_RIEVES_POLAK_RIBIERE:
-                denominator = previousGradient.dotProduct(previousGradient);
-                double betaFR = currentGradient.dotProduct(currentGradient) / denominator;
-                double betaPR = currentGradient.dotProduct(currentGradient.subtract(previousGradient)) / denominator;
+                denominator = previousGradient.innerProduct(previousGradient);
+                double betaFR = currentGradient.innerProduct(currentGradient) / denominator;
+                double betaPR = currentGradient.innerProduct(currentGradient.subtract(previousGradient)) / denominator;
                 if (betaPR < -betaFR) {
                     return -betaFR;
                 } else if (betaPR > betaFR) {
@@ -115,16 +114,16 @@ public class NonlinearConjugateGradientSolver extends AbstractIterativeSolver {
                     return betaPR;
                 }
             case DAI_YUAN:
-                return currentGradient.dotProduct(currentGradient)
-                        / currentGradient.subtract(previousGradient).dotProduct(previousDirection);
+                return currentGradient.innerProduct(currentGradient)
+                        / currentGradient.subtract(previousGradient).innerProduct(previousDirection);
             case HAGER_ZHANG:
                 gradientsDifference = currentGradient.subtract(previousGradient);
-                denominator = gradientsDifference.dotProduct(previousDirection);
-                RealVector temporaryTerm = gradientsDifference.subtract(
-                        previousDirection.mapMultiply(2 * gradientsDifference.dotProduct(gradientsDifference)
+                denominator = gradientsDifference.innerProduct(previousDirection);
+                Vector temporaryTerm = gradientsDifference.subtract(
+                        previousDirection.multiply(2 * gradientsDifference.innerProduct(gradientsDifference)
                                                               / denominator)
                 );
-                return temporaryTerm.dotProduct(currentGradient) / denominator;
+                return temporaryTerm.innerProduct(currentGradient) / denominator;
             default:
                 throw new NotImplementedException();
         }

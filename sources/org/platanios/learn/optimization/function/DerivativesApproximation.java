@@ -1,10 +1,8 @@
 package org.platanios.learn.optimization.function;
 
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
 import org.platanios.learn.math.Utilities;
+import org.platanios.learn.math.matrix.Matrix;
+import org.platanios.learn.math.matrix.Vector;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
@@ -34,28 +32,28 @@ public class DerivativesApproximation {
         }
     }
 
-    public RealVector approximateGradient(RealVector point) {
+    public org.platanios.learn.math.matrix.Vector approximateGradient(Vector point) {
         int n = point.getDimension();
-        RealVector gradient = new ArrayRealVector(n, 0);
-        RealVector ei = new ArrayRealVector(n, 0);
+        Vector gradient = new Vector(n, 0);
+        Vector ei = new Vector(n, 0);
 
         switch(method) {
             case FORWARD_DIFFERENCE:
                 double currentFunctionValue = function.getValue(point);
                 for (int i = 0; i < n; i++) {
-                    ei.set(0);
-                    ei.setEntry(i, 1);
-                    double forwardFunctionValue = function.getValue(point.add(ei.mapMultiply(epsilon)));
-                    gradient.setEntry(i, (forwardFunctionValue - currentFunctionValue) / epsilon);
+                    ei.setAllElements(0);
+                    ei.setElement(i, 1);
+                    double forwardFunctionValue = function.getValue(point.add(ei.multiply(epsilon)));
+                    gradient.setElement(i, (forwardFunctionValue - currentFunctionValue) / epsilon);
                 }
             break;
             case CENTRAL_DIFFERENCE:
                 for (int i = 0; i < n; i++) {
-                    ei.set(0);
-                    ei.setEntry(i, 1);
-                    double forwardFunctionValue = function.getValue(point.add(ei.mapMultiply(epsilon)));
-                    double backwardFunctionValue = function.getValue(point.subtract(ei.mapMultiply(epsilon)));
-                    gradient.setEntry(i, (forwardFunctionValue - backwardFunctionValue) / (2 * epsilon));
+                    ei.setAllElements(0);
+                    ei.setElement(i, 1);
+                    double forwardFunctionValue = function.getValue(point.add(ei.multiply(epsilon)));
+                    double backwardFunctionValue = function.getValue(point.subtract(ei.multiply(epsilon)));
+                    gradient.setElement(i, (forwardFunctionValue - backwardFunctionValue) / (2 * epsilon));
                 }
                 break;
             default:
@@ -65,56 +63,56 @@ public class DerivativesApproximation {
         return gradient;
     }
 
-    public RealMatrix approximateHessian(RealVector point) {
+    public Matrix approximateHessian(Vector point) {
         int n = point.getDimension();
-        RealMatrix hessian = new Array2DRowRealMatrix(n, n);
-        RealVector ei = new ArrayRealVector(n, 0);
-        RealVector ej = new ArrayRealVector(n, 0);
+        Matrix hessian = new Matrix(n, n);
+        Vector ei = new Vector(n, 0);
+        Vector ej = new Vector(n, 0);
         double currentFunctionValue = function.getValue(point);
 
         switch(method) {
             case FORWARD_DIFFERENCE:
                 for (int i = 0; i < n; i++) {
-                    ei.set(0);
-                    ei.setEntry(i, 1);
-                    double iFunctionValue = function.getValue(point.add(ei.mapMultiply(epsilon)));
+                    ei.setAllElements(0);
+                    ei.setElement(i, 1);
+                    double iFunctionValue = function.getValue(point.add(ei.multiply(epsilon)));
                     for (int j = i; j < n; j++) {
-                        ej.set(0);
-                        ej.setEntry(j, 1);
-                        double jFunctionValue = function.getValue(point.add(ej.mapMultiply(epsilon)));
-                        double ijFunctionValue = function.getValue(point.add(ei.add(ej).mapMultiply(epsilon)));
+                        ej.setAllElements(0);
+                        ej.setElement(j, 1);
+                        double jFunctionValue = function.getValue(point.add(ej.multiply(epsilon)));
+                        double ijFunctionValue = function.getValue(point.add(ei.add(ej).multiply(epsilon)));
                         double ijEntry = (ijFunctionValue - iFunctionValue - jFunctionValue + currentFunctionValue)
                                 / Math.pow(epsilon, 2);
-                        hessian.setEntry(i, j, ijEntry);
+                        hessian.setElement(i, j, ijEntry);
                         if (i != j) {
-                            hessian.setEntry(j, i, ijEntry);
+                            hessian.setElement(j, i, ijEntry);
                         }
                     }
                 }
                 break;
             case CENTRAL_DIFFERENCE:
                 for (int i = 0; i < n; i++) {
-                    ei.set(0);
-                    ei.setEntry(i, 1);
+                    ei.setAllElements(0);
+                    ei.setElement(i, 1);
                     for (int j = i; j < n; j++) {
-                        ej.set(0);
-                        ej.setEntry(j, 1);
+                        ej.setAllElements(0);
+                        ej.setElement(j, 1);
                         if (i != j) {
-                            double term1 = function.getValue(point.add(ei.add(ej).mapMultiply(epsilon)));
-                            double term2 = function.getValue(point.add(ei.subtract(ej).mapMultiply(epsilon)));
-                            double term3 = function.getValue(point.add(ei.subtract(ej).mapMultiply(-epsilon)));
-                            double term4 = function.getValue(point.add(ei.add(ej).mapMultiply(-epsilon)));
+                            double term1 = function.getValue(point.add(ei.add(ej).multiply(epsilon)));
+                            double term2 = function.getValue(point.add(ei.subtract(ej).multiply(epsilon)));
+                            double term3 = function.getValue(point.add(ei.subtract(ej).multiply(-epsilon)));
+                            double term4 = function.getValue(point.add(ei.add(ej).multiply(-epsilon)));
                             double ijEntry = (term1 - term2 - term3 + term4) / (4 * Math.pow(epsilon, 2));
-                            hessian.setEntry(i, j, ijEntry);
-                            hessian.setEntry(j, i, ijEntry);
+                            hessian.setElement(i, j, ijEntry);
+                            hessian.setElement(j, i, ijEntry);
                         } else {
-                            double term1 = function.getValue(point.add(ei.mapMultiply(2 * epsilon)));
-                            double term2 = function.getValue(point.add(ei.mapMultiply(epsilon)));
-                            double term3 = function.getValue(point.subtract(ei.mapMultiply(epsilon)));
-                            double term4 = function.getValue(point.subtract(ei.mapMultiply(2 * epsilon)));
+                            double term1 = function.getValue(point.add(ei.multiply(2 * epsilon)));
+                            double term2 = function.getValue(point.add(ei.multiply(epsilon)));
+                            double term3 = function.getValue(point.subtract(ei.multiply(epsilon)));
+                            double term4 = function.getValue(point.subtract(ei.multiply(2 * epsilon)));
                             double ijEntry = (- term1 + 16 * term2 - 30 * currentFunctionValue + 16 * term3 - term4)
                                     / (12 * Math.pow(epsilon, 2));
-                            hessian.setEntry(i, j, ijEntry);
+                            hessian.setElement(i, j, ijEntry);
                         }
                     }
                 }
@@ -126,33 +124,40 @@ public class DerivativesApproximation {
         return hessian;
     }
 
-    public RealMatrix approximateHessianGivenGradient(RealVector point) {
+    public Matrix approximateHessianGivenGradient(Vector point) {
         int n = point.getDimension();
-        RealMatrix hessian = new Array2DRowRealMatrix(n, n);
-        RealVector ei = new ArrayRealVector(n, 0);
+        Matrix hessian = new Matrix(n, n);
+        Vector ei = new Vector(n, 0);
 
         switch(method) {
             case FORWARD_DIFFERENCE:
-                RealVector currentGradientValue = function.getGradient(point);
+                Vector currentGradientValue = function.getGradient(point);
                 for (int i = 0; i < n; i++) {
-                    ei.set(0);
-                    ei.setEntry(i, 1);
-                    RealVector forwardGradientValue = function.getGradient(point.add(ei.mapMultiply(epsilon)));
-                    hessian.setColumnVector(
+                    ei.setAllElements(0);
+                    ei.setElement(i, 1);
+                    Vector forwardGradientValue = function.getGradient(point.add(ei.multiply(epsilon)));
+                    hessian.setSubMatrix(
+                            0,
+                            hessian.getRowDimension() - 1,
                             i,
-                            forwardGradientValue.subtract(currentGradientValue).mapMultiply(1 / epsilon)
+                            i,
+                            forwardGradientValue.subtract(currentGradientValue).multiply(1 / epsilon).copyAsMatrix()
                     );
                 }
                 break;
             case CENTRAL_DIFFERENCE:
                 for (int i = 0; i < n; i++) {
-                    ei.set(0);
-                    ei.setEntry(i, 1);
-                    RealVector forwardGradientValue = function.getGradient(point.add(ei.mapMultiply(epsilon)));
-                    RealVector backwardGradientValue = function.getGradient(point.subtract(ei.mapMultiply(epsilon)));
-                    hessian.setColumnVector(
+                    ei.setAllElements(0);
+                    ei.setElement(i, 1);
+                    Vector forwardGradientValue = function.getGradient(point.add(ei.multiply(epsilon)));
+                    Vector backwardGradientValue = function.getGradient(point.subtract(ei.multiply(epsilon)));
+                    hessian.setSubMatrix(
+                            0,
+                            hessian.getRowDimension() - 1,
                             i,
-                            forwardGradientValue.subtract(backwardGradientValue).mapMultiply(1 / (2 * epsilon))
+                            i,
+                            forwardGradientValue
+                                    .subtract(backwardGradientValue).multiply(1 / (2 * epsilon)).copyAsMatrix()
                     );
                 }
                 break;
@@ -163,18 +168,18 @@ public class DerivativesApproximation {
         return hessian;
     }
 
-    public RealVector approximateHessianVectorProductGivenGradient(RealVector point, RealVector p) {
-        RealVector result;
-        RealVector forwardGradientValue = function.getGradient(point.add(p.mapMultiply(epsilon)));
+    public Vector approximateHessianVectorProductGivenGradient(Vector point, Vector p) {
+        Vector result;
+        Vector forwardGradientValue = function.getGradient(point.add(p.multiply(epsilon)));
 
         switch(method) {
             case FORWARD_DIFFERENCE:
-                RealVector currentGradientValue = function.getGradient(point);
-                result = forwardGradientValue.subtract(currentGradientValue).mapMultiply(1 / epsilon);
+                Vector currentGradientValue = function.getGradient(point);
+                result = forwardGradientValue.subtract(currentGradientValue).multiply(1 / epsilon);
                 break;
             case CENTRAL_DIFFERENCE:
-                RealVector backwardGradientValue = function.getGradient(point.subtract(p.mapMultiply(epsilon)));
-                result = forwardGradientValue.subtract(backwardGradientValue).mapMultiply(1 / (2 * epsilon));
+                Vector backwardGradientValue = function.getGradient(point.subtract(p.multiply(epsilon)));
+                result = forwardGradientValue.subtract(backwardGradientValue).multiply(1 / (2 * epsilon));
                 break;
             default:
                 throw new NotImplementedException();

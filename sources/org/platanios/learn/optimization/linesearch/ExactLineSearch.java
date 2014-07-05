@@ -1,6 +1,6 @@
 package org.platanios.learn.optimization.linesearch;
 
-import org.apache.commons.math3.linear.RealVector;
+import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.QuadraticFunction;
 
 /**
@@ -26,12 +26,12 @@ public class ExactLineSearch implements LineSearch {
      * {@inheritDoc}
      */
     @Override
-    public double computeStepSize(RealVector point,
-                                  RealVector direction,
-                                  RealVector previousPoint,
-                                  RealVector previousDirection,
+    public double computeStepSize(Vector point,
+                                  Vector direction,
+                                  Vector previousPoint,
+                                  Vector previousDirection,
                                   double previousStepSize) {
-        return -objective.getGradient(point).dotProduct(direction)
-                / objective.getA().preMultiply(direction).dotProduct(direction);
+        return -objective.getGradient(point).innerProduct(direction)
+                / direction.multiply(objective.getA()).innerProduct(direction);
     }
 }

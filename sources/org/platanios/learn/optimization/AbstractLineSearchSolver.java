@@ -1,9 +1,7 @@
 package org.platanios.learn.optimization;
 
-import org.apache.commons.math3.linear.CholeskyDecomposition;
-import org.apache.commons.math3.linear.DecompositionSolver;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
+import org.platanios.learn.math.matrix.CholeskyDecomposition;
+import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.QuadraticFunction;
 import org.platanios.learn.optimization.linesearch.*;
@@ -21,14 +19,11 @@ abstract class AbstractLineSearchSolver extends AbstractIterativeSolver {
         super(objective, initialPoint);
 
         if (objective instanceof QuadraticFunction) {
-            RealMatrix quadraticFactorMatrix = ((QuadraticFunction) objective).getA();
-            if (MatrixUtils.isSymmetric(quadraticFactorMatrix, 1e-8)) {
-                DecompositionSolver choleskyDecompositionSolver =
-                        new CholeskyDecomposition(quadraticFactorMatrix).getSolver();
-                if (choleskyDecompositionSolver.isNonSingular()) {
-                    lineSearch = new ExactLineSearch((QuadraticFunction) objective);
-                    return;
-                }
+            Matrix quadraticFactorMatrix = ((QuadraticFunction) objective).getA();
+            CholeskyDecomposition choleskyDecomposition = new CholeskyDecomposition(quadraticFactorMatrix);
+            if (choleskyDecomposition.isSymmetricAndPositiveDefinite()) {
+                lineSearch = new ExactLineSearch((QuadraticFunction) objective);
+                return;
             }
         }
 

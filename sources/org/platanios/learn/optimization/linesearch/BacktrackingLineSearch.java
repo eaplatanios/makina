@@ -1,7 +1,7 @@
 package org.platanios.learn.optimization.linesearch;
 
 import com.google.common.base.Preconditions;
-import org.apache.commons.math3.linear.RealVector;
+import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
 
 /**
@@ -39,12 +39,14 @@ public class BacktrackingLineSearch extends IterativeLineSearch {
 
     /**
      * {@inheritDoc}
+     * @param point
+     * @param direction
      */
     @Override
-    public double performLineSearch(RealVector point,
-                                    RealVector direction) {
+    public double performLineSearch(Vector point,
+                                    Vector direction) {
         double objectiveValueAtCurrentPoint = objective.getValue(point);
-        RealVector objectiveGradientAtCurrentPoint = objective.getGradient(point);
+        Vector objectiveGradientAtCurrentPoint = objective.getGradient(point);
         double currentStepSize = initialStepSize;
 
         while (!LineSearchConditions.checkArmijoCondition(objective,
