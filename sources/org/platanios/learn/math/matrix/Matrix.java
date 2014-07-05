@@ -468,6 +468,36 @@ public class Matrix {
             );
         }
     }
+
+    /**
+     * Gets the maximum value of all elements in this matrix.
+     *
+     * @return  The maximum value of all elements in this matrix.
+     */
+    public double getMaximumValue() {
+        double maxValue = array[0][0];
+        for (int i = 0; i < rowDimension; i++) {
+            for (int j = 0; j < columnDimension; j++) {
+                maxValue = Math.max(maxValue, array[i][j]);
+            }
+        }
+        return maxValue;
+    }
+
+    /**
+     * Gets the minimum value of all elements in this matrix.
+     *
+     * @return  The minimum value of all elements in this matrix.
+     */
+    public double getMinimumValue() {
+        double minValue = array[0][0];
+        for (int i = 0; i < rowDimension; i++) {
+            for (int j = 0; j < columnDimension; j++) {
+                minValue = Math.min(minValue, array[i][j]);
+            }
+        }
+        return minValue;
+    }
     //endregion
 
     //region Unary Operations

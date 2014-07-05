@@ -221,6 +221,32 @@ public class Vector {
     }
     //endregion
 
+    /**
+     * Gets the maximum value of all elements in this vector.
+     *
+     * @return  The maximum value of all elements in this vector.
+     */
+    public double getMaximumValue() {
+        double maxValue = array[0];
+        for (int i = 1; i < dimension; i++) {
+            maxValue = Math.max(maxValue, array[i]);
+        }
+        return maxValue;
+    }
+
+    /**
+     * Gets the minimum value of all elements in this vector.
+     *
+     * @return  The minimum value of all elements in this vector.
+     */
+    public double getMinimumValue() {
+        double minValue = array[0];
+        for (int i = 1; i < dimension; i++) {
+            minValue = Math.min(minValue, array[i]);
+        }
+        return minValue;
+    }
+
     //region Norm Computations
     /**
      * Computes the \(L_1\) norm of this vector. Denoting this vector by \(\boldsymbol{x}\in\mathbb{R}^{n}\), its
