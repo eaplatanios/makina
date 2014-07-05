@@ -262,7 +262,7 @@ public class Vector {
         for (int i = 0; i < dimension; i++) {
             lInfinityNorm = Math.max(lInfinityNorm, array[i]);
         }
-        return Math.sqrt(lInfinityNorm);
+        return lInfinityNorm;
     }
     //endregion
 
