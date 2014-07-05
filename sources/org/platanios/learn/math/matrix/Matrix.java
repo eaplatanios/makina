@@ -235,6 +235,19 @@ public class Matrix {
     }
 
     /**
+     * Sets the value of all of the matrix elements to the provided value.
+     *
+     * @param   value   The value to which to set the elements of this matrix.
+     */
+    public void setAllElements(double value) {
+        for (int i = 0; i < rowDimension; i++) {
+            for (int j = 0; j < columnDimension; j++) {
+                array[i][j] = value;
+            }
+        }
+    }
+
+    /**
      * Gets a sub-matrix of this matrix.
      *
      * @param   initialRowIndex     The initial row index.

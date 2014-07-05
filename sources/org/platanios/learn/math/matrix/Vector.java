@@ -121,6 +121,17 @@ public class Vector {
     }
 
     /**
+     * Sets the value of all of the vector elements to the provided value.
+     *
+     * @param   value   The value to which to set the elements of this vector.
+     */
+    public void setAllElements(double value) {
+        for (int i = 0; i < dimension; i++) {
+            array[i] = value;
+        }
+    }
+
+    /**
      * Gets a sub-vector of this vector.
      *
      * @param   initialIndex    The initial index.
