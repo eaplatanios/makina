@@ -5,7 +5,7 @@ import java.util.Arrays;
 /**
  * Implements the LU decomposition algorithm for matrix \(A\). Given \(A\in\mathbb{R}^{m\times n}\), with \(m\geq n\),
  * the LU decomposition is an upper triangular matrix \(U\in\mathbb{R}^{n\times n}\), a unit lower triangular matrix
- * \(L\in\mathbb{R}^{m\times n}\) and a permutation/pivot vector, \(\boldsymbol{p}\in\mathbb{R}^m\), such that
+ * \(L\in\mathbb{R}^{m\times n}\) and a permutation/pivot vector \(\boldsymbol{p}\in\mathbb{R}^m\), such that
  * \(A(\boldsymbol{p},:)=LU\) (the permutation/pivot vector in this equation can be thought of as re-ordering the rows
  * of \(A\)). If \(m<n\), then \(L\in\mathbb{R}^{m\times m}\) and \(U\in\mathbb{R}^{m\times n}\). The LU decomposition
  * with pivoting always exists, even if the matrix is singular, and so the constructor of this class will never fail.
@@ -21,9 +21,9 @@ public class LUDecomposition {
     private final int rowDimension;
     /** The column dimension of the matrix whose decomposition is being computed. */
     private final int columnDimension;
-
     /** One-dimensional array used for internal storage of the pivot vector. */
-    private int[] pivot;
+    private final int[] pivot;
+
     /** An integer holding the pivot sign. Its value is {@code 1} for positive sign and {@code -1} for negative sign. */
     private int pivotSign;
     /** A boolean value indicating whether or not the matrix whose decomposition is being computed is non-singular. */
