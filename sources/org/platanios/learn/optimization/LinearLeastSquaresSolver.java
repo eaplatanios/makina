@@ -102,7 +102,7 @@ public class LinearLeastSquaresSolver implements Solver {
          * number of \(J\) and not of its square (as in the method that uses the Cholesky decomposition).
          * <br><br>
          * This method is more numerically robust than the method that uses the Cholesky decomposition. */
-        QR_DECOMPOSITION, // TODO: The implementation of this method might be wrong.
+        QR_DECOMPOSITION,
         /** This method is more robust and provides more information about the sensitivity of the solution to
          * perturbations in the data (that is, either \(J\) or \(y\)) than the other two methods.
          * <br><br>
