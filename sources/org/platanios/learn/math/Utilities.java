@@ -4,6 +4,11 @@ package org.platanios.learn.math;
  * @author Emmanouil Antonios Platanios
  */
 public class Utilities {
+    // Suppress default constructor for noninstantiability
+    private Utilities() {
+        throw new AssertionError();
+    }
+
     /**
      * Computes the machine epsilon in double precision.
      *

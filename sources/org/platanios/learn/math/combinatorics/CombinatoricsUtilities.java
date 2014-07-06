@@ -6,6 +6,11 @@ package org.platanios.learn.math.combinatorics;
  * @author Emmanouil Antonios Platanios
  */
 public class CombinatoricsUtilities {
+    // Suppress default constructor for noninstantiability
+    private CombinatoricsUtilities() {
+        throw new AssertionError();
+    }
+
     /**
      * Computes the binomial coefficient indexed by {@code n} and {@code k}, also known as "{@code n} choose {@code k}".
      * The value of that coefficient represent the total number of ways in which {@code k} items can be picked out of
