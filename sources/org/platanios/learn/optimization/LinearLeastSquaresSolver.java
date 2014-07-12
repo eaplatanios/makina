@@ -13,11 +13,34 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 public class LinearLeastSquaresSolver implements Solver {
     private final LinearLeastSquaresFunction objective;
 
+    /** This variable is not final but it can only be changed from within this class (that is, there is no setter). It
+     * is only changed if the method selected by the user fails for some reason. */
     private Method method;
 
-    public LinearLeastSquaresSolver(LinearLeastSquaresFunction objective) {
-        this.objective = objective;
-        this.method = Method.SINGULAR_VALUE_DECOMPOSITION;
+    public static class Builder {
+        // Required parameters
+        private final LinearLeastSquaresFunction objective;
+
+        // Optional parameters - Initialized to default values
+        private Method method = Method.SINGULAR_VALUE_DECOMPOSITION;
+
+        public Builder(LinearLeastSquaresFunction objective) {
+            this.objective = objective;
+        }
+
+        public Builder method(Method method) {
+            this.method = method;
+            return this;
+        }
+
+        public LinearLeastSquaresSolver build() {
+            return new LinearLeastSquaresSolver(this);
+        }
+    }
+
+    private LinearLeastSquaresSolver(Builder builder) {
+        this.objective = builder.objective;
+        this.method = builder.method;
     }
 
     public Vector solve() {
@@ -76,14 +99,6 @@ public class LinearLeastSquaresSolver implements Solver {
             default:
                 throw new NotImplementedException();
         }
-    }
-
-    public Method getMethod() {
-        return method;
-    }
-
-    public void setMethod(Method method) {
-        this.method = method;
     }
 
     public enum Method {

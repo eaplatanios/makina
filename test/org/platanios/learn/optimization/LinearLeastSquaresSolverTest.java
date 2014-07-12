@@ -20,8 +20,9 @@ public class LinearLeastSquaresSolverTest {
         });
         Vector y = new Vector(new double[] { 6, 5, 7, 10 });
         LinearLeastSquaresSolver linearLeastSquaresSolver =
-                new LinearLeastSquaresSolver(new LinearLeastSquaresFunction(J, y));
-        linearLeastSquaresSolver.setMethod(LinearLeastSquaresSolver.Method.CHOLESKY_DECOMPOSITION);
+                new LinearLeastSquaresSolver.Builder(new LinearLeastSquaresFunction(J, y))
+                        .method(LinearLeastSquaresSolver.Method.CHOLESKY_DECOMPOSITION)
+                        .build();
         double[] actualResult = linearLeastSquaresSolver.solve().getArray();
         double[] expectedResult = new double[] { 3.5, 1.4 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-8);
@@ -37,8 +38,9 @@ public class LinearLeastSquaresSolverTest {
         });
         Vector y = new Vector(new double[] { 6, 5, 7, 10 });
         LinearLeastSquaresSolver linearLeastSquaresSolver =
-                new LinearLeastSquaresSolver(new LinearLeastSquaresFunction(J, y));
-        linearLeastSquaresSolver.setMethod(LinearLeastSquaresSolver.Method.QR_DECOMPOSITION);
+                new LinearLeastSquaresSolver.Builder(new LinearLeastSquaresFunction(J, y))
+                        .method(LinearLeastSquaresSolver.Method.QR_DECOMPOSITION)
+                        .build();
         double[] actualResult = linearLeastSquaresSolver.solve().getArray();
         double[] expectedResult = new double[] { 3.5, 1.4 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-8);
@@ -54,8 +56,9 @@ public class LinearLeastSquaresSolverTest {
         });
         Vector y = new Vector(new double[] { 6, 5, 7, 10 });
         LinearLeastSquaresSolver linearLeastSquaresSolver =
-                new LinearLeastSquaresSolver(new LinearLeastSquaresFunction(J, y));
-        linearLeastSquaresSolver.setMethod(LinearLeastSquaresSolver.Method.SINGULAR_VALUE_DECOMPOSITION);
+                new LinearLeastSquaresSolver.Builder(new LinearLeastSquaresFunction(J, y))
+                        .method(LinearLeastSquaresSolver.Method.SINGULAR_VALUE_DECOMPOSITION)
+                        .build();
         double[] actualResult = linearLeastSquaresSolver.solve().getArray();
         double[] expectedResult = new double[] { 3.5, 1.4 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-8);
@@ -71,8 +74,9 @@ public class LinearLeastSquaresSolverTest {
         });
         Vector y = new Vector(new double[] { 6, 5, 7, 10 });
         LinearLeastSquaresSolver linearLeastSquaresSolver =
-                new LinearLeastSquaresSolver(new LinearLeastSquaresFunction(J, y));
-        linearLeastSquaresSolver.setMethod(LinearLeastSquaresSolver.Method.CONJUGATE_GRADIENT);
+                new LinearLeastSquaresSolver.Builder(new LinearLeastSquaresFunction(J, y))
+                        .method(LinearLeastSquaresSolver.Method.CONJUGATE_GRADIENT)
+                        .build();
         double[] actualResult = linearLeastSquaresSolver.solve().getArray();
         double[] expectedResult = new double[] { 3.5, 1.4 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-8);

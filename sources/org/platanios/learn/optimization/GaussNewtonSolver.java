@@ -51,11 +51,10 @@ public class GaussNewtonSolver extends AbstractLineSearchSolver {
     @Override
     public void updateDirection() {
         LinearLeastSquaresSolver linearLeastSquaresSubproblemSolver =
-                new LinearLeastSquaresSolver(new LinearLeastSquaresFunction(
+                new LinearLeastSquaresSolver.Builder(new LinearLeastSquaresFunction(
                         ((AbstractLeastSquaresFunction) objective).computeJacobian(currentPoint),
                         ((AbstractLeastSquaresFunction) objective).computeResiduals(currentPoint).multiply(-1)
-                ));
-        linearLeastSquaresSubproblemSolver.setMethod(linearLeastSquaresSubproblemMethod);
+                )).method(linearLeastSquaresSubproblemMethod).build();
         currentDirection = linearLeastSquaresSubproblemSolver.solve();
     }
 
