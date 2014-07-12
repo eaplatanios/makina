@@ -39,8 +39,8 @@ abstract class AbstractIterativeSolver implements Solver {
     double currentObjectiveValue;
     double previousObjectiveValue;
 
-    public AbstractIterativeSolver(AbstractFunction objective,
-                                   double[] initialPoint) {
+    AbstractIterativeSolver(AbstractFunction objective,
+                            double[] initialPoint) {
         this.objective = objective;
         currentPoint = new Vector(initialPoint);
         currentGradient = objective.getGradient(currentPoint);

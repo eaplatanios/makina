@@ -14,8 +14,8 @@ abstract class AbstractLineSearchSolver extends AbstractIterativeSolver {
      * with CONSERVE_FIRST_ORDER_CHANGE for the step size initialization method. */
     private LineSearch lineSearch;
 
-    public AbstractLineSearchSolver(AbstractFunction objective,
-                                    double[] initialPoint) {
+    AbstractLineSearchSolver(AbstractFunction objective,
+                             double[] initialPoint) {
         super(objective, initialPoint);
 
         if (objective instanceof QuadraticFunction) {
