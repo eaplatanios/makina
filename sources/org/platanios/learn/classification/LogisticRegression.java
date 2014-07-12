@@ -24,8 +24,9 @@ public class LogisticRegression {
         this.trainingData = trainingData;
         trainingDataSize = trainingData.length;
         weights = new Vector(trainingData[0].getDimension(), 0);
-        solver = new QuasiNewtonSolver(new LikelihoodFunction(), weights.getArray());
-        solver.setMethod(QuasiNewtonSolver.Method.BROYDEN_FLETCHER_GOLDFARB_SHANNO);
+        solver = new QuasiNewtonSolver.Builder(new LikelihoodFunction(), weights.getArray())
+                .method(QuasiNewtonSolver.Method.BROYDEN_FLETCHER_GOLDFARB_SHANNO)
+                .build();
     }
 
     public void train() {

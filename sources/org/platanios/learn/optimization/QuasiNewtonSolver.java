@@ -1,6 +1,7 @@
 package org.platanios.learn.optimization;
 
 import org.platanios.learn.math.matrix.Matrix;
+import org.platanios.learn.math.matrix.NonPositiveDefiniteMatrixException;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod;
@@ -23,32 +24,72 @@ public class QuasiNewtonSolver extends AbstractLineSearchSolver {
 
     private double symmetricRankOneSkippingParameter = 1e-8;
 
+    public static class Builder {
+        // Required parameters
+        private final AbstractFunction objective;
+        private final double[] initialPoint;
+
+        // Optional parameters - Initialized to default values
+        private Method method = Method.BROYDEN_FLETCHER_GOLDFARB_SHANNO;
+        private int m = 1;
+        private double symmetricRankOneSkippingParameter = 1e-8;
+
+        public Builder(AbstractFunction objective, double[] initialPoint) {
+            this.objective = objective;
+            this.initialPoint = initialPoint;
+        }
+
+        public Builder method(Method method) {
+            this.method = method;
+
+            if (method != Method.LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO) {
+                m = 1;
+            } else if (m == 1) {
+                m = 10;
+            }
+
+            return this;
+        }
+
+        public Builder m(int m) {
+            if (method != Method.LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO) {
+                m = 1;
+            }
+
+            this.m = m;
+            return this;
+        }
+
+        public Builder symmetricRankOneSkippingParameter(double symmetricRankOneSkippingParameter) {
+            this.symmetricRankOneSkippingParameter = symmetricRankOneSkippingParameter;
+            return this;
+        }
+
+        public QuasiNewtonSolver build() {
+            return new QuasiNewtonSolver(this);
+        }
+    }
+
     /**
      * BROYDEN_FLETCHER_GOLDFARB_SHANNO method chosen by default. The default value used for the memory parameter,
      * {@code m}, is 10 for L-BFGS (for all other methods it is 1, since they store the whole approximation matrix and
      * do not need to store any previous vectors to re-construct it using limited memory).
      *
-     * @param objective
-     * @param initialPoint
      */
-    public QuasiNewtonSolver(AbstractFunction objective,
-                             double[] initialPoint) {
-        super(objective, initialPoint);
+    public QuasiNewtonSolver(Builder builder) {
+        super(builder.objective, builder.initialPoint);
+        this.method = builder.method;
+        this.m = builder.m;
+        this.symmetricRankOneSkippingParameter = builder.symmetricRankOneSkippingParameter;
         StrongWolfeInterpolationLineSearch lineSearch = new StrongWolfeInterpolationLineSearch(objective,
                                                                                                1e-4,
                                                                                                0.9,
                                                                                                1000);
         lineSearch.setStepSizeInitializationMethod(StepSizeInitializationMethod.UNIT);
         setLineSearch(lineSearch);
-        identityMatrix = Matrix.generateIdentityMatrix(initialPoint.length);
+        identityMatrix = Matrix.generateIdentityMatrix(builder.initialPoint.length);
         currentH = identityMatrix;
         currentGradient = objective.getGradient(currentPoint);
-
-        if (method != Method.LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO) {
-            m = 1;
-        } else {
-            m = 10;
-        }
         s = new Vector[m];
         y = new Vector[m];
     }
@@ -161,36 +202,6 @@ public class QuasiNewtonSolver extends AbstractLineSearchSolver {
         }
         s[0] = currentPoint.subtract(previousPoint);
         y[0] = currentGradient.subtract(previousGradient);
-    }
-
-    public Method getMethod() {
-        return method;
-    }
-
-    public void setMethod(Method method) {
-        this.method = method;
-    }
-
-    public int getM() {
-        return m;
-    }
-
-    public void setM(int m) {
-        if (method != Method.LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO) {
-            this.m = 1;
-        } else {
-            this.m = m;
-        }
-        s = new Vector[m];
-        y = new Vector[m];
-    }
-
-    public double getSymmetricRankOneSkippingParameter() {
-        return symmetricRankOneSkippingParameter;
-    }
-
-    public void setSymmetricRankOneSkippingParameter(double symmetricRankOneSkippingParameter) {
-        this.symmetricRankOneSkippingParameter = symmetricRankOneSkippingParameter;
     }
 
     public enum Method {
