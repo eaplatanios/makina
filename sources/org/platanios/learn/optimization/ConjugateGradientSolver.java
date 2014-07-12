@@ -17,141 +17,94 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  * @author Emmanouil Antonios Platanios
  */
 public class ConjugateGradientSolver extends AbstractIterativeSolver {
-    // TODO: Add constructors to allow changing this method.
+    private final PreconditioningMethod preconditioningMethod;
     private final ProblemConversionMethod problemConversionMethod;
+    private final Matrix preconditionerMatrixInverse;
+    private final Matrix initialATranspose; // Used when CONJUGATE_GRADIENT_NORMAL_EQUATION_ERROR is used.
+    private final Matrix A;
+    private final Vector b;
 
-    private PreconditioningMethod preconditioningMethod;
-    private Matrix A;
-    private Matrix oldATranspose; // Used when CONJUGATE_GRADIENT_NORMAL_EQUATION_ERROR is used.
-    private Vector b;
-    /** The preconditioner matrix. */
-    private Matrix preconditionerMatrixInverse;
     private double beta;
     private Vector currentY;
     private Vector previousY;
-    private double omega = 1;
 
-    public ConjugateGradientSolver(QuadraticFunction objective,
-                                   double[] initialPoint)
-            throws NonPositiveDefiniteMatrixException {
-        this(objective,
-             initialPoint,
-             PreconditioningMethod.SYMMETRIC_SUCCESSIVE_OVER_RELAXATION,
-             ProblemConversionMethod.CONJUGATE_GRADIENT_NORMAL_EQUATION_RESIDUAL,
-             false);
+    public static class Builder {
+        // Required parameters
+        private final AbstractFunction objective;
+        private final double[] initialPoint;
+
+        // Optional parameters - Initialized to default values
+        private PreconditioningMethod preconditioningMethod =
+                PreconditioningMethod.SYMMETRIC_SUCCESSIVE_OVER_RELAXATION;
+        private ProblemConversionMethod problemConversionMethod =
+                ProblemConversionMethod.CONJUGATE_GRADIENT_NORMAL_EQUATION_RESIDUAL;
+        private double symmetricSuccessiveOverRelaxationOmega = 1;
+
+        public Builder(QuadraticFunction objective, double[] initialPoint) {
+            this.objective = objective;
+            this.initialPoint = initialPoint;
+        }
+
+        public Builder(LinearLeastSquaresFunction objective, double[] initialPoint) {
+            this.objective = objective;
+            this.initialPoint = initialPoint;
+        }
+
+        public Builder preconditioningMethod(PreconditioningMethod preconditioningMethod)
+        {
+            this.preconditioningMethod = preconditioningMethod;
+            return this;
+        }
+
+        public Builder problemConversionMethod(ProblemConversionMethod problemConversionMethod)
+        {
+            this.problemConversionMethod = problemConversionMethod;
+            return this;
+        }
+
+        public Builder symmetricSuccessiveOverRelaxationOmega(double symmetricSuccessiveOverRelaxationOmega) {
+            this.symmetricSuccessiveOverRelaxationOmega = symmetricSuccessiveOverRelaxationOmega;
+            return this;
+        }
+
+        public ConjugateGradientSolver build() throws NonPositiveDefiniteMatrixException {
+            return new ConjugateGradientSolver(this);
+        }
     }
 
-    public ConjugateGradientSolver(LinearLeastSquaresFunction objective,
-                                   double[] initialPoint)
+    private ConjugateGradientSolver(Builder builder)
             throws NonPositiveDefiniteMatrixException {
-        this(objective,
-             initialPoint,
-             PreconditioningMethod.SYMMETRIC_SUCCESSIVE_OVER_RELAXATION,
-             ProblemConversionMethod.CONJUGATE_GRADIENT_NORMAL_EQUATION_RESIDUAL,
-             true);
-    }
+        super(builder.objective, builder.initialPoint);
+        this.problemConversionMethod = builder.problemConversionMethod;
 
-    public ConjugateGradientSolver(QuadraticFunction objective,
-                                   PreconditioningMethod preconditioningMethod,
-                                   double[] initialPoint)
-            throws NonPositiveDefiniteMatrixException {
-        this(objective,
-             initialPoint,
-             preconditioningMethod,
-             ProblemConversionMethod.CONJUGATE_GRADIENT_NORMAL_EQUATION_RESIDUAL,
-             false);
-    }
-
-    public ConjugateGradientSolver(LinearLeastSquaresFunction objective,
-                                   PreconditioningMethod preconditioningMethod,
-                                   double[] initialPoint)
-            throws NonPositiveDefiniteMatrixException {
-        this(objective,
-             initialPoint,
-             preconditioningMethod,
-             ProblemConversionMethod.CONJUGATE_GRADIENT_NORMAL_EQUATION_RESIDUAL,
-             true);
-    }
-
-    public ConjugateGradientSolver(QuadraticFunction objective,
-                                   ProblemConversionMethod problemConversionMethod,
-                                   double[] initialPoint)
-            throws NonPositiveDefiniteMatrixException {
-        this(objective,
-             initialPoint,
-             PreconditioningMethod.SYMMETRIC_SUCCESSIVE_OVER_RELAXATION,
-             problemConversionMethod,
-             false);
-    }
-
-    public ConjugateGradientSolver(LinearLeastSquaresFunction objective,
-                                   ProblemConversionMethod problemConversionMethod,
-                                   double[] initialPoint)
-            throws NonPositiveDefiniteMatrixException {
-        this(objective,
-             initialPoint,
-             PreconditioningMethod.SYMMETRIC_SUCCESSIVE_OVER_RELAXATION,
-             problemConversionMethod,
-             true);
-    }
-
-    public ConjugateGradientSolver(QuadraticFunction objective,
-                                   PreconditioningMethod preconditioningMethod,
-                                   ProblemConversionMethod problemConversionMethod,
-                                   double[] initialPoint)
-            throws NonPositiveDefiniteMatrixException {
-        this(objective,
-             initialPoint,
-             preconditioningMethod,
-             problemConversionMethod,
-             false);
-    }
-
-    public ConjugateGradientSolver(LinearLeastSquaresFunction objective,
-                                   PreconditioningMethod preconditioningMethod,
-                                   ProblemConversionMethod problemConversionMethod,
-                                   double[] initialPoint)
-            throws NonPositiveDefiniteMatrixException {
-        this(objective,
-             initialPoint,
-             preconditioningMethod,
-             problemConversionMethod,
-             true);
-    }
-
-    private ConjugateGradientSolver(AbstractFunction objective,
-                                    double[] initialPoint,
-                                    PreconditioningMethod preconditioningMethod,
-                                    ProblemConversionMethod problemConversionMethod,
-                                    boolean isLinearLeastSquaresProblem)
-            throws NonPositiveDefiniteMatrixException {
-        super(objective, initialPoint);
-        this.preconditioningMethod = preconditioningMethod;
-        this.problemConversionMethod = problemConversionMethod;
-        if (isLinearLeastSquaresProblem) {
+        Matrix temporaryA;
+        Vector temporaryB;
+        if (objective instanceof LinearLeastSquaresFunction) {
             Matrix J = ((LinearLeastSquaresFunction) objective).getJ();
             Vector y = ((LinearLeastSquaresFunction) objective).getY();
-            A = J.transpose().multiply(J);
-            b = J.transpose().multiply(y);
+            temporaryA = J.transpose().multiply(J);
+            temporaryB = J.transpose().multiply(y);
         } else {
-            A = ((QuadraticFunction) objective).getA();
-            b = ((QuadraticFunction) objective).getB();
+            temporaryA = ((QuadraticFunction) objective).getA();
+            temporaryB = ((QuadraticFunction) objective).getB();
         }
 
         // Check if A is symmetric and positive definite and if it is not make the appropriate changes to the algorithm.
-        CholeskyDecomposition choleskyDecomposition = new CholeskyDecomposition(A);
+        CholeskyDecomposition choleskyDecomposition = new CholeskyDecomposition(temporaryA);
         if (!choleskyDecomposition.isSymmetricAndPositiveDefinite()) {
             System.err.println("WARNING: Matrix A is not symmetric. The conjugate gradient normal equation residual " +
                                        "(CGNR) method or the conjugate gradient normal equation error (CGNE) method " +
                                        "will be used, based on the setting specified by the user.");
             switch (problemConversionMethod) {
                 case CONJUGATE_GRADIENT_NORMAL_EQUATION_RESIDUAL:
-                    b = A.transpose().multiply(b);
-                    A = A.transpose().multiply(A);
+                    initialATranspose = null;
+                    A = temporaryA.transpose().multiply(temporaryA);
+                    b = temporaryA.transpose().multiply(temporaryB);
                     break;
                 case CONJUGATE_GRADIENT_NORMAL_EQUATION_ERROR:
-                    oldATranspose = A.transpose();
-                    A = A.multiply(oldATranspose);
+                    initialATranspose = temporaryA.transpose();
+                    A = temporaryA.multiply(initialATranspose);
+                    b = temporaryB;
                     break;
                 default:
                     throw new NotImplementedException();
@@ -163,13 +116,19 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
                         "Non positive definite matrix after trying changing the conjugate gradient problem to avoid it!"
                 );
             }
+        } else {
+            initialATranspose = null;
+            A = temporaryA;
+            b = temporaryB;
         }
 
         currentGradient = A.multiply(currentPoint).subtract(b);
 
-        switch (preconditioningMethod) {
+        switch (builder.preconditioningMethod) {
             case IDENTITY:
             case JACOBI:
+                this.preconditioningMethod = builder.preconditioningMethod;
+                preconditionerMatrixInverse = null;
                 break;
             case SYMMETRIC_SUCCESSIVE_OVER_RELAXATION:
                 double[] diagonal = new double[A.getRowDimension()];
@@ -181,17 +140,26 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
                     }
                 }
                 Matrix D = Matrix.generateDiagonalMatrix(diagonal);
-                Matrix DMinusL = D.subtract((new Matrix(lowerDiagonalMatrix)).multiply(omega));
+                Matrix DMinusL = D.subtract(
+                        (new Matrix(lowerDiagonalMatrix)).multiply(builder.symmetricSuccessiveOverRelaxationOmega)
+                );
+                Matrix temporaryMatrix;
                 try {
-                    preconditionerMatrixInverse =
+                    temporaryMatrix =
                             DMinusL.multiply(D.computeInverse()).multiply(DMinusL.transpose()).computeInverse();
                 } catch (SingularMatrixException e) {
                     System.err.println("WARNING: Singular matrix in conjugate gradient problem. " +
                                                "Trying the Jacobi preconditioning method instead of the " +
                                                "symmetric successive over-relaxation preconditioning method!");
                     this.preconditioningMethod = PreconditioningMethod.JACOBI;
+                    preconditionerMatrixInverse = null;
+                    break;
                 }
+                this.preconditioningMethod = builder.preconditioningMethod;
+                preconditionerMatrixInverse = temporaryMatrix;
                 break;
+            default:
+                throw new NotImplementedException();
         }
 
         computePreconditioningSystemSolution();
@@ -199,7 +167,7 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
     }
 
     @Override
-    public org.platanios.learn.math.matrix.Vector solve() {
+    public Vector solve() {
         printHeader();
         while (!checkTerminationConditions()) {
             iterationUpdate();
@@ -211,7 +179,7 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
 
         if (problemConversionMethod ==
                 ProblemConversionMethod.CONJUGATE_GRADIENT_NORMAL_EQUATION_ERROR) {
-            currentPoint = oldATranspose.multiply(currentPoint);
+            currentPoint = initialATranspose.multiply(currentPoint);
         }
 
         return currentPoint;

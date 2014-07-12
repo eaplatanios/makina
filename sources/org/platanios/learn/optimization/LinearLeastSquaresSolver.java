@@ -59,11 +59,12 @@ public class LinearLeastSquaresSolver implements Solver {
             case CONJUGATE_GRADIENT:
                 try {
                     LinearLeastSquaresFunction objective = new LinearLeastSquaresFunction(J, y);
-                    ConjugateGradientSolver conjugateGradientSolver = new ConjugateGradientSolver(
-                            objective,
-                            ConjugateGradientSolver.PreconditioningMethod.SYMMETRIC_SUCCESSIVE_OVER_RELAXATION,
-                            new double[n]
-                    );
+                    ConjugateGradientSolver conjugateGradientSolver =
+                            new ConjugateGradientSolver.Builder(objective, new double[n])
+                            .preconditioningMethod(
+                                    ConjugateGradientSolver.PreconditioningMethod.SYMMETRIC_SUCCESSIVE_OVER_RELAXATION
+                            )
+                            .build();
                     return conjugateGradientSolver.solve();
                 } catch (NonPositiveDefiniteMatrixException e) {
                     System.err.println("WARNING: Non positive definite matrix in linear least squares problem. " +

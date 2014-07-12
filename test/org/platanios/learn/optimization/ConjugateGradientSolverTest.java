@@ -17,10 +17,9 @@ public class ConjugateGradientSolverTest {
         Matrix A = new Matrix(new double[][] { { 1, 0.5 }, { 0.5, 1 } });
         Vector b = new Vector(new double[] { 1, 2 });
         ConjugateGradientSolver conjugateGradientSolver =
-                new ConjugateGradientSolver(
-                        new QuadraticFunction(A, b),
-                        ConjugateGradientSolver.PreconditioningMethod.IDENTITY,
-                        new double[] { 0, 0 });
+                new ConjugateGradientSolver.Builder(new QuadraticFunction(A, b), new double[] { 0, 0 })
+                .preconditioningMethod(ConjugateGradientSolver.PreconditioningMethod.IDENTITY)
+                .build();
         double[] actualResult = conjugateGradientSolver.solve().getArray();
         double[] expectedResult = new double[] { 0, 2 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
