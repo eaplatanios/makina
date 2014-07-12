@@ -6,9 +6,23 @@ import org.platanios.learn.optimization.function.AbstractFunction;
  * @author Emmanouil Antonios Platanios
  */
 public class GradientDescentSolver extends AbstractLineSearchSolver {
-    public GradientDescentSolver(AbstractFunction objective,
-                                 double[] initialPoint) {
-        super(objective, initialPoint);
+    public static class Builder {
+        // Required parameters
+        private final AbstractFunction objective;
+        private final double[] initialPoint;
+
+        public Builder(AbstractFunction objective, double[] initialPoint) {
+            this.objective = objective;
+            this.initialPoint = initialPoint;
+        }
+
+        public GradientDescentSolver build() {
+            return new GradientDescentSolver(this);
+        }
+    }
+
+    public GradientDescentSolver(Builder builder) {
+        super(builder.objective, builder.initialPoint);
     }
 
     @Override
