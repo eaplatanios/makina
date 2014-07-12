@@ -129,7 +129,7 @@ public class Matrix {
 
     //region Getters, Setters and Other Such Methods
     /**
-     * Copies this matrix.
+     * Copies this matrix. // TODO: Switch this to a static factory or copy constructor.
      *
      * @return  A copy of this matrix.
      */

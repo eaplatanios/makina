@@ -53,7 +53,7 @@ public class Vector {
 
     //region Getters, Setters and Other Such Methods
     /**
-     * Copies this vector.
+     * Copies this vector. // TODO: Switch this to a static factory or copy constructor.
      *
      * @return  A copy of this vector.
      */

@@ -217,6 +217,5 @@ public class QuasiNewtonSolver extends AbstractLineSearchSolver {
          * prevent such cases. */
         SYMMETRIC_RANK_ONE,
         BROYDEN
-
     }
 }
