@@ -18,26 +18,48 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  * @author Emmanouil Antonios Platanios
  */
 public class CoordinateDescentSolver extends AbstractLineSearchSolver {
+    private final Method method;
     private final double epsilon = Math.sqrt(Utilities.computeMachineEpsilonDouble());
     private final int numberOfDimensions;
 
-    private Method method = Method.CYCLE_AND_JOIN_ENDPOINTS;
     private int currentDimension = 0;
     private boolean completedCycle = false;
     private Vector cycleStartPoint;
     private Vector cycleEndPoint;
 
+    // TODO: Add the option to set the step size initialization method.
+
+    public static class Builder {
+        // Required parameters
+        private final AbstractFunction objective;
+        private final double[] initialPoint;
+
+        // Optional parameters - Initialized to default values
+        private Method method = Method.CYCLE_AND_JOIN_ENDPOINTS;
+
+        public Builder(AbstractFunction objective, double[] initialPoint) {
+            this.objective = objective;
+            this.initialPoint = initialPoint;
+        }
+
+        public Builder method(Method method) {
+            this.method = method;
+            return this;
+        }
+
+        public CoordinateDescentSolver build() {
+            return new CoordinateDescentSolver(this);
+        }
+    }
+
     /**
      * Default method is the CYCLE_AND_JOIN_ENDPOINTS method because empirically it seems to perform better than the
      * others.
-     *
-     * @param objective
-     * @param initialPoint
      */
-    public CoordinateDescentSolver(AbstractFunction objective,
-                                   double[] initialPoint) {
-        super(objective, initialPoint);
-        numberOfDimensions = initialPoint.length;
+    private CoordinateDescentSolver(Builder builder) {
+        super(builder.objective, builder.initialPoint);
+        this.method = builder.method;
+        numberOfDimensions = builder.initialPoint.length;
         StrongWolfeInterpolationLineSearch lineSearch = new StrongWolfeInterpolationLineSearch(objective,
                                                                                                1e-4,
                                                                                                0.9,
@@ -110,14 +132,6 @@ public class CoordinateDescentSolver extends AbstractLineSearchSolver {
                 cycleEndPoint = currentPoint;
             }
         }
-    }
-
-    public Method getMethod() {
-        return method;
-    }
-
-    public void setMethod(Method method) {
-        this.method = method;
     }
 
     /**
