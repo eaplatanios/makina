@@ -1,5 +1,7 @@
 package org.platanios.learn.optimization;
 
+import org.platanios.learn.math.matrix.Vector;
+
 import java.text.DecimalFormat;
 
 /**
@@ -8,5 +10,5 @@ import java.text.DecimalFormat;
 interface Solver {
     static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.0000000000E0");
 
-    public org.platanios.learn.math.matrix.Vector solve();
+    public Vector solve();
 }

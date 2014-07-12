@@ -55,30 +55,36 @@ public class QuasiNewtonSolver extends AbstractLineSearchSolver {
 
     @Override
     public void updateDirection() {
-        if (method != Method.LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO) {
-            if (currentIteration > 0) {
-                // Simple trick to initialize the inverse Hessian matrix approximation. This scaling tries to make the
-                // size of H similar to the size of the actual Hessian matrix inverse (the scaling factor attempts to
-                // estimate the size of the true Hessian matrix along the most recent search direction. This choice
-                // helps to ensure that the search direction is well scaled and as a result the step length value 1 is
-                // accepted in most iterations.
-                if (currentIteration == 1) {
-                    previousH = currentH.multiply(y[0].innerProduct(s[0]) / y[0].innerProduct(y[0]));
-                } else {
-                    previousH = currentH;
+        switch (method) {
+            case DAVIDON_FLETCHER_POWELL:
+            case BROYDEN_FLETCHER_GOLDFARB_SHANNO:
+            case SYMMETRIC_RANK_ONE:
+            case BROYDEN:
+                if (currentIteration > 0) {
+                    // Simple trick to initialize the inverse Hessian matrix approximation. This scaling tries to make
+                    // the size of H similar to the size of the actual Hessian matrix inverse (the scaling factor
+                    // attempts to estimate the size of the true Hessian matrix along the most recent search direction.
+                    // This choice helps to ensure that the search direction is well scaled and as a result the step
+                    // length value 1 is accepted in most iterations.
+                    if (currentIteration == 1) {
+                        previousH = currentH.multiply(y[0].innerProduct(s[0]) / y[0].innerProduct(y[0]));
+                    } else {
+                        previousH = currentH;
+                    }
+                    updateHessianInverseApproximation();
                 }
-                updateHessianInverseApproximation();
-            }
-            currentDirection = currentH.multiply(currentGradient).multiply(-1);
-        } else {
-            // Same trick to initialize the inverse Hessian matrix approximation as that used above for the other
-            // methods.
-            if (currentIteration > 0) {
-                initialHessianInverseDiagonal =
-                        (new Vector(currentPoint.getDimension(), 1))
-                                .multiply(s[0].innerProduct(y[0]) / y[0].innerProduct(y[0]));
-            }
-            currentDirection = approximateHessianInverseVectorProduct(currentGradient).multiply(-1);
+                currentDirection = currentH.multiply(currentGradient).multiply(-1);
+                break;
+            case LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO:
+                // Same trick to initialize the inverse Hessian matrix approximation as that used above for the other
+                // methods.
+                if (currentIteration > 0) {
+                    initialHessianInverseDiagonal =
+                            (new Vector(currentPoint.getDimension(), 1))
+                                    .multiply(s[0].innerProduct(y[0]) / y[0].innerProduct(y[0]));
+                }
+                currentDirection = approximateHessianInverseVectorProduct(currentGradient).multiply(-1);
+                break;
         }
     }
 
