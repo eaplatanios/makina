@@ -14,18 +14,12 @@ public class GaussNewtonSolver extends AbstractLineSearchSolver {
     private final LinearLeastSquaresSolver.Method linearLeastSquaresSubproblemMethod;
     // TODO: Add a way to control the preconditioning method of the subproblem solver.
 
-    public static class Builder {
-        // Required parameters
-        private final AbstractLeastSquaresFunction objective;
-        private final double[] initialPoint;
-
-        // Optional parameters - Initialized to default values
+    public static class Builder extends AbstractLineSearchSolver.Builder<GaussNewtonSolver> {
         private LinearLeastSquaresSolver.Method linearLeastSquaresSubproblemMethod =
                 LinearLeastSquaresSolver.Method.SINGULAR_VALUE_DECOMPOSITION;
 
         public Builder(AbstractLeastSquaresFunction objective, double[] initialPoint) {
-            this.objective = objective;
-            this.initialPoint = initialPoint;
+            super(objective, initialPoint);
         }
 
         public Builder linearLeastSquaresSubproblemMethod(
@@ -41,11 +35,8 @@ public class GaussNewtonSolver extends AbstractLineSearchSolver {
     }
 
     private GaussNewtonSolver(Builder builder) {
-        super(builder.objective, builder.initialPoint);
+        super(builder);
         this.linearLeastSquaresSubproblemMethod = builder.linearLeastSquaresSubproblemMethod;
-        StrongWolfeInterpolationLineSearch lineSearch = new StrongWolfeInterpolationLineSearch(objective, 1e-4, 0.9, 1);
-        lineSearch.setStepSizeInitializationMethod(StepSizeInitializationMethod.UNIT);
-        setLineSearch(lineSearch);
     }
 
     @Override

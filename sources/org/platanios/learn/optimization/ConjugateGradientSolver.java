@@ -28,12 +28,7 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
     private Vector currentY;
     private Vector previousY;
 
-    public static class Builder {
-        // Required parameters
-        private final AbstractFunction objective;
-        private final double[] initialPoint;
-
-        // Optional parameters - Initialized to default values
+    public static class Builder extends AbstractIterativeSolver.Builder<ConjugateGradientSolver> {
         private PreconditioningMethod preconditioningMethod =
                 PreconditioningMethod.SYMMETRIC_SUCCESSIVE_OVER_RELAXATION;
         private ProblemConversionMethod problemConversionMethod =
@@ -41,13 +36,11 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
         private double symmetricSuccessiveOverRelaxationOmega = 1;
 
         public Builder(QuadraticFunction objective, double[] initialPoint) {
-            this.objective = objective;
-            this.initialPoint = initialPoint;
+            super(objective, initialPoint);
         }
 
         public Builder(LinearLeastSquaresFunction objective, double[] initialPoint) {
-            this.objective = objective;
-            this.initialPoint = initialPoint;
+            super(objective, initialPoint);
         }
 
         public Builder preconditioningMethod(PreconditioningMethod preconditioningMethod)
@@ -72,9 +65,8 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
         }
     }
 
-    private ConjugateGradientSolver(Builder builder)
-            throws NonPositiveDefiniteMatrixException {
-        super(builder.objective, builder.initialPoint);
+    private ConjugateGradientSolver(Builder builder) throws NonPositiveDefiniteMatrixException {
+        super(builder);
         this.problemConversionMethod = builder.problemConversionMethod;
 
         Matrix temporaryA;

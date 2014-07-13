@@ -1,7 +1,6 @@
 package org.platanios.learn.optimization;
 
 import org.platanios.learn.math.matrix.Matrix;
-import org.platanios.learn.math.matrix.NonPositiveDefiniteMatrixException;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod;
@@ -13,30 +12,27 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  */
 public class QuasiNewtonSolver extends AbstractLineSearchSolver {
     private final Matrix identityMatrix;
+    private final Method method;
+    private final int m;
 
-    private Method method = Method.BROYDEN_FLETCHER_GOLDFARB_SHANNO;
     private Matrix currentH;
     private Matrix previousH;
     Vector[] s;
     Vector[] y;
-    private int m;
     private Vector initialHessianInverseDiagonal = new Vector(currentPoint.getDimension(), 1);
 
     private double symmetricRankOneSkippingParameter = 1e-8;
 
-    public static class Builder {
-        // Required parameters
-        private final AbstractFunction objective;
-        private final double[] initialPoint;
-
-        // Optional parameters - Initialized to default values
+    public static class Builder extends AbstractLineSearchSolver.Builder<QuasiNewtonSolver> {
         private Method method = Method.BROYDEN_FLETCHER_GOLDFARB_SHANNO;
         private int m = 1;
         private double symmetricRankOneSkippingParameter = 1e-8;
 
         public Builder(AbstractFunction objective, double[] initialPoint) {
-            this.objective = objective;
-            this.initialPoint = initialPoint;
+            super(objective, initialPoint);
+            lineSearch = new StrongWolfeInterpolationLineSearch(objective, 1e-4, 0.9, 1000);
+            ((StrongWolfeInterpolationLineSearch) lineSearch)
+                    .setStepSizeInitializationMethod(StepSizeInitializationMethod.UNIT);
         }
 
         public Builder method(Method method) {
@@ -76,17 +72,11 @@ public class QuasiNewtonSolver extends AbstractLineSearchSolver {
      * do not need to store any previous vectors to re-construct it using limited memory).
      *
      */
-    public QuasiNewtonSolver(Builder builder) {
-        super(builder.objective, builder.initialPoint);
+    private QuasiNewtonSolver(Builder builder) {
+        super(builder);
         this.method = builder.method;
         this.m = builder.m;
         this.symmetricRankOneSkippingParameter = builder.symmetricRankOneSkippingParameter;
-        StrongWolfeInterpolationLineSearch lineSearch = new StrongWolfeInterpolationLineSearch(objective,
-                                                                                               1e-4,
-                                                                                               0.9,
-                                                                                               1000);
-        lineSearch.setStepSizeInitializationMethod(StepSizeInitializationMethod.UNIT);
-        setLineSearch(lineSearch);
         identityMatrix = Matrix.generateIdentityMatrix(builder.initialPoint.length);
         currentH = identityMatrix;
         currentGradient = objective.getGradient(currentPoint);

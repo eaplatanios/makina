@@ -29,18 +29,14 @@ public class NonlinearConjugateGradientSolver extends AbstractIterativeSolver {
     // clear.
     double beta;
 
-    public static class Builder {
-        private final AbstractFunction objective;
-        private final double[] initialPoint;
-
+    public static class Builder extends AbstractIterativeSolver.Builder<NonlinearConjugateGradientSolver> {
         private LineSearch lineSearch;
         private Method method = Method.POLAK_RIBIERE_PLUS;
         private RestartMethod restartMethod = RestartMethod.GRADIENTS_ORTHOGONALITY_CHECK;
         private double gradientsOrthogonalityCheckThreshold = 0.1;
 
         public Builder(AbstractFunction objective, double[] initialPoint) {
-            this.objective = objective;
-            this.initialPoint = initialPoint;
+            super(objective, initialPoint);
 
             if (objective instanceof QuadraticFunction) {
                 Matrix quadraticFactorMatrix = ((QuadraticFunction) objective).getA();
@@ -82,7 +78,7 @@ public class NonlinearConjugateGradientSolver extends AbstractIterativeSolver {
     }
 
     public NonlinearConjugateGradientSolver(Builder builder) {
-        super(builder.objective, builder.initialPoint);
+        super(builder);
         this.lineSearch = builder.lineSearch;
         this.method = builder.method;
         this.restartMethod = builder.restartMethod;

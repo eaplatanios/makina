@@ -16,18 +16,13 @@ abstract class AbstractLineSearchSolver extends AbstractIterativeSolver {
      * with CONSERVE_FIRST_ORDER_CHANGE for the step size initialization method. */
     LineSearch lineSearch;
 
-    public static abstract class Builder<T extends AbstractLineSearchSolver> {
-        // Required parameters
-        protected final AbstractFunction objective;
-        protected final double[] initialPoint;
-
-        // Optional parameters - Initialized to default values
+    public static abstract class Builder<T extends AbstractLineSearchSolver>
+            extends AbstractIterativeSolver.Builder<AbstractLineSearchSolver> {
         protected LineSearch lineSearch;
 
         protected Builder(AbstractFunction objective,
                           double[] initialPoint) {
-            this.objective = objective;
-            this.initialPoint = initialPoint;
+            super(objective, initialPoint);
 
             if (objective instanceof QuadraticFunction) {
                 Matrix quadraticFactorMatrix = ((QuadraticFunction) objective).getA();
@@ -47,12 +42,10 @@ abstract class AbstractLineSearchSolver extends AbstractIterativeSolver {
             this.lineSearch = lineSearch;
             return this;
         }
-
-        public abstract T build();
     }
 
-    AbstractLineSearchSolver(Builder<?> builder) {
-        super(builder.objective, builder.initialPoint);
+    AbstractLineSearchSolver(Builder<? extends AbstractLineSearchSolver> builder) {
+        super(builder);
         this.lineSearch = builder.lineSearch;
     }
 

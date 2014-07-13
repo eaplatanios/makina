@@ -29,17 +29,11 @@ public class CoordinateDescentSolver extends AbstractLineSearchSolver {
 
     // TODO: Add the option to set the step size initialization method.
 
-    public static class Builder {
-        // Required parameters
-        private final AbstractFunction objective;
-        private final double[] initialPoint;
-
-        // Optional parameters - Initialized to default values
+    public static class Builder extends AbstractLineSearchSolver.Builder<CoordinateDescentSolver> {
         private Method method = Method.CYCLE_AND_JOIN_ENDPOINTS;
 
         public Builder(AbstractFunction objective, double[] initialPoint) {
-            this.objective = objective;
-            this.initialPoint = initialPoint;
+            super(objective, initialPoint);
         }
 
         public Builder method(Method method) {
@@ -57,15 +51,9 @@ public class CoordinateDescentSolver extends AbstractLineSearchSolver {
      * others.
      */
     private CoordinateDescentSolver(Builder builder) {
-        super(builder.objective, builder.initialPoint);
+        super(builder);
         this.method = builder.method;
         numberOfDimensions = builder.initialPoint.length;
-        StrongWolfeInterpolationLineSearch lineSearch = new StrongWolfeInterpolationLineSearch(objective,
-                                                                                               1e-4,
-                                                                                               0.9,
-                                                                                               10);
-        lineSearch.setStepSizeInitializationMethod(StepSizeInitializationMethod.CONSERVE_FIRST_ORDER_CHANGE);
-        setLineSearch(lineSearch);
         cycleStartPoint = currentPoint;
     }
 
