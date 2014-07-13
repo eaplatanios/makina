@@ -18,38 +18,78 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  * @author Emmanouil Antonios Platanios
  */
 public class NonlinearConjugateGradientSolver extends AbstractIterativeSolver {
-    private Method method = Method.POLAK_RIBIERE_PLUS;
-    private RestartMethod restartMethod = RestartMethod.GRADIENTS_ORTHOGONALITY_CHECK;
-
     /** Default value: If quadratic or linear function it is ExactLineSearch, otherwise it is StrongWolfeLineSearch
      * with CONSERVE_FIRST_ORDER_CHANGE for the step size initialization method. */
-    private LineSearch lineSearch;
-
-    private double gradientsOrthogonalityCheckThreshold = 0.1;
+    private final LineSearch lineSearch;
+    private final Method method;
+    private final RestartMethod restartMethod;
+    private final double gradientsOrthogonalityCheckThreshold;
 
     // The following variables are used locally within iteration but are initialized here in order to make the code more
     // clear.
     double beta;
 
-    public NonlinearConjugateGradientSolver(AbstractFunction objective,
-                                            double[] initialPoint) {
-        super(objective, initialPoint);
+    public static class Builder {
+        private final AbstractFunction objective;
+        private final double[] initialPoint;
+
+        private LineSearch lineSearch;
+        private Method method = Method.POLAK_RIBIERE_PLUS;
+        private RestartMethod restartMethod = RestartMethod.GRADIENTS_ORTHOGONALITY_CHECK;
+        private double gradientsOrthogonalityCheckThreshold = 0.1;
+
+        public Builder(AbstractFunction objective, double[] initialPoint) {
+            this.objective = objective;
+            this.initialPoint = initialPoint;
+
+            if (objective instanceof QuadraticFunction) {
+                Matrix quadraticFactorMatrix = ((QuadraticFunction) objective).getA();
+                CholeskyDecomposition choleskyDecomposition = new CholeskyDecomposition(quadraticFactorMatrix);
+                if (choleskyDecomposition.isSymmetricAndPositiveDefinite()) {
+                    lineSearch = new ExactLineSearch((QuadraticFunction) objective);
+                    return;
+                }
+            }
+
+            lineSearch = new StrongWolfeInterpolationLineSearch(objective, 1e-4, 0.9, 10);
+            ((StrongWolfeInterpolationLineSearch) lineSearch)
+                    .setStepSizeInitializationMethod(StepSizeInitializationMethod.CONSERVE_FIRST_ORDER_CHANGE);
+        }
+
+        public Builder lineSearch(LineSearch lineSearch) {
+            this.lineSearch = lineSearch;
+            return this;
+        }
+
+        public Builder method(Method method) {
+            this.method = method;
+            return this;
+        }
+
+        public Builder restartMethod(RestartMethod restartMethod) {
+            this.restartMethod = restartMethod;
+            return this;
+        }
+
+        public Builder gradientsOrthogonalityCheckThreshold(double gradientsOrthogonalityCheckThreshold) {
+            this.gradientsOrthogonalityCheckThreshold = gradientsOrthogonalityCheckThreshold;
+            return this;
+        }
+
+        public NonlinearConjugateGradientSolver build() {
+            return new NonlinearConjugateGradientSolver(this);
+        }
+    }
+
+    public NonlinearConjugateGradientSolver(Builder builder) {
+        super(builder.objective, builder.initialPoint);
+        this.lineSearch = builder.lineSearch;
+        this.method = builder.method;
+        this.restartMethod = builder.restartMethod;
+        this.gradientsOrthogonalityCheckThreshold = builder.gradientsOrthogonalityCheckThreshold;
         setCheckForPointConvergence(false);
         setCheckForObjectiveConvergence(false);
         currentDirection = currentGradient.multiply(-1);
-
-        if (objective instanceof QuadraticFunction) {
-            Matrix quadraticFactorMatrix = ((QuadraticFunction) objective).getA();
-            CholeskyDecomposition choleskyDecomposition = new CholeskyDecomposition(quadraticFactorMatrix);
-            if (choleskyDecomposition.isSymmetricAndPositiveDefinite()) {
-                lineSearch = new ExactLineSearch((QuadraticFunction) objective);
-                return;
-            }
-        }
-
-        lineSearch = new StrongWolfeInterpolationLineSearch(objective, 1e-4, 0.9, 10);
-        ((StrongWolfeInterpolationLineSearch) lineSearch)
-                .setStepSizeInitializationMethod(StepSizeInitializationMethod.CONSERVE_FIRST_ORDER_CHANGE);
     }
 
     @Override
@@ -127,38 +167,6 @@ public class NonlinearConjugateGradientSolver extends AbstractIterativeSolver {
             default:
                 throw new NotImplementedException();
         }
-    }
-
-    public Method getMethod() {
-        return method;
-    }
-
-    public void setMethod(Method method) {
-        this.method = method;
-    }
-
-    public RestartMethod getRestartMethod() {
-        return restartMethod;
-    }
-
-    public void setRestartMethod(RestartMethod restartMethod) {
-        this.restartMethod = restartMethod;
-    }
-
-    public LineSearch getLineSearch() {
-        return lineSearch;
-    }
-
-    public void setLineSearch(LineSearch lineSearch) {
-        this.lineSearch = lineSearch;
-    }
-
-    public double getGradientsOrthogonalityCheckThreshold() {
-        return gradientsOrthogonalityCheckThreshold;
-    }
-
-    public void setGradientsOrthogonalityCheckThreshold(double gradientsOrthogonalityCheckThreshold) {
-        this.gradientsOrthogonalityCheckThreshold = gradientsOrthogonalityCheckThreshold;
     }
 
     /**
