@@ -10,12 +10,22 @@ import org.platanios.learn.optimization.linesearch.StrongWolfeInterpolationLineS
  * @author Emmanouil Antonios Platanios
  */
 public class NewtonSolver extends AbstractLineSearchSolver {
-    public NewtonSolver(AbstractFunction objective,
-                        double[] initialPoint) {
-        super(objective, initialPoint);
-        StrongWolfeInterpolationLineSearch lineSearch = new StrongWolfeInterpolationLineSearch(objective, 1e-4, 0.9, 1);
-        lineSearch.setStepSizeInitializationMethod(StepSizeInitializationMethod.UNIT);
-        setLineSearch(lineSearch);
+    public static class Builder extends AbstractLineSearchSolver.Builder<NewtonSolver> {
+        public Builder(AbstractFunction objective, double[] initialPoint) {
+            super(objective, initialPoint);
+            // TODO: Figure out why we cannot use exact line search in the case of a quadratic function.
+            lineSearch = new StrongWolfeInterpolationLineSearch(objective, 1e-4, 0.9, 1);
+            ((StrongWolfeInterpolationLineSearch) lineSearch)
+                    .setStepSizeInitializationMethod(StepSizeInitializationMethod.UNIT);
+        }
+
+        public NewtonSolver build() {
+            return new NewtonSolver(this);
+        }
+    }
+
+    private NewtonSolver(Builder builder) {
+        super(builder);
     }
 
     /**
