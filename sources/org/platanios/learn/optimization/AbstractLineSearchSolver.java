@@ -2,6 +2,7 @@ package org.platanios.learn.optimization;
 
 import org.platanios.learn.math.matrix.CholeskyDecomposition;
 import org.platanios.learn.math.matrix.Matrix;
+import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.QuadraticFunction;
 import org.platanios.learn.optimization.linesearch.*;
@@ -15,6 +16,7 @@ abstract class AbstractLineSearchSolver extends AbstractIterativeSolver {
     /** Default value: If quadratic or linear function it is ExactLineSearch, otherwise it is StrongWolfeLineSearch
      * with CONSERVE_FIRST_ORDER_CHANGE for the step size initialization method. */
     LineSearch lineSearch;
+    Vector previousPreviousPoint;
 
     public static abstract class Builder<T extends AbstractLineSearchSolver>
             extends AbstractIterativeSolver.Builder<AbstractLineSearchSolver> {
@@ -47,25 +49,27 @@ abstract class AbstractLineSearchSolver extends AbstractIterativeSolver {
     AbstractLineSearchSolver(Builder<? extends AbstractLineSearchSolver> builder) {
         super(builder);
         this.lineSearch = builder.lineSearch;
+        previousPoint = currentPoint;
     }
 
     @Override
     public void iterationUpdate() {
+        previousPreviousPoint = previousPoint;
+        previousPoint = currentPoint;
         previousGradient = currentGradient;
         previousDirection = currentDirection;
-        updateDirection();
         previousStepSize = currentStepSize;
-        updateStepSize();
-        previousPoint = currentPoint;
         previousObjectiveValue = currentObjectiveValue;
+        updateDirection();
+        updateStepSize();
         updatePoint();
         currentObjectiveValue = objective.getValue(currentPoint);
     }
 
     public void updateStepSize() {
-        currentStepSize = lineSearch.computeStepSize(currentPoint,
+        currentStepSize = lineSearch.computeStepSize(previousPoint,
                                                      currentDirection,
-                                                     previousPoint,
+                                                     previousPreviousPoint,
                                                      previousDirection,
                                                      previousStepSize);
     }

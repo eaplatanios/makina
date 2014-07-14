@@ -66,9 +66,7 @@ abstract class AbstractIterativeSolver implements Solver {
             currentIteration++;
             printIteration();
         }
-
         printTerminationMessage();
-
         return currentPoint;
     }
 

@@ -103,7 +103,7 @@ public class CoordinateDescentSolver extends AbstractLineSearchSolver {
         }
 
         // Check to see on which side along the current direction the objective function value is decreasing.
-        if (!(objective.computeValue(currentPoint.add(currentDirection.multiply(epsilon))) - currentObjectiveValue
+        if (!(objective.computeValue(previousPoint.add(currentDirection.multiply(epsilon))) - currentObjectiveValue
                 < 0)) {
             currentDirection = currentDirection.multiply(-1);
         }
@@ -111,7 +111,7 @@ public class CoordinateDescentSolver extends AbstractLineSearchSolver {
 
     @Override
     public void updatePoint() {
-        currentPoint = currentPoint.add(currentDirection.multiply(currentStepSize));
+        currentPoint = previousPoint.add(currentDirection.multiply(currentStepSize));
 
         if (method == Method.CYCLE_AND_JOIN_ENDPOINTS) {
             if (currentDimension == 0) {
@@ -132,7 +132,7 @@ public class CoordinateDescentSolver extends AbstractLineSearchSolver {
         /** The algorithm goes back and forth over the coordinates (it uses the coordinates in the following order:
          * \(1,2,\hdots,n-1,n,n-1,\hdots,2,1,2,\hdots\)). */
         BACK_AND_FORTH,
-        /** The algorithm cycles over the coordinates as with the {@link #CYCLE} method, but after each cycle completes,
+        /** The algorithm cycles over the coordinates as with the {@link #CYCLE} restartMethod, but after each cycle completes,
          * it takes a step in the direction computed as the difference between the first point in the cycle and the last
          * point in the cycle. */
         CYCLE_AND_JOIN_ENDPOINTS
