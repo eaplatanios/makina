@@ -1,7 +1,6 @@
 package org.platanios.learn.optimization;
 
 import org.platanios.learn.math.matrix.*;
-import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.LinearLeastSquaresFunction;
 import org.platanios.learn.optimization.function.QuadraticFunction;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -28,7 +27,7 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
     private Vector currentY;
     private Vector previousY;
 
-    public static class Builder extends AbstractIterativeSolver.Builder<ConjugateGradientSolver> {
+    public static class Builder extends AbstractIterativeSolver.Builder {
         private PreconditioningMethod preconditioningMethod =
                 PreconditioningMethod.SYMMETRIC_SUCCESSIVE_OVER_RELAXATION;
         private ProblemConversionMethod problemConversionMethod =

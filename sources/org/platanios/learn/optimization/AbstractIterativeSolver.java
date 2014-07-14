@@ -39,7 +39,7 @@ abstract class AbstractIterativeSolver implements Solver {
     double currentObjectiveValue;
     double previousObjectiveValue;
 
-    public static abstract class Builder<T extends AbstractIterativeSolver> {
+    public static abstract class Builder {
         protected final AbstractFunction objective;
         protected final double[] initialPoint;
 
@@ -50,7 +50,7 @@ abstract class AbstractIterativeSolver implements Solver {
         }
     }
 
-    AbstractIterativeSolver(Builder<? extends AbstractIterativeSolver> builder) {
+    AbstractIterativeSolver(Builder builder) {
         this.objective = builder.objective;
         currentPoint = new Vector(builder.initialPoint);
         currentGradient = objective.getGradient(currentPoint);

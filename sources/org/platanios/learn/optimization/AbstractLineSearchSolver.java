@@ -17,7 +17,7 @@ abstract class AbstractLineSearchSolver extends AbstractIterativeSolver {
     LineSearch lineSearch;
 
     public static abstract class Builder<T extends AbstractLineSearchSolver>
-            extends AbstractIterativeSolver.Builder<AbstractLineSearchSolver> {
+            extends AbstractIterativeSolver.Builder {
         protected LineSearch lineSearch;
 
         protected Builder(AbstractFunction objective,
@@ -42,6 +42,8 @@ abstract class AbstractLineSearchSolver extends AbstractIterativeSolver {
             this.lineSearch = lineSearch;
             return this;
         }
+
+        public abstract T build();
     }
 
     AbstractLineSearchSolver(Builder<? extends AbstractLineSearchSolver> builder) {
