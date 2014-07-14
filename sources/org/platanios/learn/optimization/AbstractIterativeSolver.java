@@ -12,7 +12,7 @@ abstract class AbstractIterativeSolver implements Solver {
 
     private double pointChangeTolerance = 1e-10;
     private double objectiveChangeTolerance = 1e-10;
-    private double gradientTolerance = 1e-5;
+    private double gradientTolerance = 1e-6;
 
     private boolean checkForPointConvergence = true;
     private boolean checkForObjectiveConvergence = true;

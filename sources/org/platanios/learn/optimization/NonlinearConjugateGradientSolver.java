@@ -100,8 +100,8 @@ public class NonlinearConjugateGradientSolver extends AbstractLineSearchSolver {
                 return Math.max(currentGradient.innerProduct(currentGradient.subtract(previousGradient))
                                         / previousGradient.innerProduct(previousGradient), 0);
             case HESTENES_STIEFEL:
-                if (currentIteration != 0) {
-                    gradientsDifference = currentGradient.subtract(previousGradient);
+                gradientsDifference = currentGradient.subtract(previousGradient);
+                if (gradientsDifference.computeL2Norm() != 0) {
                     return currentGradient.innerProduct(gradientsDifference)
                             / gradientsDifference.innerProduct(previousDirection);
                 } else {
@@ -119,15 +119,16 @@ public class NonlinearConjugateGradientSolver extends AbstractLineSearchSolver {
                     return betaPR;
                 }
             case DAI_YUAN:
-                if (currentIteration != 0) {
+                gradientsDifference = currentGradient.subtract(previousGradient);
+                if (gradientsDifference.computeL2Norm() != 0) {
                     return currentGradient.innerProduct(currentGradient)
-                            / currentGradient.subtract(previousGradient).innerProduct(previousDirection);
+                            / gradientsDifference.innerProduct(previousDirection);
                 } else {
                     return 0;
                 }
             case HAGER_ZHANG:
-                if (currentIteration != 0) {
-                    gradientsDifference = currentGradient.subtract(previousGradient);
+                gradientsDifference = currentGradient.subtract(previousGradient);
+                if (gradientsDifference.computeL2Norm() != 0) {
                     denominator = gradientsDifference.innerProduct(previousDirection);
                     Vector temporaryTerm = gradientsDifference.subtract(
                             previousDirection.multiply(2 * gradientsDifference.innerProduct(gradientsDifference)
