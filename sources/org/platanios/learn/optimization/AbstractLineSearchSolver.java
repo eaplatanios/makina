@@ -2,7 +2,6 @@ package org.platanios.learn.optimization;
 
 import org.platanios.learn.math.matrix.CholeskyDecomposition;
 import org.platanios.learn.math.matrix.Matrix;
-import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.QuadraticFunction;
 import org.platanios.learn.optimization.linesearch.*;
@@ -16,7 +15,6 @@ abstract class AbstractLineSearchSolver extends AbstractIterativeSolver {
     /** Default value: If quadratic or linear function it is ExactLineSearch, otherwise it is StrongWolfeLineSearch
      * with CONSERVE_FIRST_ORDER_CHANGE for the step size initialization method. */
     LineSearch lineSearch;
-    Vector previousPreviousPoint;
 
     public static abstract class Builder<T extends AbstractLineSearchSolver>
             extends AbstractIterativeSolver.Builder<AbstractLineSearchSolver> {
@@ -50,26 +48,27 @@ abstract class AbstractLineSearchSolver extends AbstractIterativeSolver {
         super(builder);
         this.lineSearch = builder.lineSearch;
         previousPoint = currentPoint;
+        previousGradient = currentGradient;
     }
 
     @Override
     public void iterationUpdate() {
-        previousPreviousPoint = previousPoint;
-        previousPoint = currentPoint;
-        previousGradient = currentGradient;
         previousDirection = currentDirection;
-        previousStepSize = currentStepSize;
-        previousObjectiveValue = currentObjectiveValue;
         updateDirection();
+        previousStepSize = currentStepSize;
         updateStepSize();
+        previousPoint = currentPoint;
         updatePoint();
+        previousGradient = currentGradient;
+        currentGradient = objective.getGradient(currentPoint);
+        previousObjectiveValue = currentObjectiveValue;
         currentObjectiveValue = objective.getValue(currentPoint);
     }
 
     public void updateStepSize() {
-        currentStepSize = lineSearch.computeStepSize(previousPoint,
+        currentStepSize = lineSearch.computeStepSize(currentPoint,
                                                      currentDirection,
-                                                     previousPreviousPoint,
+                                                     previousPoint,
                                                      previousDirection,
                                                      previousStepSize);
     }

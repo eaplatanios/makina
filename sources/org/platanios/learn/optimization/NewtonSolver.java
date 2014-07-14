@@ -46,6 +46,6 @@ public class NewtonSolver extends AbstractLineSearchSolver {
 
     @Override
     public void updatePoint() {
-        currentPoint = currentPoint.add(currentDirection.multiply(currentStepSize));
+        currentPoint = previousPoint.add(currentDirection.multiply(currentStepSize));
     }
 }

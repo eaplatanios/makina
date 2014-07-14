@@ -22,12 +22,11 @@ public class GradientDescentSolver extends AbstractLineSearchSolver {
 
     @Override
     public void updateDirection() {
-        currentGradient = objective.getGradient(currentPoint);
         currentDirection = currentGradient.multiply(-1);
     }
 
     @Override
     public void updatePoint() {
-        currentPoint = currentPoint.add(currentDirection.multiply(currentStepSize));
+        currentPoint = previousPoint.add(currentDirection.multiply(currentStepSize));
     }
 }

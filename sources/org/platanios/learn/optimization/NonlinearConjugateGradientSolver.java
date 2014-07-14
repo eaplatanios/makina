@@ -64,13 +64,12 @@ public class NonlinearConjugateGradientSolver extends AbstractLineSearchSolver {
     @Override
     public void updateDirection() {
         beta = checkForRestart() ? 0 : computeBeta();
-        currentDirection = previousGradient.multiply(-1).add(previousDirection.multiply(beta));
+        currentDirection = currentGradient.multiply(-1).add(previousDirection.multiply(beta));
     }
 
     @Override
     public void updatePoint() {
         currentPoint = previousPoint.add(currentDirection.multiply(currentStepSize));
-        currentGradient = objective.getGradient(currentPoint);
     }
 
     private boolean checkForRestart() {

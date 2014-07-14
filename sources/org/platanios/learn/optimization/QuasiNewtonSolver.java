@@ -86,6 +86,7 @@ public class QuasiNewtonSolver extends AbstractLineSearchSolver {
 
     @Override
     public void updateDirection() {
+        updateStoredVectors();
         switch (method) {
             case DAVIDON_FLETCHER_POWELL:
             case BROYDEN_FLETCHER_GOLDFARB_SHANNO:
@@ -122,8 +123,6 @@ public class QuasiNewtonSolver extends AbstractLineSearchSolver {
     @Override
     public void updatePoint() {
         currentPoint = previousPoint.add(currentDirection.multiply(currentStepSize));
-        currentGradient = objective.getGradient(currentPoint);
-        updateStoredVectors();
     }
 
     /** Used from all methods apart from the LBFGS method. */

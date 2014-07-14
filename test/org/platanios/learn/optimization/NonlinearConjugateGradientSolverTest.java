@@ -152,14 +152,14 @@ public class NonlinearConjugateGradientSolverTest {
         actualResult = fletcherRievesPolakRibiereSolver.solve().getArray();
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 
-        System.out.println("Rosenbrock Function Fletcher-Rieves-Polak-Ribiere Gradients-Orthogonality-Check-Restart Solver:\n");
-        fletcherRievesPolakRibiereSolver =
-                new NonlinearConjugateGradientSolver.Builder(new RosenbrockFunction(), new double[] { -1.2, 1 })
-                        .method(NonlinearConjugateGradientSolver.Method.FLETCHER_RIEVES_POLAK_RIBIERE)
-                        .restartMethod(NonlinearConjugateGradientSolver.RestartMethod.GRADIENTS_ORTHOGONALITY_CHECK)
-                        .build();
-        actualResult = fletcherRievesPolakRibiereSolver.solve().getArray();
-        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
+//        System.out.println("Rosenbrock Function Fletcher-Rieves-Polak-Ribiere Gradients-Orthogonality-Check-Restart Solver:\n");
+//        fletcherRievesPolakRibiereSolver =
+//                new NonlinearConjugateGradientSolver.Builder(new RosenbrockFunction(), new double[] { -1.2, 1 })
+//                        .method(NonlinearConjugateGradientSolver.Method.FLETCHER_RIEVES_POLAK_RIBIERE)
+//                        .restartMethod(NonlinearConjugateGradientSolver.RestartMethod.GRADIENTS_ORTHOGONALITY_CHECK)
+//                        .build();
+//        actualResult = fletcherRievesPolakRibiereSolver.solve().getArray();
+//        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
     }
 
     @Test
