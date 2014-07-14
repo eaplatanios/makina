@@ -37,7 +37,7 @@ abstract class AbstractIterativeSolver implements Solver {
     double currentObjectiveValue;
     double previousObjectiveValue;
 
-    public static abstract class Builder {
+    public static abstract class Builder<T extends AbstractIterativeSolver> {
         protected final AbstractFunction objective;
         protected final double[] initialPoint;
 
@@ -56,45 +56,47 @@ abstract class AbstractIterativeSolver implements Solver {
             this.initialPoint = initialPoint;
         }
 
-        public Builder maximumNumberOfIterations(int maximumNumberOfIterations) {
+        public Builder<T> maximumNumberOfIterations(int maximumNumberOfIterations) {
             this.maximumNumberOfIterations = maximumNumberOfIterations;
             return this;
         }
 
-        public Builder maximumNumberOfFunctionEvaluations(int maximumNumberOfFunctionEvaluations) {
+        public Builder<T> maximumNumberOfFunctionEvaluations(int maximumNumberOfFunctionEvaluations) {
             this.maximumNumberOfFunctionEvaluations = maximumNumberOfFunctionEvaluations;
             return this;
         }
 
-        public Builder pointChangeTolerance(double pointChangeTolerance) {
+        public Builder<T> pointChangeTolerance(double pointChangeTolerance) {
             this.pointChangeTolerance = pointChangeTolerance;
             return this;
         }
 
-        public Builder objectiveChangeTolerance(double objectiveChangeTolerance) {
+        public Builder<T> objectiveChangeTolerance(double objectiveChangeTolerance) {
             this.objectiveChangeTolerance = objectiveChangeTolerance;
             return this;
         }
 
-        public Builder gradientTolerance(double gradientTolerance) {
+        public Builder<T> gradientTolerance(double gradientTolerance) {
             this.gradientTolerance = gradientTolerance;
             return this;
         }
 
-        public Builder checkForPointConvergence(boolean checkForPointConvergence) {
+        public Builder<T> checkForPointConvergence(boolean checkForPointConvergence) {
             this.checkForPointConvergence = checkForPointConvergence;
             return this;
         }
 
-        public Builder checkForObjectiveConvergence(boolean checkForObjectiveConvergence) {
+        public Builder<T> checkForObjectiveConvergence(boolean checkForObjectiveConvergence) {
             this.checkForObjectiveConvergence = checkForObjectiveConvergence;
             return this;
         }
 
-        public Builder checkForGradientConvergence(boolean checkForGradientConvergence) {
+        public Builder<T> checkForGradientConvergence(boolean checkForGradientConvergence) {
             this.checkForGradientConvergence = checkForGradientConvergence;
             return this;
         }
+
+        public abstract T build();
     }
 
     AbstractIterativeSolver(Builder builder) {

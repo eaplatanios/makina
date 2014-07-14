@@ -59,7 +59,17 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
             return this;
         }
 
-        public ConjugateGradientSolver build() throws NonPositiveDefiniteMatrixException {
+        public ConjugateGradientSolver build() {
+            try {
+                return new ConjugateGradientSolver(this);
+            } catch (NonPositiveDefiniteMatrixException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        // TODO: Have to do something to fix this ugly build method code.
+        public ConjugateGradientSolver buildWithChecking() throws NonPositiveDefiniteMatrixException {
             return new ConjugateGradientSolver(this);
         }
     }

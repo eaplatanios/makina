@@ -87,7 +87,7 @@ public class LinearLeastSquaresSolver implements Solver {
                             .preconditioningMethod(
                                     ConjugateGradientSolver.PreconditioningMethod.SYMMETRIC_SUCCESSIVE_OVER_RELAXATION
                             )
-                            .build();
+                            .buildWithChecking();
                     return conjugateGradientSolver.solve();
                 } catch (NonPositiveDefiniteMatrixException e) {
                     System.err.println("WARNING: Non positive definite matrix in linear least squares problem. " +
