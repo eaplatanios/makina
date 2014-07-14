@@ -28,6 +28,8 @@ public class NonlinearConjugateGradientSolver extends AbstractLineSearchSolver {
 
         public Builder(AbstractFunction objective, double[] initialPoint) {
             super(objective, initialPoint);
+            checkForPointConvergence = false;
+            checkForObjectiveConvergence = false;
         }
 
         public Builder method(Method method) {
@@ -52,12 +54,10 @@ public class NonlinearConjugateGradientSolver extends AbstractLineSearchSolver {
 
     public NonlinearConjugateGradientSolver(Builder builder) {
         super(builder);
-        this.lineSearch = builder.lineSearch;
-        this.method = builder.method;
-        this.restartMethod = builder.restartMethod;
-        this.gradientsOrthogonalityCheckThreshold = builder.gradientsOrthogonalityCheckThreshold;
-        setCheckForPointConvergence(false);
-        setCheckForObjectiveConvergence(false);
+        lineSearch = builder.lineSearch;
+        method = builder.method;
+        restartMethod = builder.restartMethod;
+        gradientsOrthogonalityCheckThreshold = builder.gradientsOrthogonalityCheckThreshold;
         currentDirection = currentGradient.multiply(-1);
     }
 

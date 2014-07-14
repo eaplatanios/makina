@@ -48,7 +48,7 @@ abstract class AbstractLineSearchSolver extends AbstractIterativeSolver {
 
     AbstractLineSearchSolver(Builder<? extends AbstractLineSearchSolver> builder) {
         super(builder);
-        this.lineSearch = builder.lineSearch;
+        lineSearch = builder.lineSearch;
         previousPoint = currentPoint;
         previousGradient = currentGradient;
     }

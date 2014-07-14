@@ -74,9 +74,9 @@ public class QuasiNewtonSolver extends AbstractLineSearchSolver {
      */
     private QuasiNewtonSolver(Builder builder) {
         super(builder);
-        this.method = builder.method;
-        this.m = builder.m;
-        this.symmetricRankOneSkippingParameter = builder.symmetricRankOneSkippingParameter;
+        method = builder.method;
+        m = builder.m;
+        symmetricRankOneSkippingParameter = builder.symmetricRankOneSkippingParameter;
         identityMatrix = Matrix.generateIdentityMatrix(builder.initialPoint.length);
         currentH = identityMatrix;
         currentGradient = objective.getGradient(currentPoint);

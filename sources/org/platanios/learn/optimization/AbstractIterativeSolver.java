@@ -7,16 +7,14 @@ import org.platanios.learn.optimization.function.AbstractFunction;
  * @author Emmanouil Antonios Platanios
  */
 abstract class AbstractIterativeSolver implements Solver {
-    private int maximumNumberOfIterations = 10000;
-    private int maximumNumberOfFunctionEvaluations = 1000000;
-
-    private double pointChangeTolerance = 1e-10;
-    private double objectiveChangeTolerance = 1e-10;
-    private double gradientTolerance = 1e-6;
-
-    private boolean checkForPointConvergence = true;
-    private boolean checkForObjectiveConvergence = true;
-    private boolean checkForGradientConvergence = true;
+    private final int maximumNumberOfIterations;
+    private final int maximumNumberOfFunctionEvaluations;
+    private final double pointChangeTolerance;
+    private final double objectiveChangeTolerance;
+    private final double gradientTolerance;
+    private final boolean checkForPointConvergence;
+    private final boolean checkForObjectiveConvergence;
+    private final boolean checkForGradientConvergence;
 
     private double pointChange;
     private double objectiveChange;
@@ -43,19 +41,77 @@ abstract class AbstractIterativeSolver implements Solver {
         protected final AbstractFunction objective;
         protected final double[] initialPoint;
 
+        protected int maximumNumberOfIterations = 10000;
+        protected int maximumNumberOfFunctionEvaluations = 1000000;
+        protected double pointChangeTolerance = 1e-10;
+        protected double objectiveChangeTolerance = 1e-10;
+        protected double gradientTolerance = 1e-6;
+        protected boolean checkForPointConvergence = true;
+        protected boolean checkForObjectiveConvergence = true;
+        protected boolean checkForGradientConvergence = true;
+
         protected Builder(AbstractFunction objective,
                           double[] initialPoint) {
             this.objective = objective;
             this.initialPoint = initialPoint;
         }
+
+        public Builder maximumNumberOfIterations(int maximumNumberOfIterations) {
+            this.maximumNumberOfIterations = maximumNumberOfIterations;
+            return this;
+        }
+
+        public Builder maximumNumberOfFunctionEvaluations(int maximumNumberOfFunctionEvaluations) {
+            this.maximumNumberOfFunctionEvaluations = maximumNumberOfFunctionEvaluations;
+            return this;
+        }
+
+        public Builder pointChangeTolerance(double pointChangeTolerance) {
+            this.pointChangeTolerance = pointChangeTolerance;
+            return this;
+        }
+
+        public Builder objectiveChangeTolerance(double objectiveChangeTolerance) {
+            this.objectiveChangeTolerance = objectiveChangeTolerance;
+            return this;
+        }
+
+        public Builder gradientTolerance(double gradientTolerance) {
+            this.gradientTolerance = gradientTolerance;
+            return this;
+        }
+
+        public Builder checkForPointConvergence(boolean checkForPointConvergence) {
+            this.checkForPointConvergence = checkForPointConvergence;
+            return this;
+        }
+
+        public Builder checkForObjectiveConvergence(boolean checkForObjectiveConvergence) {
+            this.checkForObjectiveConvergence = checkForObjectiveConvergence;
+            return this;
+        }
+
+        public Builder checkForGradientConvergence(boolean checkForGradientConvergence) {
+            this.checkForGradientConvergence = checkForGradientConvergence;
+            return this;
+        }
     }
 
     AbstractIterativeSolver(Builder builder) {
-        this.objective = builder.objective;
+        objective = builder.objective;
         currentPoint = new Vector(builder.initialPoint);
         currentGradient = objective.getGradient(currentPoint);
         currentObjectiveValue = objective.getValue(currentPoint);
         currentIteration = 0;
+
+        maximumNumberOfIterations = builder.maximumNumberOfIterations;
+        maximumNumberOfFunctionEvaluations = builder.maximumNumberOfFunctionEvaluations;
+        pointChangeTolerance = builder.pointChangeTolerance;
+        objectiveChangeTolerance = builder.objectiveChangeTolerance;
+        gradientTolerance = builder.gradientTolerance;
+        checkForPointConvergence = builder.checkForPointConvergence;
+        checkForObjectiveConvergence = builder.checkForObjectiveConvergence;
+        checkForGradientConvergence = builder.checkForGradientConvergence;
     }
 
     @Override
@@ -184,68 +240,4 @@ abstract class AbstractIterativeSolver implements Solver {
     }
 
     public abstract void iterationUpdate();
-
-    public int getMaximumNumberOfIterations() {
-        return maximumNumberOfIterations;
-    }
-
-    public void setMaximumNumberOfIterations(int maximumNumberOfIterations) {
-        this.maximumNumberOfIterations = maximumNumberOfIterations;
-    }
-
-    public int getMaximumNumberOfFunctionEvaluations() {
-        return maximumNumberOfFunctionEvaluations;
-    }
-
-    public void setMaximumNumberOfFunctionEvaluations(int maximumNumberOfFunctionEvaluations) {
-        this.maximumNumberOfFunctionEvaluations = maximumNumberOfFunctionEvaluations;
-    }
-
-    public double getPointChangeTolerance() {
-        return pointChangeTolerance;
-    }
-
-    public void setPointChangeTolerance(double pointChangeTolerance) {
-        this.pointChangeTolerance = pointChangeTolerance;
-    }
-
-    public double getObjectiveChangeTolerance() {
-        return objectiveChangeTolerance;
-    }
-
-    public void setObjectiveChangeTolerance(double objectiveChangeTolerance) {
-        this.objectiveChangeTolerance = objectiveChangeTolerance;
-    }
-
-    public double getGradientTolerance() {
-        return gradientTolerance;
-    }
-
-    public void setGradientTolerance(double gradientTolerance) {
-        this.gradientTolerance = gradientTolerance;
-    }
-
-    public boolean isCheckForPointConvergence() {
-        return checkForPointConvergence;
-    }
-
-    public void setCheckForPointConvergence(boolean checkForPointConvergence) {
-        this.checkForPointConvergence = checkForPointConvergence;
-    }
-
-    public boolean isCheckForObjectiveConvergence() {
-        return checkForObjectiveConvergence;
-    }
-
-    public void setCheckForObjectiveConvergence(boolean checkForObjectiveConvergence) {
-        this.checkForObjectiveConvergence = checkForObjectiveConvergence;
-    }
-
-    public boolean isCheckForGradientConvergence() {
-        return checkForGradientConvergence;
-    }
-
-    public void setCheckForGradientConvergence(boolean checkForGradientConvergence) {
-        this.checkForGradientConvergence = checkForGradientConvergence;
-    }
 }

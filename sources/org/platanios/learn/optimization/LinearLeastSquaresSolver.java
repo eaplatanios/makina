@@ -39,8 +39,8 @@ public class LinearLeastSquaresSolver implements Solver {
     }
 
     private LinearLeastSquaresSolver(Builder builder) {
-        this.objective = builder.objective;
-        this.method = builder.method;
+        objective = builder.objective;
+        method = builder.method;
     }
 
     public Vector solve() {

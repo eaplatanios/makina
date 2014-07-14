@@ -66,7 +66,7 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
 
     private ConjugateGradientSolver(Builder builder) throws NonPositiveDefiniteMatrixException {
         super(builder);
-        this.problemConversionMethod = builder.problemConversionMethod;
+        problemConversionMethod = builder.problemConversionMethod;
 
         Matrix temporaryA;
         Vector temporaryB;
@@ -118,7 +118,7 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
         switch (builder.preconditioningMethod) {
             case IDENTITY:
             case JACOBI:
-                this.preconditioningMethod = builder.preconditioningMethod;
+                preconditioningMethod = builder.preconditioningMethod;
                 preconditionerMatrixInverse = null;
                 break;
             case SYMMETRIC_SUCCESSIVE_OVER_RELAXATION:
@@ -142,11 +142,11 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
                     System.err.println("WARNING: Singular matrix in conjugate gradient problem. " +
                                                "Trying the Jacobi preconditioning method instead of the " +
                                                "symmetric successive over-relaxation preconditioning method!");
-                    this.preconditioningMethod = PreconditioningMethod.JACOBI;
+                    preconditioningMethod = PreconditioningMethod.JACOBI;
                     preconditionerMatrixInverse = null;
                     break;
                 }
-                this.preconditioningMethod = builder.preconditioningMethod;
+                preconditioningMethod = builder.preconditioningMethod;
                 preconditionerMatrixInverse = temporaryMatrix;
                 break;
             default:

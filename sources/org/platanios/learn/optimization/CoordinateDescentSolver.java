@@ -52,7 +52,7 @@ public class CoordinateDescentSolver extends AbstractLineSearchSolver {
      */
     private CoordinateDescentSolver(Builder builder) {
         super(builder);
-        this.method = builder.method;
+        method = builder.method;
         numberOfDimensions = builder.initialPoint.length;
         cycleStartPoint = currentPoint;
     }

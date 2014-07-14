@@ -36,7 +36,7 @@ public class GaussNewtonSolver extends AbstractLineSearchSolver {
 
     private GaussNewtonSolver(Builder builder) {
         super(builder);
-        this.linearLeastSquaresSubproblemMethod = builder.linearLeastSquaresSubproblemMethod;
+        linearLeastSquaresSubproblemMethod = builder.linearLeastSquaresSubproblemMethod;
     }
 
     @Override
