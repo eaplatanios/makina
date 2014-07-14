@@ -169,20 +169,10 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
 
     @Override
     public Vector solve() {
-        printHeader();
-        while (!checkTerminationConditions()) {
-            iterationUpdate();
-            currentIteration++;
-            printIteration();
-        }
-
-        printTerminationMessage();
-
-        if (problemConversionMethod ==
-                ProblemConversionMethod.CONJUGATE_GRADIENT_NORMAL_EQUATION_ERROR) {
+        currentPoint = super.solve();
+        if (problemConversionMethod == ProblemConversionMethod.CONJUGATE_GRADIENT_NORMAL_EQUATION_ERROR) {
             currentPoint = initialATranspose.multiply(currentPoint);
         }
-
         return currentPoint;
     }
 
