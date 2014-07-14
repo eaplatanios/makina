@@ -1,14 +1,7 @@
 package org.platanios.learn.optimization;
 
-import org.platanios.learn.math.matrix.CholeskyDecomposition;
-import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
-import org.platanios.learn.optimization.function.QuadraticFunction;
-import org.platanios.learn.optimization.linesearch.ExactLineSearch;
-import org.platanios.learn.optimization.linesearch.LineSearch;
-import org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod;
-import org.platanios.learn.optimization.linesearch.StrongWolfeInterpolationLineSearch;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
@@ -17,10 +10,9 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class NonlinearConjugateGradientSolver extends AbstractIterativeSolver {
+public class NonlinearConjugateGradientSolver extends AbstractLineSearchSolver {
     /** Default value: If quadratic or linear function it is ExactLineSearch, otherwise it is StrongWolfeLineSearch
      * with CONSERVE_FIRST_ORDER_CHANGE for the step size initialization method. */
-    private final LineSearch lineSearch;
     private final Method method;
     private final RestartMethod restartMethod;
     private final double gradientsOrthogonalityCheckThreshold;
@@ -29,32 +21,13 @@ public class NonlinearConjugateGradientSolver extends AbstractIterativeSolver {
     // clear.
     double beta;
 
-    public static class Builder extends AbstractIterativeSolver.Builder<NonlinearConjugateGradientSolver> {
-        private LineSearch lineSearch;
+    public static class Builder extends AbstractLineSearchSolver.Builder<NonlinearConjugateGradientSolver> {
         private Method method = Method.POLAK_RIBIERE_PLUS;
         private RestartMethod restartMethod = RestartMethod.GRADIENTS_ORTHOGONALITY_CHECK;
         private double gradientsOrthogonalityCheckThreshold = 0.1;
 
         public Builder(AbstractFunction objective, double[] initialPoint) {
             super(objective, initialPoint);
-
-            if (objective instanceof QuadraticFunction) {
-                Matrix quadraticFactorMatrix = ((QuadraticFunction) objective).getA();
-                CholeskyDecomposition choleskyDecomposition = new CholeskyDecomposition(quadraticFactorMatrix);
-                if (choleskyDecomposition.isSymmetricAndPositiveDefinite()) {
-                    lineSearch = new ExactLineSearch((QuadraticFunction) objective);
-                    return;
-                }
-            }
-
-            lineSearch = new StrongWolfeInterpolationLineSearch(objective, 1e-4, 0.9, 10);
-            ((StrongWolfeInterpolationLineSearch) lineSearch)
-                    .setStepSizeInitializationMethod(StepSizeInitializationMethod.CONSERVE_FIRST_ORDER_CHANGE);
-        }
-
-        public Builder lineSearch(LineSearch lineSearch) {
-            this.lineSearch = lineSearch;
-            return this;
         }
 
         public Builder method(Method method) {
@@ -89,22 +62,15 @@ public class NonlinearConjugateGradientSolver extends AbstractIterativeSolver {
     }
 
     @Override
-    public void iterationUpdate() {
-        previousPoint = currentPoint;
-        previousGradient = currentGradient;
-        previousDirection = currentDirection;
-        previousStepSize = currentStepSize;
-        previousObjectiveValue = currentObjectiveValue;
-        currentStepSize = lineSearch.computeStepSize(currentPoint,
-                                                     currentDirection,
-                                                     previousPoint,
-                                                     previousDirection,
-                                                     previousStepSize);
-        currentPoint = previousPoint.add(previousDirection.multiply(currentStepSize));
-        currentGradient = objective.getGradient(currentPoint);
+    public void updateDirection() {
         beta = checkForRestart() ? 0 : computeBeta();
-        currentDirection = currentGradient.multiply(-1).add(previousDirection.multiply(beta));
-        currentObjectiveValue = objective.getValue(currentPoint);
+        currentDirection = previousGradient.multiply(-1).add(previousDirection.multiply(beta));
+    }
+
+    @Override
+    public void updatePoint() {
+        currentPoint = previousPoint.add(currentDirection.multiply(currentStepSize));
+        currentGradient = objective.getGradient(currentPoint);
     }
 
     private boolean checkForRestart() {
@@ -135,9 +101,13 @@ public class NonlinearConjugateGradientSolver extends AbstractIterativeSolver {
                 return Math.max(currentGradient.innerProduct(currentGradient.subtract(previousGradient))
                                         / previousGradient.innerProduct(previousGradient), 0);
             case HESTENES_STIEFEL:
-                gradientsDifference = currentGradient.subtract(previousGradient);
-                return currentGradient.innerProduct(gradientsDifference)
-                        / gradientsDifference.innerProduct(previousDirection);
+                if (currentIteration != 0) {
+                    gradientsDifference = currentGradient.subtract(previousGradient);
+                    return currentGradient.innerProduct(gradientsDifference)
+                            / gradientsDifference.innerProduct(previousDirection);
+                } else {
+                    return 0;
+                }
             case FLETCHER_RIEVES_POLAK_RIBIERE:
                 denominator = previousGradient.innerProduct(previousGradient);
                 double betaFR = currentGradient.innerProduct(currentGradient) / denominator;
@@ -150,16 +120,24 @@ public class NonlinearConjugateGradientSolver extends AbstractIterativeSolver {
                     return betaPR;
                 }
             case DAI_YUAN:
-                return currentGradient.innerProduct(currentGradient)
-                        / currentGradient.subtract(previousGradient).innerProduct(previousDirection);
+                if (currentIteration != 0) {
+                    return currentGradient.innerProduct(currentGradient)
+                            / currentGradient.subtract(previousGradient).innerProduct(previousDirection);
+                } else {
+                    return 0;
+                }
             case HAGER_ZHANG:
-                gradientsDifference = currentGradient.subtract(previousGradient);
-                denominator = gradientsDifference.innerProduct(previousDirection);
-                Vector temporaryTerm = gradientsDifference.subtract(
-                        previousDirection.multiply(2 * gradientsDifference.innerProduct(gradientsDifference)
-                                                              / denominator)
-                );
-                return temporaryTerm.innerProduct(currentGradient) / denominator;
+                if (currentIteration != 0) {
+                    gradientsDifference = currentGradient.subtract(previousGradient);
+                    denominator = gradientsDifference.innerProduct(previousDirection);
+                    Vector temporaryTerm = gradientsDifference.subtract(
+                            previousDirection.multiply(2 * gradientsDifference.innerProduct(gradientsDifference)
+                                                               / denominator)
+                    );
+                    return temporaryTerm.innerProduct(currentGradient) / denominator;
+                } else {
+                    return 0;
+                }
             default:
                 throw new NotImplementedException();
         }
