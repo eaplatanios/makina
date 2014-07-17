@@ -2,9 +2,7 @@ package org.platanios.learn.math.matrix;
 
 import org.platanios.learn.math.Utilities;
 
-import java.util.ArrayList;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Implements a class representing vectors and supporting operations related to vectors. Vectors are stored in an
