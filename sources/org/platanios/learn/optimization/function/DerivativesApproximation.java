@@ -32,7 +32,7 @@ public class DerivativesApproximation {
         }
     }
 
-    public org.platanios.learn.math.matrix.Vector approximateGradient(Vector point) {
+    public Vector approximateGradient(Vector point) {
         int n = point.getDimension();
         Vector gradient = new Vector(n, 0);
         Vector ei = new Vector(n, 0);
