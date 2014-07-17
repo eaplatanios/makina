@@ -95,7 +95,9 @@ public class Matrix {
      * Constructs a matrix from a two-dimensional array quickly, without checking the arguments. The provided array is
      * used as it is for the internal two-dimensional array of this array.
      *
-     * @param   array   Two-dimensional array of doubles.
+     * @param   array           Two-dimensional array of doubles.
+     * @param   rowDimension    The row dimension of the matrix to be created.
+     * @param   columnDimension The column dimension of the matrix to be created.
      */
     public Matrix(double[][] array, int rowDimension, int columnDimension) {
         this.rowDimension = rowDimension;

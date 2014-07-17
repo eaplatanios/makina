@@ -11,7 +11,9 @@ public class Utilities {
 
     /**
      * Computes the natural logarithm of the sum of the exponential of the values in a given vector in a way that aims
-     * to avoid numerical underflow or overflow.
+     * to avoid numerical underflow or overflow. For a vector \(\boldsymbol{x}\) with elements \(x_i\), the quantity
+     * computed by this method is the following:
+     * \[\log{\sum_{i}{e^{x_i}}}.\]
      *
      * @param   vector  The vector to use for this operation.
      * @return          The natural logarithm of the sum of the exponential of the values in the given vector.

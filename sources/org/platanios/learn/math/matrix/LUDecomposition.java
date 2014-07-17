@@ -7,7 +7,7 @@ import java.util.Arrays;
  * the LU decomposition is an upper triangular matrix \(U\in\mathbb{R}^{n\times n}\), a unit lower triangular matrix
  * \(L\in\mathbb{R}^{m\times n}\) and a permutation/pivot vector \(\boldsymbol{p}\in\mathbb{R}^m\), such that
  * \(A(\boldsymbol{p},:)=LU\) (the permutation/pivot vector in this equation can be thought of as re-ordering the rows
- * of \(A\)). If \(m<n\), then \(L\in\mathbb{R}^{m\times m}\) and \(U\in\mathbb{R}^{m\times n}\). The LU decomposition
+ * of \(A\)). If \(m&lt;n\), then \(L\in\mathbb{R}^{m\times m}\) and \(U\in\mathbb{R}^{m\times n}\). The LU decomposition
  * with pivoting always exists, even if the matrix is singular, and so the constructor of this class will never fail.
  * Furthermore, the primary use of the LU decomposition is in the solution of square systems of simultaneous matrix
  * equations. In that case, in order to obtain a solution, the matrix has to be non-singular.
