@@ -10,6 +10,25 @@ public class Utilities {
     }
 
     /**
+     * Computes the argmax of a given array. This method returns the index of the element with the maximum value within
+     * the given array.
+     *
+     * @param   array   The array to use.
+     * @return          The index of the element with the maximum value within the given array.
+     */
+    public static int computeArgMax(double[] array) {
+        double maximumValue = Double.MIN_VALUE;
+        int maximumValueIndex = -1;
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] > maximumValue) {
+                maximumValue = array[i];
+                maximumValueIndex = i;
+            }
+        }
+        return maximumValueIndex;
+    }
+
+    /**
      * Computes the machine epsilon in double precision.
      *
      * @return  The machine epsilon in double precision.
