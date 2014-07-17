@@ -2,6 +2,10 @@ package org.platanios.learn.math.matrix;
 
 import org.platanios.learn.math.Utilities;
 
+import java.util.ArrayList;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 /**
  * Implements a class representing vectors and supporting operations related to vectors. Vectors are stored in an
  * internal one-dimensional array.
@@ -247,6 +251,19 @@ public class Vector {
         return minValue;
     }
 
+    /**
+     * Computes and returns the sum of all elements in this vector.
+     *
+     * @return  The sum of all elements in this vector.
+     */
+    public double computeSum() {
+        double sum = array[0];
+        for (int i = 1; i < dimension; i++) {
+            sum += array[i];
+        }
+        return sum;
+    }
+
     //region Norm Computations
     /**
      * Computes the \(L_1\) norm of this vector. Denoting this vector by \(\boldsymbol{x}\in\mathbb{R}^{n}\), its
@@ -258,7 +275,7 @@ public class Vector {
     public double computeL1Norm() {
         double l1Norm = 0;
         for (int i = 0; i < dimension; i++) {
-            l1Norm += array[i];
+            l1Norm += Math.abs(array[i]);
         }
         return l1Norm;
     }
@@ -294,7 +311,40 @@ public class Vector {
     }
     //endregion
 
+    //region Unary Operations
+    /**
+     * Computes the result of applying the supplied function element-wise to the current vector and returns it in a new
+     * vector.
+     *
+     * @param   function    The function to apply to the current vector element-wise.
+     * @return              A new vector holding the result of the operation.
+     */
+    public Vector computeFunctionResult(Function<Double, Double> function) {
+        Vector resultVector = new Vector(dimension);
+        double[] resultVectorArray = resultVector.getArray();
+        for (int i = 0; i < dimension; i++) {
+            resultVectorArray[i] = function.apply(array[i]);
+        }
+        return resultVector;
+    }
+    //endregion
+
     //region Element-wise Operations
+    /**
+     * Adds a scalar to all entries of the current vector and returns the result in a new vector.
+     *
+     * @param   scalar  The scalar to add to entries of the current vector.
+     * @return          A new vector holding the result of the addition.
+     */
+    public Vector add(double scalar) {
+        Vector resultVector = new Vector(dimension);
+        double[] resultVectorArray = resultVector.getArray();
+        for (int i = 0; i < dimension; i++) {
+            resultVectorArray[i] = array[i] + scalar;
+        }
+        return resultVector;
+    }
+
     /**
      * Adds another vector to the current vector and returns the result in a new vector.
      *
@@ -312,6 +362,17 @@ public class Vector {
     }
 
     /**
+     * Adds a scalar to all entries of the current vector and replaces the current vector with the result.
+     *
+     * @param   scalar  The scalar to add to entries of the current vector.
+     */
+    public void addEquals(double scalar) {
+        for (int i = 0; i < dimension; i++) {
+            array[i] += scalar;
+        }
+    }
+
+    /**
      * Adds another vector to the current vector and replaces the current vector with the result.
      *
      * @param   vector  The vector to add to the current vector.
@@ -321,6 +382,21 @@ public class Vector {
         for (int i = 0; i < dimension; i++) {
             array[i] += vector.array[i];
         }
+    }
+
+    /**
+     * Subtracts a scalar from all entries of the current vector and returns the result in a new vector.
+     *
+     * @param   scalar  The scalar to subtract from all entries of the current vector.
+     * @return          A new vector holding the result of the subtraction.
+     */
+    public Vector subtract(double scalar) {
+        Vector resultVector = new Vector(dimension);
+        double[] resultVectorArray = resultVector.getArray();
+        for (int i = 0; i < dimension; i++) {
+            resultVectorArray[i] = array[i] - scalar;
+        }
+        return resultVector;
     }
 
     /**
@@ -337,6 +413,17 @@ public class Vector {
             resultVectorArray[i] = array[i] - vector.array[i];
         }
         return resultVector;
+    }
+
+    /**
+     * Subtracts a scalar from all entries of the current vector and replaces the current vector with the result.
+     *
+     * @param   scalar  The scalar to subtract from all entries of the current vector.
+     */
+    public void subtractEquals(double scalar) {
+        for (int i = 0; i < dimension; i++) {
+            array[i] -= scalar;
+        }
     }
 
     /**

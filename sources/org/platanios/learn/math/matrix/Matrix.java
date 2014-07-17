@@ -2,6 +2,8 @@ package org.platanios.learn.math.matrix;
 
 import org.platanios.learn.math.Utilities;
 
+import java.util.function.Function;
+
 /**
  * Implements a class representing matrices and supporting operations related to matrices. Matrices are stored in an
  * internal two-dimensional array.
@@ -245,6 +247,84 @@ public class Matrix {
                 array[i][j] = value;
             }
         }
+    }
+
+    /**
+     * Sets a row of this matrix.
+     *
+     * @param   rowIndex    The index of the row to set.
+     * @param   value       The value to which to set the corresponding row of this matrix.
+     *
+     * @exception   ArrayIndexOutOfBoundsException  The provided row index is out of bounds.
+     */
+    public void setRow(int rowIndex, Vector value) {
+        try {
+            for (int i = 0; i < columnDimension; i++) {
+                array[rowIndex][i] = value.getElement(i);
+            }
+        } catch(ArrayIndexOutOfBoundsException e) {
+            throw new ArrayIndexOutOfBoundsException("The provided row index is out of bounds.");
+        }
+    }
+
+    /**
+     * Sets a column of this matrix.
+     *
+     * @param   columnIndex The index of the column to set.
+     * @param   value       The value to which to set the corresponding column of this matrix.
+     *
+     * @exception   ArrayIndexOutOfBoundsException  The provided column index is out of bounds.
+     */
+    public void setColumn(int columnIndex, Vector value) {
+        try {
+            for (int i = 0; i < rowDimension; i++) {
+                array[i][columnIndex] = value.getElement(i);
+            }
+        } catch(ArrayIndexOutOfBoundsException e) {
+            throw new ArrayIndexOutOfBoundsException("The provided column index is out of bounds.");
+        }
+    }
+
+    /**
+     * Gets a row of this matrix.
+     *
+     * @param   rowIndex    The index of the row to get.
+     * @return              The row corresponding to the provided index as a vector.
+     *
+     * @exception   ArrayIndexOutOfBoundsException  The provided row index is out of bounds.
+     */
+    public Vector getRow(int rowIndex) {
+        Vector resultVector = new Vector(columnDimension);
+        double[] resultVectorArray = resultVector.getArray();
+        try {
+            for (int i = 0; i < columnDimension; i++) {
+                resultVectorArray[i] = array[rowIndex][i];
+            }
+        } catch(ArrayIndexOutOfBoundsException e) {
+            throw new ArrayIndexOutOfBoundsException("The provided row index is out of bounds.");
+        }
+        return resultVector;
+    }
+
+    /**
+     * Gets a column of this matrix.
+     *
+     * @param   columnIndex The index of the column to get.
+     * @return              The column corresponding to the provided index as a vector.
+     *
+     * @exception   ArrayIndexOutOfBoundsException  The provided column index is out of bounds.
+     */
+    public Vector getColumn(int columnIndex) {
+        Vector resultVector = new Vector(rowDimension);
+        double[] resultVectorArray = resultVector.getArray();
+        try {
+            for (int i = 0; i < rowDimension; i++) {
+                resultVectorArray[i] = array[i][columnIndex];
+            }
+        } catch(ArrayIndexOutOfBoundsException e) {
+            throw new ArrayIndexOutOfBoundsException("The provided column index is out of bounds.");
+        }
+        return resultVector;
     }
 
     /**
@@ -632,9 +712,44 @@ public class Matrix {
         }
         return frobeniusNorm;
     }
+
+    /**
+     * Computes the result of applying the supplied function element-wise to the current matrix and returns it in a new
+     * matrix.
+     *
+     * @param   function    The function to apply to the current matrix element-wise.
+     * @return              A new matrix holding the result of the operation.
+     */
+    public Matrix computeFunctionResult(Function<Double, Double> function) {
+        Matrix resultMatrix = new Matrix(rowDimension, columnDimension);
+        double[][] resultMatrixArray = resultMatrix.getArray();
+        for (int i = 0; i < rowDimension; i++) {
+            for (int j = 0; j < columnDimension; j++) {
+                resultMatrixArray[i][j] = function.apply(array[i][j]);
+            }
+        }
+        return resultMatrix;
+    }
     //endregion
 
     //region Element-wise Binary Operations
+    /**
+     * Adds a scalar to all entries of the current matrix and returns the result in a new matrix.
+     *
+     * @param   scalar  The scalar to add to all entries of the current matrix.
+     * @return          A new matrix holding the result of the addition.
+     */
+    public Matrix add(double scalar) {
+        Matrix resultMatrix = new Matrix(rowDimension, columnDimension);
+        double[][] resultMatrixArray = resultMatrix.getArray();
+        for (int i = 0; i < rowDimension; i++) {
+            for (int j = 0; j < columnDimension; j++) {
+                resultMatrixArray[i][j] = array[i][j] + scalar;
+            }
+        }
+        return resultMatrix;
+    }
+
     /**
      * Adds another matrix to the current matrix and returns the result in a new matrix.
      *
@@ -654,6 +769,19 @@ public class Matrix {
     }
 
     /**
+     * Adds a scalar to all entries of the current matrix and replaces the current matrix with the result.
+     *
+     * @param   scalar  The scalar to add to all entries of the current matrix.
+     */
+    public void addEquals(double scalar) {
+        for (int i = 0; i < rowDimension; i++) {
+            for (int j = 0; j < columnDimension; j++) {
+                array[i][j] += scalar;
+            }
+        }
+    }
+
+    /**
      * Adds another matrix to the current matrix and replaces the current matrix with the result.
      *
      * @param   matrix  The matrix to add to the current matrix.
@@ -665,6 +793,23 @@ public class Matrix {
                 array[i][j] += matrix.array[i][j];
             }
         }
+    }
+
+    /**
+     * Subtracts a scalar from all entries of the current matrix and returns the result in a new matrix.
+     *
+     * @param   scalar  The scalar to subtract from all entries of the current matrix.
+     * @return          A new matrix holding the result of the subtraction.
+     */
+    public Matrix subtract(double scalar) {
+        Matrix resultMatrix = new Matrix(rowDimension, columnDimension);
+        double[][] resultMatrixArray = resultMatrix.getArray();
+        for (int i = 0; i < rowDimension; i++) {
+            for (int j = 0; j < columnDimension; j++) {
+                resultMatrixArray[i][j] = array[i][j] - scalar;
+            }
+        }
+        return resultMatrix;
     }
 
     /**
@@ -683,6 +828,19 @@ public class Matrix {
             }
         }
         return resultMatrix;
+    }
+
+    /**
+     * Subtracts a scalar from all entries of the current matrix and replaces the current matrix with the result.
+     *
+     * @param   scalar  The scalar to subtract from all entries of the current matrix.
+     */
+    public void subtractEquals(double scalar) {
+        for (int i = 0; i < rowDimension; i++) {
+            for (int j = 0; j < columnDimension; j++) {
+                array[i][j] -= scalar;
+            }
+        }
     }
 
     /**
