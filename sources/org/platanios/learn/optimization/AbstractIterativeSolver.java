@@ -101,11 +101,6 @@ abstract class AbstractIterativeSolver implements Solver {
 
     AbstractIterativeSolver(Builder builder) {
         objective = builder.objective;
-        currentPoint = new Vector(builder.initialPoint);
-        currentGradient = objective.getGradient(currentPoint);
-        currentObjectiveValue = objective.getValue(currentPoint);
-        currentIteration = 0;
-
         maximumNumberOfIterations = builder.maximumNumberOfIterations;
         maximumNumberOfFunctionEvaluations = builder.maximumNumberOfFunctionEvaluations;
         pointChangeTolerance = builder.pointChangeTolerance;
@@ -114,6 +109,11 @@ abstract class AbstractIterativeSolver implements Solver {
         checkForPointConvergence = builder.checkForPointConvergence;
         checkForObjectiveConvergence = builder.checkForObjectiveConvergence;
         checkForGradientConvergence = builder.checkForGradientConvergence;
+
+        currentPoint = new Vector(builder.initialPoint);
+        currentGradient = objective.getGradient(currentPoint);
+        currentObjectiveValue = objective.getValue(currentPoint);
+        currentIteration = 0;
     }
 
     @Override

@@ -3,8 +3,6 @@ package org.platanios.learn.optimization;
 import org.platanios.learn.math.Utilities;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
-import org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod;
-import org.platanios.learn.optimization.linesearch.StrongWolfeInterpolationLineSearch;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**

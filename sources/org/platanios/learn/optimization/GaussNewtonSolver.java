@@ -2,8 +2,6 @@ package org.platanios.learn.optimization;
 
 import org.platanios.learn.optimization.function.AbstractLeastSquaresFunction;
 import org.platanios.learn.optimization.function.LinearLeastSquaresFunction;
-import org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod;
-import org.platanios.learn.optimization.linesearch.StrongWolfeInterpolationLineSearch;
 
 /**
  * This is a method for solving nonlinear least squares problems.

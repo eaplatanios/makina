@@ -15,7 +15,7 @@ abstract class IterativeLineSearch implements LineSearch {
     final AbstractFunction objective;
 
     /** The step size initialization method. */
-    StepSizeInitializationMethod stepSizeInitializationMethod = StepSizeInitializationMethod.UNIT;
+    StepSizeInitialization.Method stepSizeInitializationMethod = StepSizeInitialization.Method.UNIT;
     /** The value of the initial step size (this value is set automatically using the chosen step size initialization
      * method). */
     double initialStepSize = 1;
@@ -109,29 +109,29 @@ abstract class IterativeLineSearch implements LineSearch {
      *
      * @return  The step size initialization method used by this iterative line search instance.
      */
-    public StepSizeInitializationMethod getStepSizeInitializationMethod() {
+    public StepSizeInitialization.Method getStepSizeInitializationMethod() {
         return stepSizeInitializationMethod;
     }
 
     /**
      * Sets the step size initialization method for this iterative line search instance. If the selected method is
-     * {@link org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod#CONSTANT} and the desired initial
-     * step size value to be used is not 1, then {@link #setInitialStepSize(double)} must be called as well to set the
-     * constant value of the initial step size.
+     * {@link org.platanios.learn.optimization.linesearch.StepSizeInitialization.Method#CONSTANT} and the desired
+     * initial step size value to be used is not 1, then {@link #setInitialStepSize(double)} must be called as well to
+     * set the constant value of the initial step size.
      *
      * @param   stepSizeInitializationMethod    The step size initialization method to be used.
      */
-    public void setStepSizeInitializationMethod(StepSizeInitializationMethod stepSizeInitializationMethod) {
+    public void setStepSizeInitializationMethod(StepSizeInitialization.Method stepSizeInitializationMethod) {
         this.stepSizeInitializationMethod = stepSizeInitializationMethod;
     }
 
     /**
      * Gets the initial step size value used by this iterative line search instance. If the selected step size
      * initialization method is
-     * {@link org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod#CONSTANT}, then the initial step
+     * {@link org.platanios.learn.optimization.linesearch.StepSizeInitialization.Method#CONSTANT}, then the initial step
      * value can have any positive real number value. Otherwise, the initial step size value that is returned by this
      * method is not actually being used by this iterative line search instance. Note that if the step size
-     * initialization method is {@link org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod#UNIT},
+     * initialization method is {@link org.platanios.learn.optimization.linesearch.StepSizeInitialization.Method#UNIT},
      * then the initial step size value that is always used by this iterative line search instance is 1.
      *
      * @return  The value of the initial step size.
@@ -143,10 +143,11 @@ abstract class IterativeLineSearch implements LineSearch {
     /**
      * Sets the initial step size value used by this iterative line search instance. This method is only useful if the
      * selected step size initialization method is
-     * {@link org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod#CONSTANT}. Otherwise, the initial
-     * step size variable is not actually being used by this iterative line search instance. Note that if the step size
-     * initialization method is {@link org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod#UNIT},
-     * then the initial step size value that is always used by this iterative line search instance is 1.
+     * {@link org.platanios.learn.optimization.linesearch.StepSizeInitialization.Method#CONSTANT}. Otherwise, the
+     * initial step size variable is not actually being used by this iterative line search instance. Note that if the
+     * step size initialization method is
+     * {@link org.platanios.learn.optimization.linesearch.StepSizeInitialization.Method#UNIT}, then the initial step
+     * size value that is always used by this iterative line search instance is 1.
      *
      * @param   initialStepSize     The initial step size value to use. The value provided must be a positive real
      *                              number.
