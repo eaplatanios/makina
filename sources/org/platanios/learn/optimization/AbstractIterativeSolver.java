@@ -24,7 +24,8 @@ abstract class AbstractIterativeSolver implements Solver {
     private boolean objectiveConverged = false;
     private boolean gradientConverged = false;
 
-    AbstractFunction objective;
+    final AbstractFunction objective;
+
     int currentIteration;
     Vector currentPoint;
     Vector previousPoint;
@@ -120,7 +121,7 @@ abstract class AbstractIterativeSolver implements Solver {
     public Vector solve() {
         printHeader();
         while (!checkTerminationConditions()) {
-            iterationUpdate();
+            performIterationUpdates();
             currentIteration++;
             printIteration();
         }
@@ -241,5 +242,5 @@ abstract class AbstractIterativeSolver implements Solver {
         }
     }
 
-    public abstract void iterationUpdate();
+    public abstract void performIterationUpdates();
 }

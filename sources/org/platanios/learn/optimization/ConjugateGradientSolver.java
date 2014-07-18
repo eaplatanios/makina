@@ -177,7 +177,7 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
     }
 
     @Override
-    public void iterationUpdate() {
+    public void performIterationUpdates() {
         previousPoint = currentPoint;
         previousGradient = currentGradient;
         previousDirection = currentDirection;

@@ -52,7 +52,7 @@ abstract class AbstractLineSearchSolver extends AbstractIterativeSolver {
     }
 
     @Override
-    public void iterationUpdate() {
+    public void performIterationUpdates() {
         previousDirection = currentDirection;
         updateDirection();
         previousStepSize = currentStepSize;
