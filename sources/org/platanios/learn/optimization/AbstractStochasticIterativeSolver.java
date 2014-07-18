@@ -11,11 +11,14 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
     private final double pointChangeTolerance;
     private final boolean checkForPointConvergence;
     private final int batchSize;
+    private final double tau;
+    private final double kappa;
 
     private double pointChange;
     private boolean pointConverged = false;
 
-    AbstractStochasticFunction objective;
+    final AbstractStochasticFunction objective;
+
     int currentIteration;
     Vector currentPoint;
     Vector previousPoint;
@@ -31,6 +34,8 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
         protected double pointChangeTolerance = 1e-10;
         protected boolean checkForPointConvergence = true;
         protected int batchSize = 100;
+        protected double tau = 10;
+        protected double kappa = 0.75;
 
         protected Builder(AbstractStochasticFunction objective,
                           double[] initialPoint) {
@@ -58,6 +63,22 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
             return this;
         }
 
+        public Builder<T> tau(double tau) {
+            if (tau < 0) {
+                throw new IllegalArgumentException("The value of the tau parameter must be >= 0.");
+            }
+            this.tau = tau;
+            return this;
+        }
+
+        public Builder<T> kappa(double kappa) {
+            if (kappa <= 0.5 || kappa > 1) {
+                throw new IllegalArgumentException("The value of the kappa parameter must be in the interval (0.5,1].");
+            }
+            this.kappa = kappa;
+            return this;
+        }
+
         public abstract T build();
     }
 
@@ -67,6 +88,8 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
         pointChangeTolerance = builder.pointChangeTolerance;
         checkForPointConvergence = builder.checkForPointConvergence;
         batchSize = builder.batchSize;
+        tau = builder.tau;
+        kappa = builder.kappa;
 
         currentPoint = new Vector(builder.initialPoint);
         currentGradient = objective.getGradientEstimate(currentPoint, batchSize);
@@ -77,12 +100,24 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
     public Vector solve() {
         printHeader();
         while (!checkTerminationConditions()) {
-            iterationUpdate();
+            performIterationUpdates();
             currentIteration++;
             printIteration();
         }
         printTerminationMessage();
         return currentPoint;
+    }
+
+    public void updateStepSize() {
+        currentStepSize = Math.pow(tau + currentIteration + 1, -kappa);
+    }
+
+    public void performIterationUpdates() {
+        updateDirection();
+        updateStepSize();
+        previousPoint = currentPoint;
+        updatePoint();
+        currentGradient = objective.getGradientEstimate(currentPoint, batchSize);
     }
 
     public boolean checkTerminationConditions() {
@@ -144,5 +179,6 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
         }
     }
 
-    public abstract void iterationUpdate();
+    public abstract void updateDirection();
+    public abstract void updatePoint();
 }
