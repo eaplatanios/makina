@@ -8,20 +8,20 @@ import org.platanios.learn.math.matrix.Vector;
  */
 public abstract class AbstractLeastSquaresFunction extends AbstractFunction {
     @Override
-    public double computeValue(Vector point) {
+    public final double computeValue(Vector point) {
         Vector residuals = computeResiduals(point);
         return 0.5 * residuals.innerProduct(residuals);
     }
 
     @Override
-    public Vector computeGradient(Vector point) {
+    public final Vector computeGradient(Vector point) {
         Vector residuals = computeResiduals(point);
         Matrix jacobian = computeJacobian(point);
         return jacobian.transpose().multiply(residuals);
     }
 
     @Override
-    public Matrix computeHessian(Vector point) {
+    public final Matrix computeHessian(Vector point) {
         Matrix jacobian = computeJacobian(point);
         return jacobian.transpose().multiply(jacobian);
     }

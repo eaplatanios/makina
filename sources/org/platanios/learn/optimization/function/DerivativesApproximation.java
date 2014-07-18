@@ -10,13 +10,13 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class DerivativesApproximation {
+public final class DerivativesApproximation {
     private final AbstractFunction function;
     private final double epsilon;
 
-    private DerivativesApproximationMethod method;
+    private Method method;
 
-    public DerivativesApproximation(AbstractFunction function, DerivativesApproximationMethod method) {
+    public DerivativesApproximation(AbstractFunction function, Method method) {
         this.function = function;
         this.method = method;
 
@@ -188,11 +188,23 @@ public class DerivativesApproximation {
         return result;
     }
 
-    public DerivativesApproximationMethod getMethod() {
+    public Method getMethod() {
         return method;
     }
 
-    public void setMethod(DerivativesApproximationMethod method) {
+    public void setMethod(Method method) {
         this.method = method;
+    }
+
+    /**
+     * TODO: Add support for other methods that involve interpolation or automatic differentiation.
+     *
+     * @author Emmanouil Antonios Platanios
+     */
+    public enum Method {
+        FORWARD_DIFFERENCE,
+        /** Much more accurate than the forward-difference method (O(&epsilon;^2) estimation error instead of
+         * O(&epsilon;)). */
+        CENTRAL_DIFFERENCE
     }
 }

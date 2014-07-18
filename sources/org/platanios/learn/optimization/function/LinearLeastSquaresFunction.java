@@ -8,7 +8,7 @@ import org.platanios.learn.math.matrix.Vector;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class LinearLeastSquaresFunction extends AbstractLeastSquaresFunction {
+public final class LinearLeastSquaresFunction extends AbstractLeastSquaresFunction {
     private final Matrix J;
     private final Vector y;
 

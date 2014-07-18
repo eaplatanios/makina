@@ -8,7 +8,7 @@ import org.platanios.learn.math.matrix.Vector;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class QuadraticFunction extends AbstractFunction {
+public final class QuadraticFunction extends AbstractFunction {
     private final Matrix A;
     private final Vector b;
 

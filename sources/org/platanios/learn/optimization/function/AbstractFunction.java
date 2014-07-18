@@ -13,7 +13,7 @@ public abstract class AbstractFunction {
     private boolean computeGradientMethodOverridden = true;
 
     private DerivativesApproximation derivativesApproximation =
-            new DerivativesApproximation(this, DerivativesApproximationMethod.CENTRAL_DIFFERENCE);
+            new DerivativesApproximation(this, DerivativesApproximation.Method.CENTRAL_DIFFERENCE);
 
     /**
      * Computes the objective function value and the constraints values at a particular point.
@@ -21,7 +21,7 @@ public abstract class AbstractFunction {
      * @param   point   The point in which to evaluate the objective function and the constraints.
      * @return          The value of the objective function, evaluated at the given point.
      */
-    public double getValue(Vector point) {
+    public final double getValue(Vector point) {
         numberOfFunctionEvaluations++;
         return computeValue(point);
     }
@@ -34,7 +34,7 @@ public abstract class AbstractFunction {
      * @param   point   The point in which to evaluate the derivatives.
      * @return          The values of the first derivatives of the objective function, evaluated at the given point.
      */
-    public Vector getGradient(Vector point) {
+    public final Vector getGradient(Vector point) {
         numberOfGradientEvaluations++;
         return computeGradient(point);
     }
@@ -53,7 +53,7 @@ public abstract class AbstractFunction {
      * @param   point   The point in which to evaluate the Hessian.
      * @return          The value of the Hessian matrix of the objective function, evaluated at the given point.
      */
-    public Matrix getHessian(Vector point) {
+    public final Matrix getHessian(Vector point) {
         numberOfHessianEvaluations++;
         return computeHessian(point);
     }
@@ -66,23 +66,23 @@ public abstract class AbstractFunction {
         }
     }
 
-    public int getNumberOfFunctionEvaluations() {
+    public final int getNumberOfFunctionEvaluations() {
         return numberOfFunctionEvaluations;
     }
 
-    public int getNumberOfGradientEvaluations() {
+    public final int getNumberOfGradientEvaluations() {
         return numberOfGradientEvaluations;
     }
 
-    public int getNumberOfHessianEvaluations() {
+    public final int getNumberOfHessianEvaluations() {
         return numberOfHessianEvaluations;
     }
 
-    public DerivativesApproximationMethod getDerivativesApproximationMethod() {
+    public final DerivativesApproximation.Method getDerivativesApproximationMethod() {
         return derivativesApproximation.getMethod();
     }
 
-    public void setDerivativesApproximationMethod(DerivativesApproximationMethod method) {
+    public final void setDerivativesApproximationMethod(DerivativesApproximation.Method method) {
         derivativesApproximation.setMethod(method);
     }
 }
