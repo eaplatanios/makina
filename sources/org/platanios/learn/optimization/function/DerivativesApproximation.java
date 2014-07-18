@@ -198,8 +198,6 @@ public final class DerivativesApproximation {
 
     /**
      * TODO: Add support for other methods that involve interpolation or automatic differentiation.
-     *
-     * @author Emmanouil Antonios Platanios
      */
     public enum Method {
         FORWARD_DIFFERENCE,
