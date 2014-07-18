@@ -9,7 +9,8 @@ import java.util.List;
  * @author Emmanouil Antonios Platanios
  */
 public abstract class AbstractStochasticFunction<T> {
-    private List<T> data;
+    protected List<T> data;
+
     private int numberOfGradientEvaluations = 0;
 
     /**

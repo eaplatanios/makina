@@ -3,7 +3,6 @@ package org.platanios.learn.classification;
 import org.platanios.learn.math.matrix.Vector;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,8 +37,6 @@ public class DataPreprocessing {
                 }
                 data.add(new Vector(dataSample));
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -52,6 +49,15 @@ public class DataPreprocessing {
             }
         }
 
-        return new TrainingData(data.toArray(new Vector[data.size()]), labels.toArray(new Integer[labels.size()]));
+        if (data.size() != labels.size()) {
+            throw new IllegalArgumentException("The number of data labels and data samples does not match."); // TODO: Maybe the IllegalArgumentException is not the most appropriate here.
+        }
+
+        TrainingData.Entry[] trainingData = new TrainingData.Entry[data.size()];
+        for (int i = 0; i < data.size(); i++) {
+            trainingData[i] = new TrainingData.Entry(data.get(i), labels.get(i));
+        }
+
+        return new TrainingData(trainingData);
     }
 }

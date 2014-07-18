@@ -4,39 +4,116 @@ import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Utilities;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.QuasiNewtonSolver;
+import org.platanios.learn.optimization.Solver;
+import org.platanios.learn.optimization.StochasticGradientDescentSolver;
 import org.platanios.learn.optimization.function.AbstractFunction;
+import org.platanios.learn.optimization.function.AbstractStochasticFunction;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
 public class LogisticRegression {
-    private final QuasiNewtonSolver solver;
-    private final Vector[] trainingData;
-    private final Integer[] trainingDataLabels;
+    private final Solver solver;
+    private final TrainingData.Entry[] trainingData;
     private final int trainingDataSize;
     private final int numberOfFeatures;
     private final int numberOfClasses;
 
     private Matrix weights;
 
-    public LogisticRegression(Vector[] trainingData, Integer[] trainingDataLabels) {
-        this(trainingData, trainingDataLabels, false);
-    }
+    public static class Builder {
+        private final TrainingData.Entry[] trainingData;
+        private final int trainingDataSize;
+        private final int numberOfFeatures;
+        private final int numberOfClasses;
 
-    public LogisticRegression(Vector[] trainingData, Integer[] trainingDataLabels, boolean largeScale) {
-        if (trainingData.length != trainingDataLabels.length) {
-            throw new IllegalArgumentException("The number of provided data labels and data samples must match.");
+        private boolean stochastic = false;
+        private boolean largeScale = false;
+        private int maximumNumberOfIterations = 10000;
+        private double pointChangeTolerance = 1e-10;
+        private boolean checkForPointConvergence = true;
+        private int batchSize = 100;
+        private double tau = 10;
+        private double kappa = 0.75;
+
+        public Builder(TrainingData trainingData) {
+            this.trainingData = trainingData.getData();
+            Integer[] trainingDataLabels = new Integer[this.trainingData.length];
+            for (int i = 0; i < this.trainingData.length; i++) {
+                trainingDataLabels[i] = this.trainingData[i].label;
+            }
+            trainingDataSize = this.trainingData.length;
+            numberOfClasses = 1 + Arrays.asList(trainingDataLabels).stream().max(Integer::compare).get();
+            numberOfFeatures = this.trainingData[0].features.getDimension();
         }
 
-        this.trainingDataLabels = trainingDataLabels;
-        this.trainingData = trainingData;
-        trainingDataSize = trainingData.length;
-        numberOfClasses = 1 + Arrays.asList(trainingDataLabels).stream().max(Integer::compare).get();
-        numberOfFeatures = trainingData[0].getDimension();
-        weights = new Matrix(trainingData[0].getDimension(), numberOfClasses - 1);
-        if (!largeScale) {
+        public Builder stochastic(boolean stochastic) {
+            this.stochastic = stochastic;
+            return this;
+        }
+
+        public Builder largeScale(boolean largeScale) {
+            this.largeScale = largeScale;
+            return this;
+        }
+
+        public Builder maximumNumberOfIterations(int maximumNumberOfIterations) {
+            this.maximumNumberOfIterations = maximumNumberOfIterations;
+            return this;
+        }
+
+        public Builder pointChangeTolerance(double pointChangeTolerance) {
+            this.pointChangeTolerance = pointChangeTolerance;
+            return this;
+        }
+
+        public Builder checkForPointConvergence(boolean checkForPointConvergence) {
+            this.checkForPointConvergence = checkForPointConvergence;
+            return this;
+        }
+
+        public Builder batchSize(int batchSize) {
+            this.batchSize = batchSize;
+            return this;
+        }
+
+        public Builder tau(double tau) {
+            this.tau = tau;
+            return this;
+        }
+
+        public Builder kappa(double kappa) {
+            this.kappa = kappa;
+            return this;
+        }
+
+        public LogisticRegression build() {
+            return new LogisticRegression(this);
+        }
+    }
+
+    public LogisticRegression(Builder builder) {
+        trainingData = builder.trainingData;
+        trainingDataSize = builder.trainingDataSize;
+        numberOfFeatures = builder.numberOfFeatures;
+        numberOfClasses = builder.numberOfClasses;
+        weights = new Matrix(numberOfFeatures, numberOfClasses - 1);
+        if (builder.stochastic) {
+            solver = new StochasticGradientDescentSolver.Builder(new StochasticLikelihoodFunction(),
+                                                                 weights.getColumnPackedArrayCopy())
+                    .maximumNumberOfIterations(builder.maximumNumberOfIterations)
+                    .pointChangeTolerance(builder.pointChangeTolerance)
+                    .checkForPointConvergence(builder.checkForPointConvergence)
+                    .batchSize(builder.batchSize)
+                    .tau(builder.tau)
+                    .kappa(builder.kappa)
+                    .build();
+            return;
+        }
+        if (!builder.largeScale) {
             solver = new QuasiNewtonSolver.Builder(new LikelihoodFunction(), weights.getColumnPackedArrayCopy())
                     .method(QuasiNewtonSolver.Method.BROYDEN_FLETCHER_GOLDFARB_SHANNO)
                     .build();
@@ -48,7 +125,7 @@ public class LogisticRegression {
     }
 
     public void train() {
-        weights = new Matrix(trainingData[0].getDimension(), numberOfClasses);
+        weights = new Matrix(numberOfFeatures, numberOfClasses);
         weights.setSubMatrix(
                 0,
                 weights.getRowDimension() - 1,
@@ -82,13 +159,14 @@ public class LogisticRegression {
          * @param   weights The current weights vector.
          * @return          The value of the logistic regression likelihood function.
          */
+        @Override
         public double computeValue(Vector weights) {
             Matrix W = new Matrix(weights.getArray(), numberOfFeatures);
             double likelihood = 0;
             for (int n = 0; n < trainingDataSize; n++) {
-                Vector innerProduct = W.transpose().multiply(trainingData[n]);
-                if (trainingDataLabels[n] != numberOfClasses - 1) {
-                    likelihood += innerProduct.getElement(trainingDataLabels[n]);
+                Vector innerProduct = W.transpose().multiply(trainingData[n].features);
+                if (trainingData[n].label != numberOfClasses - 1) {
+                    likelihood += innerProduct.getElement(trainingData[n].label);
                 }
                 Vector innerProductWithLastClass = new Vector(numberOfClasses);
                 innerProductWithLastClass.setSubVector(0, numberOfClasses - 2, innerProduct);
@@ -103,19 +181,23 @@ public class LogisticRegression {
          * @param   weights The current weights vector.
          * @return          The gradient vector of the logistic regression likelihood function.
          */
+        @Override
         public Vector computeGradient(Vector weights) {
             Matrix W = new Matrix(weights.getArray(), numberOfFeatures);
             Matrix gradient = new Matrix(W.getRowDimension(), W.getColumnDimension());
             for (int n = 0; n < trainingDataSize; n++) {
-                Vector probabilities = W.transpose().multiply(trainingData[n]).computeFunctionResult(Math::exp);
-                probabilities = probabilities.divide(probabilities.computeSum() + 1);
-                if (trainingDataLabels[n] != numberOfClasses - 1) {
-                    probabilities.getArray()[trainingDataLabels[n]] -= 1;
+                Vector probabilities = W.transpose().multiply(trainingData[n].features);
+                Vector innerProductWithLastClass = new Vector(numberOfClasses);
+                innerProductWithLastClass.setSubVector(0, numberOfClasses - 2, probabilities);
+                probabilities = probabilities.subtract(Utilities.computeLogSumExp(innerProductWithLastClass));
+                probabilities = probabilities.computeFunctionResult(Math::exp);
+                if (trainingData[n].label != numberOfClasses - 1) {
+                    probabilities.getArray()[trainingData[n].label] -= 1;
                 }
                 for (int c = 0; c < numberOfClasses - 1; c++) {
                     gradient.setColumn(
                             c,
-                            gradient.getColumn(c).add(trainingData[n].multiply(probabilities.getElement(c)))
+                            gradient.getColumn(c).add(trainingData[n].features.multiply(probabilities.getElement(c)))
                     );
                 }
             }
@@ -133,12 +215,16 @@ public class LogisticRegression {
          * @param   weights The current weights vector.
          * @return          The Hessian matrix of the logistic regression likelihood function.
          */
+        @Override
         public Matrix computeHessian(Vector weights) {
             Matrix W = new Matrix(weights.getArray(), numberOfFeatures);
             Matrix hessian = new Matrix(new double[weights.getDimension()][weights.getDimension()]);
             for (int n = 0; n < trainingDataSize; n++) {
-                Vector probabilities = W.transpose().multiply(trainingData[n]).computeFunctionResult(Math::exp);
-                probabilities = probabilities.divide(probabilities.computeSum() + 1);
+                Vector probabilities = W.transpose().multiply(trainingData[n].features);
+                Vector innerProductWithLastClass = new Vector(numberOfClasses);
+                innerProductWithLastClass.setSubVector(0, numberOfClasses - 2, probabilities);
+                probabilities = probabilities.subtract(Utilities.computeLogSumExp(innerProductWithLastClass));
+                probabilities = probabilities.computeFunctionResult(Math::exp);
                 for (int i = 0; i < numberOfClasses - 1; i++) {
                     for (int j = 0; j <= i; j++) {
                         Matrix subMatrix = hessian.getSubMatrix(i * numberOfFeatures,
@@ -147,8 +233,8 @@ public class LogisticRegression {
                                                                 (j + 1) * numberOfFeatures - 1);
                         if (i != j) {
                             subMatrix = subMatrix.add(
-                                    trainingData[n]
-                                            .outerProduct(trainingData[n])
+                                    trainingData[n].features
+                                            .outerProduct(trainingData[n].features)
                                             .multiply(-probabilities.getElement(i) * probabilities.getElement(j))
                             );
                             hessian.setSubMatrix(
@@ -167,8 +253,8 @@ public class LogisticRegression {
                             );
                         } else {
                             subMatrix = subMatrix.add(
-                                    trainingData[n]
-                                            .outerProduct(trainingData[n])
+                                    trainingData[n].features
+                                            .outerProduct(trainingData[n].features)
                                             .multiply(probabilities.getElement(i) * (1 - probabilities.getElement(i)))
                             );
                             hessian.setSubMatrix(
@@ -183,6 +269,44 @@ public class LogisticRegression {
                 }
             }
             return hessian;
+        }
+    }
+
+    /**
+     * Class implementing the likelihood function for the multi-class logistic regression model.
+     */
+    private class StochasticLikelihoodFunction extends AbstractStochasticFunction<TrainingData.Entry> {
+        public StochasticLikelihoodFunction() {
+            this.data = Arrays.asList(trainingData);
+        }
+
+        /**
+         * Computes the gradient of the likelihood function for the multi-class logistic regression model.
+         *
+         * @param weights The current weights vector.
+         * @return The gradient vector of the logistic regression likelihood function.
+         */
+        @Override
+        public Vector estimateGradient(Vector weights, List<TrainingData.Entry> dataBatch) {
+            Matrix W = new Matrix(weights.getArray(), numberOfFeatures);
+            Matrix gradient = new Matrix(W.getRowDimension(), W.getColumnDimension());
+            for (TrainingData.Entry example : dataBatch) {
+                Vector probabilities = W.transpose().multiply(example.features);
+                Vector innerProductWithLastClass = new Vector(numberOfClasses);
+                innerProductWithLastClass.setSubVector(0, numberOfClasses - 2, probabilities);
+                probabilities = probabilities.subtract(Utilities.computeLogSumExp(innerProductWithLastClass));
+                probabilities = probabilities.computeFunctionResult(Math::exp);
+                if (example.label != numberOfClasses - 1) {
+                    probabilities.getArray()[example.label] -= 1;
+                }
+                for (int c = 0; c < numberOfClasses - 1; c++) {
+                    gradient.setColumn(
+                            c,
+                            gradient.getColumn(c).add(example.features.multiply(probabilities.getElement(c)))
+                    );
+                }
+            }
+            return new Vector(gradient.getColumnPackedArrayCopy());
         }
     }
 }

@@ -12,7 +12,13 @@ public class LogisticRegressionTest {
     public void testLogisticRegression() {
         String filename = LogisticRegressionTest.class.getResource("resources/FishersIris.csv").getPath();
         TrainingData data = DataPreprocessing.parseLabeledDataFromCSVFile(filename);
-        LogisticRegression classifier = new LogisticRegression(data.getData(), data.getLabels());
+        LogisticRegression classifier = new LogisticRegression.Builder(data)
+                .stochastic(true)
+                .batchSize(1)
+                .tau(1000)
+                .kappa(1)
+                .pointChangeTolerance(1e-5)
+                .build();
         classifier.train();
         double[][] actualPredictionsProbabilities = classifier.predict(new double[][] {
                 { 22, 58, 30, 65 },
