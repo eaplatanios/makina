@@ -1,5 +1,6 @@
 package org.platanios.learn.math.statistics;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -12,8 +13,15 @@ public class Utilities {
         throw new AssertionError();
     }
 
-    public static <T> List<T> sample(List<T> list, int numberOfSamples) {
+    /**
+     * Randomly samples a specified number of elements from a list without replacement.
+     *
+     * @param   list            The list from which we randomly sample elements.
+     * @param   numberOfSamples The number of elements to sample from the given list.
+     * @return                  A new {@link java.util.ArrayList} containing the sampled elements.
+     */
+    public static <T> List<T> sampleWithoutReplacement(List<T> list, int numberOfSamples) {
         Collections.shuffle(list);
-        return list.subList(0, numberOfSamples);
+        return new ArrayList<>(list.subList(0, numberOfSamples));
     }
 }
