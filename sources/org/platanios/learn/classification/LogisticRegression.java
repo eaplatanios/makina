@@ -136,15 +136,19 @@ public class LogisticRegression {
     }
 
     public double[] predict(double[] point) {
-        Vector probabilities = weights.transpose().multiply(new Vector(point)).computeFunctionResult(Math::exp);
-        return probabilities.divide(probabilities.computeSum()).getArrayCopy();
+        Vector predictions = weights.transpose().multiply(new Vector(point));
+        predictions = predictions.subtract(Utilities.computeLogSumExp(predictions));
+        predictions = predictions.computeFunctionResult(Math::exp);
+        return predictions.getArrayCopy();
     }
 
     public double[][] predict(double[][] points) {
         double[][] probabilities = new double[points.length][];
         for (int i = 0; i < points.length; i++) {
-            Vector predictions = weights.transpose().multiply(new Vector(points[i])).computeFunctionResult(Math::exp);
-            probabilities[i] = predictions.divide(predictions.computeSum()).getArrayCopy();
+            Vector predictions = weights.transpose().multiply(new Vector(points[i]));
+            predictions = predictions.subtract(Utilities.computeLogSumExp(predictions));
+            predictions = predictions.computeFunctionResult(Math::exp);
+            probabilities[i] = predictions.getArrayCopy();
         }
         return probabilities;
     }
