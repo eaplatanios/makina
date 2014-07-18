@@ -33,12 +33,22 @@ public class LogisticRegression {
         private boolean stochastic = false;
         private boolean largeScale = false;
         private int maximumNumberOfIterations = 10000;
-        private int maximumNumberOfIterationsWithNoPointChange = 1;
         private double pointChangeTolerance = 1e-10;
         private boolean checkForPointConvergence = true;
+
+        // Parameters relevant to stochastic iterative optimization algorithms.
+        private int maximumNumberOfIterationsWithNoPointChange = 1;
         private int batchSize = 100;
         private double tau = 10;
         private double kappa = 0.75;
+
+        // Parameters relevant to quasi-Newton optimization algorithms.
+        private int maximumNumberOfFunctionEvaluations = 1000000;
+        private double objectiveChangeTolerance = 1e-10;
+        private double gradientTolerance = 1e-6;
+        private boolean checkForObjectiveConvergence = true;
+        private boolean checkForGradientConvergence = true;
+        private int m = 1;
 
         public Builder(TrainingData trainingData) {
             this.trainingData = trainingData.getData();
@@ -96,6 +106,36 @@ public class LogisticRegression {
             return this;
         }
 
+        public Builder maximumNumberOfFunctionEvaluations(int maximumNumberOfFunctionEvaluations) {
+            this.maximumNumberOfFunctionEvaluations = maximumNumberOfFunctionEvaluations;
+            return this;
+        }
+
+        public Builder objectiveChangeTolerance(double objectiveChangeTolerance) {
+            this.objectiveChangeTolerance = objectiveChangeTolerance;
+            return this;
+        }
+
+        public Builder gradientTolerance(double gradientTolerance) {
+            this.gradientTolerance = gradientTolerance;
+            return this;
+        }
+
+        public Builder checkForObjectiveConvergence(boolean checkForObjectiveConvergence) {
+            this.checkForObjectiveConvergence = checkForObjectiveConvergence;
+            return this;
+        }
+
+        public Builder checkForGradientConvergence(boolean checkForGradientConvergence) {
+            this.checkForGradientConvergence = checkForGradientConvergence;
+            return this;
+        }
+
+        public Builder m(int m) {
+            this.m = m;
+            return this;
+        }
+
         public LogisticRegression build() {
             return new LogisticRegression(this);
         }
@@ -123,10 +163,27 @@ public class LogisticRegression {
         if (!builder.largeScale) {
             solver = new QuasiNewtonSolver.Builder(new LikelihoodFunction(), weights.getColumnPackedArrayCopy())
                     .method(QuasiNewtonSolver.Method.BROYDEN_FLETCHER_GOLDFARB_SHANNO)
+                    .maximumNumberOfIterations(builder.maximumNumberOfIterations)
+                    .maximumNumberOfFunctionEvaluations(builder.maximumNumberOfFunctionEvaluations)
+                    .pointChangeTolerance(builder.pointChangeTolerance)
+                    .objectiveChangeTolerance(builder.objectiveChangeTolerance)
+                    .gradientTolerance(builder.gradientTolerance)
+                    .checkForPointConvergence(builder.checkForPointConvergence)
+                    .checkForObjectiveConvergence(builder.checkForObjectiveConvergence)
+                    .checkForGradientConvergence(builder.checkForGradientConvergence)
                     .build();
         } else {
             solver = new QuasiNewtonSolver.Builder(new LikelihoodFunction(), weights.getColumnPackedArrayCopy())
                     .method(QuasiNewtonSolver.Method.LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO)
+                    .m(builder.m)
+                    .maximumNumberOfIterations(builder.maximumNumberOfIterations)
+                    .maximumNumberOfFunctionEvaluations(builder.maximumNumberOfFunctionEvaluations)
+                    .pointChangeTolerance(builder.pointChangeTolerance)
+                    .objectiveChangeTolerance(builder.objectiveChangeTolerance)
+                    .gradientTolerance(builder.gradientTolerance)
+                    .checkForPointConvergence(builder.checkForPointConvergence)
+                    .checkForObjectiveConvergence(builder.checkForObjectiveConvergence)
+                    .checkForGradientConvergence(builder.checkForGradientConvergence)
                     .build();
         }
     }
