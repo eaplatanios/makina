@@ -15,7 +15,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class CoordinateDescentSolver extends AbstractLineSearchSolver {
+public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
     private final Method method;
     private final double epsilon = Math.sqrt(Utilities.computeMachineEpsilonDouble());
     private final int numberOfDimensions;
@@ -27,16 +27,17 @@ public class CoordinateDescentSolver extends AbstractLineSearchSolver {
 
     // TODO: Add the option to set the step size initialization method.
 
-    public static class Builder extends AbstractLineSearchSolver.Builder<CoordinateDescentSolver> {
+    protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
+            extends AbstractLineSearchSolver.AbstractBuilder<T> {
         private Method method = Method.CYCLE_AND_JOIN_ENDPOINTS;
 
-        public Builder(AbstractFunction objective, double[] initialPoint) {
+        public AbstractBuilder(AbstractFunction objective, double[] initialPoint) {
             super(objective, initialPoint);
         }
 
-        public Builder method(Method method) {
+        public T method(Method method) {
             this.method = method;
-            return this;
+            return self();
         }
 
         public CoordinateDescentSolver build() {
@@ -44,11 +45,23 @@ public class CoordinateDescentSolver extends AbstractLineSearchSolver {
         }
     }
 
+    public static class Builder extends AbstractBuilder<Builder> {
+        public Builder(AbstractFunction objective,
+                       double[] initialPoint) {
+            super(objective, initialPoint);
+        }
+
+        @Override
+        protected Builder self() {
+            return this;
+        }
+    }
+
     /**
      * Default method is the CYCLE_AND_JOIN_ENDPOINTS method because empirically it seems to perform better than the
      * others.
      */
-    private CoordinateDescentSolver(Builder builder) {
+    private CoordinateDescentSolver(AbstractBuilder<?> builder) {
         super(builder);
         method = builder.method;
         numberOfDimensions = builder.initialPoint.length;

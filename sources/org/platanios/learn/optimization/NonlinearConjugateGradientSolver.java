@@ -10,7 +10,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class NonlinearConjugateGradientSolver extends AbstractLineSearchSolver {
+public final class NonlinearConjugateGradientSolver extends AbstractLineSearchSolver {
     /** Default value: If quadratic or linear function it is ExactLineSearch, otherwise it is StrongWolfeLineSearch
      * with CONSERVE_FIRST_ORDER_CHANGE for the step size initialization method. */
     private final Method method;
@@ -21,30 +21,31 @@ public class NonlinearConjugateGradientSolver extends AbstractLineSearchSolver {
     // clear.
     double beta;
 
-    public static class Builder extends AbstractLineSearchSolver.Builder<NonlinearConjugateGradientSolver> {
+    protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
+            extends AbstractLineSearchSolver.AbstractBuilder<T> {
         private Method method = Method.POLAK_RIBIERE_PLUS;
         private RestartMethod restartMethod = RestartMethod.GRADIENTS_ORTHOGONALITY_CHECK;
         private double gradientsOrthogonalityCheckThreshold = 0.1;
 
-        public Builder(AbstractFunction objective, double[] initialPoint) {
+        public AbstractBuilder(AbstractFunction objective, double[] initialPoint) {
             super(objective, initialPoint);
             checkForPointConvergence = false;
             checkForObjectiveConvergence = false;
         }
 
-        public Builder method(Method method) {
+        public T method(Method method) {
             this.method = method;
-            return this;
+            return self();
         }
 
-        public Builder restartMethod(RestartMethod restartMethod) {
+        public T restartMethod(RestartMethod restartMethod) {
             this.restartMethod = restartMethod;
-            return this;
+            return self();
         }
 
-        public Builder gradientsOrthogonalityCheckThreshold(double gradientsOrthogonalityCheckThreshold) {
+        public T gradientsOrthogonalityCheckThreshold(double gradientsOrthogonalityCheckThreshold) {
             this.gradientsOrthogonalityCheckThreshold = gradientsOrthogonalityCheckThreshold;
-            return this;
+            return self();
         }
 
         public NonlinearConjugateGradientSolver build() {
@@ -52,7 +53,19 @@ public class NonlinearConjugateGradientSolver extends AbstractLineSearchSolver {
         }
     }
 
-    public NonlinearConjugateGradientSolver(Builder builder) {
+    public static class Builder extends AbstractBuilder<Builder> {
+        public Builder(AbstractFunction objective,
+                       double[] initialPoint) {
+            super(objective, initialPoint);
+        }
+
+        @Override
+        protected Builder self() {
+            return this;
+        }
+    }
+
+    private NonlinearConjugateGradientSolver(AbstractBuilder<?> builder) {
         super(builder);
         lineSearch = builder.lineSearch;
         method = builder.method;

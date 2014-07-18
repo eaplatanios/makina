@@ -15,7 +15,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class ConjugateGradientSolver extends AbstractIterativeSolver {
+public final class ConjugateGradientSolver extends AbstractIterativeSolver {
     private final PreconditioningMethod preconditioningMethod;
     private final ProblemConversionMethod problemConversionMethod;
     private final Matrix preconditionerMatrixInverse;
@@ -27,36 +27,37 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
     private Vector currentY;
     private Vector previousY;
 
-    public static class Builder extends AbstractIterativeSolver.Builder {
+    protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
+            extends AbstractIterativeSolver.AbstractBuilder<T> {
         private PreconditioningMethod preconditioningMethod =
                 PreconditioningMethod.SYMMETRIC_SUCCESSIVE_OVER_RELAXATION;
         private ProblemConversionMethod problemConversionMethod =
                 ProblemConversionMethod.CONJUGATE_GRADIENT_NORMAL_EQUATION_RESIDUAL;
         private double symmetricSuccessiveOverRelaxationOmega = 1;
 
-        public Builder(QuadraticFunction objective, double[] initialPoint) {
+        public AbstractBuilder(QuadraticFunction objective, double[] initialPoint) {
             super(objective, initialPoint);
         }
 
-        public Builder(LinearLeastSquaresFunction objective, double[] initialPoint) {
+        public AbstractBuilder(LinearLeastSquaresFunction objective, double[] initialPoint) {
             super(objective, initialPoint);
         }
 
-        public Builder preconditioningMethod(PreconditioningMethod preconditioningMethod)
+        public T preconditioningMethod(PreconditioningMethod preconditioningMethod)
         {
             this.preconditioningMethod = preconditioningMethod;
-            return this;
+            return self();
         }
 
-        public Builder problemConversionMethod(ProblemConversionMethod problemConversionMethod)
+        public T problemConversionMethod(ProblemConversionMethod problemConversionMethod)
         {
             this.problemConversionMethod = problemConversionMethod;
-            return this;
+            return self();
         }
 
-        public Builder symmetricSuccessiveOverRelaxationOmega(double symmetricSuccessiveOverRelaxationOmega) {
+        public T symmetricSuccessiveOverRelaxationOmega(double symmetricSuccessiveOverRelaxationOmega) {
             this.symmetricSuccessiveOverRelaxationOmega = symmetricSuccessiveOverRelaxationOmega;
-            return this;
+            return self();
         }
 
         public ConjugateGradientSolver build() {
@@ -74,7 +75,24 @@ public class ConjugateGradientSolver extends AbstractIterativeSolver {
         }
     }
 
-    private ConjugateGradientSolver(Builder builder) throws NonPositiveDefiniteMatrixException {
+    public static class Builder extends AbstractBuilder<Builder> {
+        public Builder(QuadraticFunction objective,
+                       double[] initialPoint) {
+            super(objective, initialPoint);
+        }
+
+        public Builder(LinearLeastSquaresFunction objective,
+                       double[] initialPoint) {
+            super(objective, initialPoint);
+        }
+
+        @Override
+        protected Builder self() {
+            return this;
+        }
+    }
+
+    private ConjugateGradientSolver(AbstractBuilder builder) throws NonPositiveDefiniteMatrixException {
         super(builder);
         problemConversionMethod = builder.problemConversionMethod;
 

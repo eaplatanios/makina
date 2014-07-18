@@ -10,7 +10,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class LinearLeastSquaresSolver implements Solver {
+public final class LinearLeastSquaresSolver implements Solver {
     private final LinearLeastSquaresFunction objective;
 
     /** This variable is not final but it can only be changed from within this class (that is, there is no setter). It

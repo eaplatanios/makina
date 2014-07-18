@@ -5,9 +5,10 @@ import org.platanios.learn.optimization.function.AbstractStochasticFunction;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class StochasticGradientDescentSolver extends AbstractStochasticIterativeSolver {
-    public static class Builder extends AbstractStochasticIterativeSolver.Builder<StochasticGradientDescentSolver> {
-        public Builder(AbstractStochasticFunction objective, double[] initialPoint) {
+public final class StochasticGradientDescentSolver extends AbstractStochasticIterativeSolver {
+    protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
+            extends AbstractStochasticIterativeSolver.AbstractBuilder<T> {
+        public AbstractBuilder(AbstractStochasticFunction objective, double[] initialPoint) {
             super(objective, initialPoint);
         }
 
@@ -16,7 +17,19 @@ public class StochasticGradientDescentSolver extends AbstractStochasticIterative
         }
     }
 
-    private StochasticGradientDescentSolver(Builder builder) {
+    public static class Builder extends AbstractBuilder<Builder> {
+        public Builder(AbstractStochasticFunction objective,
+                       double[] initialPoint) {
+            super(objective, initialPoint);
+        }
+
+        @Override
+        protected Builder self() {
+            return this;
+        }
+    }
+
+    private StochasticGradientDescentSolver(AbstractBuilder<?> builder) {
         super(builder);
     }
 

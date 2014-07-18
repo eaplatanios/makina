@@ -38,7 +38,9 @@ abstract class AbstractIterativeSolver implements Solver {
     double currentObjectiveValue;
     double previousObjectiveValue;
 
-    public static abstract class Builder<T extends AbstractIterativeSolver> {
+    protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
+        protected abstract T self();
+
         protected final AbstractFunction objective;
         protected final double[] initialPoint;
 
@@ -51,56 +53,66 @@ abstract class AbstractIterativeSolver implements Solver {
         protected boolean checkForObjectiveConvergence = true;
         protected boolean checkForGradientConvergence = true;
 
-        protected Builder(AbstractFunction objective,
-                          double[] initialPoint) {
+        protected AbstractBuilder(AbstractFunction objective,
+                                  double[] initialPoint) {
             this.objective = objective;
             this.initialPoint = initialPoint;
         }
 
-        public Builder<T> maximumNumberOfIterations(int maximumNumberOfIterations) {
+        public T maximumNumberOfIterations(int maximumNumberOfIterations) {
             this.maximumNumberOfIterations = maximumNumberOfIterations;
-            return this;
+            return self();
         }
 
-        public Builder<T> maximumNumberOfFunctionEvaluations(int maximumNumberOfFunctionEvaluations) {
+        public T maximumNumberOfFunctionEvaluations(int maximumNumberOfFunctionEvaluations) {
             this.maximumNumberOfFunctionEvaluations = maximumNumberOfFunctionEvaluations;
-            return this;
+            return self();
         }
 
-        public Builder<T> pointChangeTolerance(double pointChangeTolerance) {
+        public T pointChangeTolerance(double pointChangeTolerance) {
             this.pointChangeTolerance = pointChangeTolerance;
-            return this;
+            return self();
         }
 
-        public Builder<T> objectiveChangeTolerance(double objectiveChangeTolerance) {
+        public T objectiveChangeTolerance(double objectiveChangeTolerance) {
             this.objectiveChangeTolerance = objectiveChangeTolerance;
-            return this;
+            return self();
         }
 
-        public Builder<T> gradientTolerance(double gradientTolerance) {
+        public T gradientTolerance(double gradientTolerance) {
             this.gradientTolerance = gradientTolerance;
-            return this;
+            return self();
         }
 
-        public Builder<T> checkForPointConvergence(boolean checkForPointConvergence) {
+        public T checkForPointConvergence(boolean checkForPointConvergence) {
             this.checkForPointConvergence = checkForPointConvergence;
-            return this;
+            return self();
         }
 
-        public Builder<T> checkForObjectiveConvergence(boolean checkForObjectiveConvergence) {
+        public T checkForObjectiveConvergence(boolean checkForObjectiveConvergence) {
             this.checkForObjectiveConvergence = checkForObjectiveConvergence;
-            return this;
+            return self();
         }
 
-        public Builder<T> checkForGradientConvergence(boolean checkForGradientConvergence) {
+        public T checkForGradientConvergence(boolean checkForGradientConvergence) {
             this.checkForGradientConvergence = checkForGradientConvergence;
-            return this;
+            return self();
         }
-
-        public abstract T build();
     }
 
-    AbstractIterativeSolver(Builder builder) {
+    public static class Builder extends AbstractBuilder<Builder> {
+        public Builder(AbstractFunction objective,
+                       double[] initialPoint) {
+            super(objective, initialPoint);
+        }
+
+        @Override
+        protected Builder self() {
+            return this;
+        }
+    }
+
+    protected AbstractIterativeSolver(AbstractBuilder<?> builder) {
         objective = builder.objective;
         maximumNumberOfIterations = builder.maximumNumberOfIterations;
         maximumNumberOfFunctionEvaluations = builder.maximumNumberOfFunctionEvaluations;

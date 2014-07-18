@@ -8,23 +8,24 @@ import org.platanios.learn.optimization.function.LinearLeastSquaresFunction;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class GaussNewtonSolver extends AbstractLineSearchSolver {
+public final class GaussNewtonSolver extends AbstractLineSearchSolver {
     private final LinearLeastSquaresSolver.Method linearLeastSquaresSubproblemMethod;
     // TODO: Add a way to control the preconditioning method of the subproblem solver.
 
-    public static class Builder extends AbstractLineSearchSolver.Builder<GaussNewtonSolver> {
+    protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
+            extends AbstractLineSearchSolver.AbstractBuilder<T> {
         private LinearLeastSquaresSolver.Method linearLeastSquaresSubproblemMethod =
                 LinearLeastSquaresSolver.Method.SINGULAR_VALUE_DECOMPOSITION;
 
-        public Builder(AbstractLeastSquaresFunction objective, double[] initialPoint) {
+        public AbstractBuilder(AbstractLeastSquaresFunction objective, double[] initialPoint) {
             super(objective, initialPoint);
         }
 
-        public Builder linearLeastSquaresSubproblemMethod(
+        public T linearLeastSquaresSubproblemMethod(
                 LinearLeastSquaresSolver.Method linearLeastSquaresSubproblemMethod
         ) {
             this.linearLeastSquaresSubproblemMethod = linearLeastSquaresSubproblemMethod;
-            return this;
+            return self();
         }
 
         public GaussNewtonSolver build() {
@@ -32,7 +33,19 @@ public class GaussNewtonSolver extends AbstractLineSearchSolver {
         }
     }
 
-    private GaussNewtonSolver(Builder builder) {
+    public static class Builder extends AbstractBuilder<Builder> {
+        public Builder(AbstractLeastSquaresFunction objective,
+                       double[] initialPoint) {
+            super(objective, initialPoint);
+        }
+
+        @Override
+        protected Builder self() {
+            return this;
+        }
+    }
+
+    private GaussNewtonSolver(AbstractBuilder<?> builder) {
         super(builder);
         linearLeastSquaresSubproblemMethod = builder.linearLeastSquaresSubproblemMethod;
     }

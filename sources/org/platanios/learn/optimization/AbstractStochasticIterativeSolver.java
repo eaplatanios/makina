@@ -28,7 +28,9 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
     Vector currentDirection;
     double currentStepSize;
 
-    public static abstract class Builder<T extends AbstractStochasticIterativeSolver> {
+    protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
+        protected abstract T self();
+
         protected final AbstractStochasticFunction objective;
         protected final double[] initialPoint;
 
@@ -40,57 +42,67 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
         protected double tau = 10;
         protected double kappa = 0.75;
 
-        protected Builder(AbstractStochasticFunction objective,
-                          double[] initialPoint) {
+        protected AbstractBuilder(AbstractStochasticFunction objective,
+                                  double[] initialPoint) {
             this.objective = objective;
             this.initialPoint = initialPoint;
         }
 
-        public Builder<T> maximumNumberOfIterations(int maximumNumberOfIterations) {
+        public T maximumNumberOfIterations(int maximumNumberOfIterations) {
             this.maximumNumberOfIterations = maximumNumberOfIterations;
-            return this;
+            return self();
         }
 
-        public Builder<T> maximumNumberOfIterationsWithNoPointChange(int maximumNumberOfIterationsWithNoPointChange) {
+        public T maximumNumberOfIterationsWithNoPointChange(int maximumNumberOfIterationsWithNoPointChange) {
             this.maximumNumberOfIterationsWithNoPointChange = maximumNumberOfIterationsWithNoPointChange;
-            return this;
+            return self();
         }
 
-        public Builder<T> pointChangeTolerance(double pointChangeTolerance) {
+        public T pointChangeTolerance(double pointChangeTolerance) {
             this.pointChangeTolerance = pointChangeTolerance;
-            return this;
+            return self();
         }
 
-        public Builder<T> checkForPointConvergence(boolean checkForPointConvergence) {
+        public T checkForPointConvergence(boolean checkForPointConvergence) {
             this.checkForPointConvergence = checkForPointConvergence;
-            return this;
+            return self();
         }
 
-        public Builder<T> batchSize(int batchSize) {
+        public T batchSize(int batchSize) {
             this.batchSize = batchSize;
-            return this;
+            return self();
         }
 
-        public Builder<T> tau(double tau) {
+        public T tau(double tau) {
             if (tau < 0) {
                 throw new IllegalArgumentException("The value of the tau parameter must be >= 0.");
             }
             this.tau = tau;
-            return this;
+            return self();
         }
 
-        public Builder<T> kappa(double kappa) {
+        public T kappa(double kappa) {
             if (kappa <= 0.5 || kappa > 1) {
                 throw new IllegalArgumentException("The value of the kappa parameter must be in the interval (0.5,1].");
             }
             this.kappa = kappa;
-            return this;
+            return self();
         }
-
-        public abstract T build();
     }
 
-    AbstractStochasticIterativeSolver(Builder builder) {
+    public static class Builder extends AbstractBuilder<Builder> {
+        public Builder(AbstractStochasticFunction objective,
+                       double[] initialPoint) {
+            super(objective, initialPoint);
+        }
+
+        @Override
+        protected Builder self() {
+            return this;
+        }
+    }
+
+    protected AbstractStochasticIterativeSolver(AbstractBuilder<?> builder) {
         objective = builder.objective;
         maximumNumberOfIterations = builder.maximumNumberOfIterations;
         maximumNumberOfIterationsWithNoPointChange = builder.maximumNumberOfIterationsWithNoPointChange;

@@ -16,12 +16,12 @@ abstract class AbstractLineSearchSolver extends AbstractIterativeSolver {
      * with CONSERVE_FIRST_ORDER_CHANGE for the step size initialization method. */
     LineSearch lineSearch;
 
-    public static abstract class Builder<T extends AbstractLineSearchSolver>
-            extends AbstractIterativeSolver.Builder<T> {
+    protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
+            extends AbstractIterativeSolver.AbstractBuilder<T> {
         protected LineSearch lineSearch;
 
-        protected Builder(AbstractFunction objective,
-                          double[] initialPoint) {
+        protected AbstractBuilder(AbstractFunction objective,
+                                  double[] initialPoint) {
             super(objective, initialPoint);
 
             if (objective instanceof QuadraticFunction) {
@@ -38,13 +38,25 @@ abstract class AbstractLineSearchSolver extends AbstractIterativeSolver {
                     .setStepSizeInitializationMethod(StepSizeInitialization.Method.CONSERVE_FIRST_ORDER_CHANGE);
         }
 
-        public Builder<T> lineSearch(LineSearch lineSearch) {
+        public T lineSearch(LineSearch lineSearch) {
             this.lineSearch = lineSearch;
+            return self();
+        }
+    }
+
+    public static class Builder extends AbstractBuilder<Builder> {
+        public Builder(AbstractFunction objective,
+                       double[] initialPoint) {
+            super(objective, initialPoint);
+        }
+
+        @Override
+        protected Builder self() {
             return this;
         }
     }
 
-    AbstractLineSearchSolver(Builder<? extends AbstractLineSearchSolver> builder) {
+    protected AbstractLineSearchSolver(AbstractBuilder<?> builder) {
         super(builder);
         lineSearch = builder.lineSearch;
         previousPoint = currentPoint;

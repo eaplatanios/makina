@@ -5,9 +5,10 @@ import org.platanios.learn.optimization.function.AbstractFunction;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class GradientDescentSolver extends AbstractLineSearchSolver {
-    public static class Builder extends AbstractLineSearchSolver.Builder<GradientDescentSolver> {
-        public Builder(AbstractFunction objective, double[] initialPoint) {
+public final class GradientDescentSolver extends AbstractLineSearchSolver {
+    protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
+            extends AbstractLineSearchSolver.AbstractBuilder<T> {
+        public AbstractBuilder(AbstractFunction objective, double[] initialPoint) {
             super(objective, initialPoint);
         }
 
@@ -16,7 +17,19 @@ public class GradientDescentSolver extends AbstractLineSearchSolver {
         }
     }
 
-    private GradientDescentSolver(Builder builder) {
+    public static class Builder extends AbstractBuilder<Builder> {
+        public Builder(AbstractFunction objective,
+                       double[] initialPoint) {
+            super(objective, initialPoint);
+        }
+
+        @Override
+        protected Builder self() {
+            return this;
+        }
+    }
+
+    private GradientDescentSolver(AbstractBuilder<?> builder) {
         super(builder);
     }
 

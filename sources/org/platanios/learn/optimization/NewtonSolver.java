@@ -9,9 +9,10 @@ import org.platanios.learn.optimization.linesearch.StrongWolfeInterpolationLineS
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class NewtonSolver extends AbstractLineSearchSolver {
-    public static class Builder extends AbstractLineSearchSolver.Builder<NewtonSolver> {
-        public Builder(AbstractFunction objective, double[] initialPoint) {
+public final class NewtonSolver extends AbstractLineSearchSolver {
+    protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
+            extends AbstractLineSearchSolver.AbstractBuilder<T> {
+        public AbstractBuilder(AbstractFunction objective, double[] initialPoint) {
             super(objective, initialPoint);
             // TODO: Figure out why we cannot use exact line search in the case of a quadratic function.
             lineSearch = new StrongWolfeInterpolationLineSearch(objective, 1e-4, 0.9, 1);
@@ -24,7 +25,19 @@ public class NewtonSolver extends AbstractLineSearchSolver {
         }
     }
 
-    private NewtonSolver(Builder builder) {
+    public static class Builder extends AbstractBuilder<Builder> {
+        public Builder(AbstractFunction objective,
+                       double[] initialPoint) {
+            super(objective, initialPoint);
+        }
+
+        @Override
+        protected Builder self() {
+            return this;
+        }
+    }
+
+    private NewtonSolver(AbstractBuilder<?> builder) {
         super(builder);
     }
 

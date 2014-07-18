@@ -10,7 +10,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class QuasiNewtonSolver extends AbstractLineSearchSolver {
+public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
     private final Matrix identityMatrix;
     private final Method method;
     private final int m;
@@ -23,19 +23,20 @@ public class QuasiNewtonSolver extends AbstractLineSearchSolver {
 
     private double symmetricRankOneSkippingParameter = 1e-8;
 
-    public static class Builder extends AbstractLineSearchSolver.Builder<QuasiNewtonSolver> {
+    protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
+            extends AbstractLineSearchSolver.AbstractBuilder<T> {
         private Method method = Method.BROYDEN_FLETCHER_GOLDFARB_SHANNO;
         private int m = 1;
         private double symmetricRankOneSkippingParameter = 1e-8;
 
-        public Builder(AbstractFunction objective, double[] initialPoint) {
+        public AbstractBuilder(AbstractFunction objective, double[] initialPoint) {
             super(objective, initialPoint);
             lineSearch = new StrongWolfeInterpolationLineSearch(objective, 1e-4, 0.9, 1000);
             ((StrongWolfeInterpolationLineSearch) lineSearch)
                     .setStepSizeInitializationMethod(StepSizeInitialization.Method.UNIT);
         }
 
-        public Builder method(Method method) {
+        public T method(Method method) {
             this.method = method;
 
             if (method != Method.LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO) {
@@ -44,25 +45,37 @@ public class QuasiNewtonSolver extends AbstractLineSearchSolver {
                 m = 10;
             }
 
-            return this;
+            return self();
         }
 
-        public Builder m(int m) {
+        public T m(int m) {
             if (method != Method.LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO) {
                 m = 1;
             }
 
             this.m = m;
-            return this;
+            return self();
         }
 
-        public Builder symmetricRankOneSkippingParameter(double symmetricRankOneSkippingParameter) {
+        public T symmetricRankOneSkippingParameter(double symmetricRankOneSkippingParameter) {
             this.symmetricRankOneSkippingParameter = symmetricRankOneSkippingParameter;
-            return this;
+            return self();
         }
 
         public QuasiNewtonSolver build() {
             return new QuasiNewtonSolver(this);
+        }
+    }
+
+    public static class Builder extends AbstractBuilder<Builder> {
+        public Builder(AbstractFunction objective,
+                       double[] initialPoint) {
+            super(objective, initialPoint);
+        }
+
+        @Override
+        protected Builder self() {
+            return this;
         }
     }
 
@@ -72,7 +85,7 @@ public class QuasiNewtonSolver extends AbstractLineSearchSolver {
      * do not need to store any previous vectors to re-construct it using limited memory).
      *
      */
-    private QuasiNewtonSolver(Builder builder) {
+    private QuasiNewtonSolver(AbstractBuilder<?> builder) {
         super(builder);
         method = builder.method;
         m = builder.m;
