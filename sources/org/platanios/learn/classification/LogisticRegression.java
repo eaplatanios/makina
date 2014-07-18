@@ -345,6 +345,8 @@ public class LogisticRegression {
      */
     private class StochasticLikelihoodFunction extends AbstractStochasticFunction<TrainingData.Entry> {
         public StochasticLikelihoodFunction() {
+            // Using the method Arrays.asList so that the training data array is not duplicated. The newly created list
+            // is backed by the existing array and any changes made to the list also "write through" to the array.
             this.data = Arrays.asList(trainingData);
         }
 
