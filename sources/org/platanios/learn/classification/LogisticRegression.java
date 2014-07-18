@@ -33,6 +33,7 @@ public class LogisticRegression {
         private boolean stochastic = false;
         private boolean largeScale = false;
         private int maximumNumberOfIterations = 10000;
+        private int maximumNumberOfIterationsWithNoPointChange = 1;
         private double pointChangeTolerance = 1e-10;
         private boolean checkForPointConvergence = true;
         private int batchSize = 100;
@@ -62,6 +63,11 @@ public class LogisticRegression {
 
         public Builder maximumNumberOfIterations(int maximumNumberOfIterations) {
             this.maximumNumberOfIterations = maximumNumberOfIterations;
+            return this;
+        }
+
+        public Builder maximumNumberOfIterationsWithNoPointChange(int maximumNumberOfIterationsWithNoPointChange) {
+            this.maximumNumberOfIterationsWithNoPointChange = maximumNumberOfIterationsWithNoPointChange;
             return this;
         }
 
@@ -105,6 +111,7 @@ public class LogisticRegression {
             solver = new StochasticGradientDescentSolver.Builder(new StochasticLikelihoodFunction(),
                                                                  weights.getColumnPackedArrayCopy())
                     .maximumNumberOfIterations(builder.maximumNumberOfIterations)
+                    .maximumNumberOfIterationsWithNoPointChange(builder.maximumNumberOfIterationsWithNoPointChange)
                     .pointChangeTolerance(builder.pointChangeTolerance)
                     .checkForPointConvergence(builder.checkForPointConvergence)
                     .batchSize(builder.batchSize)

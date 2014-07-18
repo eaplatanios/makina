@@ -14,10 +14,8 @@ public class LogisticRegressionTest {
         TrainingData data = DataPreprocessing.parseLabeledDataFromCSVFile(filename);
         LogisticRegression classifier = new LogisticRegression.Builder(data)
                 .stochastic(true)
-                .batchSize(1)
-                .tau(1000)
-                .kappa(1)
-                .pointChangeTolerance(1e-5)
+                .batchSize(5)
+                .maximumNumberOfIterationsWithNoPointChange(10)
                 .build();
         classifier.train();
         double[][] actualPredictionsProbabilities = classifier.predict(new double[][] {

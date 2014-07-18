@@ -8,6 +8,7 @@ import org.platanios.learn.optimization.function.AbstractStochasticFunction;
  */
 abstract class AbstractStochasticIterativeSolver implements Solver {
     private final int maximumNumberOfIterations;
+    private final int maximumNumberOfIterationsWithNoPointChange;
     private final double pointChangeTolerance;
     private final boolean checkForPointConvergence;
     private final int batchSize;
@@ -15,6 +16,7 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
     private final double kappa;
 
     private double pointChange;
+    private int numberOfIterationsWithNoPointChange = 0;
     private boolean pointConverged = false;
 
     final AbstractStochasticFunction objective;
@@ -31,6 +33,7 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
         protected final double[] initialPoint;
 
         protected int maximumNumberOfIterations = 10000;
+        protected int maximumNumberOfIterationsWithNoPointChange = 1;
         protected double pointChangeTolerance = 1e-10;
         protected boolean checkForPointConvergence = true;
         protected int batchSize = 100;
@@ -45,6 +48,11 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
 
         public Builder<T> maximumNumberOfIterations(int maximumNumberOfIterations) {
             this.maximumNumberOfIterations = maximumNumberOfIterations;
+            return this;
+        }
+
+        public Builder<T> maximumNumberOfIterationsWithNoPointChange(int maximumNumberOfIterationsWithNoPointChange) {
+            this.maximumNumberOfIterationsWithNoPointChange = maximumNumberOfIterationsWithNoPointChange;
             return this;
         }
 
@@ -85,6 +93,7 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
     AbstractStochasticIterativeSolver(Builder builder) {
         objective = builder.objective;
         maximumNumberOfIterations = builder.maximumNumberOfIterations;
+        maximumNumberOfIterationsWithNoPointChange = builder.maximumNumberOfIterationsWithNoPointChange;
         pointChangeTolerance = builder.pointChangeTolerance;
         checkForPointConvergence = builder.checkForPointConvergence;
         batchSize = builder.batchSize;
@@ -128,7 +137,11 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
 
             if (checkForPointConvergence) {
                 pointChange = currentPoint.subtract(previousPoint).computeL2Norm();
-                pointConverged = pointChange <= pointChangeTolerance;
+                numberOfIterationsWithNoPointChange =
+                        (pointChange <= pointChangeTolerance) ? numberOfIterationsWithNoPointChange + 1 : 0;
+                if (numberOfIterationsWithNoPointChange >= maximumNumberOfIterationsWithNoPointChange) {
+                    pointConverged = true;
+                }
             }
 
             return checkForPointConvergence && pointConverged;
@@ -139,10 +152,6 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
 
     public void printHeader() {
         System.out.println("|----------------" +
-                                   "----------------" +
-                                   "-----------------------" +
-                                   "-----------------------" +
-                                   "-----------------------" +
                                    "----------------------|");
         System.out.format("| %13s | %20s |%n",
                           "Iteration #",
@@ -159,10 +168,6 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
 
     public void printTerminationMessage() {
         System.out.println("|----------------" +
-                                   "----------------" +
-                                   "-----------------------" +
-                                   "-----------------------" +
-                                   "-----------------------" +
                                    "----------------------|\n");
 
         if (pointConverged) {
@@ -170,7 +175,9 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
                                        + DECIMAL_FORMAT.format(pointChange)
                                        + ", was below the convergence threshold of "
                                        + DECIMAL_FORMAT.format(pointChangeTolerance)
-                                       + "!");
+                                       + " for more than "
+                                       + maximumNumberOfIterationsWithNoPointChange
+                                       + " iterations!");
         }
         if (currentIteration >= maximumNumberOfIterations) {
             System.out.println("Reached the maximum number of allowed iterations ("
