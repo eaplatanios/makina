@@ -3,9 +3,7 @@ package org.platanios.learn.classification;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Utilities;
 import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.optimization.QuasiNewtonSolver;
-import org.platanios.learn.optimization.Solver;
-import org.platanios.learn.optimization.StochasticGradientDescentSolver;
+import org.platanios.learn.optimization.*;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.AbstractStochasticFunction;
 
@@ -32,24 +30,6 @@ public class LogisticRegression {
 
         private boolean stochastic = false;
         private boolean largeScale = false;
-        private int maximumNumberOfIterations = 10000;
-        private double pointChangeTolerance = 1e-10;
-        private boolean checkForPointConvergence = true;
-
-        // Parameters relevant to stochastic iterative optimization algorithms.
-        private boolean sampleWithReplacement = false;
-        private int maximumNumberOfIterationsWithNoPointChange = 1;
-        private int batchSize = 100;
-        private double tau = 10;
-        private double kappa = 0.75;
-
-        // Parameters relevant to quasi-Newton optimization algorithms.
-        private int maximumNumberOfFunctionEvaluations = 1000000;
-        private double objectiveChangeTolerance = 1e-10;
-        private double gradientTolerance = 1e-6;
-        private boolean checkForObjectiveConvergence = true;
-        private boolean checkForGradientConvergence = true;
-        private int m = 1;
 
         public Builder(TrainingData trainingData) {
             this.trainingData = trainingData.getData();
@@ -72,125 +52,56 @@ public class LogisticRegression {
             return this;
         }
 
-        public Builder sampleWithReplacement(boolean sampleWithReplacement) {
-            this.sampleWithReplacement = sampleWithReplacement;
-            return this;
-        }
-
-        public Builder maximumNumberOfIterations(int maximumNumberOfIterations) {
-            this.maximumNumberOfIterations = maximumNumberOfIterations;
-            return this;
-        }
-
-        public Builder maximumNumberOfIterationsWithNoPointChange(int maximumNumberOfIterationsWithNoPointChange) {
-            this.maximumNumberOfIterationsWithNoPointChange = maximumNumberOfIterationsWithNoPointChange;
-            return this;
-        }
-
-        public Builder pointChangeTolerance(double pointChangeTolerance) {
-            this.pointChangeTolerance = pointChangeTolerance;
-            return this;
-        }
-
-        public Builder checkForPointConvergence(boolean checkForPointConvergence) {
-            this.checkForPointConvergence = checkForPointConvergence;
-            return this;
-        }
-
-        public Builder batchSize(int batchSize) {
-            this.batchSize = batchSize;
-            return this;
-        }
-
-        public Builder tau(double tau) {
-            this.tau = tau;
-            return this;
-        }
-
-        public Builder kappa(double kappa) {
-            this.kappa = kappa;
-            return this;
-        }
-
-        public Builder maximumNumberOfFunctionEvaluations(int maximumNumberOfFunctionEvaluations) {
-            this.maximumNumberOfFunctionEvaluations = maximumNumberOfFunctionEvaluations;
-            return this;
-        }
-
-        public Builder objectiveChangeTolerance(double objectiveChangeTolerance) {
-            this.objectiveChangeTolerance = objectiveChangeTolerance;
-            return this;
-        }
-
-        public Builder gradientTolerance(double gradientTolerance) {
-            this.gradientTolerance = gradientTolerance;
-            return this;
-        }
-
-        public Builder checkForObjectiveConvergence(boolean checkForObjectiveConvergence) {
-            this.checkForObjectiveConvergence = checkForObjectiveConvergence;
-            return this;
-        }
-
-        public Builder checkForGradientConvergence(boolean checkForGradientConvergence) {
-            this.checkForGradientConvergence = checkForGradientConvergence;
-            return this;
-        }
-
-        public Builder m(int m) {
-            this.m = m;
-            return this;
-        }
-
         public LogisticRegression build() {
             return new LogisticRegression(this);
         }
     }
 
-    public LogisticRegression(Builder builder) {
+    private LogisticRegression(Builder builder) {
         trainingData = builder.trainingData;
         trainingDataSize = builder.trainingDataSize;
         numberOfFeatures = builder.numberOfFeatures;
         numberOfClasses = builder.numberOfClasses;
         weights = new Matrix(numberOfFeatures, numberOfClasses - 1);
+
         if (builder.stochastic) {
             solver = new StochasticGradientDescentSolver.Builder(new StochasticLikelihoodFunction(),
                                                                  weights.getColumnPackedArrayCopy())
-                    .sampleWithReplacement(builder.sampleWithReplacement)
-                    .maximumNumberOfIterations(builder.maximumNumberOfIterations)
-                    .maximumNumberOfIterationsWithNoPointChange(builder.maximumNumberOfIterationsWithNoPointChange)
-                    .pointChangeTolerance(builder.pointChangeTolerance)
-                    .checkForPointConvergence(builder.checkForPointConvergence)
-                    .batchSize(builder.batchSize)
-                    .tau(builder.tau)
-                    .kappa(builder.kappa)
+                    .sampleWithReplacement(false)
+                    .maximumNumberOfIterations(10000)
+                    .maximumNumberOfIterationsWithNoPointChange(5)
+                    .pointChangeTolerance(1e-10)
+                    .checkForPointConvergence(true)
+                    .batchSize(10)
+                    .stepSize(StochasticSolverStepSize.SCALED)
+                    .stepSizeParameters(10, 0.75)
                     .build();
             return;
         }
         if (!builder.largeScale) {
             solver = new QuasiNewtonSolver.Builder(new LikelihoodFunction(), weights.getColumnPackedArrayCopy())
                     .method(QuasiNewtonSolver.Method.BROYDEN_FLETCHER_GOLDFARB_SHANNO)
-                    .maximumNumberOfIterations(builder.maximumNumberOfIterations)
-                    .maximumNumberOfFunctionEvaluations(builder.maximumNumberOfFunctionEvaluations)
-                    .pointChangeTolerance(builder.pointChangeTolerance)
-                    .objectiveChangeTolerance(builder.objectiveChangeTolerance)
-                    .gradientTolerance(builder.gradientTolerance)
-                    .checkForPointConvergence(builder.checkForPointConvergence)
-                    .checkForObjectiveConvergence(builder.checkForObjectiveConvergence)
-                    .checkForGradientConvergence(builder.checkForGradientConvergence)
+                    .maximumNumberOfIterations(10000)
+                    .maximumNumberOfFunctionEvaluations(1000000)
+                    .pointChangeTolerance(1e-10)
+                    .objectiveChangeTolerance(1e-10)
+                    .gradientTolerance(1e-6)
+                    .checkForPointConvergence(true)
+                    .checkForObjectiveConvergence(true)
+                    .checkForGradientConvergence(true)
                     .build();
         } else {
             solver = new QuasiNewtonSolver.Builder(new LikelihoodFunction(), weights.getColumnPackedArrayCopy())
                     .method(QuasiNewtonSolver.Method.LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO)
-                    .m(builder.m)
-                    .maximumNumberOfIterations(builder.maximumNumberOfIterations)
-                    .maximumNumberOfFunctionEvaluations(builder.maximumNumberOfFunctionEvaluations)
-                    .pointChangeTolerance(builder.pointChangeTolerance)
-                    .objectiveChangeTolerance(builder.objectiveChangeTolerance)
-                    .gradientTolerance(builder.gradientTolerance)
-                    .checkForPointConvergence(builder.checkForPointConvergence)
-                    .checkForObjectiveConvergence(builder.checkForObjectiveConvergence)
-                    .checkForGradientConvergence(builder.checkForGradientConvergence)
+                    .m(10)
+                    .maximumNumberOfIterations(10000)
+                    .maximumNumberOfFunctionEvaluations(1000000)
+                    .pointChangeTolerance(1e-10)
+                    .objectiveChangeTolerance(1e-10)
+                    .gradientTolerance(1e-6)
+                    .checkForPointConvergence(true)
+                    .checkForObjectiveConvergence(true)
+                    .checkForGradientConvergence(true)
                     .build();
         }
     }
@@ -207,19 +118,16 @@ public class LogisticRegression {
     }
 
     public double[] predict(double[] point) {
-        Vector predictions = weights.transpose().multiply(new Vector(point));
-        predictions = predictions.subtract(Utilities.computeLogSumExp(predictions));
-        predictions = predictions.computeFunctionResult(Math::exp);
-        return predictions.getArrayCopy();
+        Vector probabilities = weights.transpose().multiply(new Vector(point));
+        probabilities = probabilities.subtract(Utilities.computeLogSumExp(probabilities));
+        probabilities = probabilities.computeFunctionResult(Math::exp);
+        return probabilities.getArrayCopy();
     }
 
     public double[][] predict(double[][] points) {
         double[][] probabilities = new double[points.length][];
         for (int i = 0; i < points.length; i++) {
-            Vector predictions = weights.transpose().multiply(new Vector(points[i]));
-            predictions = predictions.subtract(Utilities.computeLogSumExp(predictions));
-            predictions = predictions.computeFunctionResult(Math::exp);
-            probabilities[i] = predictions.getArrayCopy();
+            probabilities[i] = predict(points[i]);
         }
         return probabilities;
     }
