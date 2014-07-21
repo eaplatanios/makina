@@ -34,6 +34,7 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
         protected final AbstractStochasticFunction objective;
         protected final double[] initialPoint;
 
+        protected boolean sampleWithReplacement = true;
         protected int maximumNumberOfIterations = 10000;
         protected int maximumNumberOfIterationsWithNoPointChange = 1;
         protected double pointChangeTolerance = 1e-10;
@@ -46,6 +47,11 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
                                   double[] initialPoint) {
             this.objective = objective;
             this.initialPoint = initialPoint;
+        }
+
+        public T sampleWithReplacement(boolean sampleWithReplacement) {
+            this.sampleWithReplacement = sampleWithReplacement;
+            return self();
         }
 
         public T maximumNumberOfIterations(int maximumNumberOfIterations) {
@@ -104,6 +110,7 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
 
     protected AbstractStochasticIterativeSolver(AbstractBuilder<?> builder) {
         objective = builder.objective;
+        objective.setSampleWithReplacement(builder.sampleWithReplacement);
         maximumNumberOfIterations = builder.maximumNumberOfIterations;
         maximumNumberOfIterationsWithNoPointChange = builder.maximumNumberOfIterationsWithNoPointChange;
         pointChangeTolerance = builder.pointChangeTolerance;
@@ -111,7 +118,6 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
         batchSize = builder.batchSize;
         tau = builder.tau;
         kappa = builder.kappa;
-
         currentPoint = new Vector(builder.initialPoint);
         currentGradient = objective.getGradientEstimate(currentPoint, batchSize);
         currentIteration = 0;

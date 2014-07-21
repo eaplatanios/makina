@@ -1,8 +1,9 @@
 package org.platanios.learn.optimization.function;
 
 import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.statistics.Utilities;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -12,6 +13,8 @@ public abstract class AbstractStochasticFunction<T> {
     protected List<T> data;
 
     private int numberOfGradientEvaluations = 0;
+    private boolean sampleWithReplacement = true;
+    private int currentSampleIndex = 0;
 
     /**
      * Wrapper method for {@link #estimateGradient(org.platanios.learn.math.matrix.Vector, int)} which counts how many
@@ -34,7 +37,18 @@ public abstract class AbstractStochasticFunction<T> {
      */
     public final Vector estimateGradient(Vector point, int batchSize) {
         if (batchSize < data.size()) {
-            List<T> dataBatch = Utilities.sampleWithoutReplacement(data, batchSize);
+            List<T> dataBatch;
+            if (sampleWithReplacement) {
+                Collections.shuffle(data);
+                dataBatch = new ArrayList<>(data.subList(0, batchSize));
+            } else {
+                if (currentSampleIndex == 0 || currentSampleIndex >= data.size()) {
+                    currentSampleIndex = 0;
+                    Collections.shuffle(data);
+                }
+                dataBatch = new ArrayList<>(data.subList(currentSampleIndex, currentSampleIndex + batchSize));
+                currentSampleIndex += batchSize;
+            }
             return estimateGradient(point, dataBatch);
         } else {
             return estimateGradient(point, data);
@@ -53,5 +67,13 @@ public abstract class AbstractStochasticFunction<T> {
 
     public int getNumberOfGradientEvaluations() {
         return numberOfGradientEvaluations;
+    }
+
+    public final boolean getSampleWithReplacement() {
+        return sampleWithReplacement;
+    }
+
+    public final void setSampleWithReplacement(boolean sampleWithReplacement) {
+        this.sampleWithReplacement = sampleWithReplacement;
     }
 }

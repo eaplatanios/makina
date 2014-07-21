@@ -37,6 +37,7 @@ public class LogisticRegression {
         private boolean checkForPointConvergence = true;
 
         // Parameters relevant to stochastic iterative optimization algorithms.
+        private boolean sampleWithReplacement = false;
         private int maximumNumberOfIterationsWithNoPointChange = 1;
         private int batchSize = 100;
         private double tau = 10;
@@ -68,6 +69,11 @@ public class LogisticRegression {
 
         public Builder largeScale(boolean largeScale) {
             this.largeScale = largeScale;
+            return this;
+        }
+
+        public Builder sampleWithReplacement(boolean sampleWithReplacement) {
+            this.sampleWithReplacement = sampleWithReplacement;
             return this;
         }
 
@@ -150,6 +156,7 @@ public class LogisticRegression {
         if (builder.stochastic) {
             solver = new StochasticGradientDescentSolver.Builder(new StochasticLikelihoodFunction(),
                                                                  weights.getColumnPackedArrayCopy())
+                    .sampleWithReplacement(builder.sampleWithReplacement)
                     .maximumNumberOfIterations(builder.maximumNumberOfIterations)
                     .maximumNumberOfIterationsWithNoPointChange(builder.maximumNumberOfIterationsWithNoPointChange)
                     .pointChangeTolerance(builder.pointChangeTolerance)
