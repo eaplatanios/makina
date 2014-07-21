@@ -3,7 +3,6 @@ package org.platanios.learn.optimization;
 import org.platanios.learn.math.Utilities;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * This is a derivative-free optimization algorithm.
@@ -70,49 +69,7 @@ public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
 
     @Override
     public void updateDirection() {
-        currentDirection = new Vector(numberOfDimensions, 0);
-
-        switch (method) {
-            case CYCLE:
-                currentDirection.setElement(currentDimension, 1);
-                if (currentDimension >= numberOfDimensions - 1) {
-                    currentDimension = 0;
-                } else {
-                    currentDimension++;
-                }
-                break;
-            case BACK_AND_FORTH:
-                if (currentDimension < numberOfDimensions) {
-                    currentDirection.setElement(currentDimension, 1);
-                    currentDimension++;
-                } else {
-                    currentDirection.setElement(2 * numberOfDimensions - currentDimension - 2, 1);
-                    if (currentDimension >= 2 * numberOfDimensions - 2) {
-                        currentDimension = 1;
-                    } else {
-                        currentDimension++;
-                    }
-                }
-                break;
-            case CYCLE_AND_JOIN_ENDPOINTS:
-                if (!completedCycle) {
-                    currentDirection.setElement(currentDimension, 1);
-                    if (currentDimension >= numberOfDimensions - 1) {
-                        completedCycle = true;
-                        currentDimension++;
-                    } else {
-                        currentDimension++;
-                    }
-                } else {
-                    currentDirection = cycleEndPoint.subtract(cycleStartPoint);
-                    currentDimension = 0;
-                    completedCycle = false;
-                }
-                break;
-            default:
-                throw new NotImplementedException();
-        }
-
+        method.updateDirection(this);
         // Check to see on which side along the current direction the objective function value is decreasing.
         if (!(objective.computeValue(currentPoint.add(currentDirection.multiply(epsilon))) - currentObjectiveValue
                 < 0)) {
@@ -122,15 +79,7 @@ public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
 
     @Override
     public void updatePoint() {
-        currentPoint = previousPoint.add(currentDirection.multiply(currentStepSize));
-
-        if (method == Method.CYCLE_AND_JOIN_ENDPOINTS) {
-            if (currentDimension == 0) {
-                cycleStartPoint = cycleEndPoint;
-            } else if (currentDimension > numberOfDimensions - 1) {
-                cycleEndPoint = currentPoint;
-            }
-        }
+        method.updatePoint(this);
     }
 
     /**
@@ -139,13 +88,84 @@ public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
     public enum Method {
         /** The algorithm cycles over the coordinates (after it uses the last coordinate it goes back to the first
          * one). */
-        CYCLE,
+        CYCLE {
+            @Override
+            protected void updateDirection(CoordinateDescentSolver solver) {
+                solver.currentDirection = new Vector(solver.numberOfDimensions, 0);
+                solver.currentDirection.setElement(solver.currentDimension, 1);
+                if (solver.currentDimension >= solver.numberOfDimensions - 1) {
+                    solver.currentDimension = 0;
+                } else {
+                    solver.currentDimension++;
+                }
+            }
+
+            @Override
+            protected void updatePoint(CoordinateDescentSolver solver) {
+                solver.currentPoint =
+                        solver.previousPoint.add(solver.currentDirection.multiply(solver.currentStepSize));
+            }
+        },
         /** The algorithm goes back and forth over the coordinates (it uses the coordinates in the following order:
          * \(1,2,\hdots,n-1,n,n-1,\hdots,2,1,2,\hdots\)). */
-        BACK_AND_FORTH,
+        BACK_AND_FORTH {
+            @Override
+            protected void updateDirection(CoordinateDescentSolver solver) {
+                solver.currentDirection = new Vector(solver.numberOfDimensions, 0);
+                if (solver.currentDimension < solver.numberOfDimensions) {
+                    solver.currentDirection.setElement(solver.currentDimension, 1);
+                    solver.currentDimension++;
+                } else {
+                    solver.currentDirection.setElement(2 * solver.numberOfDimensions - solver.currentDimension - 2, 1);
+                    if (solver.currentDimension >= 2 * solver.numberOfDimensions - 2) {
+                        solver.currentDimension = 1;
+                    } else {
+                        solver.currentDimension++;
+                    }
+                }
+            }
+
+            @Override
+            protected void updatePoint(CoordinateDescentSolver solver) {
+                solver.currentPoint =
+                        solver.previousPoint.add(solver.currentDirection.multiply(solver.currentStepSize));
+            }
+        },
         /** The algorithm cycles over the coordinates as with the {@link #CYCLE} restartMethod, but after each cycle completes,
          * it takes a step in the direction computed as the difference between the first point in the cycle and the last
          * point in the cycle. */
-        CYCLE_AND_JOIN_ENDPOINTS
+        CYCLE_AND_JOIN_ENDPOINTS {
+            @Override
+            protected void updateDirection(CoordinateDescentSolver solver) {
+                solver.currentDirection = new Vector(solver.numberOfDimensions, 0);
+                if (!solver.completedCycle) {
+                    solver.currentDirection.setElement(solver.currentDimension, 1);
+                    if (solver.currentDimension >= solver.numberOfDimensions - 1) {
+                        solver.completedCycle = true;
+                        solver.currentDimension++;
+                    } else {
+                        solver.currentDimension++;
+                    }
+                } else {
+                    solver.currentDirection = solver.cycleEndPoint.subtract(solver.cycleStartPoint);
+                    solver.currentDimension = 0;
+                    solver.completedCycle = false;
+                }
+            }
+
+            @Override
+            protected void updatePoint(CoordinateDescentSolver solver) {
+                solver.currentPoint =
+                        solver.previousPoint.add(solver.currentDirection.multiply(solver.currentStepSize));
+                if (solver.currentDimension == 0) {
+                    solver.cycleStartPoint = solver.cycleEndPoint;
+                } else if (solver.currentDimension > solver.numberOfDimensions - 1) {
+                    solver.cycleEndPoint = solver.currentPoint;
+                }
+            }
+        };
+
+        protected abstract void updateDirection(CoordinateDescentSolver solver);
+        protected abstract void updatePoint(CoordinateDescentSolver solver);
     }
 }

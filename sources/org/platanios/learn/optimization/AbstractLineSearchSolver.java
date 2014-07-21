@@ -35,7 +35,7 @@ abstract class AbstractLineSearchSolver extends AbstractIterativeSolver {
 
             lineSearch = new StrongWolfeInterpolationLineSearch(objective, 1e-4, 0.9, 10);
             ((StrongWolfeInterpolationLineSearch) lineSearch)
-                    .setStepSizeInitializationMethod(StepSizeInitialization.Method.CONSERVE_FIRST_ORDER_CHANGE);
+                    .setStepSizeInitializationMethod(StepSizeInitializationMethod.CONSERVE_FIRST_ORDER_CHANGE);
         }
 
         public T lineSearch(LineSearch lineSearch) {

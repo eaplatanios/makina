@@ -11,7 +11,7 @@ import org.platanios.learn.optimization.function.AbstractFunction;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
+public final class ArmijoInterpolationLineSearch extends IterativeLineSearch {
     /** Threshold for the minimum allowed step size change during an interpolation step. */
     private static final double MINIMUM_STEP_SIZE_CHANGE_THRESHOLD = 1e-3;
     /** Threshold for the minimum allowed step size change ratio during an interpolation step. */
@@ -45,8 +45,6 @@ public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
      * {@inheritDoc}
      *
      * @return  A step size value that satisfies the Armijo condition (also known as the sufficient decrease condition).
-     * @param point
-     * @param direction
      */
     @Override
     public double performLineSearch(Vector point,
@@ -87,10 +85,11 @@ public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
      * &phi; function and returns the step size value that minimizes that approximation. This function is only used for
      * the first iteration of the line search algorithm, when we do not yet have enough information available to perform
      * a cubic interpolation.
+     *
      * @param   point       The point at which we perform the line search.
      * @param   direction   The direction for which we perform the line search.
      * @param   phi0        The value of &phi;(0) (that is, the value of the objective function at the point at which we
-*                      perform the line search).
+     *                      perform the line search).
      * @param   phiPrime0   The value of &phi;'(0) (that is, the value of the objective function gradient at the point
      */
     private void performQuadraticInterpolation(Vector point,
@@ -111,10 +110,11 @@ public class ArmijoInterpolationLineSearch extends IterativeLineSearch {
     /**
      * Performs a cubic interpolation using the available information in order to obtain an approximation of the &phi;
      * function and returns the step size value that minimizes that approximation.
-     *  @param   point       The point at which we perform the line search.
+     *
+     * @param   point       The point at which we perform the line search.
      * @param   direction   The direction for which we perform the line search.
      * @param   phi0        The value of &phi;(0) (that is, the value of the objective function at the point at which we
- *                      perform the line search).
+     *                      perform the line search).
      * @param   phiPrime0   The value of &phi;'(0) (that is, the value of the objective function gradient at the point
      */
     private void performCubicInterpolation(Vector point,

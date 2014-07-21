@@ -11,7 +11,7 @@ import org.platanios.learn.optimization.function.AbstractFunction;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class StrongWolfeInterpolationLineSearch extends IterativeLineSearch {
+public final class StrongWolfeInterpolationLineSearch extends IterativeLineSearch {
     /** Maximum number of allowed line search iterations with no improvement in the objective function value. */
     private static final int MAXIMUM_ITERATIONS_WITH_NO_OBJECTIVE_IMPROVEMENT = 10;
     /** Threshold for the minimum allowed distance between a new step size value, computed using a cubic interpolation
@@ -55,8 +55,6 @@ public class StrongWolfeInterpolationLineSearch extends IterativeLineSearch {
      * {@inheritDoc}
      *
      * @return  A step size value that satisfies the strong Wolfe conditions.
-     * @param point
-     * @param direction
      */
     @Override
     public double performLineSearch(Vector point,

@@ -9,7 +9,7 @@ import org.platanios.learn.optimization.function.QuadraticFunction;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class ExactLineSearch implements LineSearch {
+public final class ExactLineSearch implements LineSearch {
     /** The objective function instance. */
     private final QuadraticFunction objective;
 
@@ -22,9 +22,7 @@ public class ExactLineSearch implements LineSearch {
         this.objective = objective;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public double computeStepSize(Vector point,
                                   Vector direction,

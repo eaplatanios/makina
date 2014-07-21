@@ -2,7 +2,6 @@ package org.platanios.learn.optimization;
 
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * These solvers are good for large scale problems and, on certain applications, competitive with limited-memory
@@ -76,7 +75,7 @@ public final class NonlinearConjugateGradientSolver extends AbstractLineSearchSo
 
     @Override
     public void updateDirection() {
-        beta = checkForRestart() ? 0 : computeBeta();
+        beta = checkForRestart() ? 0 : method.computeBeta(this);
         currentDirection = currentGradient.multiply(-1).add(previousDirection.multiply(beta));
     }
 
@@ -86,74 +85,7 @@ public final class NonlinearConjugateGradientSolver extends AbstractLineSearchSo
     }
 
     private boolean checkForRestart() {
-        switch (restartMethod) {
-            case NO_RESTART:
-                return false;
-            case N_STEP:
-                return currentIteration % currentPoint.getDimension() == 0;
-            case GRADIENTS_ORTHOGONALITY_CHECK:
-                return Math.abs(currentGradient.innerProduct(previousGradient))
-                        / currentGradient.innerProduct(currentGradient) >= gradientsOrthogonalityCheckThreshold;
-            default:
-                throw new NotImplementedException();
-        }
-    }
-
-    private double computeBeta() {
-        Vector gradientsDifference;
-        double denominator;
-
-        switch (method) {
-            case FLETCHER_RIEVES:
-                return currentGradient.innerProduct(currentGradient) / previousGradient.innerProduct(previousGradient);
-            case POLAK_RIBIERE:
-                return currentGradient.innerProduct(currentGradient.subtract(previousGradient))
-                        / previousGradient.innerProduct(previousGradient);
-            case POLAK_RIBIERE_PLUS:
-                return Math.max(currentGradient.innerProduct(currentGradient.subtract(previousGradient))
-                                        / previousGradient.innerProduct(previousGradient), 0);
-            case HESTENES_STIEFEL:
-                gradientsDifference = currentGradient.subtract(previousGradient);
-                if (gradientsDifference.computeL2Norm() != 0) {
-                    return currentGradient.innerProduct(gradientsDifference)
-                            / gradientsDifference.innerProduct(previousDirection);
-                } else {
-                    return 0;
-                }
-            case FLETCHER_RIEVES_POLAK_RIBIERE:
-                denominator = previousGradient.innerProduct(previousGradient);
-                double betaFR = currentGradient.innerProduct(currentGradient) / denominator;
-                double betaPR = currentGradient.innerProduct(currentGradient.subtract(previousGradient)) / denominator;
-                if (betaPR < -betaFR) {
-                    return -betaFR;
-                } else if (betaPR > betaFR) {
-                    return betaFR;
-                } else {
-                    return betaPR;
-                }
-            case DAI_YUAN:
-                gradientsDifference = currentGradient.subtract(previousGradient);
-                if (gradientsDifference.computeL2Norm() != 0) {
-                    return currentGradient.innerProduct(currentGradient)
-                            / gradientsDifference.innerProduct(previousDirection);
-                } else {
-                    return 0;
-                }
-            case HAGER_ZHANG:
-                gradientsDifference = currentGradient.subtract(previousGradient);
-                if (gradientsDifference.computeL2Norm() != 0) {
-                    denominator = gradientsDifference.innerProduct(previousDirection);
-                    Vector temporaryTerm = gradientsDifference.subtract(
-                            previousDirection.multiply(2 * gradientsDifference.innerProduct(gradientsDifference)
-                                                               / denominator)
-                    );
-                    return temporaryTerm.innerProduct(currentGradient) / denominator;
-                } else {
-                    return 0;
-                }
-            default:
-                throw new NotImplementedException();
-        }
+        return restartMethod.checkForRestart(this);
     }
 
     /**
@@ -182,18 +114,110 @@ public final class NonlinearConjugateGradientSolver extends AbstractLineSearchSo
      * with guaranteed descent and an efficient line search, SIAM Journal on Optimization, 16 (2005), pp. 170&#45;192.
      */
     public enum Method {
-        FLETCHER_RIEVES,
-        POLAK_RIBIERE,
-        POLAK_RIBIERE_PLUS,
-        HESTENES_STIEFEL,
-        FLETCHER_RIEVES_POLAK_RIBIERE,
-        DAI_YUAN,
-        HAGER_ZHANG
+        FLETCHER_RIEVES {
+            @Override
+            protected double computeBeta(NonlinearConjugateGradientSolver solver) {
+                return solver.currentGradient.innerProduct(solver.currentGradient)
+                        / solver.previousGradient.innerProduct(solver.previousGradient);
+            }
+        },
+        POLAK_RIBIERE {
+            @Override
+            protected double computeBeta(NonlinearConjugateGradientSolver solver) {
+                return solver.currentGradient.innerProduct(solver.currentGradient.subtract(solver.previousGradient))
+                        / solver.previousGradient.innerProduct(solver.previousGradient);
+            }
+        },
+        POLAK_RIBIERE_PLUS {
+            @Override
+            protected double computeBeta(NonlinearConjugateGradientSolver solver) {
+                return Math.max(
+                        solver.currentGradient.innerProduct(solver.currentGradient.subtract(solver.previousGradient))
+                                / solver.previousGradient.innerProduct(solver.previousGradient), 0);
+            }
+        },
+        HESTENES_STIEFEL {
+            @Override
+            protected double computeBeta(NonlinearConjugateGradientSolver solver) {
+                Vector gradientsDifference = solver.currentGradient.subtract(solver.previousGradient);
+                if (gradientsDifference.computeL2Norm() != 0) {
+                    return solver.currentGradient.innerProduct(gradientsDifference)
+                            / gradientsDifference.innerProduct(solver.previousDirection);
+                } else {
+                    return 0;
+                }
+            }
+        },
+        FLETCHER_RIEVES_POLAK_RIBIERE {
+            @Override
+            protected double computeBeta(NonlinearConjugateGradientSolver solver) {
+                double denominator = solver.previousGradient.innerProduct(solver.previousGradient);
+                double betaFR = solver.currentGradient.innerProduct(solver.currentGradient) / denominator;
+                double betaPR = solver.currentGradient
+                        .innerProduct(solver.currentGradient.subtract(solver.previousGradient)) / denominator;
+                if (betaPR < -betaFR) {
+                    return -betaFR;
+                } else if (betaPR > betaFR) {
+                    return betaFR;
+                } else {
+                    return betaPR;
+                }
+            }
+        },
+        DAI_YUAN {
+            @Override
+            protected double computeBeta(NonlinearConjugateGradientSolver solver) {
+                Vector gradientsDifference = solver.currentGradient.subtract(solver.previousGradient);
+                if (gradientsDifference.computeL2Norm() != 0) {
+                    return solver.currentGradient.innerProduct(solver.currentGradient)
+                            / gradientsDifference.innerProduct(solver.previousDirection);
+                } else {
+                    return 0;
+                }
+            }
+        },
+        HAGER_ZHANG {
+            @Override
+            protected double computeBeta(NonlinearConjugateGradientSolver solver) {
+                Vector gradientsDifference = solver.currentGradient.subtract(solver.previousGradient);
+                if (gradientsDifference.computeL2Norm() != 0) {
+                    double denominator = gradientsDifference.innerProduct(solver.previousDirection);
+                    Vector temporaryTerm = gradientsDifference.subtract(
+                            solver.previousDirection.multiply(2 * gradientsDifference.innerProduct(gradientsDifference)
+                                                               / denominator)
+                    );
+                    return temporaryTerm.innerProduct(solver.currentGradient) / denominator;
+                } else {
+                    return 0;
+                }
+            }
+        };
+
+        protected abstract double computeBeta(NonlinearConjugateGradientSolver solver);
     }
 
     public enum RestartMethod {
-        NO_RESTART,
-        N_STEP,
-        GRADIENTS_ORTHOGONALITY_CHECK
+        NO_RESTART {
+            @Override
+            protected boolean checkForRestart(NonlinearConjugateGradientSolver solver) {
+                return false;
+            }
+        },
+        N_STEP {
+            @Override
+            protected boolean checkForRestart(NonlinearConjugateGradientSolver solver) {
+                return solver.currentIteration % solver.currentPoint.getDimension() == 0;
+            }
+        },
+        GRADIENTS_ORTHOGONALITY_CHECK {
+            @Override
+            protected boolean checkForRestart(NonlinearConjugateGradientSolver solver) {
+                return Math.abs(solver.currentGradient.innerProduct(solver.previousGradient))
+                        / solver.currentGradient.innerProduct(solver.currentGradient)
+                        >= solver.gradientsOrthogonalityCheckThreshold;
+            }
+        };
+
+        protected abstract boolean checkForRestart(NonlinearConjugateGradientSolver solver);
     }
 }

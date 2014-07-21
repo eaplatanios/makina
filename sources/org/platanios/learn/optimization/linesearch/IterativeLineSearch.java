@@ -3,7 +3,6 @@ package org.platanios.learn.optimization.linesearch;
 import com.google.common.base.Preconditions;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Abstract class that all iterative line search algorithms should extend.
@@ -15,7 +14,7 @@ abstract class IterativeLineSearch implements LineSearch {
     final AbstractFunction objective;
 
     /** The step size initialization method. */
-    StepSizeInitialization.Method stepSizeInitializationMethod = StepSizeInitialization.Method.UNIT;
+    StepSizeInitializationMethod stepSizeInitializationMethod = StepSizeInitializationMethod.UNIT;
     /** The value of the initial step size (this value is set automatically using the chosen step size initialization
      * method). */
     double initialStepSize = 1;
@@ -29,68 +28,20 @@ abstract class IterativeLineSearch implements LineSearch {
         this.objective = objective;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public double computeStepSize(Vector point,
                                   Vector direction,
                                   Vector previousPoint,
                                   Vector previousDirection,
                                   double previousStepSize) {
-        switch (stepSizeInitializationMethod) {
-            case UNIT:
-                initialStepSize = 1;
-                break;
-            case CONSTANT:  // Initial step size for this case was set using the relevant setter method.
-                break;
-            case CONSERVE_FIRST_ORDER_CHANGE:
-                // Check whether the previous direction is set (if it is not it means that we are on the first iteration
-                // of the optimization algorithm).
-                if (previousDirection != null) {
-                    initialStepSize = StepSizeInitialization.computeByConservingFirstOrderChange(
-                            objective.getGradient(point),
-                            direction,
-                            objective.getGradient(previousPoint),
-                            previousDirection,
-                            previousStepSize
-                    );
-                } else {
-                    initialStepSize = 1.0;
-                }
-                break;
-            case QUADRATIC_INTERPOLATION:
-                // Check whether the previous direction is set (if it is not it means that we are on the first iteration
-                // of the optimization algorithm).
-                if (previousDirection != null) {
-                    initialStepSize = StepSizeInitialization.computeByQuadraticInterpolation(
-                            objective.getValue(point),
-                            objective.getValue(previousPoint),
-                            objective.getGradient(previousPoint),
-                            previousDirection
-                    );
-                } else {
-                    initialStepSize = 1.0;
-                }
-                break;
-            case MODIFIED_QUADRATIC_INTERPOLATION:
-                // Check whether the previous direction is set (if it is not it means that we are on the first iteration
-                // of the optimization algorithm).
-                if (previousDirection != null) {
-                    initialStepSize = StepSizeInitialization.computeByModifiedQuadraticInterpolation(
-                            objective.getValue(point),
-                            objective.getValue(previousPoint),
-                            objective.getGradient(previousPoint),
-                            previousDirection
-                    );
-                } else {
-                    initialStepSize = 1.0;
-                }
-                break;
-            default:
-                throw new NotImplementedException();
-        }
-
+        initialStepSize = stepSizeInitializationMethod.computeInitialStepSize(objective,
+                                                                              point,
+                                                                              direction,
+                                                                              previousPoint,
+                                                                              previousDirection,
+                                                                              initialStepSize,
+                                                                              previousStepSize);
         return performLineSearch(point, direction);
     }
 
@@ -109,29 +60,29 @@ abstract class IterativeLineSearch implements LineSearch {
      *
      * @return  The step size initialization method used by this iterative line search instance.
      */
-    public StepSizeInitialization.Method getStepSizeInitializationMethod() {
+    public StepSizeInitializationMethod getStepSizeInitializationMethod() {
         return stepSizeInitializationMethod;
     }
 
     /**
      * Sets the step size initialization method for this iterative line search instance. If the selected method is
-     * {@link org.platanios.learn.optimization.linesearch.StepSizeInitialization.Method#CONSTANT} and the desired
+     * {@link org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod#CONSTANT} and the desired
      * initial step size value to be used is not 1, then {@link #setInitialStepSize(double)} must be called as well to
      * set the constant value of the initial step size.
      *
      * @param   stepSizeInitializationMethod    The step size initialization method to be used.
      */
-    public void setStepSizeInitializationMethod(StepSizeInitialization.Method stepSizeInitializationMethod) {
+    public void setStepSizeInitializationMethod(StepSizeInitializationMethod stepSizeInitializationMethod) {
         this.stepSizeInitializationMethod = stepSizeInitializationMethod;
     }
 
     /**
      * Gets the initial step size value used by this iterative line search instance. If the selected step size
      * initialization method is
-     * {@link org.platanios.learn.optimization.linesearch.StepSizeInitialization.Method#CONSTANT}, then the initial step
+     * {@link org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod#CONSTANT}, then the initial step
      * value can have any positive real number value. Otherwise, the initial step size value that is returned by this
      * method is not actually being used by this iterative line search instance. Note that if the step size
-     * initialization method is {@link org.platanios.learn.optimization.linesearch.StepSizeInitialization.Method#UNIT},
+     * initialization method is {@link org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod#UNIT},
      * then the initial step size value that is always used by this iterative line search instance is 1.
      *
      * @return  The value of the initial step size.
@@ -143,10 +94,10 @@ abstract class IterativeLineSearch implements LineSearch {
     /**
      * Sets the initial step size value used by this iterative line search instance. This method is only useful if the
      * selected step size initialization method is
-     * {@link org.platanios.learn.optimization.linesearch.StepSizeInitialization.Method#CONSTANT}. Otherwise, the
+     * {@link org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod#CONSTANT}. Otherwise, the
      * initial step size variable is not actually being used by this iterative line search instance. Note that if the
      * step size initialization method is
-     * {@link org.platanios.learn.optimization.linesearch.StepSizeInitialization.Method#UNIT}, then the initial step
+     * {@link org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod#UNIT}, then the initial step
      * size value that is always used by this iterative line search instance is 1.
      *
      * @param   initialStepSize     The initial step size value to use. The value provided must be a positive real

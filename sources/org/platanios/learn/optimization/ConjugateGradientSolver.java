@@ -3,7 +3,6 @@ package org.platanios.learn.optimization;
 import org.platanios.learn.math.matrix.*;
 import org.platanios.learn.optimization.function.LinearLeastSquaresFunction;
 import org.platanios.learn.optimization.function.QuadraticFunction;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Matrix \(A\) in this case needs to be symmetric and positive definite. If it is not, then the solver may be able to
@@ -17,9 +16,9 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  */
 public final class ConjugateGradientSolver extends AbstractIterativeSolver {
     private final PreconditioningMethod preconditioningMethod;
-    private final ProblemConversionMethod problemConversionMethod;
     private final Matrix preconditionerMatrixInverse;
-    private final Matrix initialATranspose; // Used when CONJUGATE_GRADIENT_NORMAL_EQUATION_ERROR is used.
+    private final ProblemConversionMethod problemConversionMethod;
+    private final boolean convertedProblem;
     private final Matrix A;
     private final Vector b;
 
@@ -111,24 +110,10 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
         // Check if A is symmetric and positive definite and if it is not make the appropriate changes to the algorithm.
         CholeskyDecomposition choleskyDecomposition = new CholeskyDecomposition(temporaryA);
         if (!choleskyDecomposition.isSymmetricAndPositiveDefinite()) {
-            System.err.println("WARNING: Matrix A is not symmetric. The conjugate gradient normal equation residual " +
-                                       "(CGNR) method or the conjugate gradient normal equation error (CGNE) method " +
-                                       "will be used, based on the setting specified by the user.");
-            switch (problemConversionMethod) {
-                case CONJUGATE_GRADIENT_NORMAL_EQUATION_RESIDUAL:
-                    initialATranspose = null;
-                    A = temporaryA.transpose().multiply(temporaryA);
-                    b = temporaryA.transpose().multiply(temporaryB);
-                    break;
-                case CONJUGATE_GRADIENT_NORMAL_EQUATION_ERROR:
-                    initialATranspose = temporaryA.transpose();
-                    A = temporaryA.multiply(initialATranspose);
-                    b = temporaryB;
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
-
+            System.err.println("WARNING: Matrix A is not symmetric.");
+            convertedProblem = true;
+            A = problemConversionMethod.computeNewA(temporaryA);
+            b = problemConversionMethod.computeNewB(temporaryA, temporaryB);
             choleskyDecomposition = new CholeskyDecomposition(A);
             if (!choleskyDecomposition.isSymmetricAndPositiveDefinite()) {
                 throw new NonPositiveDefiniteMatrixException(
@@ -136,60 +121,38 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
                 );
             }
         } else {
-            initialATranspose = null;
+            convertedProblem = false;
             A = temporaryA;
             b = temporaryB;
         }
 
         currentGradient = A.multiply(currentPoint).subtract(b);
 
-        switch (builder.preconditioningMethod) {
-            case IDENTITY:
-            case JACOBI:
-                preconditioningMethod = builder.preconditioningMethod;
-                preconditionerMatrixInverse = null;
-                break;
-            case SYMMETRIC_SUCCESSIVE_OVER_RELAXATION:
-                double[] diagonal = new double[A.getRowDimension()];
-                double[][] lowerDiagonalMatrix = new double[A.getRowDimension()][A.getColumnDimension()];
-                for (int i = 0; i < A.getRowDimension(); i++) {
-                    diagonal[i] = A.getElement(i, i);
-                    for (int j = 0; j < i; j++) {
-                        lowerDiagonalMatrix[i][j] = A.getElement(i, j);
-                    }
-                }
-                Matrix D = Matrix.generateDiagonalMatrix(diagonal);
-                Matrix DMinusL = D.subtract(
-                        (new Matrix(lowerDiagonalMatrix)).multiply(builder.symmetricSuccessiveOverRelaxationOmega)
-                );
-                Matrix temporaryMatrix;
-                try {
-                    temporaryMatrix =
-                            DMinusL.multiply(D.computeInverse()).multiply(DMinusL.transpose()).computeInverse();
-                } catch (SingularMatrixException e) {
-                    System.err.println("WARNING: Singular matrix in conjugate gradient problem. " +
-                                               "Trying the Jacobi preconditioning method instead of the " +
-                                               "symmetric successive over-relaxation preconditioning method!");
-                    preconditioningMethod = PreconditioningMethod.JACOBI;
-                    preconditionerMatrixInverse = null;
-                    break;
-                }
-                preconditioningMethod = builder.preconditioningMethod;
-                preconditionerMatrixInverse = temporaryMatrix;
-                break;
-            default:
-                throw new NotImplementedException();
+        // Initialization for the preconditioning method.
+        PreconditioningMethod temporaryPreconditioningMethod;
+        Matrix temporaryPreconditionerMatrixInverse;
+        try {
+            temporaryPreconditioningMethod = builder.preconditioningMethod;
+            temporaryPreconditionerMatrixInverse = builder.preconditioningMethod.initializeMethod(this, builder);
+        } catch (SingularMatrixException e) {
+            System.err.println("WARNING: Singular matrix in conjugate gradient problem. " +
+                                       "Trying the Jacobi preconditioning method instead of the " +
+                                       "symmetric successive over-relaxation preconditioning method!");
+            temporaryPreconditioningMethod = PreconditioningMethod.JACOBI;
+            temporaryPreconditionerMatrixInverse = null;
         }
+        preconditioningMethod = temporaryPreconditioningMethod;
+        preconditionerMatrixInverse = temporaryPreconditionerMatrixInverse;
 
-        computePreconditioningSystemSolution();
+        preconditioningMethod.computePreconditioningSystemSolution(this);
         currentDirection = currentY.multiply(-1);
     }
 
     @Override
     public Vector solve() {
         currentPoint = super.solve();
-        if (problemConversionMethod == ProblemConversionMethod.CONJUGATE_GRADIENT_NORMAL_EQUATION_ERROR) {
-            currentPoint = initialATranspose.multiply(currentPoint);
+        if (convertedProblem) {
+            currentPoint = problemConversionMethod.transformPoint(currentPoint);
         }
         return currentPoint;
     }
@@ -205,40 +168,73 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
                 / previousDirection.multiply(A).innerProduct(previousDirection);
         currentPoint = previousPoint.add(previousDirection.multiply(currentStepSize));
         currentGradient = previousGradient.add(A.multiply(previousDirection).multiply(currentStepSize));
-        computePreconditioningSystemSolution();
+        preconditioningMethod.computePreconditioningSystemSolution(this);
         beta = currentGradient.innerProduct(currentY) / previousGradient.innerProduct(previousY);
         currentDirection = currentY.multiply(-1).add(previousDirection.multiply(beta));
         currentObjectiveValue = objective.getValue(currentPoint);
     }
 
-    private void computePreconditioningSystemSolution() {
-        switch (preconditioningMethod) {
-            case IDENTITY:
-                currentY = currentGradient;
-                break;
-            case JACOBI:
-                double[] tempY = new double[currentGradient.getDimension()];
-                for (int i = 0; i < tempY.length; i++) {
-                    tempY[i] = currentGradient.getElement(i) / A.getElement(i, i);
-                }
-                currentY = new Vector(tempY);
-                break;
-            case SYMMETRIC_SUCCESSIVE_OVER_RELAXATION:
-                currentY = preconditionerMatrixInverse.multiply(currentGradient);
-                break;
-            default:
-                throw new NotImplementedException();
-        }
-    }
-
     public enum PreconditioningMethod {
         /** Use the identity matrix as the preconditioner matrix. This gives the simple conjugate gradient method (that
          * is, there is no preconditioning). */
-        IDENTITY,
+        IDENTITY {
+            @Override
+            protected Matrix initializeMethod(ConjugateGradientSolver solver,
+                                              AbstractBuilder builder) {
+                return null;
+            }
+
+            @Override
+            protected void computePreconditioningSystemSolution(ConjugateGradientSolver solver) {
+                solver.currentY = solver.currentGradient;
+            }
+        },
         /** Use a diagonal matrix, whose diagonal elements are equal to the diagonal elements of A, as the
          * preconditioner matrix. */
-        JACOBI,
-        SYMMETRIC_SUCCESSIVE_OVER_RELAXATION
+        JACOBI {
+            @Override
+            protected Matrix initializeMethod(ConjugateGradientSolver solver,
+                                              AbstractBuilder builder) {
+                return null;
+            }
+
+            @Override
+            protected void computePreconditioningSystemSolution(ConjugateGradientSolver solver) {
+                double[] tempY = new double[solver.currentGradient.getDimension()];
+                for (int i = 0; i < tempY.length; i++) {
+                    tempY[i] = solver.currentGradient.getElement(i) / solver.A.getElement(i, i);
+                }
+                solver.currentY = new Vector(tempY);
+            }
+        },
+        SYMMETRIC_SUCCESSIVE_OVER_RELAXATION {
+            @Override
+            protected Matrix initializeMethod(ConjugateGradientSolver solver,
+                                              AbstractBuilder builder) throws SingularMatrixException {
+                double[] diagonal = new double[solver.A.getRowDimension()];
+                double[][] lowerDiagonalMatrix = new double[solver.A.getRowDimension()][solver.A.getColumnDimension()];
+                for (int i = 0; i < solver.A.getRowDimension(); i++) {
+                    diagonal[i] = solver.A.getElement(i, i);
+                    for (int j = 0; j < i; j++) {
+                        lowerDiagonalMatrix[i][j] = solver.A.getElement(i, j);
+                    }
+                }
+                Matrix D = Matrix.generateDiagonalMatrix(diagonal);
+                Matrix DMinusL = D.subtract(
+                        (new Matrix(lowerDiagonalMatrix)).multiply(builder.symmetricSuccessiveOverRelaxationOmega)
+                );
+                return DMinusL.multiply(D.computeInverse()).multiply(DMinusL.transpose()).computeInverse();
+            }
+
+            @Override
+            protected void computePreconditioningSystemSolution(ConjugateGradientSolver solver) {
+                solver.currentY = solver.preconditionerMatrixInverse.multiply(solver.currentGradient);
+            }
+        };
+
+        protected abstract Matrix initializeMethod(ConjugateGradientSolver solver,
+                                                   AbstractBuilder builder) throws SingularMatrixException;
+        protected abstract void computePreconditioningSystemSolution(ConjugateGradientSolver solver);
     }
 
     /**
@@ -247,7 +243,54 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
      * conjugate gradient normal equation residual (CGNR) method.
      * */
     public enum ProblemConversionMethod {
-        CONJUGATE_GRADIENT_NORMAL_EQUATION_RESIDUAL,
-        CONJUGATE_GRADIENT_NORMAL_EQUATION_ERROR
+        CONJUGATE_GRADIENT_NORMAL_EQUATION_RESIDUAL {
+            Matrix initialATranspose;
+
+            @Override
+            protected Matrix computeNewA(Matrix A) {
+                if (initialATranspose == null) {
+                    initialATranspose = A.transpose();
+                }
+                return initialATranspose.multiply(A);
+            }
+
+            @Override
+            protected Vector computeNewB(Matrix A, Vector b) {
+                if (initialATranspose == null) {
+                    initialATranspose = A.transpose();
+                }
+                return initialATranspose.multiply(b);
+            }
+
+            @Override
+            protected Vector transformPoint(Vector point) {
+                return point;
+            }
+        },
+        CONJUGATE_GRADIENT_NORMAL_EQUATION_ERROR {
+            Matrix initialATranspose;
+
+            @Override
+            protected Matrix computeNewA(Matrix A) {
+                if (initialATranspose == null) {
+                    initialATranspose = A.transpose();
+                }
+                return A.multiply(initialATranspose);
+            }
+
+            @Override
+            protected Vector computeNewB(Matrix A, Vector b) {
+                return b;
+            }
+
+            @Override
+            protected Vector transformPoint(Vector point) {
+                return initialATranspose.multiply(point);
+            }
+        };
+
+        protected abstract Matrix computeNewA(Matrix A);
+        protected abstract Vector computeNewB(Matrix A, Vector b);
+        protected abstract Vector transformPoint(Vector point);
     }
 }

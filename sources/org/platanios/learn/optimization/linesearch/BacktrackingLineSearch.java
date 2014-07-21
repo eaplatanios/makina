@@ -11,7 +11,7 @@ import org.platanios.learn.optimization.function.AbstractFunction;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class BacktrackingLineSearch extends IterativeLineSearch {
+public final class BacktrackingLineSearch extends IterativeLineSearch {
     /** The contraption factor to use during the step size update on each failure to satisfy the Armijo condition. */
     private final double contraptionFactor;
     /** The proportionality constant to use for the Armijo condition. */
@@ -37,11 +37,7 @@ public class BacktrackingLineSearch extends IterativeLineSearch {
         this.c = c;
     }
 
-    /**
-     * {@inheritDoc}
-     * @param point
-     * @param direction
-     */
+    /** {@inheritDoc} */
     @Override
     public double performLineSearch(Vector point,
                                     Vector direction) {
