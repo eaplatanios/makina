@@ -19,7 +19,7 @@ public class CoordinateDescentSolverTest {
                         .build();
         double[] actualResult = coordinateDescentSolver.solve().getArray();
         double[] expectedResult = new double[] { 1, 1 };
-        Assert.assertArrayEquals(expectedResult, actualResult, 0.2);
+        Assert.assertArrayEquals(expectedResult, actualResult, 0.3);
 
         System.out.println("Quadratic Function Coordinate Descent (Cycle Method):\n");
         Matrix A = new Matrix(new double[][] { { 1, 0.5 }, { 0.5, 1 } });
@@ -42,7 +42,7 @@ public class CoordinateDescentSolverTest {
                         .build();
         double[] actualResult = coordinateDescentSolver.solve().getArray();
         double[] expectedResult = new double[] { 1, 1 };
-        Assert.assertArrayEquals(expectedResult, actualResult, 0.2);
+        Assert.assertArrayEquals(expectedResult, actualResult, 0.3);
 
         System.out.println("Quadratic Function Coordinate Descent (Back and Forth Method):\n");
         Matrix A = new Matrix(new double[][] { { 1, 0.5 }, { 0.5, 1 } });
