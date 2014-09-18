@@ -108,7 +108,7 @@ public class CholeskyDecompositionTest {
         };
         double[] tempVectorArray = new double[] { 1.12, 3.40, 2.10 };
         CholeskyDecomposition choleskyDecomposition = new CholeskyDecomposition(new Matrix(testMatrixArray));
-        double[] actualResult = choleskyDecomposition.solve(new Vector(tempVectorArray)).getArray();
+        double[] actualResult = choleskyDecomposition.solve(new DenseVector(tempVectorArray)).getDenseArray();
         double[] expectedResult = new double [] { -0.1913, 0.6795, -0.0577 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-4);
     }

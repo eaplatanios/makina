@@ -1,5 +1,6 @@
 package org.platanios.learn.optimization;
 
+import org.platanios.learn.math.matrix.DenseVector;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
@@ -18,7 +19,7 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
     private Matrix previousH;
     Vector[] s;
     Vector[] y;
-    private Vector initialHessianInverseDiagonal = new Vector(currentPoint.getDimension(), 1);
+    private Vector initialHessianInverseDiagonal = new DenseVector(currentPoint.getDimension(), 1);
 
     private double symmetricRankOneSkippingParameter = 1e-8;
 
@@ -164,7 +165,7 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
             protected void updateDirection(QuasiNewtonSolver solver) {
                 if (solver.currentIteration > 0) {
                     solver.initialHessianInverseDiagonal =
-                            (new Vector(solver.currentPoint.getDimension(), 1))
+                            (new DenseVector(solver.currentPoint.getDimension(), 1))
                                     .multiply(solver.s[0].innerProduct(solver.y[0])
                                                       / solver.y[0].innerProduct(solver.y[0]));
                 }

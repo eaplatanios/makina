@@ -2,6 +2,7 @@ package org.platanios.learn.optimization;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.platanios.learn.math.matrix.DenseVector;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.LinearLeastSquaresFunction;
@@ -18,12 +19,12 @@ public class LinearLeastSquaresSolverTest {
                 { 1, 3 },
                 { 1, 4 }
         });
-        Vector y = new Vector(new double[] { 6, 5, 7, 10 });
+        Vector y = new DenseVector(new double[] { 6, 5, 7, 10 });
         LinearLeastSquaresSolver linearLeastSquaresSolver =
                 new LinearLeastSquaresSolver.Builder(new LinearLeastSquaresFunction(J, y))
                         .method(LinearLeastSquaresSolver.Method.CHOLESKY_DECOMPOSITION)
                         .build();
-        double[] actualResult = linearLeastSquaresSolver.solve().getArray();
+        double[] actualResult = linearLeastSquaresSolver.solve().getDenseArray();
         double[] expectedResult = new double[] { 3.5, 1.4 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-8);
     }
@@ -36,12 +37,12 @@ public class LinearLeastSquaresSolverTest {
                 { 1, 3 },
                 { 1, 4 }
         });
-        Vector y = new Vector(new double[] { 6, 5, 7, 10 });
+        Vector y = new DenseVector(new double[] { 6, 5, 7, 10 });
         LinearLeastSquaresSolver linearLeastSquaresSolver =
                 new LinearLeastSquaresSolver.Builder(new LinearLeastSquaresFunction(J, y))
                         .method(LinearLeastSquaresSolver.Method.QR_DECOMPOSITION)
                         .build();
-        double[] actualResult = linearLeastSquaresSolver.solve().getArray();
+        double[] actualResult = linearLeastSquaresSolver.solve().getDenseArray();
         double[] expectedResult = new double[] { 3.5, 1.4 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-8);
     }
@@ -54,12 +55,12 @@ public class LinearLeastSquaresSolverTest {
                 { 1, 3 },
                 { 1, 4 }
         });
-        Vector y = new Vector(new double[] { 6, 5, 7, 10 });
+        Vector y = new DenseVector(new double[] { 6, 5, 7, 10 });
         LinearLeastSquaresSolver linearLeastSquaresSolver =
                 new LinearLeastSquaresSolver.Builder(new LinearLeastSquaresFunction(J, y))
                         .method(LinearLeastSquaresSolver.Method.SINGULAR_VALUE_DECOMPOSITION)
                         .build();
-        double[] actualResult = linearLeastSquaresSolver.solve().getArray();
+        double[] actualResult = linearLeastSquaresSolver.solve().getDenseArray();
         double[] expectedResult = new double[] { 3.5, 1.4 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-8);
     }
@@ -72,12 +73,12 @@ public class LinearLeastSquaresSolverTest {
                 { 1, 3 },
                 { 1, 4 }
         });
-        Vector y = new Vector(new double[] { 6, 5, 7, 10 });
+        Vector y = new DenseVector(new double[] { 6, 5, 7, 10 });
         LinearLeastSquaresSolver linearLeastSquaresSolver =
                 new LinearLeastSquaresSolver.Builder(new LinearLeastSquaresFunction(J, y))
                         .method(LinearLeastSquaresSolver.Method.CONJUGATE_GRADIENT)
                         .build();
-        double[] actualResult = linearLeastSquaresSolver.solve().getArray();
+        double[] actualResult = linearLeastSquaresSolver.solve().getDenseArray();
         double[] expectedResult = new double[] { 3.5, 1.4 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-8);
     }

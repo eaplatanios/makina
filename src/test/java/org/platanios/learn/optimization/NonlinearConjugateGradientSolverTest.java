@@ -15,7 +15,7 @@ public class NonlinearConjugateGradientSolverTest {
                         .method(NonlinearConjugateGradientSolver.Method.FLETCHER_RIEVES)
                         .restartMethod(NonlinearConjugateGradientSolver.RestartMethod.NO_RESTART)
                         .build();
-        double[] actualResult = fletcherReevesSolver.solve().getArray();
+        double[] actualResult = fletcherReevesSolver.solve().getDenseArray();
         double[] expectedResult = new double[] { 1, 1 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 
@@ -25,7 +25,7 @@ public class NonlinearConjugateGradientSolverTest {
                         .method(NonlinearConjugateGradientSolver.Method.FLETCHER_RIEVES)
                         .restartMethod(NonlinearConjugateGradientSolver.RestartMethod.N_STEP)
                         .build();
-        actualResult = fletcherReevesSolver.solve().getArray();
+        actualResult = fletcherReevesSolver.solve().getDenseArray();
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 
         System.out.println("Rosenbrock Function Fletcher-Reeves Gradients-Orthogonality-Check-Restart Solver:\n");
@@ -34,7 +34,7 @@ public class NonlinearConjugateGradientSolverTest {
                         .method(NonlinearConjugateGradientSolver.Method.FLETCHER_RIEVES)
                         .restartMethod(NonlinearConjugateGradientSolver.RestartMethod.GRADIENTS_ORTHOGONALITY_CHECK)
                         .build();
-        actualResult = fletcherReevesSolver.solve().getArray();
+        actualResult = fletcherReevesSolver.solve().getDenseArray();
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
     }
 
@@ -46,7 +46,7 @@ public class NonlinearConjugateGradientSolverTest {
                         .method(NonlinearConjugateGradientSolver.Method.POLAK_RIBIERE)
                         .restartMethod(NonlinearConjugateGradientSolver.RestartMethod.NO_RESTART)
                         .build();
-        double[] actualResult = polakRibiereSolver.solve().getArray();
+        double[] actualResult = polakRibiereSolver.solve().getDenseArray();
         double[] expectedResult = new double[] { 1, 1 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 
@@ -56,7 +56,7 @@ public class NonlinearConjugateGradientSolverTest {
                         .method(NonlinearConjugateGradientSolver.Method.POLAK_RIBIERE)
                         .restartMethod(NonlinearConjugateGradientSolver.RestartMethod.N_STEP)
                         .build();
-        actualResult = polakRibiereSolver.solve().getArray();
+        actualResult = polakRibiereSolver.solve().getDenseArray();
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 
         System.out.println("Rosenbrock Function Polak-Ribiere Gradients-Orthogonality-Check-Restart Solver:\n");
@@ -65,7 +65,7 @@ public class NonlinearConjugateGradientSolverTest {
                         .method(NonlinearConjugateGradientSolver.Method.POLAK_RIBIERE)
                         .restartMethod(NonlinearConjugateGradientSolver.RestartMethod.GRADIENTS_ORTHOGONALITY_CHECK)
                         .build();
-        actualResult = polakRibiereSolver.solve().getArray();
+        actualResult = polakRibiereSolver.solve().getDenseArray();
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
     }
 
@@ -77,7 +77,7 @@ public class NonlinearConjugateGradientSolverTest {
                         .method(NonlinearConjugateGradientSolver.Method.POLAK_RIBIERE_PLUS)
                         .restartMethod(NonlinearConjugateGradientSolver.RestartMethod.NO_RESTART)
                         .build();
-        double[] actualResult = polakRibierePlusSolver.solve().getArray();
+        double[] actualResult = polakRibierePlusSolver.solve().getDenseArray();
         double[] expectedResult = new double[] { 1, 1 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 
@@ -87,7 +87,7 @@ public class NonlinearConjugateGradientSolverTest {
                         .method(NonlinearConjugateGradientSolver.Method.POLAK_RIBIERE_PLUS)
                         .restartMethod(NonlinearConjugateGradientSolver.RestartMethod.N_STEP)
                         .build();
-        actualResult = polakRibierePlusSolver.solve().getArray();
+        actualResult = polakRibierePlusSolver.solve().getDenseArray();
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 
         System.out.println("Rosenbrock Function Polak-Ribiere+ Gradients-Orthogonality-Check-Restart Solver:\n");
@@ -96,7 +96,7 @@ public class NonlinearConjugateGradientSolverTest {
                         .method(NonlinearConjugateGradientSolver.Method.POLAK_RIBIERE_PLUS)
                         .restartMethod(NonlinearConjugateGradientSolver.RestartMethod.GRADIENTS_ORTHOGONALITY_CHECK)
                         .build();
-        actualResult = polakRibierePlusSolver.solve().getArray();
+        actualResult = polakRibierePlusSolver.solve().getDenseArray();
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
     }
 
@@ -108,7 +108,7 @@ public class NonlinearConjugateGradientSolverTest {
                         .method(NonlinearConjugateGradientSolver.Method.HESTENES_STIEFEL)
                         .restartMethod(NonlinearConjugateGradientSolver.RestartMethod.NO_RESTART)
                         .build();
-        double[] actualResult = hestenesStiefelSolver.solve().getArray();
+        double[] actualResult = hestenesStiefelSolver.solve().getDenseArray();
         double[] expectedResult = new double[] { 1, 1 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 
@@ -118,7 +118,7 @@ public class NonlinearConjugateGradientSolverTest {
                         .method(NonlinearConjugateGradientSolver.Method.HESTENES_STIEFEL)
                         .restartMethod(NonlinearConjugateGradientSolver.RestartMethod.N_STEP)
                         .build();
-        actualResult = hestenesStiefelSolver.solve().getArray();
+        actualResult = hestenesStiefelSolver.solve().getDenseArray();
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 
         System.out.println("Rosenbrock Function Hestenes-Stiefel Gradients-Orthogonality-Check-Restart Solver:\n");
@@ -127,7 +127,7 @@ public class NonlinearConjugateGradientSolverTest {
                         .method(NonlinearConjugateGradientSolver.Method.HESTENES_STIEFEL)
                         .restartMethod(NonlinearConjugateGradientSolver.RestartMethod.GRADIENTS_ORTHOGONALITY_CHECK)
                         .build();
-        actualResult = hestenesStiefelSolver.solve().getArray();
+        actualResult = hestenesStiefelSolver.solve().getDenseArray();
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
     }
 
@@ -139,7 +139,7 @@ public class NonlinearConjugateGradientSolverTest {
                         .method(NonlinearConjugateGradientSolver.Method.FLETCHER_RIEVES_POLAK_RIBIERE)
                         .restartMethod(NonlinearConjugateGradientSolver.RestartMethod.NO_RESTART)
                         .build();
-        double[] actualResult = fletcherRievesPolakRibiereSolver.solve().getArray();
+        double[] actualResult = fletcherRievesPolakRibiereSolver.solve().getDenseArray();
         double[] expectedResult = new double[] { 1, 1 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 
@@ -149,7 +149,7 @@ public class NonlinearConjugateGradientSolverTest {
                         .method(NonlinearConjugateGradientSolver.Method.FLETCHER_RIEVES_POLAK_RIBIERE)
                         .restartMethod(NonlinearConjugateGradientSolver.RestartMethod.N_STEP)
                         .build();
-        actualResult = fletcherRievesPolakRibiereSolver.solve().getArray();
+        actualResult = fletcherRievesPolakRibiereSolver.solve().getDenseArray();
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 
         System.out.println("Rosenbrock Function Fletcher-Rieves-Polak-Ribiere Gradients-Orthogonality-Check-Restart Solver:\n");
@@ -158,7 +158,7 @@ public class NonlinearConjugateGradientSolverTest {
                         .method(NonlinearConjugateGradientSolver.Method.FLETCHER_RIEVES_POLAK_RIBIERE)
                         .restartMethod(NonlinearConjugateGradientSolver.RestartMethod.GRADIENTS_ORTHOGONALITY_CHECK)
                         .build();
-        actualResult = fletcherRievesPolakRibiereSolver.solve().getArray();
+        actualResult = fletcherRievesPolakRibiereSolver.solve().getDenseArray();
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
     }
 
@@ -170,7 +170,7 @@ public class NonlinearConjugateGradientSolverTest {
                         .method(NonlinearConjugateGradientSolver.Method.DAI_YUAN)
                         .restartMethod(NonlinearConjugateGradientSolver.RestartMethod.NO_RESTART)
                         .build();
-        double[] actualResult = daiYuanSolver.solve().getArray();
+        double[] actualResult = daiYuanSolver.solve().getDenseArray();
         double[] expectedResult = new double[] { 1, 1 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 
@@ -180,7 +180,7 @@ public class NonlinearConjugateGradientSolverTest {
                         .method(NonlinearConjugateGradientSolver.Method.DAI_YUAN)
                         .restartMethod(NonlinearConjugateGradientSolver.RestartMethod.N_STEP)
                         .build();
-        actualResult = daiYuanSolver.solve().getArray();
+        actualResult = daiYuanSolver.solve().getDenseArray();
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 
         System.out.println("Rosenbrock Function Dai-Yuan Gradients-Orthogonality-Check-Restart Solver:\n");
@@ -189,7 +189,7 @@ public class NonlinearConjugateGradientSolverTest {
                         .method(NonlinearConjugateGradientSolver.Method.DAI_YUAN)
                         .restartMethod(NonlinearConjugateGradientSolver.RestartMethod.GRADIENTS_ORTHOGONALITY_CHECK)
                         .build();
-        actualResult = daiYuanSolver.solve().getArray();
+        actualResult = daiYuanSolver.solve().getDenseArray();
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
     }
 
@@ -201,7 +201,7 @@ public class NonlinearConjugateGradientSolverTest {
                         .method(NonlinearConjugateGradientSolver.Method.HAGER_ZHANG)
                         .restartMethod(NonlinearConjugateGradientSolver.RestartMethod.NO_RESTART)
                         .build();
-        double[] actualResult = hagerZhangSolver.solve().getArray();
+        double[] actualResult = hagerZhangSolver.solve().getDenseArray();
         double[] expectedResult = new double[] { 1, 1 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 
@@ -211,7 +211,7 @@ public class NonlinearConjugateGradientSolverTest {
                         .method(NonlinearConjugateGradientSolver.Method.HAGER_ZHANG)
                         .restartMethod(NonlinearConjugateGradientSolver.RestartMethod.N_STEP)
                         .build();
-        actualResult = hagerZhangSolver.solve().getArray();
+        actualResult = hagerZhangSolver.solve().getDenseArray();
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 
         System.out.println("Rosenbrock Function Hager-Zhang Gradients-Orthogonality-Check-Restart Solver:\n");
@@ -220,7 +220,7 @@ public class NonlinearConjugateGradientSolverTest {
                         .method(NonlinearConjugateGradientSolver.Method.HAGER_ZHANG)
                         .restartMethod(NonlinearConjugateGradientSolver.RestartMethod.GRADIENTS_ORTHOGONALITY_CHECK)
                         .build();
-        actualResult = hagerZhangSolver.solve().getArray();
+        actualResult = hagerZhangSolver.solve().getDenseArray();
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
     }
 }

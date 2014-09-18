@@ -14,7 +14,7 @@ public class QuasiNewtonSolverTest {
                 new QuasiNewtonSolver.Builder(new RosenbrockFunction(), new double[] { -1.2, 1 })
                 .method(QuasiNewtonSolver.Method.DAVIDON_FLETCHER_POWELL)
                 .build();
-        double[] actualResult = quasiNewtonDFPSolver.solve().getArray();
+        double[] actualResult = quasiNewtonDFPSolver.solve().getDenseArray();
         double[] expectedResult = new double[] { 1, 1 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
     }
@@ -26,7 +26,7 @@ public class QuasiNewtonSolverTest {
                 new QuasiNewtonSolver.Builder(new RosenbrockFunction(), new double[] { -1.2, 1 })
                         .method(QuasiNewtonSolver.Method.BROYDEN_FLETCHER_GOLDFARB_SHANNO)
                         .build();
-        double[] actualResult = quasiNewtonBFGSSolver.solve().getArray();
+        double[] actualResult = quasiNewtonBFGSSolver.solve().getDenseArray();
         double[] expectedResult = new double[] { 1, 1 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
     }
@@ -38,7 +38,7 @@ public class QuasiNewtonSolverTest {
 //                new QuasiNewtonSolver.Builder(new RosenbrockFunction(), new double[] { -1.2, 1 })
 //                .method(QuasiNewtonSolver.Method.SYMMETRIC_RANK_ONE)
 //                .build();
-//        double[] actualResult = quasiNewtonSR1Solver.solve().getArray();
+//        double[] actualResult = quasiNewtonSR1Solver.solve().getDenseArray();
 //        double[] expectedResult = new double[] { 1, 1 };
 //        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 //    }
@@ -50,7 +50,7 @@ public class QuasiNewtonSolverTest {
 //                new QuasiNewtonSolver.Builder(new RosenbrockFunction(), new double[] { -1.2, 1 })
 //                        .method(QuasiNewtonSolver.Method.BROYDEN)
 //                        .build();
-//        double[] actualResult = quasiNewtonBroydenSolver.solve().getArray();
+//        double[] actualResult = quasiNewtonBroydenSolver.solve().getDenseArray();
 //        double[] expectedResult = new double[] { 1, 1 };
 //        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
 //    }
@@ -63,7 +63,7 @@ public class QuasiNewtonSolverTest {
                 .method(QuasiNewtonSolver.Method.LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO)
                 .m(10)
                 .build();
-        double[] actualResult = quasiNewtonLBFGSSolver.solve().getArray();
+        double[] actualResult = quasiNewtonLBFGSSolver.solve().getDenseArray();
         double[] expectedResult = new double[] { 1, 1 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
     }

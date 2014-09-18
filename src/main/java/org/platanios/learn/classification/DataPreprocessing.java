@@ -1,5 +1,6 @@
 package org.platanios.learn.classification;
 
+import org.platanios.learn.math.matrix.DenseVector;
 import org.platanios.learn.math.matrix.Vector;
 
 import java.io.BufferedReader;
@@ -35,7 +36,7 @@ public class DataPreprocessing {
                 for (int i = 0; i < numberOfFeatures; i++) {
                     dataSample[i] = Double.parseDouble(outputs[i+1]);
                 }
-                data.add(new Vector(dataSample));
+                data.add(new DenseVector(dataSample));
             }
         } catch (IOException e) {
             e.printStackTrace();

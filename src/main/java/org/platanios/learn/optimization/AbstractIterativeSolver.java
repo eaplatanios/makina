@@ -1,5 +1,6 @@
 package org.platanios.learn.optimization;
 
+import org.platanios.learn.math.matrix.DenseVector;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
 
@@ -123,7 +124,7 @@ abstract class AbstractIterativeSolver implements Solver {
         checkForObjectiveConvergence = builder.checkForObjectiveConvergence;
         checkForGradientConvergence = builder.checkForGradientConvergence;
 
-        currentPoint = new Vector(builder.initialPoint);
+        currentPoint = new DenseVector(builder.initialPoint);
         currentGradient = objective.getGradient(currentPoint);
         currentObjectiveValue = objective.getValue(currentPoint);
         currentIteration = 0;
@@ -164,7 +165,7 @@ abstract class AbstractIterativeSolver implements Solver {
             if (checkForGradientConvergence) {
                 if (this instanceof NonlinearConjugateGradientSolver) {
                     gradientNorm =
-                            Math.abs(currentGradient.getMaximumValue()) / (1 + Math.abs(currentObjectiveValue));
+                            Math.abs(currentGradient.max()) / (1 + Math.abs(currentObjectiveValue));
                     gradientConverged = gradientNorm <= gradientTolerance;
                 } else {
                     gradientNorm = currentGradient.computeL2Norm();

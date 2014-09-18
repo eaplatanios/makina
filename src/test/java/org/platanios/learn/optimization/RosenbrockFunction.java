@@ -1,5 +1,6 @@
 package org.platanios.learn.optimization;
 
+import org.platanios.learn.math.matrix.DenseVector;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
@@ -10,24 +11,24 @@ import org.platanios.learn.optimization.function.AbstractFunction;
 class RosenbrockFunction extends AbstractFunction {
     @Override
     public double computeValue(Vector optimizationVariables) {
-        double x1 = optimizationVariables.getElement(0);
-        double x2 = optimizationVariables.getElement(1);
+        double x1 = optimizationVariables.get(0);
+        double x2 = optimizationVariables.get(1);
         return 100 * Math.pow(x2 - Math.pow(x1, 2), 2) + Math.pow(1 - x1, 2);
     }
 
     @Override
     public Vector computeGradient(Vector optimizationVariables) {
-        double x1 = optimizationVariables.getElement(0);
-        double x2 = optimizationVariables.getElement(1);
+        double x1 = optimizationVariables.get(0);
+        double x2 = optimizationVariables.get(1);
         double dx1 = - 400 * (x2 - Math.pow(x1, 2)) * x1 - 2 * (1 - x1);
         double dx2 = 200 * (x2 - Math.pow(x1, 2));
-        return new Vector(new double[] { dx1, dx2 });
+        return new DenseVector(new double[] { dx1, dx2 });
     }
 
     @Override
     public Matrix computeHessian(Vector optimizationVariables) {
-        double x1 = optimizationVariables.getElement(0);
-        double x2 = optimizationVariables.getElement(1);
+        double x1 = optimizationVariables.get(0);
+        double x2 = optimizationVariables.get(1);
         double dx1x1 = 1200 * Math.pow(x1, 2) - 400 * x2 + 2;
         double dx1x2 = - 400 * x1;
         double dx2x2 = 200;

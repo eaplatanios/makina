@@ -95,7 +95,29 @@ public class LUDecomposition {
      * @return          The solution of the system of equations.
      */
     public Vector solve(Vector vector) throws SingularMatrixException {
-        return new Vector(solve(vector.copyAsMatrix()).getColumnPackedArrayCopy());
+        if (vector.getDimension() != rowDimension) {
+            throw new IllegalArgumentException("Matrix row and vector dimensions must agree.");
+        }
+        if (!isNonSingular) {
+            throw new SingularMatrixException(
+                    "Singular matrix! A solution cannot be obtained using the LU decomposition!"
+            );
+        }
+        Vector resultVector = vector.get(pivot);
+        // Solve \(LY=B(pivot,:)\).
+        for (int k = 0; k < columnDimension; k++) {
+            for (int i = k + 1; i < columnDimension; i++) {
+                resultVector.set(i, resultVector.get(i) - resultVector.get(k) * LU[i][k]);
+            }
+        }
+        // Solve \(UX=Y\).
+        for (int k = columnDimension - 1; k >= 0; k--) {
+            resultVector.set(k, resultVector.get(k) / LU[k][k]);
+            for (int i = 0; i < k; i++) {
+                resultVector.set(i, resultVector.get(i) - resultVector.get(k) * LU[i][k]);
+            }
+        }
+        return resultVector;
     }
 
     /**

@@ -1,108 +1,39 @@
 package org.platanios.learn.math.matrix;
 
-import org.platanios.learn.math.Utilities;
-
 import java.util.function.Function;
 
 /**
- * Implements a class representing vectors and supporting operations related to vectors. Vectors are stored in an
- * internal one-dimensional array.
- *
  * @author Emmanouil Antonios Platanios
  */
-public class Vector {
-    /** The dimension of the vector. */
-    private final int dimension;
-
-    /** Array for internal storage of the vector elements. */
-    private double[] array;
-
-    //region Constructors
+public interface Vector {
     /**
-     * Constructs a vector with the given dimension and fills it with zeros.
+     * Gets the type of this vector (i.e., dense, sparse, etc.).
      *
-     * @param   dimension   The dimension of the vector.
+     * @return  The type of this vector.
      */
-    public Vector(int dimension) {
-        this.dimension = dimension;
-        array = new double[dimension];
-    }
+    VectorType getType();
 
-    /**
-     * Constructs a vector with the given dimensions and fills it with the given value.
-     *
-     * @param   dimension   The dimension of the vector.
-     * @param   value       The value with which to fill the vector.
-     */
-    public Vector(int dimension, double value) {
-        this.dimension = dimension;
-        array = new double[dimension];
-        for (int i = 0; i < dimension; i++) {
-            array[i] = value;
-        }
-    }
-
-    /**
-     * Constructs a vector from a one-dimensional array.
-     *
-     * @param   array   One-dimensional array of doubles.
-     */
-    public Vector(double[] array) {
-        dimension = array.length;
-        this.array = array;
-    }
-    //endregion
-
-    //region Getters, Setters and Other Such Methods
     /**
      * Copies this vector. // TODO: Switch this to a static factory or copy constructor.
      *
      * @return  A copy of this vector.
      */
-    public Vector copy() {
-        Vector resultVector = new Vector(dimension);
-        double[] resultVectorArray = resultVector.getArray();
-        System.arraycopy(array, 0, resultVectorArray, 0, dimension);
-        return resultVector;
-    }
+    Vector copy();
 
     /**
-     * Copies this vector to a new matrix structure.
+     * Gets a dense array representation of this vector. This array is completely separate from the inner representation
+     * used by the vector implementation.
      *
-     * @return  A copy of this vector represented as a new matrix.
+     * @return  A dense array representation of this vector.
      */
-    public Matrix copyAsMatrix() {
-        return new Matrix(array, array.length);
-    }
-
-    /**
-     * Gets a pointer to the internal one-dimensional array.
-     *
-     * @return  A pointer to the internal one-dimensional array.
-     */
-    public double[] getArray() {
-        return array;
-    }
-
-    /**
-     * Copies the internal one-dimensional array.
-     *
-     * @return  A copy of the internal one-dimensional array.
-     */
-    public double[] getArrayCopy() {
-        double[] resultArray = new double[dimension];
-        System.arraycopy(array, 0, resultArray, 0, dimension);
-        return resultArray;
-    }
+    double[] getDenseArray();
 
     /**
      * Gets the dimension of this vector.
      *
      * @return  The dimension of this vector.
      */
-    public int getDimension() {
-        return dimension;
-    }
+    int getDimension();
 
     /**
      * Gets the value of the vector element at the provided index.
@@ -110,30 +41,7 @@ public class Vector {
      * @param   index   The index of the element.
      * @return          The value of the element at the provided index.
      */
-    public double getElement(int index) {
-        return array[index]; // TODO: Check for the index values (i.e. out of bounds).
-    }
-
-    /**
-     * Sets the value of the vector element at the provided index to the provided value.
-     *
-     * @param   index   The index of the element.
-     * @param   value   The value to which to set the element at the provided index.
-     */
-    public void setElement(int index, double value) {
-        array[index] = value;
-    }
-
-    /**
-     * Sets the value of all of the vector elements to the provided value.
-     *
-     * @param   value   The value to which to set the elements of this vector.
-     */
-    public void setAllElements(double value) {
-        for (int i = 0; i < dimension; i++) {
-            array[i] = value;
-        }
-    }
+    double get(int index);
 
     /**
      * Gets a sub-vector of this vector.
@@ -144,18 +52,7 @@ public class Vector {
      *
      * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided sub-vector indexes are out of bounds.
      */
-    public Vector getSubVector(int initialIndex, int finalIndex) {
-        Vector resultVector = new Vector(finalIndex - initialIndex + 1);
-        double[] resultVectorArray = resultVector.getArray();
-        try {
-            System.arraycopy(array, initialIndex, resultVectorArray, 0, finalIndex + 1 - initialIndex);
-        } catch(ArrayIndexOutOfBoundsException e) {
-            throw new ArrayIndexOutOfBoundsException(
-                    "Some or all of the provided sub-vector indexes are out of bounds."
-            );
-        }
-        return resultVector;
-    }
+    Vector get(int initialIndex, int finalIndex);
 
     /**
      * Gets a sub-vector of this vector.
@@ -165,20 +62,15 @@ public class Vector {
      *
      * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided sub-vector indexes are out of bounds.
      */
-    public Vector getSubVector(int[] indexes) {
-        Vector resultVector = new Vector(indexes.length);
-        double[] resultVectorArray = resultVector.getArray();
-        try {
-            for (int i = 0; i < indexes.length; i++) {
-                resultVectorArray[i] = array[indexes[i]];
-            }
-        } catch(ArrayIndexOutOfBoundsException e) {
-            throw new ArrayIndexOutOfBoundsException(
-                    "Some or all of the provided sub-vector indexes are out of bounds."
-            );
-        }
-        return resultVector;
-    }
+    Vector get(int[] indexes);
+
+    /**
+     * Sets the value of the vector element at the provided index to the provided value.
+     *
+     * @param   index   The index of the element.
+     * @param   value   The value to which to set the element at the provided index.
+     */
+    void set(int index, double value);
 
     /**
      * Sets a sub-vector of this vector to the provided vector values.
@@ -189,17 +81,7 @@ public class Vector {
      *
      * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided vector indexes are out of bounds.
      */
-    public void setSubVector(int initialIndex, int finalIndex, Vector vector) {
-        try {
-            for (int i = initialIndex; i <= finalIndex; i++) {
-                array[i] = vector.getElement(i - initialIndex);
-            }
-        } catch(ArrayIndexOutOfBoundsException e) {
-            throw new ArrayIndexOutOfBoundsException(
-                    "Some or all of the provided vector indexes are out of bounds."
-            );
-        }
-    }
+    void set(int initialIndex, int finalIndex, Vector vector);
 
     /**
      * Sets a sub-vector of this matrix to the provided vector values.
@@ -210,59 +92,36 @@ public class Vector {
      *
      * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided vector indexes are out of bounds.
      */
-    public void setSubVector(int[] indexes, Vector vector) {
-        try {
-            for (int i = 0; i < indexes.length; i++) {
-                array[indexes[i]] = vector.getElement(i);
-            }
-        } catch(ArrayIndexOutOfBoundsException e) {
-            throw new ArrayIndexOutOfBoundsException(
-                    "Some or all of the provided vector indexes are out of bounds."
-            );
-        }
-    }
-    //endregion
+    void set(int[] indexes, Vector vector);
+
+    /**
+     * Sets the value of all of the vector elements to the provided value.
+     *
+     * @param   value   The value to which to set the elements of this vector.
+     */
+    void setAll(double value);
 
     /**
      * Gets the maximum value of all elements in this vector.
      *
      * @return  The maximum value of all elements in this vector.
      */
-    public double getMaximumValue() {
-        double maxValue = array[0];
-        for (int i = 1; i < dimension; i++) {
-            maxValue = Math.max(maxValue, array[i]);
-        }
-        return maxValue;
-    }
+    double max();
 
     /**
      * Gets the minimum value of all elements in this vector.
      *
      * @return  The minimum value of all elements in this vector.
      */
-    public double getMinimumValue() {
-        double minValue = array[0];
-        for (int i = 1; i < dimension; i++) {
-            minValue = Math.min(minValue, array[i]);
-        }
-        return minValue;
-    }
+    double min();
 
     /**
      * Computes and returns the sum of all elements in this vector.
      *
      * @return  The sum of all elements in this vector.
      */
-    public double computeSum() {
-        double sum = array[0];
-        for (int i = 1; i < dimension; i++) {
-            sum += array[i];
-        }
-        return sum;
-    }
+    double sum();
 
-    //region Norm Computations
     /**
      * Computes the \(L_1\) norm of this vector. Denoting this vector by \(\boldsymbol{x}\in\mathbb{R}^{n}\), its
      * element at index \(i\) by \(x_i\) and its \(L_1\) norm by \(\|\boldsymbol{x}\|_1\), we have that:
@@ -270,13 +129,7 @@ public class Vector {
      *
      * @return  The \(L_1\) norm of this vector.
      */
-    public double computeL1Norm() {
-        double l1Norm = 0;
-        for (int i = 0; i < dimension; i++) {
-            l1Norm += Math.abs(array[i]);
-        }
-        return l1Norm;
-    }
+    double computeL1Norm();
 
     /**
      * Computes the \(L_2\) norm of this vector. Denoting this vector by \(\boldsymbol{x}\in\mathbb{R}^{n}\), its
@@ -285,13 +138,7 @@ public class Vector {
      *
      * @return  The \(L_2\) norm of this vector.
      */
-    public double computeL2Norm() {
-        double l2Norm = 0;
-        for (int i = 0; i < dimension; i++) {
-            l2Norm = Utilities.computeHypotenuse(l2Norm, array[i]);
-        }
-        return l2Norm;
-    }
+    double computeL2Norm();
 
     /**
      * Computes the \(L_\infty\) norm of this vector. Denoting this vector by \(\boldsymbol{x}\in\mathbb{R}^{n}\), its
@@ -300,16 +147,8 @@ public class Vector {
      *
      * @return  The \(L_\infty\) norm of this vector.
      */
-    public double computeLInfinityNorm() {
-        double lInfinityNorm = 0;
-        for (int i = 0; i < dimension; i++) {
-            lInfinityNorm = Math.max(lInfinityNorm, array[i]);
-        }
-        return lInfinityNorm;
-    }
-    //endregion
+    double computeLInfinityNorm();
 
-    //region Unary Operations
     /**
      * Computes the result of applying the supplied function element-wise to the current vector and returns it in a new
      * vector.
@@ -317,31 +156,15 @@ public class Vector {
      * @param   function    The function to apply to the current vector element-wise.
      * @return              A new vector holding the result of the operation.
      */
-    public Vector computeFunctionResult(Function<Double, Double> function) {
-        Vector resultVector = new Vector(dimension);
-        double[] resultVectorArray = resultVector.getArray();
-        for (int i = 0; i < dimension; i++) {
-            resultVectorArray[i] = function.apply(array[i]);
-        }
-        return resultVector;
-    }
-    //endregion
+    Vector computeFunctionResult(Function<Double, Double> function);
 
-    //region Element-wise Operations
     /**
      * Adds a scalar to all entries of the current vector and returns the result in a new vector.
      *
      * @param   scalar  The scalar to add to entries of the current vector.
      * @return          A new vector holding the result of the addition.
      */
-    public Vector add(double scalar) {
-        Vector resultVector = new Vector(dimension);
-        double[] resultVectorArray = resultVector.getArray();
-        for (int i = 0; i < dimension; i++) {
-            resultVectorArray[i] = array[i] + scalar;
-        }
-        return resultVector;
-    }
+    Vector add(double scalar);
 
     /**
      * Adds another vector to the current vector and returns the result in a new vector.
@@ -349,38 +172,21 @@ public class Vector {
      * @param   vector  The vector to add to the current vector.
      * @return          A new vector holding the result of the addition.
      */
-    public Vector add(Vector vector) {
-        checkVectorDimensions(vector);
-        Vector resultVector = new Vector(dimension);
-        double[] resultVectorArray = resultVector.getArray();
-        for (int i = 0; i < dimension; i++) {
-            resultVectorArray[i] = array[i] + vector.array[i];
-        }
-        return resultVector;
-    }
+    Vector add(Vector vector);
 
     /**
      * Adds a scalar to all entries of the current vector and replaces the current vector with the result.
      *
      * @param   scalar  The scalar to add to entries of the current vector.
      */
-    public void addEquals(double scalar) {
-        for (int i = 0; i < dimension; i++) {
-            array[i] += scalar;
-        }
-    }
+    void addEquals(double scalar);
 
     /**
      * Adds another vector to the current vector and replaces the current vector with the result.
      *
      * @param   vector  The vector to add to the current vector.
      */
-    public void addEquals(Vector vector) {
-        checkVectorDimensions(vector);
-        for (int i = 0; i < dimension; i++) {
-            array[i] += vector.array[i];
-        }
-    }
+    void addEquals(Vector vector);
 
     /**
      * Subtracts a scalar from all entries of the current vector and returns the result in a new vector.
@@ -388,14 +194,7 @@ public class Vector {
      * @param   scalar  The scalar to subtract from all entries of the current vector.
      * @return          A new vector holding the result of the subtraction.
      */
-    public Vector subtract(double scalar) {
-        Vector resultVector = new Vector(dimension);
-        double[] resultVectorArray = resultVector.getArray();
-        for (int i = 0; i < dimension; i++) {
-            resultVectorArray[i] = array[i] - scalar;
-        }
-        return resultVector;
-    }
+    Vector subtract(double scalar);
 
     /**
      * Subtracts another vector from the current vector and returns the result in a new vector.
@@ -403,38 +202,21 @@ public class Vector {
      * @param   vector  The vector to subtract from the current vector.
      * @return          A new vector holding the result of the subtraction.
      */
-    public Vector subtract(Vector vector) {
-        checkVectorDimensions(vector);
-        Vector resultVector = new Vector(dimension);
-        double[] resultVectorArray = resultVector.getArray();
-        for (int i = 0; i < dimension; i++) {
-            resultVectorArray[i] = array[i] - vector.array[i];
-        }
-        return resultVector;
-    }
+    Vector subtract(Vector vector);
 
     /**
      * Subtracts a scalar from all entries of the current vector and replaces the current vector with the result.
      *
      * @param   scalar  The scalar to subtract from all entries of the current vector.
      */
-    public void subtractEquals(double scalar) {
-        for (int i = 0; i < dimension; i++) {
-            array[i] -= scalar;
-        }
-    }
+    void subtractEquals(double scalar);
 
     /**
      * Subtracts another vector from the current vector and replaces the current vector with the result.
      *
      * @param   vector  The vector to subtract from the current vector.
      */
-    public void subtractEquals(Vector vector) {
-        checkVectorDimensions(vector);
-        for (int i = 0; i < dimension; i++) {
-            array[i] -= vector.array[i];
-        }
-    }
+    void subtractEquals(Vector vector);
 
     /**
      * Multiplies another vector with the current vector element-wise and returns the result in a new vector.
@@ -442,27 +224,14 @@ public class Vector {
      * @param   vector  The vector to multiply with the current vector element-wise.
      * @return          A new vector holding the result of the multiplication.
      */
-    public Vector multiplyElementwise(Vector vector) {
-        checkVectorDimensions(vector);
-        Vector resultVector = new Vector(dimension);
-        double[] resultVectorArray = resultVector.getArray();
-        for (int i = 0; i < dimension; i++) {
-            resultVectorArray[i] = array[i] * vector.array[i];
-        }
-        return resultVector;
-    }
+    Vector multiplyElementwise(Vector vector);
 
     /**
      * Multiplies another vector with the current vector element-wise and replaces the current vector with the result.
      *
      * @param   vector  The vector to multiply with the current vector element-wise.
      */
-    public void multiplyElementwiseEquals(Vector vector) {
-        checkVectorDimensions(vector);
-        for (int i = 0; i < dimension; i++) {
-            array[i] *= vector.array[i];
-        }
-    }
+    void multiplyElementwiseEquals(Vector vector);
 
     /**
      * Divides another vector with the current vector element-wise and returns the result in a new vector.
@@ -470,28 +239,14 @@ public class Vector {
      * @param   vector  The vector to divide with the current vector element-wise.
      * @return          A new vector holding the result of the division.
      */
-    public Vector divideElementwise(Vector vector) {
-        checkVectorDimensions(vector);
-        Vector resultVector = new Vector(dimension);
-        double[] resultVectorArray = resultVector.getArray();
-        for (int i = 0; i < dimension; i++) {
-            resultVectorArray[i] = array[i] / vector.array[i];
-        }
-        return resultVector;
-    }
+    Vector divideElementwise(Vector vector);
 
     /**
      * Divides another vector with the current vector element-wise and replaces the current vector with the result.
      *
      * @param   vector  The vector to divide with the current vector element-wise.
      */
-    public void divideElementwiseEquals(Vector vector) {
-        checkVectorDimensions(vector);
-        for (int i = 0; i < dimension; i++) {
-            array[i] /= vector.array[i];
-        }
-    }
-    //endregion
+    void divideElementwiseEquals(Vector vector);
 
     /**
      * Multiplies the current vector with a scalar and returns the result in a new vector.
@@ -499,25 +254,14 @@ public class Vector {
      * @param   scalar  The scalar with which to multiply the current vector.
      * @return          A new vector holding the result of the multiplication.
      */
-    public Vector multiply(double scalar) {
-        Vector resultVector = new Vector(dimension);
-        double[] resultVectorArray = resultVector.getArray();
-        for (int i = 0; i < dimension; i++) {
-            resultVectorArray[i] = array[i] * scalar;
-        }
-        return resultVector;
-    }
+    Vector multiply(double scalar);
 
     /**
      * Multiplies the current vector with a scalar and replaces the current vector with the result.
      *
      * @param   scalar  The scalar with which to multiply the current vector.
      */
-    public void multiplyEquals(double scalar) {
-        for (int i = 0; i < dimension; i++) {
-            array[i] *= scalar;
-        }
-    }
+    void multiplyEquals(double scalar);
 
     /**
      * Divides the current vector with a scalar and returns the result in a new vector.
@@ -525,25 +269,14 @@ public class Vector {
      * @param   scalar  The scalar with which to divide the current vector.
      * @return          A new vector holding the result of the division.
      */
-    public Vector divide(double scalar) {
-        Vector resultVector = new Vector(dimension);
-        double[] resultVectorArray = resultVector.getArray();
-        for (int i = 0; i < dimension; i++) {
-            resultVectorArray[i] = array[i] / scalar;
-        }
-        return resultVector;
-    }
+    Vector divide(double scalar);
 
     /**
      * Divides the current vector with a scalar and replaces the current vector with the result.
      *
      * @param   scalar  The scalar with which to divide the current vector.
      */
-    public void divideEquals(double scalar) {
-        for (int i = 0; i < dimension; i++) {
-            array[i] /= scalar;
-        }
-    }
+    void divideEquals(double scalar);
 
     /**
      * Computes the inner product (also known as the dot product) between the current vector and another vector.
@@ -551,14 +284,7 @@ public class Vector {
      * @param   vector  The vector used to compute the inner product with the current vector.
      * @return          The resulting inner product value.
      */
-    public double innerProduct(Vector vector) {
-        checkVectorDimensions(vector);
-        double dotProduct = 0;
-        for (int i = 0; i < dimension; i++) {
-            dotProduct += array[i] * vector.getElement(i);
-        }
-        return dotProduct;
-    }
+    double innerProduct(Vector vector);
 
     /**
      * Computes the outer product between the current vector and another vector and returns the result in a new matrix.
@@ -566,17 +292,7 @@ public class Vector {
      * @param   vector  The vector used to compute the outer product with the current vector.
      * @return          A new matrix containing the result of the outer product operation.
      */
-    public Matrix outerProduct(Vector vector) {
-        checkVectorDimensions(vector);
-        Matrix resultMatrix = new Matrix(dimension, dimension);
-        double[][] resultMatrixArray = resultMatrix.getArray();
-        for (int i = 0; i < dimension; i++) {
-            for (int j = 0; j < dimension; j++) {
-                resultMatrixArray[i][j] = array[i] * vector.getElement(j);
-            }
-        }
-        return resultMatrix;
-    }
+    Matrix outerProduct(Vector vector);
 
     /**
      * Computes the product of this vector with a matrix and returns the result in a new vector.
@@ -584,67 +300,5 @@ public class Vector {
      * @param   matrix  The matrix with which to multiply the current vector.
      * @return          A new vector holding the result of the multiplication.
      */
-    public Vector multiply(Matrix matrix) {
-        if (matrix.getRowDimension() != dimension) {
-            throw new IllegalArgumentException(
-                    "The row dimension of the matrix must agree with the dimension of the vector."
-            );
-        }
-        Vector resultVector = new Vector(matrix.getColumnDimension());
-        double[] resultVectorArray = resultVector.getArray();
-        for (int i = 0; i < matrix.getRowDimension(); i++) {
-            for (int j = 0; j < dimension; j++) {
-                resultVectorArray[i] += array[j] * matrix.getElement(i, j);
-            }
-        }
-        return resultVector;
-    }
-
-    //region Special Matrix "Constructors"
-    /**
-     * Constructs and returns a vector with the provided dimension, filled with ones.
-     *
-     * @param   dimension   The dimension of the vector.
-     * @return              A vector with the provided dimension, filled with ones.
-     */
-    public static Vector generateOnesVector(int dimension) {
-        Vector onesVector = new Vector(dimension);
-        double[] onesVectorArray = onesVector.getArray();
-        for (int i = 0; i < dimension; i++) {
-            onesVectorArray[i] = 1.0;
-        }
-        return onesVector;
-    }
-
-    /**
-     * Constructs and returns a vector with the provided dimension, filled with random values ranging from {@code 0.0}
-     * to {@code 1.0}.
-     *
-     * @param   dimension   The dimension of the random vector.
-     * @return              A vector with the provided dimension, filled with random values ranging from {@code 0.0} to
-     * {@code 1.0}.
-     */
-    public static Vector generateRandomVector(int dimension) {
-        Vector randomVector = new Vector(dimension);
-        double[] randomVectorArray = randomVector.getArray();
-        for (int i = 0; i < dimension; i++) {
-            randomVectorArray[i] = Math.random();
-        }
-        return randomVector;
-    }
-    //endregion
-
-    /**
-     * Checks whether the provided vector has the same dimension as this vector. If the dimensions of the two vectors do
-     * not agree an exception is thrown.
-     *
-     * @param   vector  The vector whose dimension to check.
-     *
-     * @exception   IllegalArgumentException    Vector dimensions must agree.
-     */
-    private void checkVectorDimensions(Vector vector) {
-        if (vector.dimension != dimension) {
-            throw new IllegalArgumentException("Vector dimensions must agree.");
-        }
-    }
+    Vector multiply(Matrix matrix);
 }

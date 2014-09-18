@@ -2,6 +2,7 @@ package org.platanios.learn.optimization;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.platanios.learn.math.matrix.DenseVector;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractLeastSquaresFunction;
@@ -19,7 +20,7 @@ public class GaussNewtonSolverTest {
                 new GaussNewtonSolver.Builder(new ExponentialLeastSquaresFunction(t, y), new double[] { 0, 0 })
                         .linearLeastSquaresSubproblemMethod(LinearLeastSquaresSolver.Method.CHOLESKY_DECOMPOSITION)
                         .build();
-        double[] actualResult = gaussNewtonSolver.solve().getArray();
+        double[] actualResult = gaussNewtonSolver.solve().getDenseArray();
         double[] expectedResult = new double[] { 2.5411, 0.2595 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-4);
     }
@@ -33,7 +34,7 @@ public class GaussNewtonSolverTest {
                 new GaussNewtonSolver.Builder(new ExponentialLeastSquaresFunction(t, y), new double[] { 0, 0 })
                         .linearLeastSquaresSubproblemMethod(LinearLeastSquaresSolver.Method.QR_DECOMPOSITION)
                         .build();
-        double[] actualResult = gaussNewtonSolver.solve().getArray();
+        double[] actualResult = gaussNewtonSolver.solve().getDenseArray();
         double[] expectedResult = new double[] { 2.5411, 0.2595 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-4);
     }
@@ -47,7 +48,7 @@ public class GaussNewtonSolverTest {
                 new GaussNewtonSolver.Builder(new ExponentialLeastSquaresFunction(t, y), new double[] { 0, 0 })
                         .linearLeastSquaresSubproblemMethod(LinearLeastSquaresSolver.Method.SINGULAR_VALUE_DECOMPOSITION)
                         .build();
-        double[] actualResult = gaussNewtonSolver.solve().getArray();
+        double[] actualResult = gaussNewtonSolver.solve().getDenseArray();
         double[] expectedResult = new double[] { 2.5411, 0.2595 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-4);
     }
@@ -61,7 +62,7 @@ public class GaussNewtonSolverTest {
                 new GaussNewtonSolver.Builder(new ExponentialLeastSquaresFunction(t, y), new double[] { 0, 0 })
                         .linearLeastSquaresSubproblemMethod(LinearLeastSquaresSolver.Method.CONJUGATE_GRADIENT)
                         .build();
-        double[] actualResult = gaussNewtonSolver.solve().getArray();
+        double[] actualResult = gaussNewtonSolver.solve().getDenseArray();
         double[] expectedResult = new double[] { 2.5411, 0.2595 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-4);
     }
@@ -79,17 +80,17 @@ public class GaussNewtonSolverTest {
         public Vector computeResiduals(Vector point) {
             double[] resultArray = new double[t.length];
             for (int i = 0; i < t.length; i++) {
-                resultArray[i] = point.getElement(0) * Math.exp(point.getElement(1) * t[i]) - y[i];
+                resultArray[i] = point.get(0) * Math.exp(point.get(1) * t[i]) - y[i];
             }
-            return new Vector(resultArray);
+            return new DenseVector(resultArray);
         }
 
         @Override
         public Matrix computeJacobian(Vector point) {
             double[][] resultArray = new double[t.length][2];
             for (int i = 0; i < t.length; i++) {
-                resultArray[i][0] = Math.exp(point.getElement(1) * t[i]);
-                resultArray[i][1] = point.getElement(0) * Math.exp(point.getElement(1) * t[i]) * t[i];
+                resultArray[i][0] = Math.exp(point.get(1) * t[i]);
+                resultArray[i][1] = point.get(0) * Math.exp(point.get(1) * t[i]) * t[i];
             }
             return new Matrix(resultArray);
         }

@@ -19,7 +19,7 @@ public class Utilities {
      * @return          The natural logarithm of the sum of the exponential of the values in the given vector.
      */
     public static double computeLogSumExp(Vector vector) {
-        double maximumValue = vector.getMaximumValue();
-        return maximumValue + Math.log(vector.subtract(maximumValue).computeFunctionResult(Math::exp).computeSum());
+        double maximumValue = vector.max();
+        return maximumValue + Math.log(vector.subtract(maximumValue).computeFunctionResult(Math::exp).sum());
     }
 }

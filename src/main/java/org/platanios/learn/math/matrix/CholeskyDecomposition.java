@@ -63,7 +63,35 @@ public class CholeskyDecomposition {
      * @return          The solution of the system of equations.
      */
     public Vector solve(Vector vector) throws NonSymmetricMatrixException, NonPositiveDefiniteMatrixException {
-        return new Vector(solve(vector.copyAsMatrix()).getColumnPackedArrayCopy());
+        if (vector.getDimension() != dimension) {
+            throw new IllegalArgumentException("Matrix row dimensions must agree.");
+        }
+        if (!isSymmetric) {
+            throw new NonSymmetricMatrixException(
+                    "Non symmetric matrix! A solution cannot be obtained using the Cholesky decomposition!"
+            );
+        }
+        if (!isPositiveDefinite) {
+            throw new NonPositiveDefiniteMatrixException(
+                    "Non positive definite matrix! A solution cannot be obtained using the Cholesky decomposition!"
+            );
+        }
+        Vector resultVector = vector.copy();
+        // Forward substitution solution.
+        for (int k = 0; k < dimension; k++) {
+            for (int i = 0; i < k ; i++) {
+                resultVector.set(k, resultVector.get(k) - resultVector.get(i) * L[k][i]);
+            }
+            resultVector.set(k, resultVector.get(k) / L[k][k]);
+        }
+        // Backward substitution solution.
+        for (int k = dimension - 1; k >= 0; k--) {
+            for (int i = k + 1; i < dimension; i++) {
+                resultVector.set(k, resultVector.get(k) - resultVector.get(i) * L[i][k]);
+            }
+            resultVector.set(k, resultVector.get(k) / L[k][k]);
+        }
+        return resultVector;
     }
 
     /**
@@ -107,7 +135,6 @@ public class CholeskyDecomposition {
                 rightHandSideMatrixArray[k][j] /= L[k][k];
             }
         }
-
         return new Matrix(rightHandSideMatrixArray, dimension, resultMatrixColumnDimension);
     }
 

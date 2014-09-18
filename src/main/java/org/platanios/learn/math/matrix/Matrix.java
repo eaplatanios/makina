@@ -129,6 +129,30 @@ public class Matrix {
             }
         }
     }
+
+    /**
+     * Constructs a matrix from a vector (packed by columns, as in FORTRAN).
+     *
+     * @param   elements        Vector of doubles, packed by columns (as in FORTRAN).
+     * @param   rowDimension    The row dimension of the matrix.
+     *
+     * @exception   IllegalArgumentException    The size of the input vector must be a multiple of {@code rowDimension}.
+     */
+    public Matrix(Vector elements, int rowDimension) {
+        this.rowDimension = rowDimension;
+        columnDimension = rowDimension != 0 ? elements.getDimension() / rowDimension : 0;
+        if (rowDimension * columnDimension != elements.getDimension()) {
+            throw new IllegalArgumentException(
+                    "The length of the input array must be a multiple of the row dimension."
+            );
+        }
+        array = new double[rowDimension][columnDimension];
+        for (int i = 0; i < rowDimension; i++) {
+            for (int j = 0; j < columnDimension; j++) {
+                array[i][j] = elements.get(i + j * rowDimension);
+            }
+        }
+    }
     //endregion
 
     //region Getters, Setters and Other Such Methods
@@ -262,7 +286,7 @@ public class Matrix {
     public void setRow(int rowIndex, Vector value) {
         try {
             for (int i = 0; i < columnDimension; i++) {
-                array[rowIndex][i] = value.getElement(i);
+                array[rowIndex][i] = value.get(i);
             }
         } catch(ArrayIndexOutOfBoundsException e) {
             throw new ArrayIndexOutOfBoundsException("The provided row index is out of bounds.");
@@ -280,7 +304,7 @@ public class Matrix {
     public void setColumn(int columnIndex, Vector value) {
         try {
             for (int i = 0; i < rowDimension; i++) {
-                array[i][columnIndex] = value.getElement(i);
+                array[i][columnIndex] = value.get(i);
             }
         } catch(ArrayIndexOutOfBoundsException e) {
             throw new ArrayIndexOutOfBoundsException("The provided column index is out of bounds.");
@@ -296,7 +320,7 @@ public class Matrix {
      * @exception   ArrayIndexOutOfBoundsException  The provided row index is out of bounds.
      */
     public Vector getRow(int rowIndex) {
-        Vector resultVector = new Vector(columnDimension);
+        DenseVector resultVector = new DenseVector(columnDimension);
         double[] resultVectorArray = resultVector.getArray();
         try {
             for (int i = 0; i < columnDimension; i++) {
@@ -317,7 +341,7 @@ public class Matrix {
      * @exception   ArrayIndexOutOfBoundsException  The provided column index is out of bounds.
      */
     public Vector getColumn(int columnIndex) {
-        Vector resultVector = new Vector(rowDimension);
+        DenseVector resultVector = new DenseVector(rowDimension);
         double[] resultVectorArray = resultVector.getArray();
         try {
             for (int i = 0; i < rowDimension; i++) {
@@ -1018,7 +1042,8 @@ public class Matrix {
     }
 
     /**
-     * Multiplies the current matrix with a vector and returns the result in a new vector.
+     * Multiplies the current matrix with a vector and returns the result in a new vector. The resulting vector type
+     * (i.e., dense, sparse, etc.) is the same as the type of the provided vector.
      *
      * @param   vector  The vector with which to multiply the current matrix.
      * @return          A new vector holding the result of the multiplication.
@@ -1029,11 +1054,10 @@ public class Matrix {
                     "The column dimension of the matrix must agree with the dimension of the vector."
             );
         }
-        Vector resultVector = new Vector(rowDimension);
-        double[] resultVectorArray = resultVector.getArray();
+        Vector resultVector = VectorFactory.createVector(rowDimension, vector.getType());
         for (int i = 0; i < rowDimension; i++) {
             for (int j = 0; j < columnDimension; j++) {
-                resultVectorArray[i] += array[i][j] * vector.getElement(j);
+                resultVector.set(i, resultVector.get(i) + array[i][j] * vector.get(j));
             }
         }
         return resultVector;
@@ -1079,7 +1103,8 @@ public class Matrix {
      * @return          The solution of the system of equations.
      */
     public Vector solve(Vector vector) throws SingularMatrixException {
-        return new Vector(solve(vector.copyAsMatrix()).getColumnPackedArrayCopy());
+        return (rowDimension == columnDimension ?
+                (new LUDecomposition(this)).solve(vector) : (new QRDecomposition(this)).solve(vector));
     }
 
     /**

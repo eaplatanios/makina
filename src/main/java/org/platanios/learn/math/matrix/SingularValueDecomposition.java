@@ -420,7 +420,20 @@ public class SingularValueDecomposition {
      * @return          The solution of the system of equations.
      */
     public Vector solve(Vector vector) {
-        return new Vector(solve(vector.copyAsMatrix()).getColumnPackedArrayCopy());
+        final double[][] uTransposeArray = (new Matrix(U)).transpose().getArrayCopy();
+        for (int i = 0; i < singularValues.length; ++i) {
+            final double adjustedSingularValue;
+            if (singularValues[i] > singularValuesTolerance) {
+                adjustedSingularValue = 1 / singularValues[i];
+            } else {
+                adjustedSingularValue = 0;
+            }
+            for (int j = 0; j < uTransposeArray[i].length; ++j) {
+                uTransposeArray[i][j] *= adjustedSingularValue;
+            }
+        }
+        Matrix matrixPseudoInverse = (new Matrix(V)).multiply(new Matrix(uTransposeArray, false));
+        return matrixPseudoInverse.multiply(vector);
     }
 
     /**

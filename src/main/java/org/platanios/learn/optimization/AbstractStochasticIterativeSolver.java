@@ -1,5 +1,6 @@
 package org.platanios.learn.optimization;
 
+import org.platanios.learn.math.matrix.DenseVector;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractStochasticFunction;
 
@@ -112,7 +113,7 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
         batchSize = builder.batchSize;
         stepSize = builder.stepSize;
         stepSizeParameters = builder.stepSizeParameters;
-        currentPoint = new Vector(builder.initialPoint);
+        currentPoint = new DenseVector(builder.initialPoint);
         currentGradient = objective.getGradientEstimate(currentPoint, batchSize);
         currentIteration = 0;
     }

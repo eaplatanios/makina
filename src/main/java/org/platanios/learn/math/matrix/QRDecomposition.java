@@ -75,7 +75,34 @@ public class QRDecomposition {
      * @return          The solution of the system of equations.
      */
     public Vector solve(Vector vector) throws SingularMatrixException {
-        return new Vector(solve(vector.copyAsMatrix()).getColumnPackedArrayCopy());
+        if (vector.getDimension() != rowDimension) {
+            throw new IllegalArgumentException("Matrix row dimensions must agree.");
+        }
+        if (!isFullRank) {
+            throw new SingularMatrixException(
+                    "Rank deficient matrix! A solution cannot be obtained using the QR decomposition!"
+            );
+        }
+        Vector resultVector = vector.copy();
+        // Compute \(Y=Q^TB\).
+        for (int k = 0; k < columnDimension; k++) {
+            double temporarySum = 0.0;
+            for (int i = k; i < rowDimension; i++) {
+                temporarySum -= QR[i][k] * resultVector.get(i);
+            }
+            temporarySum /= QR[k][k];
+            for (int i = k; i < rowDimension; i++) {
+                resultVector.set(i, resultVector.get(i) + temporarySum * QR[i][k]);
+            }
+        }
+        // Solve \(RX=Y\).
+        for (int k = columnDimension - 1; k >= 0; k--) {
+            resultVector.set(k, resultVector.get(k) / rDiagonal[k]);
+            for (int i = 0; i < k; i++) {
+                resultVector.set(i, resultVector.get(i) - resultVector.get(k) * QR[i][k]);
+            }
+        }
+        return resultVector.get(0, columnDimension - 1);
     }
 
     /**

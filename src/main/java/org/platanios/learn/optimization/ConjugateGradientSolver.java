@@ -202,9 +202,9 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
             protected void computePreconditioningSystemSolution(ConjugateGradientSolver solver) {
                 double[] tempY = new double[solver.currentGradient.getDimension()];
                 for (int i = 0; i < tempY.length; i++) {
-                    tempY[i] = solver.currentGradient.getElement(i) / solver.A.getElement(i, i);
+                    tempY[i] = solver.currentGradient.get(i) / solver.A.getElement(i, i);
                 }
-                solver.currentY = new Vector(tempY);
+                solver.currentY = new DenseVector(tempY);
             }
         },
         SYMMETRIC_SUCCESSIVE_OVER_RELAXATION {

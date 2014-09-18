@@ -1,5 +1,6 @@
 package org.platanios.learn.classification;
 
+import org.platanios.learn.math.matrix.DenseVector;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Utilities;
 import org.platanios.learn.math.matrix.Vector;
@@ -116,15 +117,15 @@ public class LogisticRegression {
                 weights.getRowDimension() - 1,
                 0,
                 numberOfClasses - 2,
-                new Matrix(solver.solve().getArray(), numberOfFeatures)
+                new Matrix(solver.solve(), numberOfFeatures)
         );
     }
 
     public double[] predict(double[] point) {
-        Vector probabilities = weights.transpose().multiply(new Vector(point));
+        Vector probabilities = weights.transpose().multiply(new DenseVector(point));
         probabilities = probabilities.subtract(Utilities.computeLogSumExp(probabilities));
         probabilities = probabilities.computeFunctionResult(Math::exp);
-        return probabilities.getArrayCopy();
+        return probabilities.getDenseArray();
     }
 
     public double[][] predict(double[][] points) {
@@ -147,15 +148,15 @@ public class LogisticRegression {
          */
         @Override
         public double computeValue(Vector weights) {
-            Matrix W = new Matrix(weights.getArray(), numberOfFeatures);
+            Matrix W = new Matrix(weights, numberOfFeatures);
             double likelihood = 0;
             for (int n = 0; n < trainingDataSize; n++) {
                 Vector innerProduct = W.transpose().multiply(trainingData[n].features);
                 if (trainingData[n].label != numberOfClasses - 1) {
-                    likelihood += innerProduct.getElement(trainingData[n].label);
+                    likelihood += innerProduct.get(trainingData[n].label);
                 }
-                Vector innerProductWithLastClass = new Vector(numberOfClasses);
-                innerProductWithLastClass.setSubVector(0, numberOfClasses - 2, innerProduct);
+                DenseVector innerProductWithLastClass = new DenseVector(numberOfClasses);
+                innerProductWithLastClass.set(0, numberOfClasses - 2, innerProduct);
                 likelihood -= Utilities.computeLogSumExp(innerProductWithLastClass);
             }
             return -likelihood;
@@ -168,26 +169,26 @@ public class LogisticRegression {
          * @return          The gradient vector of the logistic regression likelihood function.
          */
         @Override
-        public Vector computeGradient(Vector weights) {
-            Matrix W = new Matrix(weights.getArray(), numberOfFeatures);
+        public DenseVector computeGradient(Vector weights) {
+            Matrix W = new Matrix(weights, numberOfFeatures);
             Matrix gradient = new Matrix(W.getRowDimension(), W.getColumnDimension());
             for (int n = 0; n < trainingDataSize; n++) {
                 Vector probabilities = W.transpose().multiply(trainingData[n].features);
-                Vector innerProductWithLastClass = new Vector(numberOfClasses);
-                innerProductWithLastClass.setSubVector(0, numberOfClasses - 2, probabilities);
+                Vector innerProductWithLastClass = new DenseVector(numberOfClasses);
+                innerProductWithLastClass.set(0, numberOfClasses - 2, probabilities);
                 probabilities = probabilities.subtract(Utilities.computeLogSumExp(innerProductWithLastClass));
                 probabilities = probabilities.computeFunctionResult(Math::exp);
                 if (trainingData[n].label != numberOfClasses - 1) {
-                    probabilities.getArray()[trainingData[n].label] -= 1;
+                    probabilities.set(trainingData[n].label, probabilities.get(trainingData[n].label) - 1);
                 }
                 for (int c = 0; c < numberOfClasses - 1; c++) {
                     gradient.setColumn(
                             c,
-                            gradient.getColumn(c).add(trainingData[n].features.multiply(probabilities.getElement(c)))
+                            gradient.getColumn(c).add(trainingData[n].features.multiply(probabilities.get(c)))
                     );
                 }
             }
-            return new Vector(gradient.getColumnPackedArrayCopy());
+            return new DenseVector(gradient.getColumnPackedArrayCopy());
         }
 
         /**
@@ -203,12 +204,12 @@ public class LogisticRegression {
          */
         @Override
         public Matrix computeHessian(Vector weights) {
-            Matrix W = new Matrix(weights.getArray(), numberOfFeatures);
+            Matrix W = new Matrix(weights, numberOfFeatures);
             Matrix hessian = new Matrix(new double[weights.getDimension()][weights.getDimension()]);
             for (int n = 0; n < trainingDataSize; n++) {
                 Vector probabilities = W.transpose().multiply(trainingData[n].features);
-                Vector innerProductWithLastClass = new Vector(numberOfClasses);
-                innerProductWithLastClass.setSubVector(0, numberOfClasses - 2, probabilities);
+                Vector innerProductWithLastClass = new DenseVector(numberOfClasses);
+                innerProductWithLastClass.set(0, numberOfClasses - 2, probabilities);
                 probabilities = probabilities.subtract(Utilities.computeLogSumExp(innerProductWithLastClass));
                 probabilities = probabilities.computeFunctionResult(Math::exp);
                 for (int i = 0; i < numberOfClasses - 1; i++) {
@@ -221,7 +222,7 @@ public class LogisticRegression {
                             subMatrix = subMatrix.add(
                                     trainingData[n].features
                                             .outerProduct(trainingData[n].features)
-                                            .multiply(-probabilities.getElement(i) * probabilities.getElement(j))
+                                            .multiply(-probabilities.get(i) * probabilities.get(j))
                             );
                             hessian.setSubMatrix(
                                     i * numberOfFeatures,
@@ -241,7 +242,7 @@ public class LogisticRegression {
                             subMatrix = subMatrix.add(
                                     trainingData[n].features
                                             .outerProduct(trainingData[n].features)
-                                            .multiply(probabilities.getElement(i) * (1 - probabilities.getElement(i)))
+                                            .multiply(probabilities.get(i) * (1 - probabilities.get(i)))
                             );
                             hessian.setSubMatrix(
                                     i * numberOfFeatures,
@@ -276,25 +277,25 @@ public class LogisticRegression {
          */
         @Override
         public Vector estimateGradient(Vector weights, List<TrainingData.Entry> dataBatch) {
-            Matrix W = new Matrix(weights.getArray(), numberOfFeatures);
+            Matrix W = new Matrix(weights, numberOfFeatures);
             Matrix gradient = new Matrix(W.getRowDimension(), W.getColumnDimension());
             for (TrainingData.Entry example : dataBatch) {
                 Vector probabilities = W.transpose().multiply(example.features);
-                Vector innerProductWithLastClass = new Vector(numberOfClasses);
-                innerProductWithLastClass.setSubVector(0, numberOfClasses - 2, probabilities);
+                Vector innerProductWithLastClass = new DenseVector(numberOfClasses);
+                innerProductWithLastClass.set(0, numberOfClasses - 2, probabilities);
                 probabilities = probabilities.subtract(Utilities.computeLogSumExp(innerProductWithLastClass));
                 probabilities = probabilities.computeFunctionResult(Math::exp);
                 if (example.label != numberOfClasses - 1) {
-                    probabilities.getArray()[example.label] -= 1;
+                    probabilities.set(example.label, probabilities.get(example.label) - 1);
                 }
                 for (int c = 0; c < numberOfClasses - 1; c++) {
                     gradient.setColumn(
                             c,
-                            gradient.getColumn(c).add(example.features.multiply(probabilities.getElement(c)))
+                            gradient.getColumn(c).add(example.features.multiply(probabilities.get(c)))
                     );
                 }
             }
-            return new Vector(gradient.getColumnPackedArrayCopy());
+            return new DenseVector(gradient.getColumnPackedArrayCopy());
         }
     }
 }

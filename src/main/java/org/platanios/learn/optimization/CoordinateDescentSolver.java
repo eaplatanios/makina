@@ -1,8 +1,9 @@
 package org.platanios.learn.optimization;
 
+import org.platanios.learn.math.matrix.DenseVector;
+import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.math.Utilities;
-import org.platanios.learn.math.matrix.Vector;
 
 /**
  * This is a derivative-free optimization algorithm.
@@ -91,8 +92,8 @@ public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
         CYCLE {
             @Override
             protected void updateDirection(CoordinateDescentSolver solver) {
-                solver.currentDirection = new Vector(solver.numberOfDimensions, 0);
-                solver.currentDirection.setElement(solver.currentDimension, 1);
+                solver.currentDirection = new DenseVector(solver.numberOfDimensions, 0);
+                solver.currentDirection.set(solver.currentDimension, 1);
                 if (solver.currentDimension >= solver.numberOfDimensions - 1) {
                     solver.currentDimension = 0;
                 } else {
@@ -111,12 +112,12 @@ public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
         BACK_AND_FORTH {
             @Override
             protected void updateDirection(CoordinateDescentSolver solver) {
-                solver.currentDirection = new Vector(solver.numberOfDimensions, 0);
+                solver.currentDirection = new DenseVector(solver.numberOfDimensions, 0);
                 if (solver.currentDimension < solver.numberOfDimensions) {
-                    solver.currentDirection.setElement(solver.currentDimension, 1);
+                    solver.currentDirection.set(solver.currentDimension, 1);
                     solver.currentDimension++;
                 } else {
-                    solver.currentDirection.setElement(2 * solver.numberOfDimensions - solver.currentDimension - 2, 1);
+                    solver.currentDirection.set(2 * solver.numberOfDimensions - solver.currentDimension - 2, 1);
                     if (solver.currentDimension >= 2 * solver.numberOfDimensions - 2) {
                         solver.currentDimension = 1;
                     } else {
@@ -137,9 +138,9 @@ public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
         CYCLE_AND_JOIN_ENDPOINTS {
             @Override
             protected void updateDirection(CoordinateDescentSolver solver) {
-                solver.currentDirection = new Vector(solver.numberOfDimensions, 0);
+                solver.currentDirection = new DenseVector(solver.numberOfDimensions, 0);
                 if (!solver.completedCycle) {
-                    solver.currentDirection.setElement(solver.currentDimension, 1);
+                    solver.currentDirection.set(solver.currentDimension, 1);
                     if (solver.currentDimension >= solver.numberOfDimensions - 1) {
                         solver.completedCycle = true;
                         solver.currentDimension++;

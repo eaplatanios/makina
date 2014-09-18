@@ -1,8 +1,9 @@
 package org.platanios.learn.optimization.function;
 
+import org.platanios.learn.math.matrix.DenseVector;
+import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.Utilities;
-import org.platanios.learn.math.matrix.Vector;
 
 /**
  * TODO: Jacobian approximation.
@@ -53,14 +54,14 @@ public final class DerivativesApproximation {
 
             protected Vector approximateGradient(DerivativesApproximation owner, Vector point) {
                 int n = point.getDimension();
-                Vector gradient = new Vector(n, 0);
-                Vector ei = new Vector(n, 0);
+                Vector gradient = new DenseVector(n, 0);
+                Vector ei = new DenseVector(n, 0);
                 double currentFunctionValue = owner.function.getValue(point);
                 for (int i = 0; i < n; i++) {
-                    ei.setAllElements(0);
-                    ei.setElement(i, 1);
+                    ei.setAll(0);
+                    ei.set(i, 1);
                     double forwardFunctionValue = owner.function.getValue(point.add(ei.multiply(owner.epsilon)));
-                    gradient.setElement(i, (forwardFunctionValue - currentFunctionValue) / owner.epsilon);
+                    gradient.set(i, (forwardFunctionValue - currentFunctionValue) / owner.epsilon);
                 }
                 return gradient;
             }
@@ -68,16 +69,16 @@ public final class DerivativesApproximation {
             protected Matrix approximateHessian(DerivativesApproximation owner, Vector point) {
                 int n = point.getDimension();
                 Matrix hessian = new Matrix(n, n);
-                Vector ei = new Vector(n, 0);
-                Vector ej = new Vector(n, 0);
+                Vector ei = new DenseVector(n, 0);
+                Vector ej = new DenseVector(n, 0);
                 double currentFunctionValue = owner.function.getValue(point);
                 for (int i = 0; i < n; i++) {
-                    ei.setAllElements(0);
-                    ei.setElement(i, 1);
+                    ei.setAll(0);
+                    ei.set(i, 1);
                     double iFunctionValue = owner.function.getValue(point.add(ei.multiply(owner.epsilon)));
                     for (int j = i; j < n; j++) {
-                        ej.setAllElements(0);
-                        ej.setElement(j, 1);
+                        ej.setAll(0);
+                        ej.set(j, 1);
                         double jFunctionValue = owner.function.getValue(point.add(ej.multiply(owner.epsilon)));
                         double ijFunctionValue = owner.function.getValue(point.add(ei.add(ej).multiply(owner.epsilon)));
                         double ijEntry = (ijFunctionValue - iFunctionValue - jFunctionValue + currentFunctionValue)
@@ -94,19 +95,15 @@ public final class DerivativesApproximation {
             protected Matrix approximateHessianGivenGradient(DerivativesApproximation owner, Vector point) {
                 int n = point.getDimension();
                 Matrix hessian = new Matrix(n, n);
-                Vector ei = new Vector(n, 0);
+                Vector ei = new DenseVector(n, 0);
                 Vector currentGradientValue = owner.function.getGradient(point);
                 for (int i = 0; i < n; i++) {
-                    ei.setAllElements(0);
-                    ei.setElement(i, 1);
+                    ei.setAll(0);
+                    ei.set(i, 1);
                     Vector forwardGradientValue = owner.function.getGradient(point.add(ei.multiply(owner.epsilon)));
-                    hessian.setSubMatrix(
-                            0,
-                            hessian.getRowDimension() - 1,
-                            i,
+                    hessian.setColumn(
                             i,
                             forwardGradientValue.subtract(currentGradientValue).multiply(1 / owner.epsilon)
-                                    .copyAsMatrix()
                     );
                 }
                 return hessian;
@@ -129,14 +126,14 @@ public final class DerivativesApproximation {
 
             protected Vector approximateGradient(DerivativesApproximation owner, Vector point) {
                 int n = point.getDimension();
-                Vector gradient = new Vector(n, 0);
-                Vector ei = new Vector(n, 0);
+                Vector gradient = new DenseVector(n, 0);
+                Vector ei = new DenseVector(n, 0);
                 for (int i = 0; i < n; i++) {
-                    ei.setAllElements(0);
-                    ei.setElement(i, 1);
+                    ei.setAll(0);
+                    ei.set(i, 1);
                     double forwardFunctionValue = owner.function.getValue(point.add(ei.multiply(owner.epsilon)));
                     double backwardFunctionValue = owner.function.getValue(point.subtract(ei.multiply(owner.epsilon)));
-                    gradient.setElement(i, (forwardFunctionValue - backwardFunctionValue) / (2 * owner.epsilon));
+                    gradient.set(i, (forwardFunctionValue - backwardFunctionValue) / (2 * owner.epsilon));
                 }
                 return gradient;
             }
@@ -144,15 +141,15 @@ public final class DerivativesApproximation {
             protected Matrix approximateHessian(DerivativesApproximation owner, Vector point) {
                 int n = point.getDimension();
                 Matrix hessian = new Matrix(n, n);
-                Vector ei = new Vector(n, 0);
-                Vector ej = new Vector(n, 0);
+                Vector ei = new DenseVector(n, 0);
+                Vector ej = new DenseVector(n, 0);
                 double currentFunctionValue = owner.function.getValue(point);
                 for (int i = 0; i < n; i++) {
-                    ei.setAllElements(0);
-                    ei.setElement(i, 1);
+                    ei.setAll(0);
+                    ei.set(i, 1);
                     for (int j = i; j < n; j++) {
-                        ej.setAllElements(0);
-                        ej.setElement(j, 1);
+                        ej.setAll(0);
+                        ej.set(j, 1);
                         if (i != j) {
                             double term1 = owner.function.getValue(point.add(ei.add(ej).multiply(owner.epsilon)));
                             double term2 = owner.function.getValue(point.add(ei.subtract(ej).multiply(owner.epsilon)));
@@ -178,20 +175,16 @@ public final class DerivativesApproximation {
             protected Matrix approximateHessianGivenGradient(DerivativesApproximation owner, Vector point) {
                 int n = point.getDimension();
                 Matrix hessian = new Matrix(n, n);
-                Vector ei = new Vector(n, 0);
+                Vector ei = new DenseVector(n, 0);
                 for (int i = 0; i < n; i++) {
-                    ei.setAllElements(0);
-                    ei.setElement(i, 1);
+                    ei.setAll(0);
+                    ei.set(i, 1);
                     Vector forwardGradientValue = owner.function.getGradient(point.add(ei.multiply(owner.epsilon)));
                     Vector backwardGradientValue =
                             owner.function.getGradient(point.subtract(ei.multiply(owner.epsilon)));
-                    hessian.setSubMatrix(
-                            0,
-                            hessian.getRowDimension() - 1,
+                    hessian.setColumn(
                             i,
-                            i,
-                            forwardGradientValue
-                                    .subtract(backwardGradientValue).multiply(1 / (2 * owner.epsilon)).copyAsMatrix()
+                            forwardGradientValue.subtract(backwardGradientValue).multiply(1 / (2 * owner.epsilon))
                     );
                 }
                 return hessian;
