@@ -2,6 +2,7 @@ package org.platanios.learn.optimization;
 
 import org.platanios.learn.math.matrix.DenseVector;
 import org.platanios.learn.math.matrix.Vector;
+import org.platanios.learn.math.matrix.VectorNorm;
 import org.platanios.learn.optimization.function.AbstractStochasticFunction;
 
 /**
@@ -149,7 +150,7 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
             }
 
             if (checkForPointConvergence) {
-                pointChange = currentPoint.subtract(previousPoint).computeL2Norm();
+                pointChange = currentPoint.subtract(previousPoint).norm(VectorNorm.L2);
                 numberOfIterationsWithNoPointChange =
                         (pointChange <= pointChangeTolerance) ? numberOfIterationsWithNoPointChange + 1 : 0;
                 if (numberOfIterationsWithNoPointChange >= maximumNumberOfIterationsWithNoPointChange) {

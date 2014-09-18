@@ -1,7 +1,5 @@
 package org.platanios.learn.math.matrix;
 
-import org.platanios.learn.math.Utilities;
-
 import java.util.function.Function;
 
 /**
@@ -180,34 +178,10 @@ public class DenseVector implements Vector {
         return sum;
     }
 
-    //region Norm Computations
     @Override
-    public double computeL1Norm() {
-        double l1Norm = 0;
-        for (int i = 0; i < dimension; i++) {
-            l1Norm += Math.abs(array[i]);
-        }
-        return l1Norm;
+    public double norm(VectorNorm normType) {
+        return normType.compute(array);
     }
-
-    @Override
-    public double computeL2Norm() {
-        double l2Norm = 0;
-        for (int i = 0; i < dimension; i++) {
-            l2Norm = Utilities.computeHypotenuse(l2Norm, array[i]);
-        }
-        return l2Norm;
-    }
-
-    @Override
-    public double computeLInfinityNorm() {
-        double lInfinityNorm = 0;
-        for (int i = 0; i < dimension; i++) {
-            lInfinityNorm = Math.max(lInfinityNorm, array[i]);
-        }
-        return lInfinityNorm;
-    }
-    //endregion
 
     //region Unary Operations
     @Override

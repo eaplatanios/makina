@@ -2,6 +2,7 @@ package org.platanios.learn.optimization;
 
 import org.platanios.learn.math.matrix.DenseVector;
 import org.platanios.learn.math.matrix.Vector;
+import org.platanios.learn.math.matrix.VectorNorm;
 import org.platanios.learn.optimization.function.AbstractFunction;
 
 /**
@@ -153,7 +154,7 @@ abstract class AbstractIterativeSolver implements Solver {
             }
 
             if (checkForPointConvergence) {
-                pointChange = currentPoint.subtract(previousPoint).computeL2Norm();
+                pointChange = currentPoint.subtract(previousPoint).norm(VectorNorm.L2);
                 pointConverged = pointChange <= pointChangeTolerance;
             }
 
@@ -168,7 +169,7 @@ abstract class AbstractIterativeSolver implements Solver {
                             Math.abs(currentGradient.max()) / (1 + Math.abs(currentObjectiveValue));
                     gradientConverged = gradientNorm <= gradientTolerance;
                 } else {
-                    gradientNorm = currentGradient.computeL2Norm();
+                    gradientNorm = currentGradient.norm(VectorNorm.L2);
                     gradientConverged = gradientNorm <= gradientTolerance;
                 }
             }

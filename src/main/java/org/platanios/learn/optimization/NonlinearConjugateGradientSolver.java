@@ -1,5 +1,6 @@
 package org.platanios.learn.optimization;
 
+import org.platanios.learn.math.matrix.VectorNorm;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.math.matrix.Vector;
 
@@ -140,7 +141,7 @@ public final class NonlinearConjugateGradientSolver extends AbstractLineSearchSo
             @Override
             protected double computeBeta(NonlinearConjugateGradientSolver solver) {
                 Vector gradientsDifference = solver.currentGradient.subtract(solver.previousGradient);
-                if (gradientsDifference.computeL2Norm() != 0) {
+                if (gradientsDifference.norm(VectorNorm.L2) != 0) {
                     return solver.currentGradient.innerProduct(gradientsDifference)
                             / gradientsDifference.innerProduct(solver.previousDirection);
                 } else {
@@ -168,7 +169,7 @@ public final class NonlinearConjugateGradientSolver extends AbstractLineSearchSo
             @Override
             protected double computeBeta(NonlinearConjugateGradientSolver solver) {
                 Vector gradientsDifference = solver.currentGradient.subtract(solver.previousGradient);
-                if (gradientsDifference.computeL2Norm() != 0) {
+                if (gradientsDifference.norm(VectorNorm.L2) != 0) {
                     return solver.currentGradient.innerProduct(solver.currentGradient)
                             / gradientsDifference.innerProduct(solver.previousDirection);
                 } else {
@@ -180,7 +181,7 @@ public final class NonlinearConjugateGradientSolver extends AbstractLineSearchSo
             @Override
             protected double computeBeta(NonlinearConjugateGradientSolver solver) {
                 Vector gradientsDifference = solver.currentGradient.subtract(solver.previousGradient);
-                if (gradientsDifference.computeL2Norm() != 0) {
+                if (gradientsDifference.norm(VectorNorm.L2) != 0) {
                     double denominator = gradientsDifference.innerProduct(solver.previousDirection);
                     Vector temporaryTerm = gradientsDifference.subtract(
                             solver.previousDirection.multiply(2 * gradientsDifference.innerProduct(gradientsDifference)

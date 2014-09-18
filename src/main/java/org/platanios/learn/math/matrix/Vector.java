@@ -123,31 +123,11 @@ public interface Vector {
     double sum();
 
     /**
-     * Computes the \(L_1\) norm of this vector. Denoting this vector by \(\boldsymbol{x}\in\mathbb{R}^{n}\), its
-     * element at index \(i\) by \(x_i\) and its \(L_1\) norm by \(\|\boldsymbol{x}\|_1\), we have that:
-     * \[\|\boldsymbol{x}\|_1=\sum_{i=1}^n{\left|x_i\right|}.\]
+     * Computes the specified norm of this vector.
      *
-     * @return  The \(L_1\) norm of this vector.
+     * @return  The specified norm of this vector.
      */
-    double computeL1Norm();
-
-    /**
-     * Computes the \(L_2\) norm of this vector. Denoting this vector by \(\boldsymbol{x}\in\mathbb{R}^{n}\), its
-     * element at index \(i\) by \(x_i\) and its \(L_2\) norm by \(\|\boldsymbol{x}\|_2\), we have that:
-     * \[\|\boldsymbol{x}\|_2=\sqrt{\sum_{i=1}^n{x_i^2}}.\]
-     *
-     * @return  The \(L_2\) norm of this vector.
-     */
-    double computeL2Norm();
-
-    /**
-     * Computes the \(L_\infty\) norm of this vector. Denoting this vector by \(\boldsymbol{x}\in\mathbb{R}^{n}\), its
-     * element at index \(i\) by \(x_i\) and its \(L_\infty\) norm by \(\|\boldsymbol{x}\|_\infty\), we have that:
-     * \[\|\boldsymbol{x}\|_\infty=\max_{1\leq i\leq n}{\left|x_i\right|}.\]
-     *
-     * @return  The \(L_\infty\) norm of this vector.
-     */
-    double computeLInfinityNorm();
+    double norm(VectorNorm normType);
 
     /**
      * Computes the result of applying the supplied function element-wise to the current vector and returns it in a new

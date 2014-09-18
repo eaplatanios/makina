@@ -3,6 +3,7 @@ package org.platanios.learn.optimization;
 import org.platanios.learn.math.matrix.DenseVector;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
+import org.platanios.learn.math.matrix.VectorNorm;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.linesearch.StrongWolfeInterpolationLineSearch;
 import org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod;
@@ -199,8 +200,8 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
                     Vector tempVector = solver.s[0].subtract(solver.previousH.multiply(solver.y[0]));
                     if (Math.abs(tempVector.innerProduct(solver.y[0]))
                             >= solver.symmetricRankOneSkippingParameter
-                            * solver.y[0].computeL2Norm()
-                            *  tempVector.computeL2Norm()) {
+                            * solver.y[0].norm(VectorNorm.L2)
+                            *  tempVector.norm(VectorNorm.L2)) {
                         solver.currentH = solver.previousH.add(
                                 tempVector.multiply(1 / tempVector.innerProduct(solver.y[0])).outerProduct(tempVector)
                         );
