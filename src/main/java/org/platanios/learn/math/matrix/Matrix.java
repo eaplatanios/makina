@@ -320,11 +320,10 @@ public class Matrix {
      * @exception   ArrayIndexOutOfBoundsException  The provided row index is out of bounds.
      */
     public Vector getRow(int rowIndex) {
-        DenseVector resultVector = new DenseVector(columnDimension);
-        double[] resultVectorArray = resultVector.getArray();
+        Vector resultVector = new DenseVector(columnDimension);
         try {
             for (int i = 0; i < columnDimension; i++) {
-                resultVectorArray[i] = array[rowIndex][i];
+                resultVector.set(i, array[rowIndex][i]);
             }
         } catch(ArrayIndexOutOfBoundsException e) {
             throw new ArrayIndexOutOfBoundsException("The provided row index is out of bounds.");
@@ -341,11 +340,10 @@ public class Matrix {
      * @exception   ArrayIndexOutOfBoundsException  The provided column index is out of bounds.
      */
     public Vector getColumn(int columnIndex) {
-        DenseVector resultVector = new DenseVector(rowDimension);
-        double[] resultVectorArray = resultVector.getArray();
+        Vector resultVector = new DenseVector(rowDimension);
         try {
             for (int i = 0; i < rowDimension; i++) {
-                resultVectorArray[i] = array[i][columnIndex];
+                resultVector.set(i, array[i][columnIndex]);
             }
         } catch(ArrayIndexOutOfBoundsException e) {
             throw new ArrayIndexOutOfBoundsException("The provided column index is out of bounds.");
