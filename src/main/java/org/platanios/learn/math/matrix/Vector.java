@@ -5,6 +5,8 @@ import java.util.function.Function;
 /**
  * Interface for classes representing vectors and supporting operations related to vectors.
  *
+ * TODO: Allow transposing all matrix arguments.
+ *
  * @author Emmanouil Antonios Platanios
  */
 public abstract class Vector {
@@ -16,7 +18,7 @@ public abstract class Vector {
     public abstract VectorType type();
 
     /**
-     * Copies this vector. // TODO: Switch this to a static factory or copy constructor.
+     * Copies this vector.
      *
      * @return  A copy of this vector.
      */
@@ -316,6 +318,10 @@ public abstract class Vector {
      * @param   matrix  The matrix \(\A\).
      * @param   vector  The vector \(\boldsymbol{x}\).
      * @return          The value of \(\boldsymbol{y}+A\boldsymbol{x}\).
+     *
+     * @exception   IllegalArgumentException    The row dimension of the matrix must agree with the size of the current
+     *                                          vector and the column dimension of the matrix must agree with the size
+     *                                          of the provided vector.
      */
     public abstract Vector gaxpy(Matrix matrix, Vector vector);
 
@@ -327,6 +333,10 @@ public abstract class Vector {
      * @param   matrix  The matrix \(A\).
      * @param   vector  The vector \(\boldsymbol{x}\).
      * @return          The value of \(\boldsymbol{y}+A\boldsymbol{x}\).
+     *
+     * @exception   IllegalArgumentException    The row dimension of the matrix must agree with the size of the current
+     *                                          vector and the column dimension of the matrix must agree with the size
+     *                                          of the provided vector.
      */
     public abstract Vector gaxpyInPlace(Matrix matrix, Vector vector);
 
@@ -336,6 +346,8 @@ public abstract class Vector {
      *
      * @param   matrix  The matrix \(A\).
      * @return          The value of \(\boldsymbol{y}^{\top}A\).
+     *
+     * @exception   IllegalArgumentException    The row dimension of the matrix must agree with the size of the vector.
      */
     public abstract Vector transMult(Matrix matrix);
 }

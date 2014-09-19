@@ -9,32 +9,32 @@ import java.util.function.Function;
  * @author Emmanouil Antonios Platanios
  */
 public class DenseVector extends Vector {
-    /** The dimension of the vector. */
-    private final int dimension;
+    /** The size of the vector. */
+    private final int size;
 
     /** Array for internal storage of the vector elements. */
     private double[] array;
 
     /**
-     * Constructs a vector with the given dimension and fills it with zeros.
+     * Constructs a vector with the given size and fills it with zeros.
      *
-     * @param   dimension   The dimension of the vector.
+     * @param   size    The size of the vector.
      */
-    public DenseVector(int dimension) {
-        this.dimension = dimension;
-        array = new double[dimension];
+    public DenseVector(int size) {
+        this.size = size;
+        array = new double[size];
     }
 
     /**
-     * Constructs a vector with the given dimensions and fills it with the given value.
+     * Constructs a vector with the given size and fills it with the provided value.
      *
-     * @param   dimension   The dimension of the vector.
-     * @param   value       The value with which to fill the vector.
+     * @param   size    The size of the vector.
+     * @param   value   The value with which to fill the vector.
      */
-    public DenseVector(int dimension, double value) {
-        this.dimension = dimension;
-        array = new double[dimension];
-        for (int i = 0; i < dimension; i++) {
+    public DenseVector(int size, double value) {
+        this.size = size;
+        array = new double[size];
+        for (int i = 0; i < size; i++) {
             array[i] = value;
         }
     }
@@ -45,7 +45,7 @@ public class DenseVector extends Vector {
      * @param   array   One-dimensional array of doubles.
      */
     public DenseVector(double[] array) {
-        dimension = array.length;
+        size = array.length;
         this.array = array;
     }
 
@@ -58,24 +58,24 @@ public class DenseVector extends Vector {
     /** {@inheritDoc} */
     @Override
     public DenseVector copy() {
-        DenseVector resultVector = new DenseVector(dimension);
+        DenseVector resultVector = new DenseVector(size);
         double[] resultVectorArray = resultVector.getArray();
-        System.arraycopy(array, 0, resultVectorArray, 0, dimension);
+        System.arraycopy(array, 0, resultVectorArray, 0, size);
         return resultVector;
     }
 
     /** {@inheritDoc} */
     @Override
     public double[] getDenseArray() {
-        double[] resultArray = new double[dimension];
-        System.arraycopy(array, 0, resultArray, 0, dimension);
+        double[] resultArray = new double[size];
+        System.arraycopy(array, 0, resultArray, 0, size);
         return resultArray;
     }
 
     /** {@inheritDoc} */
     @Override
     public int size() {
-        return dimension;
+        return size;
     }
 
     /** {@inheritDoc} */
@@ -90,7 +90,7 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector get(int initialIndex, int finalIndex) {
+    public DenseVector get(int initialIndex, int finalIndex) {
         DenseVector resultVector = new DenseVector(finalIndex - initialIndex + 1);
         double[] resultVectorArray = resultVector.getArray();
         try {
@@ -105,7 +105,7 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector get(int[] indexes) {
+    public DenseVector get(int[] indexes) {
         DenseVector resultVector = new DenseVector(indexes.length);
         double[] resultVectorArray = resultVector.getArray();
         try {
@@ -161,7 +161,7 @@ public class DenseVector extends Vector {
     /** {@inheritDoc} */
     @Override
     public void setAll(double value) {
-        for (int i = 0; i < dimension; i++) {
+        for (int i = 0; i < size; i++) {
             array[i] = value;
         }
     }
@@ -170,7 +170,7 @@ public class DenseVector extends Vector {
     @Override
     public double max() {
         double maxValue = array[0];
-        for (int i = 1; i < dimension; i++) {
+        for (int i = 1; i < size; i++) {
             maxValue = Math.max(maxValue, array[i]);
         }
         return maxValue;
@@ -180,7 +180,7 @@ public class DenseVector extends Vector {
     @Override
     public double min() {
         double minValue = array[0];
-        for (int i = 1; i < dimension; i++) {
+        for (int i = 1; i < size; i++) {
             minValue = Math.min(minValue, array[i]);
         }
         return minValue;
@@ -190,7 +190,7 @@ public class DenseVector extends Vector {
     @Override
     public double sum() {
         double sum = array[0];
-        for (int i = 1; i < dimension; i++) {
+        for (int i = 1; i < size; i++) {
             sum += array[i];
         }
         return sum;
@@ -204,10 +204,10 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector map(Function<Double, Double> function) {
-        DenseVector resultVector = new DenseVector(dimension);
+    public DenseVector map(Function<Double, Double> function) {
+        DenseVector resultVector = new DenseVector(size);
         double[] resultVectorArray = resultVector.getArray();
-        for (int i = 0; i < dimension; i++) {
+        for (int i = 0; i < size; i++) {
             resultVectorArray[i] = function.apply(array[i]);
         }
         return resultVector;
@@ -215,10 +215,10 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector add(double scalar) {
-        DenseVector resultVector = new DenseVector(dimension);
+    public DenseVector add(double scalar) {
+        DenseVector resultVector = new DenseVector(size);
         double[] resultVectorArray = resultVector.getArray();
-        for (int i = 0; i < dimension; i++) {
+        for (int i = 0; i < size; i++) {
             resultVectorArray[i] = array[i] + scalar;
         }
         return resultVector;
@@ -226,11 +226,11 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector add(Vector vector) {
-        checkVectorDimensions(vector);
-        DenseVector resultVector = new DenseVector(dimension);
+    public DenseVector add(Vector vector) {
+        checkVectorSize(vector);
+        DenseVector resultVector = new DenseVector(size);
         double[] resultVectorArray = resultVector.getArray();
-        for (int i = 0; i < dimension; i++) {
+        for (int i = 0; i < size; i++) {
             resultVectorArray[i] = array[i] + vector.get(i);
         }
         return resultVector;
@@ -238,8 +238,8 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector addInPlace(double scalar) {
-        for (int i = 0; i < dimension; i++) {
+    public DenseVector addInPlace(double scalar) {
+        for (int i = 0; i < size; i++) {
             array[i] += scalar;
         }
         return this;
@@ -247,9 +247,9 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector addInPlace(Vector vector) {
-        checkVectorDimensions(vector);
-        for (int i = 0; i < dimension; i++) {
+    public DenseVector addInPlace(Vector vector) {
+        checkVectorSize(vector);
+        for (int i = 0; i < size; i++) {
             array[i] += vector.get(i);
         }
         return this;
@@ -257,10 +257,10 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector sub(double scalar) {
-        DenseVector resultVector = new DenseVector(dimension);
+    public DenseVector sub(double scalar) {
+        DenseVector resultVector = new DenseVector(size);
         double[] resultVectorArray = resultVector.getArray();
-        for (int i = 0; i < dimension; i++) {
+        for (int i = 0; i < size; i++) {
             resultVectorArray[i] = array[i] - scalar;
         }
         return resultVector;
@@ -268,11 +268,11 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector sub(Vector vector) {
-        checkVectorDimensions(vector);
-        DenseVector resultVector = new DenseVector(dimension);
+    public DenseVector sub(Vector vector) {
+        checkVectorSize(vector);
+        DenseVector resultVector = new DenseVector(size);
         double[] resultVectorArray = resultVector.getArray();
-        for (int i = 0; i < dimension; i++) {
+        for (int i = 0; i < size; i++) {
             resultVectorArray[i] = array[i] - vector.get(i);
         }
         return resultVector;
@@ -280,8 +280,8 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector subInPlace(double scalar) {
-        for (int i = 0; i < dimension; i++) {
+    public DenseVector subInPlace(double scalar) {
+        for (int i = 0; i < size; i++) {
             array[i] -= scalar;
         }
         return this;
@@ -289,9 +289,9 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector subInPlace(Vector vector) {
-        checkVectorDimensions(vector);
-        for (int i = 0; i < dimension; i++) {
+    public DenseVector subInPlace(Vector vector) {
+        checkVectorSize(vector);
+        for (int i = 0; i < size; i++) {
             array[i] -= vector.get(i);
         }
         return this;
@@ -299,11 +299,11 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector multElementwise(Vector vector) {
-        checkVectorDimensions(vector);
-        DenseVector resultVector = new DenseVector(dimension);
+    public DenseVector multElementwise(Vector vector) {
+        checkVectorSize(vector);
+        DenseVector resultVector = new DenseVector(size);
         double[] resultVectorArray = resultVector.getArray();
-        for (int i = 0; i < dimension; i++) {
+        for (int i = 0; i < size; i++) {
             resultVectorArray[i] = array[i] * vector.get(i);
         }
         return resultVector;
@@ -311,9 +311,9 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector multElementwiseInPlace(Vector vector) {
-        checkVectorDimensions(vector);
-        for (int i = 0; i < dimension; i++) {
+    public DenseVector multElementwiseInPlace(Vector vector) {
+        checkVectorSize(vector);
+        for (int i = 0; i < size; i++) {
             array[i] *= vector.get(i);
         }
         return this;
@@ -321,11 +321,11 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector divElementwise(Vector vector) {
-        checkVectorDimensions(vector);
-        DenseVector resultVector = new DenseVector(dimension);
+    public DenseVector divElementwise(Vector vector) {
+        checkVectorSize(vector);
+        DenseVector resultVector = new DenseVector(size);
         double[] resultVectorArray = resultVector.getArray();
-        for (int i = 0; i < dimension; i++) {
+        for (int i = 0; i < size; i++) {
             resultVectorArray[i] = array[i] / vector.get(i);
         }
         return resultVector;
@@ -333,9 +333,9 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector divElementwiseInPlace(Vector vector) {
-        checkVectorDimensions(vector);
-        for (int i = 0; i < dimension; i++) {
+    public DenseVector divElementwiseInPlace(Vector vector) {
+        checkVectorSize(vector);
+        for (int i = 0; i < size; i++) {
             array[i] /= vector.get(i);
         }
         return this;
@@ -343,10 +343,10 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector mult(double scalar) {
-        DenseVector resultVector = new DenseVector(dimension);
+    public DenseVector mult(double scalar) {
+        DenseVector resultVector = new DenseVector(size);
         double[] resultVectorArray = resultVector.getArray();
-        for (int i = 0; i < dimension; i++) {
+        for (int i = 0; i < size; i++) {
             resultVectorArray[i] = array[i] * scalar;
         }
         return resultVector;
@@ -354,8 +354,8 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector multInPlace(double scalar) {
-        for (int i = 0; i < dimension; i++) {
+    public DenseVector multInPlace(double scalar) {
+        for (int i = 0; i < size; i++) {
             array[i] *= scalar;
         }
         return this;
@@ -363,10 +363,10 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector div(double scalar) {
-        DenseVector resultVector = new DenseVector(dimension);
+    public DenseVector div(double scalar) {
+        DenseVector resultVector = new DenseVector(size);
         double[] resultVectorArray = resultVector.getArray();
-        for (int i = 0; i < dimension; i++) {
+        for (int i = 0; i < size; i++) {
             resultVectorArray[i] = array[i] / scalar;
         }
         return resultVector;
@@ -374,8 +374,8 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector divInPlace(double scalar) {
-        for (int i = 0; i < dimension; i++) {
+    public DenseVector divInPlace(double scalar) {
+        for (int i = 0; i < size; i++) {
             array[i] /= scalar;
         }
         return this;
@@ -383,10 +383,10 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector saxpy(double scalar, Vector vector) {
-        DenseVector resultVector = new DenseVector(dimension);
+    public DenseVector saxpy(double scalar, Vector vector) {
+        DenseVector resultVector = new DenseVector(size);
         double[] resultVectorArray = resultVector.getArray();
-        for (int i = 0; i < dimension; i++) {
+        for (int i = 0; i < size; i++) {
             resultVectorArray[i] = array[i] + scalar * vector.get(i);
         }
         return resultVector;
@@ -394,8 +394,8 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector saxpyInPlace(double scalar, Vector vector) {
-        for (int i = 0; i < dimension; i++) {
+    public DenseVector saxpyInPlace(double scalar, Vector vector) {
+        for (int i = 0; i < size; i++) {
             array[i] += scalar * vector.get(i);
         }
         return this;
@@ -404,9 +404,9 @@ public class DenseVector extends Vector {
     /** {@inheritDoc} */
     @Override
     public double inner(Vector vector) {
-        checkVectorDimensions(vector);
+        checkVectorSize(vector);
         double dotProduct = 0;
-        for (int i = 0; i < dimension; i++) {
+        for (int i = 0; i < size; i++) {
             dotProduct += array[i] * vector.get(i);
         }
         return dotProduct;
@@ -415,11 +415,11 @@ public class DenseVector extends Vector {
     /** {@inheritDoc} */
     @Override
     public Matrix outer(Vector vector) {
-        checkVectorDimensions(vector);
-        Matrix resultMatrix = new Matrix(dimension, dimension);
+        checkVectorSize(vector);
+        Matrix resultMatrix = new Matrix(size, size);
         double[][] resultMatrixArray = resultMatrix.getArray();
-        for (int i = 0; i < dimension; i++) {
-            for (int j = 0; j < dimension; j++) {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
                 resultMatrixArray[i][j] = array[i] * vector.get(j);
             }
         }
@@ -428,15 +428,15 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector gaxpy(Matrix matrix, Vector vector) {
-        if (matrix.getRowDimension() != dimension) {
+    public DenseVector gaxpy(Matrix matrix, Vector vector) {
+        if (matrix.getRowDimension() != size) {
             throw new IllegalArgumentException(
-                    "The row dimension of the matrix must agree with the dimension of the current vector."
+                    "The row dimension of the matrix must agree with the size of the current vector."
             );
         }
         if (matrix.getColumnDimension() != vector.size()) {
             throw new IllegalArgumentException(
-                    "The column dimension of the matrix must agree with the dimension of the provided vector."
+                    "The column dimension of the matrix must agree with the size of the provided vector."
             );
         }
         DenseVector resultVector = new DenseVector(matrix.getColumnDimension());
@@ -452,15 +452,15 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector gaxpyInPlace(Matrix matrix, Vector vector) {
-        if (matrix.getRowDimension() != dimension) {
+    public DenseVector gaxpyInPlace(Matrix matrix, Vector vector) {
+        if (matrix.getRowDimension() != size) {
             throw new IllegalArgumentException(
-                    "The row dimension of the matrix must agree with the dimension of the current vector."
+                    "The row dimension of the matrix must agree with the size of the current vector."
             );
         }
         if (matrix.getColumnDimension() != vector.size()) {
             throw new IllegalArgumentException(
-                    "The column dimension of the matrix must agree with the dimension of the provided vector."
+                    "The column dimension of the matrix must agree with the size of the provided vector."
             );
         }
         for (int i = 0; i < matrix.getRowDimension(); i++) {
@@ -473,16 +473,16 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector transMult(Matrix matrix) {
-        if (matrix.getRowDimension() != dimension) {
+    public DenseVector transMult(Matrix matrix) {
+        if (matrix.getRowDimension() != size) {
             throw new IllegalArgumentException(
-                    "The row dimension of the matrix must agree with the dimension of the vector."
+                    "The row dimension of the matrix must agree with the size of the vector."
             );
         }
         DenseVector resultVector = new DenseVector(matrix.getColumnDimension());
         double[] resultVectorArray = resultVector.getArray();
         for (int i = 0; i < matrix.getRowDimension(); i++) {
-            for (int j = 0; j < dimension; j++) {
+            for (int j = 0; j < size; j++) {
                 resultVectorArray[i] += array[j] * matrix.getElement(i, j);
             }
         }
@@ -490,32 +490,32 @@ public class DenseVector extends Vector {
     }
 
     /**
-     * Constructs and returns a vector with the provided dimension, filled with ones.
+     * Constructs and returns a vector with the provided size, filled with ones.
      *
-     * @param   dimension   The dimension of the vector.
-     * @return              A vector with the provided dimension, filled with ones.
+     * @param   size    The size of the vector.
+     * @return          A vector with the provided size, filled with ones.
      */
-    public static Vector generateOnesVector(int dimension) {
-        DenseVector onesVector = new DenseVector(dimension);
+    public static DenseVector generateOnesVector(int size) {
+        DenseVector onesVector = new DenseVector(size);
         double[] onesVectorArray = onesVector.getArray();
-        for (int i = 0; i < dimension; i++) {
+        for (int i = 0; i < size; i++) {
             onesVectorArray[i] = 1.0;
         }
         return onesVector;
     }
 
     /**
-     * Constructs and returns a vector with the provided dimension, filled with random values ranging from {@code 0.0}
-     * to {@code 1.0}.
-     *
-     * @param   dimension   The dimension of the random vector.
-     * @return              A vector with the provided dimension, filled with random values ranging from {@code 0.0} to
+     * Constructs and returns a vector with the provided size, filled with random values ranging from {@code 0.0} to 
      * {@code 1.0}.
+     *
+     * @param   size    The size of the random vector.
+     * @return          A vector with the provided size, filled with random values ranging from {@code 0.0} to
+     *                  {@code 1.0}.
      */
-    public static Vector generateRandomVector(int dimension) {
-        DenseVector randomVector = new DenseVector(dimension);
+    public static DenseVector generateRandomVector(int size) {
+        DenseVector randomVector = new DenseVector(size);
         double[] randomVectorArray = randomVector.getArray();
-        for (int i = 0; i < dimension; i++) {
+        for (int i = 0; i < size; i++) {
             randomVectorArray[i] = Math.random();
         }
         return randomVector;
@@ -531,16 +531,16 @@ public class DenseVector extends Vector {
     }
 
     /**
-     * Checks whether the provided vector has the same dimension as this vector. If the dimensions of the two vectors do
-     * not agree an exception is thrown.
+     * Checks whether the provided vector has the same size as this vector. If the sizes of the two vectors do not agree
+     * an exception is thrown.
      *
-     * @param   vector  The vector whose dimension to check.
+     * @param   vector  The vector whose size to check.
      *
-     * @exception   IllegalArgumentException    Vector dimensions must agree.
+     * @exception   IllegalArgumentException    Vector sizes must agree.
      */
-    private void checkVectorDimensions(Vector vector) {
-        if (vector.size() != dimension) {
-            throw new IllegalArgumentException("Vector dimensions must agree.");
+    private void checkVectorSize(Vector vector) {
+        if (vector.size() != size) {
+            throw new IllegalArgumentException("Vector sizes must agree.");
         }
     }
 }
