@@ -18,7 +18,7 @@ public final class LinearLeastSquaresFunction extends AbstractLeastSquaresFuncti
     }
 
     public Vector computeResiduals(Vector point) {
-        return J.multiply(point).subtract(y);
+        return J.multiply(point).sub(y);
     }
 
     public Matrix computeJacobian(Vector point) {

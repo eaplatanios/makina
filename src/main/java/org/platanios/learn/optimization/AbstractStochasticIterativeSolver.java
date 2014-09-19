@@ -150,7 +150,7 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
             }
 
             if (checkForPointConvergence) {
-                pointChange = currentPoint.subtract(previousPoint).norm(VectorNorm.L2);
+                pointChange = currentPoint.sub(previousPoint).norm(VectorNorm.L2);
                 numberOfIterationsWithNoPointChange =
                         (pointChange <= pointChangeTolerance) ? numberOfIterationsWithNoPointChange + 1 : 0;
                 if (numberOfIterationsWithNoPointChange >= maximumNumberOfIterationsWithNoPointChange) {

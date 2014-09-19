@@ -39,7 +39,7 @@ public class LineSearchConditions {
                                                Vector objectiveGradientAtCurrentPoint) {
         Preconditions.checkArgument(c > 0 && c < 1);
 
-        double newObjectiveValue = objective.getValue(direction.multiply(stepSize).add(point));
+        double newObjectiveValue = objective.getValue(direction.mult(stepSize).add(point));
 
         return newObjectiveValue <=
                 objectiveValueAtCurrentPoint + c * stepSize * objectiveGradientAtCurrentPoint.inner(direction);
@@ -100,7 +100,7 @@ public class LineSearchConditions {
         );
 
         // Check the curvature condition
-        double leftTerm = objective.getGradient(point.add(direction.multiply(stepSize))).inner(direction);
+        double leftTerm = objective.getGradient(point.add(direction.mult(stepSize))).inner(direction);
         double rightTerm = objectiveGradientAtCurrentPoint.inner(direction);
         boolean curvatureConditionSatisfied;
         if (strong) {
@@ -144,7 +144,7 @@ public class LineSearchConditions {
                                                    Vector objectiveGradientAtCurrentPoint) {
         Preconditions.checkArgument(c > 0 && c < 0.5);
 
-        double newObjectiveValue = objective.getValue(point.add(direction.multiply(stepSize)));
+        double newObjectiveValue = objective.getValue(point.add(direction.mult(stepSize)));
         double scaledSearchDirection = stepSize * objectiveGradientAtCurrentPoint.inner(direction);
         double lowerBound = objectiveValueAtCurrentPoint + (1 - c) * scaledSearchDirection;
         double upperBound = objectiveValueAtCurrentPoint + c * scaledSearchDirection;

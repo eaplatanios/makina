@@ -97,7 +97,7 @@ public final class ArmijoInterpolationLineSearch extends IterativeLineSearch {
                                                double phi0,
                                                double phiPrime0) {
         aOld = aNew;
-        double phiA0 = objective.getValue(point.add(direction.multiply(aOld)));
+        double phiA0 = objective.getValue(point.add(direction.mult(aOld)));
         aNew = -phiPrime0 * Math.pow(aOld, 2) / (2 * (phiA0 - phi0 - aOld * phiPrime0));
 
         // Ensure that we make reasonable progress and that the final step size is not too small.
@@ -125,8 +125,8 @@ public final class ArmijoInterpolationLineSearch extends IterativeLineSearch {
         double a1Square = Math.pow(aNew, 2);
         double a0Cube = Math.pow(aOld, 3);
         double a1Cube = Math.pow(aNew, 3);
-        double phiA0 = objective.getValue(point.add(direction.multiply(aOld)));
-        double phiA1 = objective.getValue(point.add(direction.multiply(aNew)));
+        double phiA0 = objective.getValue(point.add(direction.mult(aOld)));
+        double phiA1 = objective.getValue(point.add(direction.mult(aNew)));
         double denominator = a0Square * a1Square * (aNew - aOld);
         double a = (a0Square * (phiA1 - phi0 - aNew * phiPrime0) - a1Square * (phiA0 - phi0 - aOld * phiPrime0))
                 / denominator;

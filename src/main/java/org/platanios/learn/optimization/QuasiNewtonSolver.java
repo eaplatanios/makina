@@ -106,7 +106,7 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
 
     @Override
     public void updatePoint() {
-        currentPoint = previousPoint.add(currentDirection.multiply(currentStepSize));
+        currentPoint = previousPoint.add(currentDirection.mult(currentStepSize));
     }
 
     /** m != 1 only for the LBFGS method. */
@@ -115,8 +115,8 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
             s[i] = s[i-1];
             y[i] = y[i-1];
         }
-        s[0] = currentPoint.subtract(previousPoint);
-        y[0] = currentGradient.subtract(previousGradient);
+        s[0] = currentPoint.sub(previousPoint);
+        y[0] = currentGradient.sub(previousGradient);
     }
 
     /**
@@ -135,12 +135,12 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
                 if (solver.currentIteration > 0) {
                     updatePreviousH(solver);
                     solver.currentH = solver.previousH.subtract(solver.previousH.multiply(
-                            solver.y[0].multiply(1 / solver.y[0].multiply(solver.previousH).inner(solver.y[0]))
+                            solver.y[0].mult(1 / solver.y[0].mult(solver.previousH).inner(solver.y[0]))
                                     .outer(solver.y[0])
                                     .multiply(solver.previousH)
-                    )).add(solver.s[0].multiply(1 / solver.y[0].inner(solver.s[0])).outer(solver.s[0]));
+                    )).add(solver.s[0].mult(1 / solver.y[0].inner(solver.s[0])).outer(solver.s[0]));
                 }
-                solver.currentDirection = solver.currentH.multiply(solver.currentGradient).multiply(-1);
+                solver.currentDirection = solver.currentH.multiply(solver.currentGradient).mult(-1);
             }
         },
         /** The Broyden–Fletcher–Goldfarb–Shanno algorithm. This algorithm is very good at correcting bad Hessian
@@ -152,13 +152,13 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
                     updatePreviousH(solver);
                     double rho = 1 / solver.y[0].inner(solver.s[0]);
                     solver.currentH = solver.identityMatrix
-                            .subtract(solver.s[0].multiply(rho).outer(solver.y[0]))
+                            .subtract(solver.s[0].mult(rho).outer(solver.y[0]))
                             .multiply(solver.previousH)
                             .multiply(solver.identityMatrix
-                                              .subtract(solver.y[0].multiply(rho).outer(solver.s[0])))
-                            .add(solver.s[0].multiply(rho).outer(solver.s[0]));
+                                              .subtract(solver.y[0].mult(rho).outer(solver.s[0])))
+                            .add(solver.s[0].mult(rho).outer(solver.s[0]));
                 }
-                solver.currentDirection = solver.currentH.multiply(solver.currentGradient).multiply(-1);
+                solver.currentDirection = solver.currentH.multiply(solver.currentGradient).mult(-1);
             }
         },
         LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO {
@@ -167,11 +167,11 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
                 if (solver.currentIteration > 0) {
                     solver.initialHessianInverseDiagonal =
                             (new DenseVector(solver.currentPoint.size(), 1))
-                                    .multiply(solver.s[0].inner(solver.y[0])
-                                                      / solver.y[0].inner(solver.y[0]));
+                                    .mult(solver.s[0].inner(solver.y[0])
+                                                  / solver.y[0].inner(solver.y[0]));
                 }
                 solver.currentDirection =
-                        approximateHessianInverseVectorProduct(solver, solver.currentGradient).multiply(-1);
+                        approximateHessianInverseVectorProduct(solver, solver.currentGradient).mult(-1);
             }
 
             private Vector approximateHessianInverseVectorProduct(QuasiNewtonSolver solver, Vector q) {
@@ -180,11 +180,11 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
                 for (int i = 0; i < Math.min(solver.m, solver.currentIteration); i++) {
                     rho[i] = 1 / solver.y[i].inner(solver.s[i]);
                     a[i] = rho[i] * solver.s[i].inner(q);
-                    q = q.subtract(solver.y[i].multiply(a[i]));
+                    q = q.sub(solver.y[i].mult(a[i]));
                 }
-                Vector result = q.multiplyElementwise(solver.initialHessianInverseDiagonal);
+                Vector result = q.multElementwise(solver.initialHessianInverseDiagonal);
                 for (int i = Math.min(solver.m, solver.currentIteration) - 1; i >= 0; i--) {
-                    result = result.add(solver.s[i].multiply(a[i] - rho[i] * solver.y[i].inner(result)));
+                    result = result.add(solver.s[i].mult(a[i] - rho[i] * solver.y[i].inner(result)));
                 }
                 return result;
             }
@@ -197,19 +197,19 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
             protected void updateDirection(QuasiNewtonSolver solver) {
                 if (solver.currentIteration > 0) {
                     updatePreviousH(solver);
-                    Vector tempVector = solver.s[0].subtract(solver.previousH.multiply(solver.y[0]));
+                    Vector tempVector = solver.s[0].sub(solver.previousH.multiply(solver.y[0]));
                     if (Math.abs(tempVector.inner(solver.y[0]))
                             >= solver.symmetricRankOneSkippingParameter
                             * solver.y[0].norm(VectorNorm.L2)
                             *  tempVector.norm(VectorNorm.L2)) {
                         solver.currentH = solver.previousH.add(
-                                tempVector.multiply(1 / tempVector.inner(solver.y[0])).outer(tempVector)
+                                tempVector.mult(1 / tempVector.inner(solver.y[0])).outer(tempVector)
                         );
                     } else {
                         solver.currentH = solver.previousH;
                     }
                 }
-                solver.currentDirection = solver.currentH.multiply(solver.currentGradient).multiply(-1);
+                solver.currentDirection = solver.currentH.multiply(solver.currentGradient).mult(-1);
             }
         },
         BROYDEN {
@@ -218,12 +218,12 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
                 if (solver.currentIteration > 0) {
                     updatePreviousH(solver);
                     solver.currentH = solver.previousH.add(
-                            solver.s[0].subtract(solver.previousH.multiply(solver.y[0]))
-                                    .outer(solver.s[0].multiply(solver.previousH))
-                                    .multiply(1 / solver.s[0].multiply(solver.previousH).inner(solver.y[0]))
+                            solver.s[0].sub(solver.previousH.multiply(solver.y[0]))
+                                    .outer(solver.s[0].mult(solver.previousH))
+                                    .multiply(1 / solver.s[0].mult(solver.previousH).inner(solver.y[0]))
                     );
                 }
-                solver.currentDirection = solver.currentH.multiply(solver.currentGradient).multiply(-1);
+                solver.currentDirection = solver.currentH.multiply(solver.currentGradient).mult(-1);
             }
         };
 

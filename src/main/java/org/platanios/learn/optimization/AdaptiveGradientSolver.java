@@ -41,14 +41,14 @@ public final class AdaptiveGradientSolver extends AbstractStochasticIterativeSol
         if (currentIteration == 0) {
             sumOfGradientSquares = currentGradient.map(gradient -> Math.pow(gradient, 2)).copy();
         } else {
-            sumOfGradientSquares.addEquals(currentGradient.map(gradient -> Math.pow(gradient, 2)));
+            sumOfGradientSquares.addInPlace(currentGradient.map(gradient -> Math.pow(gradient, 2)));
         }
         currentDirection =
-                currentGradient.multiply(-1).divideElementwise(sumOfGradientSquares.map(Math::sqrt));
+                currentGradient.mult(-1).divElementwise(sumOfGradientSquares.map(Math::sqrt));
     }
 
     @Override
     public void updatePoint() {
-        currentPoint = previousPoint.add(currentDirection.multiply(currentStepSize));
+        currentPoint = previousPoint.add(currentDirection.mult(currentStepSize));
     }
 }

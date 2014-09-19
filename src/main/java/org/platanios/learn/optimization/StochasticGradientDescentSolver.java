@@ -35,11 +35,11 @@ public final class StochasticGradientDescentSolver extends AbstractStochasticIte
 
     @Override
     public void updateDirection() {
-        currentDirection = currentGradient.multiply(-1);
+        currentDirection = currentGradient.mult(-1);
     }
 
     @Override
     public void updatePoint() {
-        currentPoint = previousPoint.add(currentDirection.multiply(currentStepSize));
+        currentPoint = previousPoint.add(currentDirection.mult(currentStepSize));
     }
 }

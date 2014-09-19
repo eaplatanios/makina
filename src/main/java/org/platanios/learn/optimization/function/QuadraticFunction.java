@@ -19,12 +19,12 @@ public final class QuadraticFunction extends AbstractFunction {
 
     @Override
     public double computeValue(Vector point) {
-        return 0.5 * point.multiply(A).inner(point) - b.inner(point);
+        return 0.5 * point.mult(A).inner(point) - b.inner(point);
     }
 
     @Override
     public Vector computeGradient(Vector point) {
-        return A.multiply(point).subtract(b);
+        return A.multiply(point).sub(b);
     }
 
     @Override

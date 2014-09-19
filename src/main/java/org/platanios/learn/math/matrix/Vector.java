@@ -4,6 +4,7 @@ import java.util.function.Function;
 
 /**
  * Interface for classes representing vectors and supporting operations related to vectors.
+ * TODO: Implement the saxpy operator.
  *
  * @author Emmanouil Antonios Platanios
  */
@@ -161,14 +162,14 @@ public abstract class Vector {
      *
      * @param   scalar  The scalar to add to entries of the current vector.
      */
-    public abstract Vector addEquals(double scalar);
+    public abstract Vector addInPlace(double scalar);
 
     /**
      * Adds another vector to the current vector and replaces the current vector with the result.
      *
      * @param   vector  The vector to add to the current vector.
      */
-    public abstract Vector addEquals(Vector vector);
+    public abstract Vector addInPlace(Vector vector);
 
     /**
      * Subtracts a scalar from all entries of the current vector and returns the result in a new vector.
@@ -176,7 +177,7 @@ public abstract class Vector {
      * @param   scalar  The scalar to subtract from all entries of the current vector.
      * @return          A new vector holding the result of the subtraction.
      */
-    public abstract Vector subtract(double scalar);
+    public abstract Vector sub(double scalar);
 
     /**
      * Subtracts another vector from the current vector and returns the result in a new vector.
@@ -184,21 +185,21 @@ public abstract class Vector {
      * @param   vector  The vector to subtract from the current vector.
      * @return          A new vector holding the result of the subtraction.
      */
-    public abstract Vector subtract(Vector vector);
+    public abstract Vector sub(Vector vector);
 
     /**
      * Subtracts a scalar from all entries of the current vector and replaces the current vector with the result.
      *
      * @param   scalar  The scalar to subtract from all entries of the current vector.
      */
-    public abstract Vector subtractEquals(double scalar);
+    public abstract Vector subInPlace(double scalar);
 
     /**
      * Subtracts another vector from the current vector and replaces the current vector with the result.
      *
      * @param   vector  The vector to subtract from the current vector.
      */
-    public abstract Vector subtractEquals(Vector vector);
+    public abstract Vector subInPlace(Vector vector);
 
     /**
      * Multiplies another vector with the current vector element-wise and returns the result in a new vector.
@@ -206,14 +207,14 @@ public abstract class Vector {
      * @param   vector  The vector to multiply with the current vector element-wise.
      * @return          A new vector holding the result of the multiplication.
      */
-    public abstract Vector multiplyElementwise(Vector vector);
+    public abstract Vector multElementwise(Vector vector);
 
     /**
      * Multiplies another vector with the current vector element-wise and replaces the current vector with the result.
      *
      * @param   vector  The vector to multiply with the current vector element-wise.
      */
-    public abstract Vector multiplyElementwiseEquals(Vector vector);
+    public abstract Vector multElementwiseInPlace(Vector vector);
 
     /**
      * Divides another vector with the current vector element-wise and returns the result in a new vector.
@@ -221,14 +222,14 @@ public abstract class Vector {
      * @param   vector  The vector to divide with the current vector element-wise.
      * @return          A new vector holding the result of the division.
      */
-    public abstract Vector divideElementwise(Vector vector);
+    public abstract Vector divElementwise(Vector vector);
 
     /**
      * Divides another vector with the current vector element-wise and replaces the current vector with the result.
      *
      * @param   vector  The vector to divide with the current vector element-wise.
      */
-    public abstract Vector divideElementwiseEquals(Vector vector);
+    public abstract Vector divElementwiseInPlace(Vector vector);
 
     /**
      * Multiplies the current vector with a scalar and returns the result in a new vector.
@@ -236,14 +237,14 @@ public abstract class Vector {
      * @param   scalar  The scalar with which to multiply the current vector.
      * @return          A new vector holding the result of the multiplication.
      */
-    public abstract Vector multiply(double scalar);
+    public abstract Vector mult(double scalar);
 
     /**
      * Multiplies the current vector with a scalar and replaces the current vector with the result.
      *
      * @param   scalar  The scalar with which to multiply the current vector.
      */
-    public abstract Vector multiplyEquals(double scalar);
+    public abstract Vector multInPlace(double scalar);
 
     /**
      * Divides the current vector with a scalar and returns the result in a new vector.
@@ -251,14 +252,36 @@ public abstract class Vector {
      * @param   scalar  The scalar with which to divide the current vector.
      * @return          A new vector holding the result of the division.
      */
-    public abstract Vector divide(double scalar);
+    public abstract Vector div(double scalar);
 
     /**
      * Divides the current vector with a scalar and replaces the current vector with the result.
      *
      * @param   scalar  The scalar with which to divide the current vector.
      */
-    public abstract Vector divideEquals(double scalar);
+    public abstract Vector divInPlace(double scalar);
+
+    /**
+     * Performs the saxpy operation, as it is named in LAPACK. Let us denote the current vector by \(\boldsymbol{y}\).
+     * Given a scalar \(\alpha\) and another vector \(\boldsymbol{x}\), this function returns the value of
+     * \(\boldsymbol{y}+\alpha\boldsymbol{x}\).
+     *
+     * @param   scalar  The scalar \(\alpha\).
+     * @param   vector  The vector \(\boldsymbol{x}\).
+     * @return          The value of \(\boldsymbol{y}+\alpha\boldsymbol{x}\).
+     */
+    public abstract Vector saxpy(double scalar, Vector vector);
+
+    /**
+     * Performs the saxpy operation, as it is named in LAPACK, in-place. Let us denote the current vector by
+     * \(\boldsymbol{y}\). Given a scalar \(\alpha\) and another vector \(\boldsymbol{x}\), this function replaces
+     * this vector with the value of \(\boldsymbol{y}+\alpha\boldsymbol{x}\) and returns it.
+     *
+     * @param   scalar  The scalar \(\alpha\).
+     * @param   vector  The vector \(\boldsymbol{x}\).
+     * @return          The value of \(\boldsymbol{y}+\alpha\boldsymbol{x}\).
+     */
+    public abstract Vector saxpyInPlace(double scalar, Vector vector);
 
     /**
      * Computes the inner product (also known as the dot product) between the current vector and another vector.
@@ -266,7 +289,7 @@ public abstract class Vector {
      * @param   vector  The vector used to compute the inner product with the current vector.
      * @return          The resulting inner product value.
      */
-    public double dot(Vector vector) {
+    public final double dot(Vector vector) {
         return inner(vector);
     }
 
@@ -293,5 +316,5 @@ public abstract class Vector {
      * @param   matrix  The matrix with which to multiply the current vector.
      * @return          A new vector holding the result of the multiplication.
      */
-    public abstract Vector multiply(Matrix matrix);
+    public abstract Vector mult(Matrix matrix);
 }

@@ -72,9 +72,9 @@ public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
     public void updateDirection() {
         method.updateDirection(this);
         // Check to see on which side along the current direction the objective function value is decreasing.
-        if (!(objective.computeValue(currentPoint.add(currentDirection.multiply(epsilon))) - currentObjectiveValue
+        if (!(objective.computeValue(currentPoint.add(currentDirection.mult(epsilon))) - currentObjectiveValue
                 < 0)) {
-            currentDirection = currentDirection.multiply(-1);
+            currentDirection = currentDirection.mult(-1);
         }
     }
 
@@ -104,7 +104,7 @@ public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
             @Override
             protected void updatePoint(CoordinateDescentSolver solver) {
                 solver.currentPoint =
-                        solver.previousPoint.add(solver.currentDirection.multiply(solver.currentStepSize));
+                        solver.previousPoint.add(solver.currentDirection.mult(solver.currentStepSize));
             }
         },
         /** The algorithm goes back and forth over the coordinates (it uses the coordinates in the following order:
@@ -129,7 +129,7 @@ public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
             @Override
             protected void updatePoint(CoordinateDescentSolver solver) {
                 solver.currentPoint =
-                        solver.previousPoint.add(solver.currentDirection.multiply(solver.currentStepSize));
+                        solver.previousPoint.add(solver.currentDirection.mult(solver.currentStepSize));
             }
         },
         /** The algorithm cycles over the coordinates as with the {@link #CYCLE} restartMethod, but after each cycle completes,
@@ -148,7 +148,7 @@ public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
                         solver.currentDimension++;
                     }
                 } else {
-                    solver.currentDirection = solver.cycleEndPoint.subtract(solver.cycleStartPoint);
+                    solver.currentDirection = solver.cycleEndPoint.sub(solver.cycleStartPoint);
                     solver.currentDimension = 0;
                     solver.completedCycle = false;
                 }
@@ -157,7 +157,7 @@ public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
             @Override
             protected void updatePoint(CoordinateDescentSolver solver) {
                 solver.currentPoint =
-                        solver.previousPoint.add(solver.currentDirection.multiply(solver.currentStepSize));
+                        solver.previousPoint.add(solver.currentDirection.mult(solver.currentStepSize));
                 if (solver.currentDimension == 0) {
                     solver.cycleStartPoint = solver.cycleEndPoint;
                 } else if (solver.currentDimension > solver.numberOfDimensions - 1) {

@@ -71,18 +71,18 @@ public final class NonlinearConjugateGradientSolver extends AbstractLineSearchSo
         method = builder.method;
         restartMethod = builder.restartMethod;
         gradientsOrthogonalityCheckThreshold = builder.gradientsOrthogonalityCheckThreshold;
-        currentDirection = currentGradient.multiply(-1);
+        currentDirection = currentGradient.mult(-1);
     }
 
     @Override
     public void updateDirection() {
         beta = checkForRestart() ? 0 : method.computeBeta(this);
-        currentDirection = currentGradient.multiply(-1).add(previousDirection.multiply(beta));
+        currentDirection = currentGradient.mult(-1).add(previousDirection.mult(beta));
     }
 
     @Override
     public void updatePoint() {
-        currentPoint = previousPoint.add(currentDirection.multiply(currentStepSize));
+        currentPoint = previousPoint.add(currentDirection.mult(currentStepSize));
     }
 
     private boolean checkForRestart() {
@@ -125,7 +125,7 @@ public final class NonlinearConjugateGradientSolver extends AbstractLineSearchSo
         POLAK_RIBIERE {
             @Override
             protected double computeBeta(NonlinearConjugateGradientSolver solver) {
-                return solver.currentGradient.inner(solver.currentGradient.subtract(solver.previousGradient))
+                return solver.currentGradient.inner(solver.currentGradient.sub(solver.previousGradient))
                         / solver.previousGradient.inner(solver.previousGradient);
             }
         },
@@ -133,14 +133,14 @@ public final class NonlinearConjugateGradientSolver extends AbstractLineSearchSo
             @Override
             protected double computeBeta(NonlinearConjugateGradientSolver solver) {
                 return Math.max(
-                        solver.currentGradient.inner(solver.currentGradient.subtract(solver.previousGradient))
+                        solver.currentGradient.inner(solver.currentGradient.sub(solver.previousGradient))
                                 / solver.previousGradient.inner(solver.previousGradient), 0);
             }
         },
         HESTENES_STIEFEL {
             @Override
             protected double computeBeta(NonlinearConjugateGradientSolver solver) {
-                Vector gradientsDifference = solver.currentGradient.subtract(solver.previousGradient);
+                Vector gradientsDifference = solver.currentGradient.sub(solver.previousGradient);
                 if (gradientsDifference.norm(VectorNorm.L2) != 0) {
                     return solver.currentGradient.inner(gradientsDifference)
                             / gradientsDifference.inner(solver.previousDirection);
@@ -155,7 +155,7 @@ public final class NonlinearConjugateGradientSolver extends AbstractLineSearchSo
                 double denominator = solver.previousGradient.inner(solver.previousGradient);
                 double betaFR = solver.currentGradient.inner(solver.currentGradient) / denominator;
                 double betaPR = solver.currentGradient
-                        .inner(solver.currentGradient.subtract(solver.previousGradient)) / denominator;
+                        .inner(solver.currentGradient.sub(solver.previousGradient)) / denominator;
                 if (betaPR < -betaFR) {
                     return -betaFR;
                 } else if (betaPR > betaFR) {
@@ -168,7 +168,7 @@ public final class NonlinearConjugateGradientSolver extends AbstractLineSearchSo
         DAI_YUAN {
             @Override
             protected double computeBeta(NonlinearConjugateGradientSolver solver) {
-                Vector gradientsDifference = solver.currentGradient.subtract(solver.previousGradient);
+                Vector gradientsDifference = solver.currentGradient.sub(solver.previousGradient);
                 if (gradientsDifference.norm(VectorNorm.L2) != 0) {
                     return solver.currentGradient.inner(solver.currentGradient)
                             / gradientsDifference.inner(solver.previousDirection);
@@ -180,12 +180,12 @@ public final class NonlinearConjugateGradientSolver extends AbstractLineSearchSo
         HAGER_ZHANG {
             @Override
             protected double computeBeta(NonlinearConjugateGradientSolver solver) {
-                Vector gradientsDifference = solver.currentGradient.subtract(solver.previousGradient);
+                Vector gradientsDifference = solver.currentGradient.sub(solver.previousGradient);
                 if (gradientsDifference.norm(VectorNorm.L2) != 0) {
                     double denominator = gradientsDifference.inner(solver.previousDirection);
-                    Vector temporaryTerm = gradientsDifference.subtract(
-                            solver.previousDirection.multiply(2 * gradientsDifference.inner(gradientsDifference)
-                                                               / denominator)
+                    Vector temporaryTerm = gradientsDifference.sub(
+                            solver.previousDirection.mult(2 * gradientsDifference.inner(gradientsDifference)
+                                                                  / denominator)
                     );
                     return temporaryTerm.inner(solver.currentGradient) / denominator;
                 } else {

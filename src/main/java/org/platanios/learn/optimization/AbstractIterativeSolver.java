@@ -154,7 +154,7 @@ abstract class AbstractIterativeSolver implements Solver {
             }
 
             if (checkForPointConvergence) {
-                pointChange = currentPoint.subtract(previousPoint).norm(VectorNorm.L2);
+                pointChange = currentPoint.sub(previousPoint).norm(VectorNorm.L2);
                 pointConverged = pointChange <= pointChangeTolerance;
             }
 

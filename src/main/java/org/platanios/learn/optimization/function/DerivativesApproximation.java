@@ -60,7 +60,7 @@ public final class DerivativesApproximation {
                 for (int i = 0; i < n; i++) {
                     ei.setAll(0);
                     ei.set(i, 1);
-                    double forwardFunctionValue = owner.function.getValue(point.add(ei.multiply(owner.epsilon)));
+                    double forwardFunctionValue = owner.function.getValue(point.add(ei.mult(owner.epsilon)));
                     gradient.set(i, (forwardFunctionValue - currentFunctionValue) / owner.epsilon);
                 }
                 return gradient;
@@ -75,12 +75,12 @@ public final class DerivativesApproximation {
                 for (int i = 0; i < n; i++) {
                     ei.setAll(0);
                     ei.set(i, 1);
-                    double iFunctionValue = owner.function.getValue(point.add(ei.multiply(owner.epsilon)));
+                    double iFunctionValue = owner.function.getValue(point.add(ei.mult(owner.epsilon)));
                     for (int j = i; j < n; j++) {
                         ej.setAll(0);
                         ej.set(j, 1);
-                        double jFunctionValue = owner.function.getValue(point.add(ej.multiply(owner.epsilon)));
-                        double ijFunctionValue = owner.function.getValue(point.add(ei.add(ej).multiply(owner.epsilon)));
+                        double jFunctionValue = owner.function.getValue(point.add(ej.mult(owner.epsilon)));
+                        double ijFunctionValue = owner.function.getValue(point.add(ei.add(ej).mult(owner.epsilon)));
                         double ijEntry = (ijFunctionValue - iFunctionValue - jFunctionValue + currentFunctionValue)
                                 / Math.pow(owner.epsilon, 2);
                         hessian.setElement(i, j, ijEntry);
@@ -100,10 +100,10 @@ public final class DerivativesApproximation {
                 for (int i = 0; i < n; i++) {
                     ei.setAll(0);
                     ei.set(i, 1);
-                    Vector forwardGradientValue = owner.function.getGradient(point.add(ei.multiply(owner.epsilon)));
+                    Vector forwardGradientValue = owner.function.getGradient(point.add(ei.mult(owner.epsilon)));
                     hessian.setColumn(
                             i,
-                            forwardGradientValue.subtract(currentGradientValue).multiply(1 / owner.epsilon)
+                            forwardGradientValue.sub(currentGradientValue).mult(1 / owner.epsilon)
                     );
                 }
                 return hessian;
@@ -112,9 +112,9 @@ public final class DerivativesApproximation {
             protected Vector approximateHessianVectorProductGivenGradient(DerivativesApproximation owner,
                                                                           Vector point,
                                                                           Vector p) {
-                Vector forwardGradientValue = owner.function.getGradient(point.add(p.multiply(owner.epsilon)));
+                Vector forwardGradientValue = owner.function.getGradient(point.add(p.mult(owner.epsilon)));
                 Vector currentGradientValue = owner.function.getGradient(point);
-                return forwardGradientValue.subtract(currentGradientValue).multiply(1 / owner.epsilon);
+                return forwardGradientValue.sub(currentGradientValue).mult(1 / owner.epsilon);
             }
         },
         /** Much more accurate than the forward-difference method (\(O(\epsilon^2)\) estimation error instead of
@@ -131,8 +131,8 @@ public final class DerivativesApproximation {
                 for (int i = 0; i < n; i++) {
                     ei.setAll(0);
                     ei.set(i, 1);
-                    double forwardFunctionValue = owner.function.getValue(point.add(ei.multiply(owner.epsilon)));
-                    double backwardFunctionValue = owner.function.getValue(point.subtract(ei.multiply(owner.epsilon)));
+                    double forwardFunctionValue = owner.function.getValue(point.add(ei.mult(owner.epsilon)));
+                    double backwardFunctionValue = owner.function.getValue(point.sub(ei.mult(owner.epsilon)));
                     gradient.set(i, (forwardFunctionValue - backwardFunctionValue) / (2 * owner.epsilon));
                 }
                 return gradient;
@@ -151,18 +151,18 @@ public final class DerivativesApproximation {
                         ej.setAll(0);
                         ej.set(j, 1);
                         if (i != j) {
-                            double term1 = owner.function.getValue(point.add(ei.add(ej).multiply(owner.epsilon)));
-                            double term2 = owner.function.getValue(point.add(ei.subtract(ej).multiply(owner.epsilon)));
-                            double term3 = owner.function.getValue(point.add(ei.subtract(ej).multiply(-owner.epsilon)));
-                            double term4 = owner.function.getValue(point.add(ei.add(ej).multiply(-owner.epsilon)));
+                            double term1 = owner.function.getValue(point.add(ei.add(ej).mult(owner.epsilon)));
+                            double term2 = owner.function.getValue(point.add(ei.sub(ej).mult(owner.epsilon)));
+                            double term3 = owner.function.getValue(point.add(ei.sub(ej).mult(-owner.epsilon)));
+                            double term4 = owner.function.getValue(point.add(ei.add(ej).mult(-owner.epsilon)));
                             double ijEntry = (term1 - term2 - term3 + term4) / (4 * Math.pow(owner.epsilon, 2));
                             hessian.setElement(i, j, ijEntry);
                             hessian.setElement(j, i, ijEntry);
                         } else {
-                            double term1 = owner.function.getValue(point.add(ei.multiply(2 * owner.epsilon)));
-                            double term2 = owner.function.getValue(point.add(ei.multiply(owner.epsilon)));
-                            double term3 = owner.function.getValue(point.subtract(ei.multiply(owner.epsilon)));
-                            double term4 = owner.function.getValue(point.subtract(ei.multiply(2 * owner.epsilon)));
+                            double term1 = owner.function.getValue(point.add(ei.mult(2 * owner.epsilon)));
+                            double term2 = owner.function.getValue(point.add(ei.mult(owner.epsilon)));
+                            double term3 = owner.function.getValue(point.sub(ei.mult(owner.epsilon)));
+                            double term4 = owner.function.getValue(point.sub(ei.mult(2 * owner.epsilon)));
                             double ijEntry = (- term1 + 16 * term2 - 30 * currentFunctionValue + 16 * term3 - term4)
                                     / (12 * Math.pow(owner.epsilon, 2));
                             hessian.setElement(i, j, ijEntry);
@@ -179,12 +179,12 @@ public final class DerivativesApproximation {
                 for (int i = 0; i < n; i++) {
                     ei.setAll(0);
                     ei.set(i, 1);
-                    Vector forwardGradientValue = owner.function.getGradient(point.add(ei.multiply(owner.epsilon)));
+                    Vector forwardGradientValue = owner.function.getGradient(point.add(ei.mult(owner.epsilon)));
                     Vector backwardGradientValue =
-                            owner.function.getGradient(point.subtract(ei.multiply(owner.epsilon)));
+                            owner.function.getGradient(point.sub(ei.mult(owner.epsilon)));
                     hessian.setColumn(
                             i,
-                            forwardGradientValue.subtract(backwardGradientValue).multiply(1 / (2 * owner.epsilon))
+                            forwardGradientValue.sub(backwardGradientValue).mult(1 / (2 * owner.epsilon))
                     );
                 }
                 return hessian;
@@ -193,9 +193,9 @@ public final class DerivativesApproximation {
             protected Vector approximateHessianVectorProductGivenGradient(DerivativesApproximation owner,
                                                                           Vector point,
                                                                           Vector p) {
-                Vector forwardGradientValue = owner.function.getGradient(point.add(p.multiply(owner.epsilon)));
-                Vector backwardGradientValue = owner.function.getGradient(point.subtract(p.multiply(owner.epsilon)));
-                return forwardGradientValue.subtract(backwardGradientValue).multiply(1 / (2 * owner.epsilon));
+                Vector forwardGradientValue = owner.function.getGradient(point.add(p.mult(owner.epsilon)));
+                Vector backwardGradientValue = owner.function.getGradient(point.sub(p.mult(owner.epsilon)));
+                return forwardGradientValue.sub(backwardGradientValue).mult(1 / (2 * owner.epsilon));
             }
         };
 

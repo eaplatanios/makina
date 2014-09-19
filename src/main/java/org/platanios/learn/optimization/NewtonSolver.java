@@ -51,7 +51,7 @@ public final class NewtonSolver extends AbstractLineSearchSolver {
         // TODO: Check Hessian for positive definiteness and modify if necessary.
         currentGradient = objective.getGradient(currentPoint);
         try {
-            currentDirection = hessian.solve(currentGradient).multiply(-1);
+            currentDirection = hessian.solve(currentGradient).mult(-1);
         } catch (SingularMatrixException e) {
             e.printStackTrace();
         }
@@ -59,6 +59,6 @@ public final class NewtonSolver extends AbstractLineSearchSolver {
 
     @Override
     public void updatePoint() {
-        currentPoint = previousPoint.add(currentDirection.multiply(currentStepSize));
+        currentPoint = previousPoint.add(currentDirection.mult(currentStepSize));
     }
 }

@@ -20,6 +20,6 @@ public class Utilities {
      */
     public static double computeLogSumExp(Vector vector) {
         double maximumValue = vector.max();
-        return maximumValue + Math.log(vector.subtract(maximumValue).map(Math::exp).sum());
+        return maximumValue + Math.log(vector.sub(maximumValue).map(Math::exp).sum());
     }
 }

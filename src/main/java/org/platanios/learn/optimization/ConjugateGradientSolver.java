@@ -126,7 +126,7 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
             b = temporaryB;
         }
 
-        currentGradient = A.multiply(currentPoint).subtract(b);
+        currentGradient = A.multiply(currentPoint).sub(b);
 
         // Initialization for the preconditioning method.
         PreconditioningMethod temporaryPreconditioningMethod;
@@ -145,7 +145,7 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
         preconditionerMatrixInverse = temporaryPreconditionerMatrixInverse;
 
         preconditioningMethod.computePreconditioningSystemSolution(this);
-        currentDirection = currentY.multiply(-1);
+        currentDirection = currentY.mult(-1);
     }
 
     @Override
@@ -165,12 +165,12 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
         previousY = currentY;
         // This procedure can be sped up for the linear least squares case by using Jacobian vector products.
         currentStepSize = previousGradient.inner(previousY)
-                / previousDirection.multiply(A).inner(previousDirection);
-        currentPoint = previousPoint.add(previousDirection.multiply(currentStepSize));
-        currentGradient = previousGradient.add(A.multiply(previousDirection).multiply(currentStepSize));
+                / previousDirection.mult(A).inner(previousDirection);
+        currentPoint = previousPoint.add(previousDirection.mult(currentStepSize));
+        currentGradient = previousGradient.add(A.multiply(previousDirection).mult(currentStepSize));
         preconditioningMethod.computePreconditioningSystemSolution(this);
         beta = currentGradient.inner(currentY) / previousGradient.inner(previousY);
-        currentDirection = currentY.multiply(-1).add(previousDirection.multiply(beta));
+        currentDirection = currentY.mult(-1).add(previousDirection.mult(beta));
         currentObjectiveValue = objective.getValue(currentPoint);
     }
 

@@ -71,9 +71,9 @@ public final class StrongWolfeInterpolationLineSearch extends IterativeLineSearc
         boolean firstIteration = true;
 
         while (true) {
-            Vector a1Point = point.add(direction.multiply(a1));
+            Vector a1Point = point.add(direction.mult(a1));
             double phiA1 = objective.getValue(a1Point);
-            double phiA0 = objective.getValue(point.add(direction.multiply(a0)));
+            double phiA0 = objective.getValue(point.add(direction.mult(a0)));
             if (phiA1 > phi0 + c1 * a1 * phiPrime0 || (phiA1 >= phiA0 && !firstIteration)) {
                 return zoom(point, direction, a0, a1);
             }
@@ -141,9 +141,9 @@ public final class StrongWolfeInterpolationLineSearch extends IterativeLineSearc
 
         while (true) {
             aNew = performCubicInterpolation(point, direction, aLow, aHigh);
-            aNewPoint = point.add(direction.multiply(aNew));
+            aNewPoint = point.add(direction.mult(aNew));
             phiANew = objective.getValue(aNewPoint);
-            phiALow = objective.getValue(point.add(direction.multiply(aLow)));
+            phiALow = objective.getValue(point.add(direction.mult(aLow)));
 
             if (phiANew > phi0 + c1 * aNew * phiPrime0 || phiANew >= phiALow) {
                 aHigh = aNew;
@@ -185,8 +185,8 @@ public final class StrongWolfeInterpolationLineSearch extends IterativeLineSearc
                                              Vector direction,
                                              double aLow,
                                              double aHigh) {
-        Vector newPointLow = point.add(direction.multiply(aLow));
-        Vector newPointHigh = point.add(direction.multiply(aHigh));
+        Vector newPointLow = point.add(direction.mult(aLow));
+        Vector newPointHigh = point.add(direction.mult(aHigh));
         double phiALow = objective.getValue(newPointLow);
         double phiAHigh = objective.getValue(newPointHigh);
         double phiPrimeALow = objective.getGradient(newPointLow).inner(direction);
@@ -197,7 +197,7 @@ public final class StrongWolfeInterpolationLineSearch extends IterativeLineSearc
 
         // Check whether the minimizer is one of the endpoints of the interval or if it is the newly computed value.
         if (aLow <= aNew && aNew <= aHigh) {
-            double phiANew = objective.getValue(point.add(direction.multiply(aNew)));
+            double phiANew = objective.getValue(point.add(direction.mult(aNew)));
             if (phiALow <= phiANew) {
                 if (phiALow <= phiAHigh) {
                     aNew = aLow;
