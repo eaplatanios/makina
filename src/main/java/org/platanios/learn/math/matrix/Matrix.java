@@ -140,8 +140,8 @@ public class Matrix {
      */
     public Matrix(Vector elements, int rowDimension) {
         this.rowDimension = rowDimension;
-        columnDimension = rowDimension != 0 ? elements.getDimension() / rowDimension : 0;
-        if (rowDimension * columnDimension != elements.getDimension()) {
+        columnDimension = rowDimension != 0 ? elements.size() / rowDimension : 0;
+        if (rowDimension * columnDimension != elements.size()) {
             throw new IllegalArgumentException(
                     "The length of the input array must be a multiple of the row dimension."
             );
@@ -1047,12 +1047,12 @@ public class Matrix {
      * @return          A new vector holding the result of the multiplication.
      */
     public Vector multiply(Vector vector) {
-        if (vector.getDimension() != columnDimension) {
+        if (vector.size() != columnDimension) {
             throw new IllegalArgumentException(
                     "The column dimension of the matrix must agree with the dimension of the vector."
             );
         }
-        Vector resultVector = VectorFactory.createVector(rowDimension, vector.getType());
+        Vector resultVector = VectorFactory.createVector(rowDimension, vector.type());
         for (int i = 0; i < rowDimension; i++) {
             for (int j = 0; j < columnDimension; j++) {
                 resultVector.set(i, resultVector.get(i) + array[i][j] * vector.get(j));

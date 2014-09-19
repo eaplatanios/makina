@@ -75,7 +75,7 @@ public class QRDecomposition {
      * @return          The solution of the system of equations.
      */
     public Vector solve(Vector vector) throws SingularMatrixException {
-        if (vector.getDimension() != rowDimension) {
+        if (vector.size() != rowDimension) {
             throw new IllegalArgumentException("Matrix row dimensions must agree.");
         }
         if (!isFullRank) {

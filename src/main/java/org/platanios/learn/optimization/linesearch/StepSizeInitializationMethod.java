@@ -60,8 +60,8 @@ public enum StepSizeInitializationMethod {
             // the optimization algorithm).
             if (previousDirection != null) {
                 return previousStepSize
-                        * objective.getGradient(previousPoint).innerProduct(previousDirection)
-                        /  objective.getGradient(point).innerProduct(direction);
+                        * objective.getGradient(previousPoint).inner(previousDirection)
+                        /  objective.getGradient(point).inner(direction);
             } else {
                 return 1;
             }
@@ -87,7 +87,7 @@ public enum StepSizeInitializationMethod {
             // the optimization algorithm).
             if (previousDirection != null) {
                 return 2 * (objective.getValue(point) - objective.getValue(previousPoint))
-                        / objective.getGradient(previousPoint).innerProduct(previousDirection);
+                        / objective.getGradient(previousPoint).inner(previousDirection);
             } else {
                 return 1;
             }
@@ -114,7 +114,7 @@ public enum StepSizeInitializationMethod {
             // of the optimization algorithm).
             if (previousDirection != null) {
                 return Math.min(1, 2.02 * (objective.getValue(point) - objective.getValue(previousPoint))
-                        / objective.getGradient(previousPoint).innerProduct(previousDirection));
+                        / objective.getGradient(previousPoint).inner(previousDirection));
             } else {
                 return 1;
             }

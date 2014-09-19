@@ -60,7 +60,7 @@ public final class StrongWolfeInterpolationLineSearch extends IterativeLineSearc
     public double performLineSearch(Vector point,
                                     Vector direction) {
         double phi0 = objective.getValue(point);
-        double phiPrime0 = objective.getGradient(point).innerProduct(direction);
+        double phiPrime0 = objective.getGradient(point).inner(direction);
         double a0 = 0;
         double a1 = initialStepSize;
 
@@ -77,7 +77,7 @@ public final class StrongWolfeInterpolationLineSearch extends IterativeLineSearc
             if (phiA1 > phi0 + c1 * a1 * phiPrime0 || (phiA1 >= phiA0 && !firstIteration)) {
                 return zoom(point, direction, a0, a1);
             }
-            double phiPrimeA1 = objective.getGradient(a1Point).innerProduct(direction);
+            double phiPrimeA1 = objective.getGradient(a1Point).inner(direction);
             if (Math.abs(phiPrimeA1) <= -c2 * phiPrime0) {
                 return a1;
             } else if (phiPrimeA1 >= 0) {
@@ -125,7 +125,7 @@ public final class StrongWolfeInterpolationLineSearch extends IterativeLineSearc
                         double aLow,
                         double aHigh) {
         double phi0 = objective.getValue(point);
-        double phiPrime0 = objective.getGradient(point).innerProduct(direction);
+        double phiPrime0 = objective.getGradient(point).inner(direction);
 
         // Declare variables used in the loop that follows.
         double aNew;
@@ -148,7 +148,7 @@ public final class StrongWolfeInterpolationLineSearch extends IterativeLineSearc
             if (phiANew > phi0 + c1 * aNew * phiPrime0 || phiANew >= phiALow) {
                 aHigh = aNew;
             } else {
-                phiPrimeANew = objective.getGradient(aNewPoint).innerProduct(direction);
+                phiPrimeANew = objective.getGradient(aNewPoint).inner(direction);
                 if (Math.abs(phiPrimeANew) <= -c2 * phiPrime0) {
                     return aNew;
                 } else if (phiPrimeANew * (aHigh - aLow) >= 0) {
@@ -189,8 +189,8 @@ public final class StrongWolfeInterpolationLineSearch extends IterativeLineSearc
         Vector newPointHigh = point.add(direction.multiply(aHigh));
         double phiALow = objective.getValue(newPointLow);
         double phiAHigh = objective.getValue(newPointHigh);
-        double phiPrimeALow = objective.getGradient(newPointLow).innerProduct(direction);
-        double phiPrimeAHigh = objective.getGradient(newPointHigh).innerProduct(direction);
+        double phiPrimeALow = objective.getGradient(newPointLow).inner(direction);
+        double phiPrimeAHigh = objective.getGradient(newPointHigh).inner(direction);
         double d1 = phiPrimeALow + phiPrimeAHigh - 3 * (phiALow - phiAHigh) / (aLow - aHigh);
         double d2 = Math.signum(aHigh - aLow) * Math.sqrt(Math.pow(d1, 2) - phiPrimeALow * phiPrimeAHigh);
         double aNew = aHigh - (aHigh - aLow) * (phiPrimeAHigh + d2 - d1) / (phiPrimeAHigh - phiPrimeALow + 2 * d2);

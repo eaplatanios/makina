@@ -51,7 +51,7 @@ public final class ArmijoInterpolationLineSearch extends IterativeLineSearch {
                                     Vector direction) {
         double phi0 = objective.getValue(point);
         Vector objectiveGradientAtCurrentPoint = objective.getGradient(point);
-        double phiPrime0 = objectiveGradientAtCurrentPoint.innerProduct(direction);
+        double phiPrime0 = objectiveGradientAtCurrentPoint.inner(direction);
 
         aNew = initialStepSize;
         boolean firstIteration = true;

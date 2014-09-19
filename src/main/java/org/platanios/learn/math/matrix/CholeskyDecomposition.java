@@ -63,7 +63,7 @@ public class CholeskyDecomposition {
      * @return          The solution of the system of equations.
      */
     public Vector solve(Vector vector) throws NonSymmetricMatrixException, NonPositiveDefiniteMatrixException {
-        if (vector.getDimension() != dimension) {
+        if (vector.size() != dimension) {
             throw new IllegalArgumentException("Matrix row dimensions must agree.");
         }
         if (!isSymmetric) {

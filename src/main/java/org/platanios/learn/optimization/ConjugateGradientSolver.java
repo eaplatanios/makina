@@ -164,12 +164,12 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
         previousDirection = currentDirection;
         previousY = currentY;
         // This procedure can be sped up for the linear least squares case by using Jacobian vector products.
-        currentStepSize = previousGradient.innerProduct(previousY)
-                / previousDirection.multiply(A).innerProduct(previousDirection);
+        currentStepSize = previousGradient.inner(previousY)
+                / previousDirection.multiply(A).inner(previousDirection);
         currentPoint = previousPoint.add(previousDirection.multiply(currentStepSize));
         currentGradient = previousGradient.add(A.multiply(previousDirection).multiply(currentStepSize));
         preconditioningMethod.computePreconditioningSystemSolution(this);
-        beta = currentGradient.innerProduct(currentY) / previousGradient.innerProduct(previousY);
+        beta = currentGradient.inner(currentY) / previousGradient.inner(previousY);
         currentDirection = currentY.multiply(-1).add(previousDirection.multiply(beta));
         currentObjectiveValue = objective.getValue(currentPoint);
     }
@@ -200,7 +200,7 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
 
             @Override
             protected void computePreconditioningSystemSolution(ConjugateGradientSolver solver) {
-                double[] tempY = new double[solver.currentGradient.getDimension()];
+                double[] tempY = new double[solver.currentGradient.size()];
                 for (int i = 0; i < tempY.length; i++) {
                     tempY[i] = solver.currentGradient.get(i) / solver.A.getElement(i, i);
                 }

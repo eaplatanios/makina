@@ -95,7 +95,7 @@ public class LUDecomposition {
      * @return          The solution of the system of equations.
      */
     public Vector solve(Vector vector) throws SingularMatrixException {
-        if (vector.getDimension() != rowDimension) {
+        if (vector.size() != rowDimension) {
             throw new IllegalArgumentException("Matrix row and vector dimensions must agree.");
         }
         if (!isNonSingular) {

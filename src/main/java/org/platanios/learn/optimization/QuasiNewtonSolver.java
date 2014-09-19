@@ -20,7 +20,7 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
     private Matrix previousH;
     Vector[] s;
     Vector[] y;
-    private Vector initialHessianInverseDiagonal = new DenseVector(currentPoint.getDimension(), 1);
+    private Vector initialHessianInverseDiagonal = new DenseVector(currentPoint.size(), 1);
 
     private double symmetricRankOneSkippingParameter = 1e-8;
 
@@ -135,10 +135,10 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
                 if (solver.currentIteration > 0) {
                     updatePreviousH(solver);
                     solver.currentH = solver.previousH.subtract(solver.previousH.multiply(
-                            solver.y[0].multiply(1 / solver.y[0].multiply(solver.previousH).innerProduct(solver.y[0]))
-                                    .outerProduct(solver.y[0])
+                            solver.y[0].multiply(1 / solver.y[0].multiply(solver.previousH).inner(solver.y[0]))
+                                    .outer(solver.y[0])
                                     .multiply(solver.previousH)
-                    )).add(solver.s[0].multiply(1 / solver.y[0].innerProduct(solver.s[0])).outerProduct(solver.s[0]));
+                    )).add(solver.s[0].multiply(1 / solver.y[0].inner(solver.s[0])).outer(solver.s[0]));
                 }
                 solver.currentDirection = solver.currentH.multiply(solver.currentGradient).multiply(-1);
             }
@@ -150,13 +150,13 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
             protected void updateDirection(QuasiNewtonSolver solver) {
                 if (solver.currentIteration > 0) {
                     updatePreviousH(solver);
-                    double rho = 1 / solver.y[0].innerProduct(solver.s[0]);
+                    double rho = 1 / solver.y[0].inner(solver.s[0]);
                     solver.currentH = solver.identityMatrix
-                            .subtract(solver.s[0].multiply(rho).outerProduct(solver.y[0]))
+                            .subtract(solver.s[0].multiply(rho).outer(solver.y[0]))
                             .multiply(solver.previousH)
                             .multiply(solver.identityMatrix
-                                              .subtract(solver.y[0].multiply(rho).outerProduct(solver.s[0])))
-                            .add(solver.s[0].multiply(rho).outerProduct(solver.s[0]));
+                                              .subtract(solver.y[0].multiply(rho).outer(solver.s[0])))
+                            .add(solver.s[0].multiply(rho).outer(solver.s[0]));
                 }
                 solver.currentDirection = solver.currentH.multiply(solver.currentGradient).multiply(-1);
             }
@@ -166,9 +166,9 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
             protected void updateDirection(QuasiNewtonSolver solver) {
                 if (solver.currentIteration > 0) {
                     solver.initialHessianInverseDiagonal =
-                            (new DenseVector(solver.currentPoint.getDimension(), 1))
-                                    .multiply(solver.s[0].innerProduct(solver.y[0])
-                                                      / solver.y[0].innerProduct(solver.y[0]));
+                            (new DenseVector(solver.currentPoint.size(), 1))
+                                    .multiply(solver.s[0].inner(solver.y[0])
+                                                      / solver.y[0].inner(solver.y[0]));
                 }
                 solver.currentDirection =
                         approximateHessianInverseVectorProduct(solver, solver.currentGradient).multiply(-1);
@@ -178,13 +178,13 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
                 double[] a = new double[solver.m];
                 double[] rho = new double[solver.m];
                 for (int i = 0; i < Math.min(solver.m, solver.currentIteration); i++) {
-                    rho[i] = 1 / solver.y[i].innerProduct(solver.s[i]);
-                    a[i] = rho[i] * solver.s[i].innerProduct(q);
+                    rho[i] = 1 / solver.y[i].inner(solver.s[i]);
+                    a[i] = rho[i] * solver.s[i].inner(q);
                     q = q.subtract(solver.y[i].multiply(a[i]));
                 }
                 Vector result = q.multiplyElementwise(solver.initialHessianInverseDiagonal);
                 for (int i = Math.min(solver.m, solver.currentIteration) - 1; i >= 0; i--) {
-                    result = result.add(solver.s[i].multiply(a[i] - rho[i] * solver.y[i].innerProduct(result)));
+                    result = result.add(solver.s[i].multiply(a[i] - rho[i] * solver.y[i].inner(result)));
                 }
                 return result;
             }
@@ -198,12 +198,12 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
                 if (solver.currentIteration > 0) {
                     updatePreviousH(solver);
                     Vector tempVector = solver.s[0].subtract(solver.previousH.multiply(solver.y[0]));
-                    if (Math.abs(tempVector.innerProduct(solver.y[0]))
+                    if (Math.abs(tempVector.inner(solver.y[0]))
                             >= solver.symmetricRankOneSkippingParameter
                             * solver.y[0].norm(VectorNorm.L2)
                             *  tempVector.norm(VectorNorm.L2)) {
                         solver.currentH = solver.previousH.add(
-                                tempVector.multiply(1 / tempVector.innerProduct(solver.y[0])).outerProduct(tempVector)
+                                tempVector.multiply(1 / tempVector.inner(solver.y[0])).outer(tempVector)
                         );
                     } else {
                         solver.currentH = solver.previousH;
@@ -219,8 +219,8 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
                     updatePreviousH(solver);
                     solver.currentH = solver.previousH.add(
                             solver.s[0].subtract(solver.previousH.multiply(solver.y[0]))
-                                    .outerProduct(solver.s[0].multiply(solver.previousH))
-                                    .multiply(1 / solver.s[0].multiply(solver.previousH).innerProduct(solver.y[0]))
+                                    .outer(solver.s[0].multiply(solver.previousH))
+                                    .multiply(1 / solver.s[0].multiply(solver.previousH).inner(solver.y[0]))
                     );
                 }
                 solver.currentDirection = solver.currentH.multiply(solver.currentGradient).multiply(-1);
@@ -237,8 +237,8 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
         private static void updatePreviousH(QuasiNewtonSolver solver) {
             if (solver.currentIteration == 1) {
                 solver.previousH = solver.currentH
-                        .multiply(solver.y[0].innerProduct(solver.s[0])
-                                          / solver.y[0].innerProduct(solver.y[0]));
+                        .multiply(solver.y[0].inner(solver.s[0])
+                                          / solver.y[0].inner(solver.y[0]));
             } else {
                 solver.previousH = solver.currentH;
             }

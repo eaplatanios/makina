@@ -10,7 +10,7 @@ public abstract class AbstractLeastSquaresFunction extends AbstractFunction {
     @Override
     public final double computeValue(Vector point) {
         Vector residuals = computeResiduals(point);
-        return 0.5 * residuals.innerProduct(residuals);
+        return 0.5 * residuals.inner(residuals);
     }
 
     @Override

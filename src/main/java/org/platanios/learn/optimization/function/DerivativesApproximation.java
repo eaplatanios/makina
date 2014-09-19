@@ -53,7 +53,7 @@ public final class DerivativesApproximation {
             }
 
             protected Vector approximateGradient(DerivativesApproximation owner, Vector point) {
-                int n = point.getDimension();
+                int n = point.size();
                 Vector gradient = new DenseVector(n, 0);
                 Vector ei = new DenseVector(n, 0);
                 double currentFunctionValue = owner.function.getValue(point);
@@ -67,7 +67,7 @@ public final class DerivativesApproximation {
             }
 
             protected Matrix approximateHessian(DerivativesApproximation owner, Vector point) {
-                int n = point.getDimension();
+                int n = point.size();
                 Matrix hessian = new Matrix(n, n);
                 Vector ei = new DenseVector(n, 0);
                 Vector ej = new DenseVector(n, 0);
@@ -93,7 +93,7 @@ public final class DerivativesApproximation {
             }
 
             protected Matrix approximateHessianGivenGradient(DerivativesApproximation owner, Vector point) {
-                int n = point.getDimension();
+                int n = point.size();
                 Matrix hessian = new Matrix(n, n);
                 Vector ei = new DenseVector(n, 0);
                 Vector currentGradientValue = owner.function.getGradient(point);
@@ -125,7 +125,7 @@ public final class DerivativesApproximation {
             }
 
             protected Vector approximateGradient(DerivativesApproximation owner, Vector point) {
-                int n = point.getDimension();
+                int n = point.size();
                 Vector gradient = new DenseVector(n, 0);
                 Vector ei = new DenseVector(n, 0);
                 for (int i = 0; i < n; i++) {
@@ -139,7 +139,7 @@ public final class DerivativesApproximation {
             }
 
             protected Matrix approximateHessian(DerivativesApproximation owner, Vector point) {
-                int n = point.getDimension();
+                int n = point.size();
                 Matrix hessian = new Matrix(n, n);
                 Vector ei = new DenseVector(n, 0);
                 Vector ej = new DenseVector(n, 0);
@@ -173,7 +173,7 @@ public final class DerivativesApproximation {
             }
 
             protected Matrix approximateHessianGivenGradient(DerivativesApproximation owner, Vector point) {
-                int n = point.getDimension();
+                int n = point.size();
                 Matrix hessian = new Matrix(n, n);
                 Vector ei = new DenseVector(n, 0);
                 for (int i = 0; i < n; i++) {

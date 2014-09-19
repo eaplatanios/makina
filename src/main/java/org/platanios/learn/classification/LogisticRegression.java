@@ -43,7 +43,7 @@ public class LogisticRegression {
             }
             trainingDataSize = this.trainingData.length;
             numberOfClasses = 1 + Arrays.asList(trainingDataLabels).stream().max(Integer::compare).get();
-            numberOfFeatures = this.trainingData[0].features.getDimension();
+            numberOfFeatures = this.trainingData[0].features.size();
         }
 
         public Builder stochastic(boolean stochastic) {
@@ -124,7 +124,7 @@ public class LogisticRegression {
     public double[] predict(double[] point) {
         Vector probabilities = weights.transpose().multiply(new DenseVector(point));
         probabilities = probabilities.subtract(Utilities.computeLogSumExp(probabilities));
-        probabilities = probabilities.computeFunctionResult(Math::exp);
+        probabilities = probabilities.map(Math::exp);
         return probabilities.getDenseArray();
     }
 
@@ -177,7 +177,7 @@ public class LogisticRegression {
                 Vector innerProductWithLastClass = new DenseVector(numberOfClasses);
                 innerProductWithLastClass.set(0, numberOfClasses - 2, probabilities);
                 probabilities = probabilities.subtract(Utilities.computeLogSumExp(innerProductWithLastClass));
-                probabilities = probabilities.computeFunctionResult(Math::exp);
+                probabilities = probabilities.map(Math::exp);
                 if (trainingData[n].label != numberOfClasses - 1) {
                     probabilities.set(trainingData[n].label, probabilities.get(trainingData[n].label) - 1);
                 }
@@ -205,13 +205,13 @@ public class LogisticRegression {
         @Override
         public Matrix computeHessian(Vector weights) {
             Matrix W = new Matrix(weights, numberOfFeatures);
-            Matrix hessian = new Matrix(new double[weights.getDimension()][weights.getDimension()]);
+            Matrix hessian = new Matrix(new double[weights.size()][weights.size()]);
             for (int n = 0; n < trainingDataSize; n++) {
                 Vector probabilities = W.transpose().multiply(trainingData[n].features);
                 Vector innerProductWithLastClass = new DenseVector(numberOfClasses);
                 innerProductWithLastClass.set(0, numberOfClasses - 2, probabilities);
                 probabilities = probabilities.subtract(Utilities.computeLogSumExp(innerProductWithLastClass));
-                probabilities = probabilities.computeFunctionResult(Math::exp);
+                probabilities = probabilities.map(Math::exp);
                 for (int i = 0; i < numberOfClasses - 1; i++) {
                     for (int j = 0; j <= i; j++) {
                         Matrix subMatrix = hessian.getSubMatrix(i * numberOfFeatures,
@@ -221,7 +221,7 @@ public class LogisticRegression {
                         if (i != j) {
                             subMatrix = subMatrix.add(
                                     trainingData[n].features
-                                            .outerProduct(trainingData[n].features)
+                                            .outer(trainingData[n].features)
                                             .multiply(-probabilities.get(i) * probabilities.get(j))
                             );
                             hessian.setSubMatrix(
@@ -241,7 +241,7 @@ public class LogisticRegression {
                         } else {
                             subMatrix = subMatrix.add(
                                     trainingData[n].features
-                                            .outerProduct(trainingData[n].features)
+                                            .outer(trainingData[n].features)
                                             .multiply(probabilities.get(i) * (1 - probabilities.get(i)))
                             );
                             hessian.setSubMatrix(
@@ -284,7 +284,7 @@ public class LogisticRegression {
                 Vector innerProductWithLastClass = new DenseVector(numberOfClasses);
                 innerProductWithLastClass.set(0, numberOfClasses - 2, probabilities);
                 probabilities = probabilities.subtract(Utilities.computeLogSumExp(innerProductWithLastClass));
-                probabilities = probabilities.computeFunctionResult(Math::exp);
+                probabilities = probabilities.map(Math::exp);
                 if (example.label != numberOfClasses - 1) {
                     probabilities.set(example.label, probabilities.get(example.label) - 1);
                 }
