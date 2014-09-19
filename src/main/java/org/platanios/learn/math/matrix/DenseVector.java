@@ -536,7 +536,7 @@ public class DenseVector extends Vector {
      *
      * @param   vector  The vector whose size to check.
      *
-     * @exception   IllegalArgumentException    Vector sizes must agree.
+     * @throws  IllegalArgumentException    Vector sizes must agree.
      */
     private void checkVectorSize(Vector vector) {
         if (vector.size() != size) {

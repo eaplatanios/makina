@@ -8,6 +8,10 @@ import java.util.function.Function;
  * Implements a class representing matrices and supporting operations related to matrices. Matrices are stored in an
  * internal two-dimensional array.
  *
+ * TODO: Allow transposing all matrix arguments.
+ * TODO: Implement the outer product update: A = A + xy^T.
+ * TODO: Implement the matrix-matrix update: C = C + AB.
+ *
  * @author Emmanouil Antonios Platanios
  */
 public class Matrix {
@@ -53,9 +57,9 @@ public class Matrix {
     /**
      * Constructs a matrix from a two-dimensional array.
      *
-     * @param       array       Two-dimensional array of doubles.
+     * @param   array   Two-dimensional array of doubles.
      *
-     * @exception   IllegalArgumentException    All rows of the input array must have the same length.
+     * @throws  IllegalArgumentException    All rows of the input array must have the same length.
      */
     public Matrix(double[][] array) {
         this(array, false);
@@ -64,11 +68,11 @@ public class Matrix {
     /**
      * Constructs a matrix from a two-dimensional array.
      *
-     * @param       array       Two-dimensional array of doubles.
-     * @param       copyArray   Boolean value indicating whether to copy the provided array or use it as it is for the
-     *                          internal two-dimensional array of this array.
+     * @param   array       Two-dimensional array of doubles.
+     * @param   copyArray   Boolean value indicating whether to copy the provided array or use it as it is for the
+     *                      internal two-dimensional array of this array.
      *
-     * @exception   IllegalArgumentException    All rows of the input array must have the same length.
+     * @throws  IllegalArgumentException    All rows of the input array must have the same length.
      */
     public Matrix(double[][] array, boolean copyArray) {
         rowDimension = array.length;
@@ -111,8 +115,7 @@ public class Matrix {
      * @param   elements        One-dimensional array of doubles, packed by columns (as in FORTRAN).
      * @param   rowDimension    The row dimension of the matrix.
      *
-     * @exception   IllegalArgumentException    The length of the input array must be a multiple of
-     *                                          {@code rowDimension}.
+     * @throws  IllegalArgumentException    The length of the input array must be a multiple of {@code rowDimension}.
      */
     public Matrix(double[] elements, int rowDimension) {
         this.rowDimension = rowDimension;
@@ -136,7 +139,7 @@ public class Matrix {
      * @param   elements        Vector of doubles, packed by columns (as in FORTRAN).
      * @param   rowDimension    The row dimension of the matrix.
      *
-     * @exception   IllegalArgumentException    The size of the input vector must be a multiple of {@code rowDimension}.
+     * @throws  IllegalArgumentException    The size of the input vector must be a multiple of {@code rowDimension}.
      */
     public Matrix(Vector elements, int rowDimension) {
         this.rowDimension = rowDimension;
@@ -281,7 +284,7 @@ public class Matrix {
      * @param   rowIndex    The index of the row to set.
      * @param   value       The value to which to set the corresponding row of this matrix.
      *
-     * @exception   ArrayIndexOutOfBoundsException  The provided row index is out of bounds.
+     * @throws  ArrayIndexOutOfBoundsException  The provided row index is out of bounds.
      */
     public void setRow(int rowIndex, Vector value) {
         try {
@@ -299,7 +302,7 @@ public class Matrix {
      * @param   columnIndex The index of the column to set.
      * @param   value       The value to which to set the corresponding column of this matrix.
      *
-     * @exception   ArrayIndexOutOfBoundsException  The provided column index is out of bounds.
+     * @throws  ArrayIndexOutOfBoundsException  The provided column index is out of bounds.
      */
     public void setColumn(int columnIndex, Vector value) {
         try {
@@ -317,7 +320,7 @@ public class Matrix {
      * @param   rowIndex    The index of the row to get.
      * @return              The row corresponding to the provided index as a vector.
      *
-     * @exception   ArrayIndexOutOfBoundsException  The provided row index is out of bounds.
+     * @throws  ArrayIndexOutOfBoundsException  The provided row index is out of bounds.
      */
     public Vector getRow(int rowIndex) {
         Vector resultVector = new DenseVector(columnDimension);
@@ -337,7 +340,7 @@ public class Matrix {
      * @param   columnIndex The index of the column to get.
      * @return              The column corresponding to the provided index as a vector.
      *
-     * @exception   ArrayIndexOutOfBoundsException  The provided column index is out of bounds.
+     * @throws  ArrayIndexOutOfBoundsException  The provided column index is out of bounds.
      */
     public Vector getColumn(int columnIndex) {
         Vector resultVector = new DenseVector(rowDimension);
@@ -360,7 +363,7 @@ public class Matrix {
      * @param   finalColumnIndex    The final column index.
      * @return                      The sub-matrix corresponding to the provided indexes.
      *
-     * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided sub-matrix indexes are out of bounds.
+     * @throws  ArrayIndexOutOfBoundsException  Some or all of the provided sub-matrix indexes are out of bounds.
      */
     public Matrix getSubMatrix(int initialRowIndex, int finalRowIndex, int initialColumnIndex, int finalColumnIndex) {
         Matrix resultMatrix =
@@ -390,7 +393,7 @@ public class Matrix {
      *                          sub-matrix.
      * @return                  The sub-matrix corresponding to the provided indexes.
      *
-     * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided sub-matrix indexes are out of bounds.
+     * @throws  ArrayIndexOutOfBoundsException  Some or all of the provided sub-matrix indexes are out of bounds.
      */
     public Matrix getSubMatrix(int[] rowIndexes, int[] columnIndexes) {
         Matrix resultMatrix = new Matrix(rowIndexes.length, columnIndexes.length);
@@ -418,7 +421,7 @@ public class Matrix {
      *                          sub-matrix.
      * @return                  The sub-matrix corresponding to the provided indexes.
      *
-     * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided sub-matrix indexes are out of bounds.
+     * @throws  ArrayIndexOutOfBoundsException  Some or all of the provided sub-matrix indexes are out of bounds.
      */
     public Matrix getSubMatrix(int initialRowIndex, int finalRowIndex, int[] columnIndexes) {
         Matrix resultMatrix = new Matrix(finalRowIndex - initialRowIndex + 1, columnIndexes.length);
@@ -446,7 +449,7 @@ public class Matrix {
      * @param   finalColumnIndex    The final column index.
      * @return                      The sub-matrix corresponding to the provided indexes.
      *
-     * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided sub-matrix indexes are out of bounds.
+     * @throws  ArrayIndexOutOfBoundsException  Some or all of the provided sub-matrix indexes are out of bounds.
      */
     public Matrix getSubMatrix(int[] rowIndexes, int initialColumnIndex, int finalColumnIndex) {
         Matrix resultMatrix = new Matrix(rowIndexes.length, finalColumnIndex - initialColumnIndex + 1);
@@ -477,7 +480,7 @@ public class Matrix {
      * @param   matrix              The matrix to whose values we set the values of the specified sub-matrix of this
      *                              matrix.
      *
-     * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided matrix indexes are out of bounds.
+     * @throws  ArrayIndexOutOfBoundsException  Some or all of the provided matrix indexes are out of bounds.
      */
     public void setSubMatrix(int initialRowIndex,
                              int finalRowIndex,
@@ -506,7 +509,7 @@ public class Matrix {
      *                          of the provided sub-matrix.
      * @param   matrix          The matrix to whose values we set the values of the specified sub-matrix of this matrix.
      *
-     * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided matrix indexes are out of bounds.
+     * @throws  ArrayIndexOutOfBoundsException  Some or all of the provided matrix indexes are out of bounds.
      */
     public void setSubMatrix(int[] rowIndexes, int[] columnIndexes, Matrix matrix) {
         try {
@@ -532,7 +535,7 @@ public class Matrix {
      * @param   matrix              The matrix to whose values we set the values of the specified sub-matrix of this
      *                              matrix.
      *
-     * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided matrix indexes are out of bounds.
+     * @throws  ArrayIndexOutOfBoundsException  Some or all of the provided matrix indexes are out of bounds.
      */
     public void setSubMatrix(int[] rowIndexes, int initialColumnIndex, int finalColumnIndex, Matrix matrix) {
         try {
@@ -557,7 +560,7 @@ public class Matrix {
      *                          of the provided sub-matrix.
      * @param   matrix          The matrix to whose values we set the values of the specified sub-matrix of this matrix.
      *
-     * @exception   ArrayIndexOutOfBoundsException  Some or all of the provided matrix indexes are out of bounds.
+     * @throws  ArrayIndexOutOfBoundsException  Some or all of the provided matrix indexes are out of bounds.
      */
     public void setSubMatrix(int initialRowIndex, int finalRowIndex, int[] columnIndexes, Matrix matrix) {
         try {
@@ -1067,7 +1070,7 @@ public class Matrix {
      * @param   matrix  The matrix with which to multiply the current matrix.
      * @return          A new matrix holding the result of the multiplication.
      *
-     * @exception   IllegalArgumentException    The inner dimensions of the matrices must agree.
+     * @throws   IllegalArgumentException    The inner dimensions of the matrices must agree.
      */
     public Matrix multiply(Matrix matrix) {
         if (matrix.rowDimension != columnDimension) {
@@ -1215,7 +1218,7 @@ public class Matrix {
      *
      * @param   matrix  The matrix whose dimensions to check.
      *
-     * @exception   IllegalArgumentException    Matrix dimensions must agree.
+     * @throws  IllegalArgumentException    Matrix dimensions must agree.
      */
     private void checkMatrixDimensions(Matrix matrix) {
         if (matrix.rowDimension != rowDimension || matrix.columnDimension != columnDimension) {
