@@ -4,7 +4,6 @@ import java.util.function.Function;
 
 /**
  * Interface for classes representing vectors and supporting operations related to vectors.
- * TODO: Implement the saxpy operator.
  *
  * @author Emmanouil Antonios Platanios
  */
@@ -310,11 +309,33 @@ public abstract class Vector {
     public abstract Matrix outer(Vector vector);
 
     /**
-     * Computes the product of this vector with a matrix and returns the result in a new vector.
-     * // TODO: Not sure if I should keep this function.
+     * Performs the gaxpy operation, as it is named in LAPACK. Let us denote the current vector by \(\boldsymbol{y}\).
+     * Given a matrix \(\A\) and another vector \(\boldsymbol{x}\), this function returns the value of
+     * \(\boldsymbol{y}+A\boldsymbol{x}\).
      *
-     * @param   matrix  The matrix with which to multiply the current vector.
-     * @return          A new vector holding the result of the multiplication.
+     * @param   matrix  The matrix \(\A\).
+     * @param   vector  The vector \(\boldsymbol{x}\).
+     * @return          The value of \(\boldsymbol{y}+A\boldsymbol{x}\).
      */
-    public abstract Vector mult(Matrix matrix);
+    public abstract Vector gaxpy(Matrix matrix, Vector vector);
+
+    /**
+     * Performs the gaxpy operation, as it is named in LAPACK, in-place. Let us denote the current vector by
+     * \(\boldsymbol{y}\). Given a matrix \(A\) and another vector \(\boldsymbol{x}\), this function replaces
+     * this vector with the value of \(\boldsymbol{y}+A\boldsymbol{x}\) and returns it.
+     *
+     * @param   matrix  The matrix \(A\).
+     * @param   vector  The vector \(\boldsymbol{x}\).
+     * @return          The value of \(\boldsymbol{y}+A\boldsymbol{x}\).
+     */
+    public abstract Vector gaxpyInPlace(Matrix matrix, Vector vector);
+
+    /**
+     * Let us denote the current vector by \(\boldsymbol{y}\). Given a matrix \(\A\), this function returns the value of
+     * \(\boldsymbol{y}^{\top}A\).
+     *
+     * @param   matrix  The matrix \(A\).
+     * @return          The value of \(\boldsymbol{y}^{\top}A\).
+     */
+    public abstract Vector transMult(Matrix matrix);
 }

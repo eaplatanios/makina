@@ -428,7 +428,52 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector mult(Matrix matrix) {
+    public Vector gaxpy(Matrix matrix, Vector vector) {
+        if (matrix.getRowDimension() != dimension) {
+            throw new IllegalArgumentException(
+                    "The row dimension of the matrix must agree with the dimension of the current vector."
+            );
+        }
+        if (matrix.getColumnDimension() != vector.size()) {
+            throw new IllegalArgumentException(
+                    "The column dimension of the matrix must agree with the dimension of the provided vector."
+            );
+        }
+        DenseVector resultVector = new DenseVector(matrix.getColumnDimension());
+        double[] resultVectorArray = resultVector.getArray();
+        for (int i = 0; i < matrix.getRowDimension(); i++) {
+            resultVectorArray[i] = array[i];
+            for (int j = 0; j < vector.size(); j++) {
+                resultVectorArray[i] += vector.get(j) * matrix.getElement(i, j);
+            }
+        }
+        return resultVector;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector gaxpyInPlace(Matrix matrix, Vector vector) {
+        if (matrix.getRowDimension() != dimension) {
+            throw new IllegalArgumentException(
+                    "The row dimension of the matrix must agree with the dimension of the current vector."
+            );
+        }
+        if (matrix.getColumnDimension() != vector.size()) {
+            throw new IllegalArgumentException(
+                    "The column dimension of the matrix must agree with the dimension of the provided vector."
+            );
+        }
+        for (int i = 0; i < matrix.getRowDimension(); i++) {
+            for (int j = 0; j < vector.size(); j++) {
+                array[i] += vector.get(j) * matrix.getElement(i, j);
+            }
+        }
+        return this;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector transMult(Matrix matrix) {
         if (matrix.getRowDimension() != dimension) {
             throw new IllegalArgumentException(
                     "The row dimension of the matrix must agree with the dimension of the vector."

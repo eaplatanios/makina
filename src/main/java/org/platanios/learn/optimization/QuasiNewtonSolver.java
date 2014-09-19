@@ -135,7 +135,7 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
                 if (solver.currentIteration > 0) {
                     updatePreviousH(solver);
                     solver.currentH = solver.previousH.subtract(solver.previousH.multiply(
-                            solver.y[0].mult(1 / solver.y[0].mult(solver.previousH).inner(solver.y[0]))
+                            solver.y[0].mult(1 / solver.y[0].transMult(solver.previousH).inner(solver.y[0]))
                                     .outer(solver.y[0])
                                     .multiply(solver.previousH)
                     )).add(solver.s[0].mult(1 / solver.y[0].inner(solver.s[0])).outer(solver.s[0]));
@@ -219,8 +219,8 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
                     updatePreviousH(solver);
                     solver.currentH = solver.previousH.add(
                             solver.s[0].sub(solver.previousH.multiply(solver.y[0]))
-                                    .outer(solver.s[0].mult(solver.previousH))
-                                    .multiply(1 / solver.s[0].mult(solver.previousH).inner(solver.y[0]))
+                                    .outer(solver.s[0].transMult(solver.previousH))
+                                    .multiply(1 / solver.s[0].transMult(solver.previousH).inner(solver.y[0]))
                     );
                 }
                 solver.currentDirection = solver.currentH.multiply(solver.currentGradient).mult(-1);

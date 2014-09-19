@@ -165,7 +165,7 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
         previousY = currentY;
         // This procedure can be sped up for the linear least squares case by using Jacobian vector products.
         currentStepSize = previousGradient.inner(previousY)
-                / previousDirection.mult(A).inner(previousDirection);
+                / previousDirection.transMult(A).inner(previousDirection);
         currentPoint = previousPoint.add(previousDirection.mult(currentStepSize));
         currentGradient = previousGradient.add(A.multiply(previousDirection).mult(currentStepSize));
         preconditioningMethod.computePreconditioningSystemSolution(this);
