@@ -2,9 +2,10 @@ package org.platanios.learn.optimization.function;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.platanios.learn.math.matrix.DenseVector;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
+import org.platanios.learn.math.matrix.VectorFactory;
+import org.platanios.learn.math.matrix.VectorType;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -15,7 +16,7 @@ public class DerivativesApproximationTest {
         AbstractFunction function = new RosenbrockFunction();
         DerivativesApproximation derivativesApproximation =
                 new DerivativesApproximation(function, DerivativesApproximation.Method.FORWARD_DIFFERENCE);
-        Vector point = new DenseVector(new double[] { -1.2, 1 });
+        Vector point = VectorFactory.build(new double[]{-1.2, 1}, VectorType.DENSE);
         double[] actualResult = derivativesApproximation.approximateGradient(point).getDenseArray();
         double[] expectedResult = function.getGradient(point).getDenseArray();
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-5);
@@ -26,7 +27,7 @@ public class DerivativesApproximationTest {
         AbstractFunction function = new RosenbrockFunction();
         DerivativesApproximation derivativesApproximation =
                 new DerivativesApproximation(function, DerivativesApproximation.Method.CENTRAL_DIFFERENCE);
-        Vector point = new DenseVector(new double[] { -1.2, 1 });
+        Vector point = VectorFactory.build(new double[]{-1.2, 1}, VectorType.DENSE);
         double[] actualResult = derivativesApproximation.approximateGradient(point).getDenseArray();
         double[] expectedResult = function.getGradient(point).getDenseArray();
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-7);
@@ -37,7 +38,7 @@ public class DerivativesApproximationTest {
         AbstractFunction function = new RosenbrockFunction();
         DerivativesApproximation derivativesApproximation =
                 new DerivativesApproximation(function, DerivativesApproximation.Method.FORWARD_DIFFERENCE);
-        Vector point = new DenseVector(new double[] { -1.2, 1 });
+        Vector point = VectorFactory.build(new double[]{-1.2, 1}, VectorType.DENSE);
         double[][] actualResultTemp = derivativesApproximation.approximateHessian(point).getArray();
         double[][] expectedResultTemp = function.getHessian(point).getArray();
         double[] actualResult = new double[actualResultTemp.length * actualResultTemp[0].length];
@@ -56,7 +57,7 @@ public class DerivativesApproximationTest {
         AbstractFunction function = new RosenbrockFunction();
         DerivativesApproximation derivativesApproximation =
                 new DerivativesApproximation(function, DerivativesApproximation.Method.CENTRAL_DIFFERENCE);
-        Vector point = new DenseVector(new double[] { -1.2, 1 });
+        Vector point = VectorFactory.build(new double[]{-1.2, 1}, VectorType.DENSE);
         double[][] actualResultTemp = derivativesApproximation.approximateHessian(point).getArray();
         double[][] expectedResultTemp = function.getHessian(point).getArray();
         double[] actualResult = new double[actualResultTemp.length * actualResultTemp[0].length];
@@ -75,7 +76,7 @@ public class DerivativesApproximationTest {
         AbstractFunction function = new RosenbrockFunction();
         DerivativesApproximation derivativesApproximation =
                 new DerivativesApproximation(function, DerivativesApproximation.Method.FORWARD_DIFFERENCE);
-        Vector point = new DenseVector(new double[] { -1.2, 1 });
+        Vector point = VectorFactory.build(new double[]{-1.2, 1}, VectorType.DENSE);
         double[][] actualResultTemp = derivativesApproximation.approximateHessianGivenGradient(point).getArray();
         double[][] expectedResultTemp = function.getHessian(point).getArray();
         double[] actualResult = new double[actualResultTemp.length * actualResultTemp[0].length];
@@ -94,7 +95,7 @@ public class DerivativesApproximationTest {
         AbstractFunction function = new RosenbrockFunction();
         DerivativesApproximation derivativesApproximation =
                 new DerivativesApproximation(function, DerivativesApproximation.Method.CENTRAL_DIFFERENCE);
-        Vector point = new DenseVector(new double[] { -1.2, 1 });
+        Vector point = VectorFactory.build(new double[]{-1.2, 1}, VectorType.DENSE);
         double[][] actualResultTemp = derivativesApproximation.approximateHessianGivenGradient(point).getArray();
         double[][] expectedResultTemp = function.getHessian(point).getArray();
         double[] actualResult = new double[actualResultTemp.length * actualResultTemp[0].length];
@@ -113,8 +114,8 @@ public class DerivativesApproximationTest {
         AbstractFunction function = new RosenbrockFunction();
         DerivativesApproximation derivativesApproximation =
                 new DerivativesApproximation(function, DerivativesApproximation.Method.FORWARD_DIFFERENCE);
-        Vector point = new DenseVector(new double[] { -1.2, 1 });
-        Vector p = new DenseVector(new double[] { 1.21, 0.53 });
+        Vector point = VectorFactory.build(new double[]{-1.2, 1}, VectorType.DENSE);
+        Vector p = VectorFactory.build(new double[]{1.21, 0.53}, VectorType.DENSE);
         double[] actualResult =
                 derivativesApproximation.approximateHessianVectorProductGivenGradient(point, p).getDenseArray();
         double[] expectedResult = function.getHessian(point).multiply(p).getDenseArray();
@@ -133,7 +134,7 @@ public class DerivativesApproximationTest {
             double x2 = optimizationVariables.get(1);
             double dx1 = - 400 * (x2 - Math.pow(x1, 2)) * x1 - 2 * (1 - x1);
             double dx2 = 200 * (x2 - Math.pow(x1, 2));
-            return new DenseVector(new double[] { dx1, dx2 });
+            return VectorFactory.build(new double[]{dx1, dx2}, VectorType.DENSE);
         }
 
         public Matrix computeHessian(Vector optimizationVariables) {

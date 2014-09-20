@@ -1,8 +1,9 @@
 package org.platanios.learn.optimization;
 
-import org.platanios.learn.math.matrix.DenseVector;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
+import org.platanios.learn.math.matrix.VectorFactory;
+import org.platanios.learn.math.matrix.VectorType;
 import org.platanios.learn.optimization.function.AbstractFunction;
 
 /**
@@ -22,7 +23,7 @@ class RosenbrockFunction extends AbstractFunction {
         double x2 = optimizationVariables.get(1);
         double dx1 = - 400 * (x2 - Math.pow(x1, 2)) * x1 - 2 * (1 - x1);
         double dx2 = 200 * (x2 - Math.pow(x1, 2));
-        return new DenseVector(new double[] { dx1, dx2 });
+        return VectorFactory.build(new double[]{dx1, dx2}, VectorType.DENSE);
     }
 
     @Override

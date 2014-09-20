@@ -20,7 +20,7 @@ public class DenseVector extends Vector {
      *
      * @param   size    The size of the vector.
      */
-    public DenseVector(int size) {
+    protected DenseVector(int size) {
         this.size = size;
         array = new double[size];
     }
@@ -31,7 +31,7 @@ public class DenseVector extends Vector {
      * @param   size    The size of the vector.
      * @param   value   The value with which to fill the vector.
      */
-    public DenseVector(int size, double value) {
+    protected DenseVector(int size, double value) {
         this.size = size;
         array = new double[size];
         for (int i = 0; i < size; i++) {
@@ -40,13 +40,13 @@ public class DenseVector extends Vector {
     }
 
     /**
-     * Constructs a vector from a one-dimensional array.
+     * Constructs a vector of the given type from a one-dimensional array.
      *
-     * @param   array   One-dimensional array of doubles.
+     * @param   elements    One-dimensional array of values with which to fill the vector.
      */
-    public DenseVector(double[] array) {
-        size = array.length;
-        this.array = array;
+    protected DenseVector(double[] elements) {
+        size = elements.length;
+        this.array = elements;
     }
 
     /** {@inheritDoc} */

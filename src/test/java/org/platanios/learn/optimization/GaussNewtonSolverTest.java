@@ -2,9 +2,10 @@ package org.platanios.learn.optimization;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.platanios.learn.math.matrix.DenseVector;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
+import org.platanios.learn.math.matrix.VectorFactory;
+import org.platanios.learn.math.matrix.VectorType;
 import org.platanios.learn.optimization.function.AbstractLeastSquaresFunction;
 
 /**
@@ -82,7 +83,7 @@ public class GaussNewtonSolverTest {
             for (int i = 0; i < t.length; i++) {
                 resultArray[i] = point.get(0) * Math.exp(point.get(1) * t[i]) - y[i];
             }
-            return new DenseVector(resultArray);
+            return VectorFactory.build(resultArray, VectorType.DENSE);
         }
 
         @Override

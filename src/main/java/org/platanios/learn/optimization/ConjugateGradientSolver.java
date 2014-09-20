@@ -204,7 +204,7 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
                 for (int i = 0; i < tempY.length; i++) {
                     tempY[i] = solver.currentGradient.get(i) / solver.A.getElement(i, i);
                 }
-                solver.currentY = new DenseVector(tempY);
+                solver.currentY = VectorFactory.build(tempY, VectorType.DENSE);
             }
         },
         SYMMETRIC_SUCCESSIVE_OVER_RELAXATION {

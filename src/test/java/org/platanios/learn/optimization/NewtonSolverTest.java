@@ -2,9 +2,10 @@ package org.platanios.learn.optimization;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.platanios.learn.math.matrix.DenseVector;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
+import org.platanios.learn.math.matrix.VectorFactory;
+import org.platanios.learn.math.matrix.VectorType;
 import org.platanios.learn.optimization.function.QuadraticFunction;
 
 /**
@@ -22,7 +23,7 @@ public class NewtonSolverTest {
 
         System.out.println("Quadratic Function Newton Solver:\n");
         Matrix A = new Matrix(new double[][] { { 1, 0.5 }, { 0.5, 1 } });
-        Vector b = new DenseVector(new double[] { 1, 2 });
+        Vector b = VectorFactory.build(new double[]{1, 2}, VectorType.DENSE);
         newtonRaphsonSolver = new NewtonSolver.Builder(new QuadraticFunction(A, b), new double[] { 0, 0 }).build();
         actualResult = newtonRaphsonSolver.solve().getDenseArray();
         expectedResult = new double[] { 0, 2 };
