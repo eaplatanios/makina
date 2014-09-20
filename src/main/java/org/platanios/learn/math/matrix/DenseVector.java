@@ -47,7 +47,7 @@ public class DenseVector extends Vector {
      */
     protected DenseVector(double[] elements) {
         size = elements.length;
-        this.array = elements;
+        array = Arrays.copyOf(elements, size);
     }
 
     /** {@inheritDoc} */
@@ -59,7 +59,7 @@ public class DenseVector extends Vector {
     /** {@inheritDoc} */
     @Override
     public DenseVector copy() {
-        return new DenseVector(Arrays.copyOf(array, size));
+        return new DenseVector(array);
     }
 
     /** {@inheritDoc} */
