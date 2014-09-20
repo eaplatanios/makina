@@ -2,7 +2,6 @@ package org.platanios.learn.classification;
 
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.VectorFactory;
-import org.platanios.learn.math.matrix.VectorType;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -37,7 +36,7 @@ public class DataPreprocessing {
                 for (int i = 0; i < numberOfFeatures; i++) {
                     dataSample[i] = Double.parseDouble(outputs[i+1]);
                 }
-                data.add(VectorFactory.build(dataSample, VectorType.DENSE));
+                data.add(VectorFactory.buildDense(dataSample));
             }
         } catch (IOException e) {
             e.printStackTrace();

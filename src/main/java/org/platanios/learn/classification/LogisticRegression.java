@@ -119,7 +119,7 @@ public class LogisticRegression {
     }
 
     public double[] predict(double[] point) {
-        Vector probabilities = weights.transpose().multiply(VectorFactory.build(point, VectorType.DENSE));
+        Vector probabilities = weights.transpose().multiply(VectorFactory.buildDense(point));
         probabilities = probabilities.sub(Utilities.computeLogSumExp(probabilities));
         probabilities = probabilities.map(Math::exp);
         return probabilities.getDenseArray();
@@ -185,7 +185,7 @@ public class LogisticRegression {
                     );
                 }
             }
-            return VectorFactory.build(gradient.getColumnPackedArrayCopy(), VectorType.DENSE);
+            return VectorFactory.buildDense(gradient.getColumnPackedArrayCopy());
         }
 
         /**
@@ -292,7 +292,7 @@ public class LogisticRegression {
                     );
                 }
             }
-            return VectorFactory.build(gradient.getColumnPackedArrayCopy(), VectorType.DENSE);
+            return VectorFactory.buildDense(gradient.getColumnPackedArrayCopy());
         }
     }
 }

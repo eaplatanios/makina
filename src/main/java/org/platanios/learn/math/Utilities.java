@@ -30,6 +30,7 @@ public class Utilities {
 
     /**
      * Computes the machine epsilon in double precision.
+     * TODO: We can use the Java Double.MIN_VALUE instead of using this calculation.
      *
      * @return  The machine epsilon in double precision.
      */

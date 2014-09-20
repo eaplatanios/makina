@@ -2,7 +2,6 @@ package org.platanios.learn.optimization;
 
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.VectorFactory;
-import org.platanios.learn.math.matrix.VectorType;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.math.Utilities;
 
@@ -93,7 +92,7 @@ public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
         CYCLE {
             @Override
             protected void updateDirection(CoordinateDescentSolver solver) {
-                solver.currentDirection = VectorFactory.build(solver.numberOfDimensions, 0, VectorType.DENSE);
+                solver.currentDirection = VectorFactory.buildDense(solver.numberOfDimensions, 0);
                 solver.currentDirection.set(solver.currentDimension, 1);
                 if (solver.currentDimension >= solver.numberOfDimensions - 1) {
                     solver.currentDimension = 0;
@@ -113,7 +112,7 @@ public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
         BACK_AND_FORTH {
             @Override
             protected void updateDirection(CoordinateDescentSolver solver) {
-                solver.currentDirection = VectorFactory.build(solver.numberOfDimensions, 0, VectorType.DENSE);
+                solver.currentDirection = VectorFactory.buildDense(solver.numberOfDimensions, 0);
                 if (solver.currentDimension < solver.numberOfDimensions) {
                     solver.currentDirection.set(solver.currentDimension, 1);
                     solver.currentDimension++;
@@ -139,7 +138,7 @@ public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
         CYCLE_AND_JOIN_ENDPOINTS {
             @Override
             protected void updateDirection(CoordinateDescentSolver solver) {
-                solver.currentDirection = VectorFactory.build(solver.numberOfDimensions, 0, VectorType.DENSE);
+                solver.currentDirection = VectorFactory.buildDense(solver.numberOfDimensions, 0);
                 if (!solver.completedCycle) {
                     solver.currentDirection.set(solver.currentDimension, 1);
                     if (solver.currentDimension >= solver.numberOfDimensions - 1) {

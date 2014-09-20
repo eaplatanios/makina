@@ -5,7 +5,6 @@ import org.junit.Test;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.VectorFactory;
-import org.platanios.learn.math.matrix.VectorType;
 import org.platanios.learn.optimization.function.QuadraticFunction;
 
 /**
@@ -23,7 +22,7 @@ public class GradientDescentSolverTest {
 
         System.out.println("Quadratic Function Gradient Descent Solver:\n");
         Matrix A = new Matrix(new double[][] { { 1, 0.5 }, { 0.5, 1 } });
-        Vector b = VectorFactory.build(new double[]{1, 2}, VectorType.DENSE);
+        Vector b = VectorFactory.buildDense(new double[] { 1, 2 });
         gradientDescentSolver =
                 new GradientDescentSolver.Builder(new QuadraticFunction(A, b), new double[] { 0, 0 }).build();
         actualResult = gradientDescentSolver.solve().getDenseArray();

@@ -1,6 +1,9 @@
 package org.platanios.learn.optimization;
 
-import org.platanios.learn.math.matrix.*;
+import org.platanios.learn.math.matrix.Matrix;
+import org.platanios.learn.math.matrix.Vector;
+import org.platanios.learn.math.matrix.VectorFactory;
+import org.platanios.learn.math.matrix.VectorNorm;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.linesearch.StrongWolfeInterpolationLineSearch;
 import org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod;
@@ -17,7 +20,7 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
     private Matrix previousH;
     Vector[] s;
     Vector[] y;
-    private Vector initialHessianInverseDiagonal = VectorFactory.build(currentPoint.size(), 1, VectorType.DENSE);
+    private Vector initialHessianInverseDiagonal = VectorFactory.buildDense(currentPoint.size(), 1);
 
     private double symmetricRankOneSkippingParameter = 1e-8;
 
@@ -163,7 +166,7 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
             protected void updateDirection(QuasiNewtonSolver solver) {
                 if (solver.currentIteration > 0) {
                     solver.initialHessianInverseDiagonal =
-                            VectorFactory.build(solver.currentPoint.size(), 1, VectorType.DENSE)
+                            VectorFactory.buildDense(solver.currentPoint.size(), 1)
                                     .mult(solver.s[0].inner(solver.y[0])
                                                   / solver.y[0].inner(solver.y[0]));
                 }

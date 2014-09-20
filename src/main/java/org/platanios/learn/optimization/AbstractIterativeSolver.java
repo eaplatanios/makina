@@ -3,7 +3,6 @@ package org.platanios.learn.optimization;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.VectorFactory;
 import org.platanios.learn.math.matrix.VectorNorm;
-import org.platanios.learn.math.matrix.VectorType;
 import org.platanios.learn.optimization.function.AbstractFunction;
 
 /**
@@ -126,7 +125,7 @@ abstract class AbstractIterativeSolver implements Solver {
         checkForObjectiveConvergence = builder.checkForObjectiveConvergence;
         checkForGradientConvergence = builder.checkForGradientConvergence;
 
-        currentPoint = VectorFactory.build(builder.initialPoint, VectorType.DENSE);
+        currentPoint = VectorFactory.buildDense(builder.initialPoint);
         currentGradient = objective.getGradient(currentPoint);
         currentObjectiveValue = objective.getValue(currentPoint);
         currentIteration = 0;

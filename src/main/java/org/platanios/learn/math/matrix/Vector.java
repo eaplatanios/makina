@@ -54,7 +54,7 @@ public abstract class Vector {
      * Gets a sub-vector of this vector.
      *
      * @param   initialIndex    The initial index.
-     * @param   finalIndex      The final index.
+     * @param   finalIndex      The final index (inclusive).
      * @return                  The sub-vector corresponding to the provided indexes.
      *
      * @throws  java.lang.IllegalArgumentException  The provided indexes must be between 0 (inclusive) and the size of
@@ -89,7 +89,7 @@ public abstract class Vector {
      * Sets a sub-vector of this vector to the provided vector values.
      *
      * @param   initialIndex    The initial index.
-     * @param   finalIndex      The final index.
+     * @param   finalIndex      The final index (inclusive).
      * @param   vector          The vector to whose values we set the values of the specified sub-vector of this vector.
      *
      * @throws  java.lang.IllegalArgumentException  The provided indexes must be between 0 (inclusive) and the size of
@@ -163,19 +163,19 @@ public abstract class Vector {
     public abstract Vector add(double scalar);
 
     /**
+     * Adds a scalar to all entries of the current vector and replaces the current vector with the result.
+     *
+     * @param   scalar  The scalar to add to entries of the current vector.
+     */
+    public abstract Vector addInPlace(double scalar);
+
+    /**
      * Adds another vector to the current vector and returns the result in a new vector.
      *
      * @param   vector  The vector to add to the current vector.
      * @return          A new vector holding the result of the addition.
      */
     public abstract Vector add(Vector vector);
-
-    /**
-     * Adds a scalar to all entries of the current vector and replaces the current vector with the result.
-     *
-     * @param   scalar  The scalar to add to entries of the current vector.
-     */
-    public abstract Vector addInPlace(double scalar);
 
     /**
      * Adds another vector to the current vector and replaces the current vector with the result.
@@ -193,19 +193,19 @@ public abstract class Vector {
     public abstract Vector sub(double scalar);
 
     /**
+     * Subtracts a scalar from all entries of the current vector and replaces the current vector with the result.
+     *
+     * @param   scalar  The scalar to subtract from all entries of the current vector.
+     */
+    public abstract Vector subInPlace(double scalar);
+
+    /**
      * Subtracts another vector from the current vector and returns the result in a new vector.
      *
      * @param   vector  The vector to subtract from the current vector.
      * @return          A new vector holding the result of the subtraction.
      */
     public abstract Vector sub(Vector vector);
-
-    /**
-     * Subtracts a scalar from all entries of the current vector and replaces the current vector with the result.
-     *
-     * @param   scalar  The scalar to subtract from all entries of the current vector.
-     */
-    public abstract Vector subInPlace(double scalar);
 
     /**
      * Subtracts another vector from the current vector and replaces the current vector with the result.
@@ -363,4 +363,18 @@ public abstract class Vector {
      *                                              vector.
      */
     public abstract Vector transMult(Matrix matrix);
+
+    /**
+     * Checks whether the provided vector has the same size as this vector. If the sizes of the two vectors do not agree
+     * an exception is thrown.
+     *
+     * @param   vector  The vector whose size to check.
+     *
+     * @throws  IllegalArgumentException    Vector sizes must agree.
+     */
+    protected void checkVectorSize(Vector vector) {
+        if (vector.size() != this.size()) {
+            throw new IllegalArgumentException("Vector sizes must agree.");
+        }
+    }
 }

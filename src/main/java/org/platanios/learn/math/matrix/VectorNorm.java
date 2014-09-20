@@ -2,6 +2,8 @@ package org.platanios.learn.math.matrix;
 
 import org.platanios.learn.math.Utilities;
 
+import java.util.Collection;
+
 /**
  * An enumeration of the supported norm operators for vectors.
  *
@@ -17,6 +19,16 @@ public enum VectorNorm {
         /** {@inheritDoc} */
         @Override
         public double compute(double[] nonzeroValues) {
+            double l1Norm = 0;
+            for (double value : nonzeroValues) {
+                l1Norm += Math.abs(value);
+            }
+            return l1Norm;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double compute(Collection<Double> nonzeroValues) {
             double l1Norm = 0;
             for (double value : nonzeroValues) {
                 l1Norm += Math.abs(value);
@@ -39,6 +51,16 @@ public enum VectorNorm {
             }
             return l2Norm;
         }
+
+        /** {@inheritDoc} */
+        @Override
+        public double compute(Collection<Double> nonzeroValues) {
+            double l2Norm = 0;
+            for (double value : nonzeroValues) {
+                l2Norm = Utilities.computeHypotenuse(l2Norm, value);
+            }
+            return l2Norm;
+        }
     },
     /**
      * The \(L_\infty\) norm of this vector. Denoting a vector by \(\boldsymbol{x}\in\mathbb{R}^{n}\), its element at
@@ -55,6 +77,16 @@ public enum VectorNorm {
             }
             return lInfinityNorm;
         }
+
+        /** {@inheritDoc} */
+        @Override
+        public double compute(Collection<Double> nonzeroValues) {
+            double lInfinityNorm = 0;
+            for (double value : nonzeroValues) {
+                lInfinityNorm = Math.max(lInfinityNorm, value);
+            }
+            return lInfinityNorm;
+        }
     };
 
     /**
@@ -65,4 +97,13 @@ public enum VectorNorm {
      * @return                  The specified norm of this vector.
      */
     public abstract double compute(double[] nonzeroValues);
+
+    /**
+     * Computes the specified norm of a vector. Only the nonzero values of the vector are required in order to compute
+     * its norm.
+     *
+     * @param   nonzeroValues   The nonzero values of the vector provided as a collection.
+     * @return                  The specified norm of this vector.
+     */
+    public abstract double compute(Collection<Double> nonzeroValues);
 }

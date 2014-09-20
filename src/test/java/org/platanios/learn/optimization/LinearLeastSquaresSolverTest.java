@@ -5,7 +5,6 @@ import org.junit.Test;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.VectorFactory;
-import org.platanios.learn.math.matrix.VectorType;
 import org.platanios.learn.optimization.function.LinearLeastSquaresFunction;
 
 /**
@@ -20,7 +19,7 @@ public class LinearLeastSquaresSolverTest {
                 { 1, 3 },
                 { 1, 4 }
         });
-        Vector y = VectorFactory.build(new double[]{6, 5, 7, 10}, VectorType.DENSE);
+        Vector y = VectorFactory.buildDense(new double[] { 6, 5, 7, 10 });
         LinearLeastSquaresSolver linearLeastSquaresSolver =
                 new LinearLeastSquaresSolver.Builder(new LinearLeastSquaresFunction(J, y))
                         .method(LinearLeastSquaresSolver.Method.CHOLESKY_DECOMPOSITION)
@@ -38,7 +37,7 @@ public class LinearLeastSquaresSolverTest {
                 { 1, 3 },
                 { 1, 4 }
         });
-        Vector y = VectorFactory.build(new double[]{6, 5, 7, 10}, VectorType.DENSE);
+        Vector y = VectorFactory.buildDense(new double[] { 6, 5, 7, 10 });
         LinearLeastSquaresSolver linearLeastSquaresSolver =
                 new LinearLeastSquaresSolver.Builder(new LinearLeastSquaresFunction(J, y))
                         .method(LinearLeastSquaresSolver.Method.QR_DECOMPOSITION)
@@ -56,7 +55,7 @@ public class LinearLeastSquaresSolverTest {
                 { 1, 3 },
                 { 1, 4 }
         });
-        Vector y = VectorFactory.build(new double[]{6, 5, 7, 10}, VectorType.DENSE);
+        Vector y = VectorFactory.buildDense(new double[] { 6, 5, 7, 10 });
         LinearLeastSquaresSolver linearLeastSquaresSolver =
                 new LinearLeastSquaresSolver.Builder(new LinearLeastSquaresFunction(J, y))
                         .method(LinearLeastSquaresSolver.Method.SINGULAR_VALUE_DECOMPOSITION)
@@ -74,7 +73,7 @@ public class LinearLeastSquaresSolverTest {
                 { 1, 3 },
                 { 1, 4 }
         });
-        Vector y = VectorFactory.build(new double[]{6, 5, 7, 10}, VectorType.DENSE);
+        Vector y = VectorFactory.buildDense(new double[] { 6, 5, 7, 10 });
         LinearLeastSquaresSolver linearLeastSquaresSolver =
                 new LinearLeastSquaresSolver.Builder(new LinearLeastSquaresFunction(J, y))
                         .method(LinearLeastSquaresSolver.Method.CONJUGATE_GRADIENT)

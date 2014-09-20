@@ -6,6 +6,7 @@ import java.util.function.Function;
 /**
  * Implements a class representing dense vectors and supporting operations related to them. The dense vectors are stored
  * in an internal one-dimensional array.
+ * TODO: Add toSparseVector() method (or appropriate constructors).
  *
  * @author Emmanouil Antonios Platanios
  */
@@ -151,12 +152,12 @@ public class DenseVector extends Vector {
     @Override
     public void set(int[] indexes, Vector vector) {
         for (int i = 0; i < indexes.length; i++) {
-            array[indexes[i]] = vector.get(i);
-            if (i < 0 || i >= size) {
+            if (indexes[i] < 0 || indexes[i] >= size) {
                 throw new IllegalArgumentException(
                         "The provided indexes must be between 0 (inclusive) and the size of the vector (exclusive)."
                 );
             }
+            array[indexes[i]] = vector.get(i);
         }
     }
 
@@ -228,6 +229,15 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
+    public DenseVector addInPlace(double scalar) {
+        for (int i = 0; i < size; i++) {
+            array[i] += scalar;
+        }
+        return this;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public DenseVector add(Vector vector) {
         checkVectorSize(vector);
         DenseVector resultVector = new DenseVector(size);
@@ -236,15 +246,6 @@ public class DenseVector extends Vector {
             resultVectorArray[i] = array[i] + vector.get(i);
         }
         return resultVector;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public DenseVector addInPlace(double scalar) {
-        for (int i = 0; i < size; i++) {
-            array[i] += scalar;
-        }
-        return this;
     }
 
     /** {@inheritDoc} */
@@ -270,6 +271,15 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
+    public DenseVector subInPlace(double scalar) {
+        for (int i = 0; i < size; i++) {
+            array[i] -= scalar;
+        }
+        return this;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public DenseVector sub(Vector vector) {
         checkVectorSize(vector);
         DenseVector resultVector = new DenseVector(size);
@@ -278,15 +288,6 @@ public class DenseVector extends Vector {
             resultVectorArray[i] = array[i] - vector.get(i);
         }
         return resultVector;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public DenseVector subInPlace(double scalar) {
-        for (int i = 0; i < size; i++) {
-            array[i] -= scalar;
-        }
-        return this;
     }
 
     /** {@inheritDoc} */
@@ -386,6 +387,7 @@ public class DenseVector extends Vector {
     /** {@inheritDoc} */
     @Override
     public DenseVector saxpy(double scalar, Vector vector) {
+        checkVectorSize(vector);
         DenseVector resultVector = new DenseVector(size);
         double[] resultVectorArray = resultVector.getArray();
         for (int i = 0; i < size; i++) {
@@ -397,6 +399,7 @@ public class DenseVector extends Vector {
     /** {@inheritDoc} */
     @Override
     public DenseVector saxpyInPlace(double scalar, Vector vector) {
+        checkVectorSize(vector);
         for (int i = 0; i < size; i++) {
             array[i] += scalar * vector.get(i);
         }
@@ -530,19 +533,5 @@ public class DenseVector extends Vector {
      */
     private double[] getArray() {
         return array;
-    }
-
-    /**
-     * Checks whether the provided vector has the same size as this vector. If the sizes of the two vectors do not agree
-     * an exception is thrown.
-     *
-     * @param   vector  The vector whose size to check.
-     *
-     * @throws  IllegalArgumentException    Vector sizes must agree.
-     */
-    private void checkVectorSize(Vector vector) {
-        if (vector.size() != size) {
-            throw new IllegalArgumentException("Vector sizes must agree.");
-        }
     }
 }
