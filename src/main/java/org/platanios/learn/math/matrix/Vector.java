@@ -45,7 +45,8 @@ public abstract class Vector {
      * @param   index   The index of the element.
      * @return          The value of the element at the provided index.
      *
-     * @throws  ArrayIndexOutOfBoundsException  The provided index is out of bounds.
+     * @throws  java.lang.IllegalArgumentException  The provided index must be between 0 (inclusive) and the size of the
+     *                                              vector (exclusive).
      */
     public abstract double get(int index);
 
@@ -56,7 +57,9 @@ public abstract class Vector {
      * @param   finalIndex      The final index.
      * @return                  The sub-vector corresponding to the provided indexes.
      *
-     * @throws  ArrayIndexOutOfBoundsException  Some or all of the provided sub-vector indexes are out of bounds.
+     * @throws  java.lang.IllegalArgumentException  The provided indexes must be between 0 (inclusive) and the size of
+     *                                              the vector (exclusive) and the initial index must be smaller or
+     *                                              equal to the final index.
      */
     public abstract Vector get(int initialIndex, int finalIndex);
 
@@ -66,7 +69,8 @@ public abstract class Vector {
      * @param   indexes The indexes of the elements of this vector to be included in the returned sub-vector.
      * @return          The sub-vector corresponding to the provided indexes.
      *
-     * @throws  ArrayIndexOutOfBoundsException  Some or all of the provided sub-vector indexes are out of bounds.
+     * @throws  java.lang.IllegalArgumentException  The provided indexes must be between 0 (inclusive) and the size of
+     *                                              the vector (exclusive).
      */
     public abstract Vector get(int[] indexes);
 
@@ -76,7 +80,8 @@ public abstract class Vector {
      * @param   index   The index of the element.
      * @param   value   The value to which to set the element at the provided index.
      *
-     * @throws  ArrayIndexOutOfBoundsException  The provided index is out of bounds.
+     * @throws  java.lang.IllegalArgumentException  The provided index must be between 0 (inclusive) and the size of the
+     *                                              vector (exclusive).
      */
     public abstract void set(int index, double value);
 
@@ -87,7 +92,9 @@ public abstract class Vector {
      * @param   finalIndex      The final index.
      * @param   vector          The vector to whose values we set the values of the specified sub-vector of this vector.
      *
-     * @throws  ArrayIndexOutOfBoundsException  Some or all of the provided vector indexes are out of bounds.
+     * @throws  java.lang.IllegalArgumentException  The provided indexes must be between 0 (inclusive) and the size of
+     *                                              the vector (exclusive) and the initial index must be smaller or
+     *                                              equal to the final index.
      */
     public abstract void set(int initialIndex, int finalIndex, Vector vector);
 
@@ -98,7 +105,8 @@ public abstract class Vector {
      *                      provided sub-vector.
      * @param   vector      The vector to whose values we set the values of the specified sub-vector of this vector.
      *
-     * @throws  ArrayIndexOutOfBoundsException  Some or all of the provided vector indexes are out of bounds.
+     * @throws  java.lang.IllegalArgumentException  The provided indexes must be between 0 (inclusive) and the size of
+     *                                              the vector (exclusive).
      */
     public abstract void set(int[] indexes, Vector vector);
 
@@ -323,9 +331,9 @@ public abstract class Vector {
      * @param   vector  The vector \(\boldsymbol{x}\).
      * @return          The value of \(\boldsymbol{y}+A\boldsymbol{x}\).
      *
-     * @throws  IllegalArgumentException    The row dimension of the matrix must agree with the size of the current
-     *                                      vector and the column dimension of the matrix must agree with the size of
-     *                                      the provided vector.
+     * @throws  java.lang.IllegalArgumentException  The row dimension of the matrix must agree with the size of the
+     *                                              current vector and the column dimension of the matrix must agree
+     *                                              with the size of the provided vector.
      */
     public abstract Vector gaxpy(Matrix matrix, Vector vector);
 
@@ -338,9 +346,9 @@ public abstract class Vector {
      * @param   vector  The vector \(\boldsymbol{x}\).
      * @return          The value of \(\boldsymbol{y}+A\boldsymbol{x}\).
      *
-     * @throws  IllegalArgumentException    The row dimension of the matrix must agree with the size of the current
-     *                                      vector and the column dimension of the matrix must agree with the size of
-     *                                      the provided vector.
+     * @throws  java.lang.IllegalArgumentException  The row dimension of the matrix must agree with the size of the
+     *                                              current vector and the column dimension of the matrix must agree
+     *                                              with the size of the provided vector.
      */
     public abstract Vector gaxpyInPlace(Matrix matrix, Vector vector);
 
@@ -351,7 +359,8 @@ public abstract class Vector {
      * @param   matrix  The matrix \(A\).
      * @return          The value of \(\boldsymbol{y}^{\top}A\).
      *
-     * @throws  IllegalArgumentException    The row dimension of the matrix must agree with the size of the vector.
+     * @throws  java.lang.IllegalArgumentException  The row dimension of the matrix must agree with the size of the
+     *                                              vector.
      */
     public abstract Vector transMult(Matrix matrix);
 }

@@ -16,7 +16,7 @@ public class DenseVector extends Vector {
     private double[] array;
 
     /**
-     * Constructs a vector with the given size and fills it with zeros.
+     * Constructs a dense vector with the given size and fills it with zeros.
      *
      * @param   size    The size of the vector.
      */
@@ -26,7 +26,7 @@ public class DenseVector extends Vector {
     }
 
     /**
-     * Constructs a vector with the given size and fills it with the provided value.
+     * Constructs a dense vector with the given size and fills it with the provided value.
      *
      * @param   size    The size of the vector.
      * @param   value   The value with which to fill the vector.
@@ -40,7 +40,7 @@ public class DenseVector extends Vector {
     }
 
     /**
-     * Constructs a vector of the given type from a one-dimensional array.
+     * Constructs a dense vector of the given type from a one-dimensional array.
      *
      * @param   elements    One-dimensional array of values with which to fill the vector.
      */
@@ -81,25 +81,28 @@ public class DenseVector extends Vector {
     /** {@inheritDoc} */
     @Override
     public double get(int index) {
-        try {
-            return array[index];
-        } catch(ArrayIndexOutOfBoundsException e) {
-            throw new ArrayIndexOutOfBoundsException("The provided index is out of bounds.");
+        if (index < 0 || index >= size) {
+            throw new IllegalArgumentException(
+                    "The provided index must be between 0 (inclusive) and the size of the vector (exclusive)."
+            );
         }
+        return array[index];
     }
 
     /** {@inheritDoc} */
     @Override
     public DenseVector get(int initialIndex, int finalIndex) {
-        DenseVector resultVector = new DenseVector(finalIndex - initialIndex + 1);
-        double[] resultVectorArray = resultVector.getArray();
-        try {
-            System.arraycopy(array, initialIndex, resultVectorArray, 0, finalIndex + 1 - initialIndex);
-        } catch(ArrayIndexOutOfBoundsException e) {
-            throw new ArrayIndexOutOfBoundsException(
-                    "Some or all of the provided sub-vector indexes are out of bounds."
+        if (initialIndex < 0 || initialIndex >= size || finalIndex < 0 || finalIndex >= size) {
+            throw new IllegalArgumentException(
+                    "The provided indexes must be between 0 (inclusive) and the size of the vector (exclusive)."
             );
         }
+        if (initialIndex > finalIndex) {
+            throw new IllegalArgumentException("The initial index must be smaller or equal to the final index.");
+        }
+        DenseVector resultVector = new DenseVector(finalIndex - initialIndex + 1);
+        double[] resultVectorArray = resultVector.getArray();
+        System.arraycopy(array, initialIndex, resultVectorArray, 0, finalIndex + 1 - initialIndex);
         return resultVector;
     }
 
@@ -108,14 +111,13 @@ public class DenseVector extends Vector {
     public DenseVector get(int[] indexes) {
         DenseVector resultVector = new DenseVector(indexes.length);
         double[] resultVectorArray = resultVector.getArray();
-        try {
-            for (int i = 0; i < indexes.length; i++) {
-                resultVectorArray[i] = array[indexes[i]];
+        for (int i = 0; i < indexes.length; i++) {
+            if (i < 0 || i >= size) {
+                throw new IllegalArgumentException(
+                        "The provided indexes must be between 0 (inclusive) and the size of the vector (exclusive)."
+                );
             }
-        } catch(ArrayIndexOutOfBoundsException e) {
-            throw new ArrayIndexOutOfBoundsException(
-                    "Some or all of the provided sub-vector indexes are out of bounds."
-            );
+            resultVectorArray[i] = array[indexes[i]];
         }
         return resultVector;
     }
@@ -123,38 +125,40 @@ public class DenseVector extends Vector {
     /** {@inheritDoc} */
     @Override
     public void set(int index, double value) {
-        try {
-            array[index] = value;
-        } catch(ArrayIndexOutOfBoundsException e) {
-            throw new ArrayIndexOutOfBoundsException("The provided index is out of bounds.");
+        if (index < 0 || index >= size) {
+            throw new IllegalArgumentException(
+                    "The provided index must be between 0 (inclusive) and the size of the vector (exclusive)."
+            );
         }
+        array[index] = value;
     }
 
     /** {@inheritDoc} */
     @Override
     public void set(int initialIndex, int finalIndex, Vector vector) {
-        try {
-            for (int i = initialIndex; i <= finalIndex; i++) {
-                array[i] = vector.get(i - initialIndex);
-            }
-        } catch(ArrayIndexOutOfBoundsException e) {
-            throw new ArrayIndexOutOfBoundsException(
-                    "Some or all of the provided vector indexes are out of bounds."
+        if (initialIndex < 0 || initialIndex >= size || finalIndex < 0 || finalIndex >= size) {
+            throw new IllegalArgumentException(
+                    "The provided indexes must be between 0 (inclusive) and the size of the vector (exclusive)."
             );
+        }
+        if (initialIndex > finalIndex) {
+            throw new IllegalArgumentException("The initial index must be smaller or equal to the final index");
+        }
+        for (int i = initialIndex; i <= finalIndex; i++) {
+            array[i] = vector.get(i - initialIndex);
         }
     }
 
     /** {@inheritDoc} */
     @Override
     public void set(int[] indexes, Vector vector) {
-        try {
-            for (int i = 0; i < indexes.length; i++) {
-                array[indexes[i]] = vector.get(i);
+        for (int i = 0; i < indexes.length; i++) {
+            array[indexes[i]] = vector.get(i);
+            if (i < 0 || i >= size) {
+                throw new IllegalArgumentException(
+                        "The provided indexes must be between 0 (inclusive) and the size of the vector (exclusive)."
+                );
             }
-        } catch(ArrayIndexOutOfBoundsException e) {
-            throw new ArrayIndexOutOfBoundsException(
-                    "Some or all of the provided vector indexes are out of bounds."
-            );
         }
     }
 
