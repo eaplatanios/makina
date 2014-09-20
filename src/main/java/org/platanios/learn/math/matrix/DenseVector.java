@@ -1,5 +1,6 @@
 package org.platanios.learn.math.matrix;
 
+import java.util.Arrays;
 import java.util.function.Function;
 
 /**
@@ -16,7 +17,7 @@ public class DenseVector extends Vector {
     private double[] array;
 
     /**
-     * Constructs a dense vector with the given size and fills it with zeros.
+     * Constructs a dense vector of the given size and fills it with zeros.
      *
      * @param   size    The size of the vector.
      */
@@ -26,7 +27,7 @@ public class DenseVector extends Vector {
     }
 
     /**
-     * Constructs a dense vector with the given size and fills it with the provided value.
+     * Constructs a dense vector of the given size and fills it with the provided value.
      *
      * @param   size    The size of the vector.
      * @param   value   The value with which to fill the vector.
@@ -40,7 +41,7 @@ public class DenseVector extends Vector {
     }
 
     /**
-     * Constructs a dense vector of the given type from a one-dimensional array.
+     * Constructs a dense vector from a one-dimensional array.
      *
      * @param   elements    One-dimensional array of values with which to fill the vector.
      */
@@ -58,10 +59,7 @@ public class DenseVector extends Vector {
     /** {@inheritDoc} */
     @Override
     public DenseVector copy() {
-        DenseVector resultVector = new DenseVector(size);
-        double[] resultVectorArray = resultVector.getArray();
-        System.arraycopy(array, 0, resultVectorArray, 0, size);
-        return resultVector;
+        return new DenseVector(Arrays.copyOf(array, size));
     }
 
     /** {@inheritDoc} */
