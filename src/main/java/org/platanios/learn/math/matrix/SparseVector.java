@@ -1,7 +1,8 @@
 package org.platanios.learn.math.matrix;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -14,6 +15,8 @@ import java.util.function.Function;
 public class SparseVector extends Vector {
     /** The smallest value allowed in this vector. Values smaller than this are assumed to be equal to zero. */
     private final double epsilon = Math.sqrt(Double.MIN_VALUE);
+
+    private final int initialSize = 128;
     /** The size of the vector. */
     private final int size;
 
@@ -27,7 +30,7 @@ public class SparseVector extends Vector {
      */
     protected SparseVector(int size) {
         this.size = size;
-        hashMap = new HashMap<>(128);
+        hashMap = new HashMap<>(initialSize);
     }
 
     /**
@@ -39,7 +42,7 @@ public class SparseVector extends Vector {
      */
     protected SparseVector(int size, HashMap<Integer, Double> elements) {
         this.size = size;
-        hashMap = new HashMap<>(128);
+        hashMap = new HashMap<>(initialSize);
         hashMap.putAll(elements);
     }
 
@@ -126,7 +129,7 @@ public class SparseVector extends Vector {
                     "The provided index must be between 0 (inclusive) and the size of the vector (exclusive)."
             );
         }
-        if (value >= epsilon) {
+        if (Math.abs(value) >= epsilon) {
             hashMap.put(index, value);
         } else {
             hashMap.remove(index);
@@ -146,7 +149,7 @@ public class SparseVector extends Vector {
         }
         for (int i = initialIndex; i <= finalIndex; i++) {
             double value = vector.get(i - initialIndex);
-            if (value >= epsilon) {
+            if (Math.abs(value) >= epsilon) {
                 hashMap.put(i, value);
             } else {
                 hashMap.remove(i);
@@ -164,7 +167,7 @@ public class SparseVector extends Vector {
                 );
             }
             double value = vector.get(i);
-            if (value >= epsilon) {
+            if (Math.abs(value) >= epsilon) {
                 hashMap.put(indexes[i], value);
             } else {
                 hashMap.remove(indexes[i]);
@@ -175,12 +178,12 @@ public class SparseVector extends Vector {
     /** {@inheritDoc} */
     @Override
     public void setAll(double value) {
-        if (value >= epsilon) {
+        if (Math.abs(value) >= epsilon) {
             for (int i = 0; i < size; i++) {
                 hashMap.put(i, value);
             }
         } else {
-            hashMap = new HashMap<>(128); // Use new hash map instead of the clear() method so that the memory is freed.
+            hashMap = new HashMap<>(initialSize); // Use new hash map instead of the clear() method so that the memory is freed.
         }
     }
 
@@ -247,14 +250,10 @@ public class SparseVector extends Vector {
                 resultVector.set(i, this.get(i) + vector.get(i));
             }
         } else {
-            if (size <= vector.size()) {
-                hashMap.keySet().stream().filter(((SparseVector) vector).hashMap::containsKey).forEach(
-                        key -> resultVector.set(key, hashMap.get(key) + vector.get(key))
-                );
-            } else {
-                ((SparseVector) vector).hashMap.keySet().stream().filter(hashMap::containsKey).forEach(
-                        key -> resultVector.set(key, hashMap.get(key) + vector.get(key))
-                );
+            List<Integer> keysUnion = new ArrayList<>(hashMap.keySet());
+            keysUnion.addAll(((SparseVector) vector).hashMap.keySet());
+            for (int key : keysUnion) {
+                resultVector.set(key, this.get(key) + vector.get(key));
             }
         }
         return resultVector;
@@ -269,14 +268,10 @@ public class SparseVector extends Vector {
                 this.set(i, this.get(i) + vector.get(i));
             }
         } else {
-            if (size <= vector.size()) {
-                hashMap.keySet().stream().filter(((SparseVector) vector).hashMap::containsKey).forEach(
-                        key -> this.set(key, hashMap.get(key) + vector.get(key))
-                );
-            } else {
-                ((SparseVector) vector).hashMap.keySet().stream().filter(hashMap::containsKey).forEach(
-                        key -> this.set(key, hashMap.get(key) + vector.get(key))
-                );
+            List<Integer> keysUnion = new ArrayList<>(hashMap.keySet());
+            keysUnion.addAll(((SparseVector) vector).hashMap.keySet());
+            for (int key : keysUnion) {
+                this.set(key, this.get(key) + vector.get(key));
             }
         }
         return this;
@@ -311,14 +306,10 @@ public class SparseVector extends Vector {
                 resultVector.set(i, this.get(i) - vector.get(i));
             }
         } else {
-            if (size <= vector.size()) {
-                hashMap.keySet().stream().filter(((SparseVector) vector).hashMap::containsKey).forEach(
-                        key -> resultVector.set(key, hashMap.get(key) - vector.get(key))
-                );
-            } else {
-                ((SparseVector) vector).hashMap.keySet().stream().filter(hashMap::containsKey).forEach(
-                        key -> resultVector.set(key, hashMap.get(key) - vector.get(key))
-                );
+            List<Integer> keysUnion = new ArrayList<>(hashMap.keySet());
+            keysUnion.addAll(((SparseVector) vector).hashMap.keySet());
+            for (int key : keysUnion) {
+                resultVector.set(key, this.get(key) - vector.get(key));
             }
         }
         return resultVector;
@@ -333,14 +324,10 @@ public class SparseVector extends Vector {
                 this.set(i, this.get(i) - vector.get(i));
             }
         } else {
-            if (size <= vector.size()) {
-                hashMap.keySet().stream().filter(((SparseVector) vector).hashMap::containsKey).forEach(
-                        key -> this.set(key, hashMap.get(key) - vector.get(key))
-                );
-            } else {
-                ((SparseVector) vector).hashMap.keySet().stream().filter(hashMap::containsKey).forEach(
-                        key -> this.set(key, hashMap.get(key) - vector.get(key))
-                );
+            List<Integer> keysUnion = new ArrayList<>(hashMap.keySet());
+            keysUnion.addAll(((SparseVector) vector).hashMap.keySet());
+            for (int key : keysUnion) {
+                this.set(key, this.get(key) - vector.get(key));
             }
         }
         return this;
@@ -460,7 +447,7 @@ public class SparseVector extends Vector {
                 resultVector.set(i, this.get(i) + scalar * vector.get(i));
             }
         } else {
-            Collection<Integer> keysUnion = hashMap.keySet();
+            List<Integer> keysUnion = new ArrayList<>(hashMap.keySet());
             keysUnion.addAll(((SparseVector) vector).hashMap.keySet());
             for (int key : keysUnion) {
                 resultVector.set(key, this.get(key) + scalar * vector.get(key));
@@ -478,7 +465,7 @@ public class SparseVector extends Vector {
                 this.set(i, this.get(i) + scalar * vector.get(i));
             }
         } else {
-            Collection<Integer> keysUnion = hashMap.keySet();
+            List<Integer> keysUnion = new ArrayList<>(hashMap.keySet());
             keysUnion.addAll(((SparseVector) vector).hashMap.keySet());
             for (int key : keysUnion) {
                 this.set(key, this.get(key) + scalar * vector.get(key));
