@@ -141,8 +141,6 @@ abstract class AbstractBinaryLogisticRegression {
         double[] probabilities = new double[dataInstances.length];
         for (int i = 0; i < dataInstances.length; i++) {
             probabilities[i] = predict(dataInstances[i]);
-            double probability = weights.dot(dataInstances[i].getFeatures());
-            probabilities[i] = Math.exp(probability - Utilities.computeLogSumExp(0, probability));
         }
         return probabilities;
     }
@@ -179,8 +177,9 @@ abstract class AbstractBinaryLogisticRegression {
             Vector gradient = VectorFactory.build(weights.size(), weights.type());
             for (DataInstance<Vector, Integer> dataInstance : trainingData) {
                 double probability = weights.dot(dataInstance.getFeatures());
-                probability = Math.exp(probability - Utilities.computeLogSumExp(0, probability));
-                gradient.addInPlace(dataInstance.getFeatures().mult(probability - dataInstance.getLabel()));
+                gradient.addInPlace(dataInstance.getFeatures().mult(
+                        Math.exp(probability - Utilities.computeLogSumExp(0, probability)) - dataInstance.getLabel()
+                ));
             }
             return gradient;
         }
@@ -208,8 +207,9 @@ abstract class AbstractBinaryLogisticRegression {
             Vector gradient = VectorFactory.build(weights.size(), weights.type());
             for (DataInstance<Vector, Integer> dataInstance : dataBatch) {
                 double probability = weights.dot(dataInstance.getFeatures());
-                probability = Math.exp(probability - Utilities.computeLogSumExp(0, probability));
-                gradient.addInPlace(dataInstance.getFeatures().mult(probability - dataInstance.getLabel()));
+                gradient.addInPlace(dataInstance.getFeatures().mult(
+                        Math.exp(probability - Utilities.computeLogSumExp(0, probability)) - dataInstance.getLabel()
+                ));
             }
             return gradient;
         }
