@@ -30,7 +30,7 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
         private int m = 1;
         private double symmetricRankOneSkippingParameter = 1e-8;
 
-        public AbstractBuilder(AbstractFunction objective, double[] initialPoint) {
+        public AbstractBuilder(AbstractFunction objective, Vector initialPoint) {
             super(objective, initialPoint);
             lineSearch = new StrongWolfeInterpolationLineSearch(objective, 1e-4, 0.9, 1000);
             ((StrongWolfeInterpolationLineSearch) lineSearch)
@@ -70,7 +70,7 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
 
     public static class Builder extends AbstractBuilder<Builder> {
         public Builder(AbstractFunction objective,
-                       double[] initialPoint) {
+                       Vector initialPoint) {
             super(objective, initialPoint);
         }
 
@@ -91,7 +91,7 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
         method = builder.method;
         m = builder.m;
         symmetricRankOneSkippingParameter = builder.symmetricRankOneSkippingParameter;
-        identityMatrix = Matrix.generateIdentityMatrix(builder.initialPoint.length);
+        identityMatrix = Matrix.generateIdentityMatrix(builder.initialPoint.size());
         currentH = identityMatrix;
         currentGradient = objective.getGradient(currentPoint);
         s = new Vector[m];

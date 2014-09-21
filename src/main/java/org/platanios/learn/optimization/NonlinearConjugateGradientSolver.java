@@ -27,7 +27,7 @@ public final class NonlinearConjugateGradientSolver extends AbstractLineSearchSo
         private RestartMethod restartMethod = RestartMethod.GRADIENTS_ORTHOGONALITY_CHECK;
         private double gradientsOrthogonalityCheckThreshold = 0.1;
 
-        public AbstractBuilder(AbstractFunction objective, double[] initialPoint) {
+        public AbstractBuilder(AbstractFunction objective, Vector initialPoint) {
             super(objective, initialPoint);
             checkForPointConvergence = false;
             checkForObjectiveConvergence = false;
@@ -55,7 +55,7 @@ public final class NonlinearConjugateGradientSolver extends AbstractLineSearchSo
 
     public static class Builder extends AbstractBuilder<Builder> {
         public Builder(AbstractFunction objective,
-                       double[] initialPoint) {
+                       Vector initialPoint) {
             super(objective, initialPoint);
         }
 

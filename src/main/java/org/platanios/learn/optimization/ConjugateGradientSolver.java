@@ -34,11 +34,11 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
                 ProblemConversionMethod.CONJUGATE_GRADIENT_NORMAL_EQUATION_RESIDUAL;
         private double symmetricSuccessiveOverRelaxationOmega = 1;
 
-        public AbstractBuilder(QuadraticFunction objective, double[] initialPoint) {
+        public AbstractBuilder(QuadraticFunction objective, Vector initialPoint) {
             super(objective, initialPoint);
         }
 
-        public AbstractBuilder(LinearLeastSquaresFunction objective, double[] initialPoint) {
+        public AbstractBuilder(LinearLeastSquaresFunction objective, Vector initialPoint) {
             super(objective, initialPoint);
         }
 
@@ -76,12 +76,12 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
 
     public static class Builder extends AbstractBuilder<Builder> {
         public Builder(QuadraticFunction objective,
-                       double[] initialPoint) {
+                       Vector initialPoint) {
             super(objective, initialPoint);
         }
 
         public Builder(LinearLeastSquaresFunction objective,
-                       double[] initialPoint) {
+                       Vector initialPoint) {
             super(objective, initialPoint);
         }
 

@@ -1,5 +1,6 @@
 package org.platanios.learn.optimization;
 
+import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.LinearLeastSquaresFunction;
 import org.platanios.learn.optimization.function.AbstractLeastSquaresFunction;
 
@@ -17,7 +18,7 @@ public final class GaussNewtonSolver extends AbstractLineSearchSolver {
         private LinearLeastSquaresSolver.Method linearLeastSquaresSubproblemMethod =
                 LinearLeastSquaresSolver.Method.SINGULAR_VALUE_DECOMPOSITION;
 
-        public AbstractBuilder(AbstractLeastSquaresFunction objective, double[] initialPoint) {
+        public AbstractBuilder(AbstractLeastSquaresFunction objective, Vector initialPoint) {
             super(objective, initialPoint);
         }
 
@@ -35,7 +36,7 @@ public final class GaussNewtonSolver extends AbstractLineSearchSolver {
 
     public static class Builder extends AbstractBuilder<Builder> {
         public Builder(AbstractLeastSquaresFunction objective,
-                       double[] initialPoint) {
+                       Vector initialPoint) {
             super(objective, initialPoint);
         }
 

@@ -2,6 +2,7 @@ package org.platanios.learn.optimization;
 
 import org.platanios.learn.math.matrix.CholeskyDecomposition;
 import org.platanios.learn.math.matrix.Matrix;
+import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.QuadraticFunction;
 import org.platanios.learn.optimization.linesearch.ExactLineSearch;
@@ -24,7 +25,7 @@ abstract class AbstractLineSearchSolver extends AbstractIterativeSolver {
         protected LineSearch lineSearch;
 
         protected AbstractBuilder(AbstractFunction objective,
-                                  double[] initialPoint) {
+                                  Vector initialPoint) {
             super(objective, initialPoint);
 
             if (objective instanceof QuadraticFunction) {
@@ -49,7 +50,7 @@ abstract class AbstractLineSearchSolver extends AbstractIterativeSolver {
 
     public static class Builder extends AbstractBuilder<Builder> {
         public Builder(AbstractFunction objective,
-                       double[] initialPoint) {
+                       Vector initialPoint) {
             super(objective, initialPoint);
         }
 

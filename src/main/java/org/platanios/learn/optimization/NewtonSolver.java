@@ -2,6 +2,7 @@ package org.platanios.learn.optimization;
 
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.SingularMatrixException;
+import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod;
 import org.platanios.learn.optimization.linesearch.StrongWolfeInterpolationLineSearch;
@@ -12,7 +13,7 @@ import org.platanios.learn.optimization.linesearch.StrongWolfeInterpolationLineS
 public final class NewtonSolver extends AbstractLineSearchSolver {
     protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
             extends AbstractLineSearchSolver.AbstractBuilder<T> {
-        public AbstractBuilder(AbstractFunction objective, double[] initialPoint) {
+        public AbstractBuilder(AbstractFunction objective, Vector initialPoint) {
             super(objective, initialPoint);
             // TODO: Figure out why we cannot use exact line search in the case of a quadratic function.
             lineSearch = new StrongWolfeInterpolationLineSearch(objective, 1e-4, 0.9, 1);
@@ -27,7 +28,7 @@ public final class NewtonSolver extends AbstractLineSearchSolver {
 
     public static class Builder extends AbstractBuilder<Builder> {
         public Builder(AbstractFunction objective,
-                       double[] initialPoint) {
+                       Vector initialPoint) {
             super(objective, initialPoint);
         }
 

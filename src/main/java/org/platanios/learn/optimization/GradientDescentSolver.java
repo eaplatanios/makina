@@ -1,5 +1,6 @@
 package org.platanios.learn.optimization;
 
+import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
 
 /**
@@ -8,7 +9,7 @@ import org.platanios.learn.optimization.function.AbstractFunction;
 public final class GradientDescentSolver extends AbstractLineSearchSolver {
     protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
             extends AbstractLineSearchSolver.AbstractBuilder<T> {
-        public AbstractBuilder(AbstractFunction objective, double[] initialPoint) {
+        public AbstractBuilder(AbstractFunction objective, Vector initialPoint) {
             super(objective, initialPoint);
         }
 
@@ -19,7 +20,7 @@ public final class GradientDescentSolver extends AbstractLineSearchSolver {
 
     public static class Builder extends AbstractBuilder<Builder> {
         public Builder(AbstractFunction objective,
-                       double[] initialPoint) {
+                       Vector initialPoint) {
             super(objective, initialPoint);
         }
 

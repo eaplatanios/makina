@@ -127,7 +127,8 @@ public final class LinearLeastSquaresSolver implements Solver {
                 try {
                     LinearLeastSquaresFunction objective = new LinearLeastSquaresFunction(J, y);
                     ConjugateGradientSolver conjugateGradientSolver =
-                            new ConjugateGradientSolver.Builder(objective, new double[J.getColumnDimension()])
+                            new ConjugateGradientSolver.Builder(objective,
+                                                                VectorFactory.build(J.getColumnDimension(), y.type()))
                                     .preconditioningMethod(ConjugateGradientSolver.PreconditioningMethod
                                                                    .SYMMETRIC_SUCCESSIVE_OVER_RELAXATION)
                                     .buildWithChecking();

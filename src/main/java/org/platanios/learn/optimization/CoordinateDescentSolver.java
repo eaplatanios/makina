@@ -31,7 +31,7 @@ public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
             extends AbstractLineSearchSolver.AbstractBuilder<T> {
         private Method method = Method.CYCLE_AND_JOIN_ENDPOINTS;
 
-        public AbstractBuilder(AbstractFunction objective, double[] initialPoint) {
+        public AbstractBuilder(AbstractFunction objective, Vector initialPoint) {
             super(objective, initialPoint);
         }
 
@@ -47,7 +47,7 @@ public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
 
     public static class Builder extends AbstractBuilder<Builder> {
         public Builder(AbstractFunction objective,
-                       double[] initialPoint) {
+                       Vector initialPoint) {
             super(objective, initialPoint);
         }
 
@@ -64,7 +64,7 @@ public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
     private CoordinateDescentSolver(AbstractBuilder<?> builder) {
         super(builder);
         method = builder.method;
-        numberOfDimensions = builder.initialPoint.length;
+        numberOfDimensions = builder.initialPoint.size();
         cycleStartPoint = currentPoint;
     }
 

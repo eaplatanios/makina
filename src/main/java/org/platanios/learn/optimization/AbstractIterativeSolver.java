@@ -1,7 +1,6 @@
 package org.platanios.learn.optimization;
 
 import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.matrix.VectorFactory;
 import org.platanios.learn.math.matrix.VectorNorm;
 import org.platanios.learn.optimization.function.AbstractFunction;
 
@@ -44,7 +43,7 @@ abstract class AbstractIterativeSolver implements Solver {
         protected abstract T self();
 
         protected final AbstractFunction objective;
-        protected final double[] initialPoint;
+        protected final Vector initialPoint;
 
         protected int maximumNumberOfIterations = 10000;
         protected int maximumNumberOfFunctionEvaluations = 1000000;
@@ -56,7 +55,7 @@ abstract class AbstractIterativeSolver implements Solver {
         protected boolean checkForGradientConvergence = true;
 
         protected AbstractBuilder(AbstractFunction objective,
-                                  double[] initialPoint) {
+                                  Vector initialPoint) {
             this.objective = objective;
             this.initialPoint = initialPoint;
         }
@@ -104,7 +103,7 @@ abstract class AbstractIterativeSolver implements Solver {
 
     public static class Builder extends AbstractBuilder<Builder> {
         public Builder(AbstractFunction objective,
-                       double[] initialPoint) {
+                       Vector initialPoint) {
             super(objective, initialPoint);
         }
 
@@ -125,7 +124,7 @@ abstract class AbstractIterativeSolver implements Solver {
         checkForObjectiveConvergence = builder.checkForObjectiveConvergence;
         checkForGradientConvergence = builder.checkForGradientConvergence;
 
-        currentPoint = VectorFactory.buildDense(builder.initialPoint);
+        currentPoint = builder.initialPoint;
         currentGradient = objective.getGradient(currentPoint);
         currentObjectiveValue = objective.getValue(currentPoint);
         currentIteration = 0;

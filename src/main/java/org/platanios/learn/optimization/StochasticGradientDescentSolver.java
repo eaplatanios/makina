@@ -1,5 +1,6 @@
 package org.platanios.learn.optimization;
 
+import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractStochasticFunction;
 
 /**
@@ -8,7 +9,7 @@ import org.platanios.learn.optimization.function.AbstractStochasticFunction;
 public final class StochasticGradientDescentSolver extends AbstractStochasticIterativeSolver {
     protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
             extends AbstractStochasticIterativeSolver.AbstractBuilder<T> {
-        public AbstractBuilder(AbstractStochasticFunction objective, double[] initialPoint) {
+        public AbstractBuilder(AbstractStochasticFunction objective, Vector initialPoint) {
             super(objective, initialPoint);
         }
 
@@ -19,7 +20,7 @@ public final class StochasticGradientDescentSolver extends AbstractStochasticIte
 
     public static class Builder extends AbstractBuilder<Builder> {
         public Builder(AbstractStochasticFunction objective,
-                       double[] initialPoint) {
+                       Vector initialPoint) {
             super(objective, initialPoint);
         }
 

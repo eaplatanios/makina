@@ -1,7 +1,6 @@
 package org.platanios.learn.optimization;
 
 import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.matrix.VectorFactory;
 import org.platanios.learn.math.matrix.VectorNorm;
 import org.platanios.learn.optimization.function.AbstractStochasticFunction;
 
@@ -34,7 +33,7 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
         protected abstract T self();
 
         protected final AbstractStochasticFunction objective;
-        protected final double[] initialPoint;
+        protected final Vector initialPoint;
 
         protected boolean sampleWithReplacement = true;
         protected int maximumNumberOfIterations = 10000;
@@ -46,7 +45,7 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
         protected double[] stepSizeParameters = new double[] { 10, 0.75 };
 
         protected AbstractBuilder(AbstractStochasticFunction objective,
-                                  double[] initialPoint) {
+                                  Vector initialPoint) {
             this.objective = objective;
             this.initialPoint = initialPoint;
         }
@@ -94,7 +93,7 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
 
     public static class Builder extends AbstractBuilder<Builder> {
         public Builder(AbstractStochasticFunction objective,
-                       double[] initialPoint) {
+                       Vector initialPoint) {
             super(objective, initialPoint);
         }
 
@@ -114,7 +113,7 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
         batchSize = builder.batchSize;
         stepSize = builder.stepSize;
         stepSizeParameters = builder.stepSizeParameters;
-        currentPoint = VectorFactory.buildDense(builder.initialPoint);
+        currentPoint = builder.initialPoint;
         currentGradient = objective.getGradientEstimate(currentPoint, batchSize);
         currentIteration = 0;
     }

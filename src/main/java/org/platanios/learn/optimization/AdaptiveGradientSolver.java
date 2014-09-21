@@ -11,7 +11,7 @@ public final class AdaptiveGradientSolver extends AbstractStochasticIterativeSol
 
     protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
             extends AbstractStochasticIterativeSolver.AbstractBuilder<T> {
-        public AbstractBuilder(AbstractStochasticFunction objective, double[] initialPoint) {
+        public AbstractBuilder(AbstractStochasticFunction objective, Vector initialPoint) {
             super(objective, initialPoint);
         }
 
@@ -22,7 +22,7 @@ public final class AdaptiveGradientSolver extends AbstractStochasticIterativeSol
 
     public static class Builder extends AbstractBuilder<Builder> {
         public Builder(AbstractStochasticFunction objective,
-                       double[] initialPoint) {
+                       Vector initialPoint) {
             super(objective, initialPoint);
         }
 
