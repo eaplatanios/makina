@@ -1,7 +1,6 @@
 package org.platanios.learn.classification;
 
-import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.matrix.VectorFactory;
+import org.platanios.learn.math.matrix.*;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -60,5 +59,83 @@ public class DataPreprocessing {
         }
 
         return new TrainingData(trainingData);
+    }
+
+    public static DataInstance<Vector, Integer>[] parseBinaryLabeledDataFromCSVFile(String filename) {
+        String separator = ",";
+
+        int numberOfFeatures;
+        List<DataInstance<Vector, Integer>> data = new ArrayList<>();
+
+        BufferedReader br = null;
+        String line;
+
+        try {
+            br = new BufferedReader(new FileReader(filename));
+            line = br.readLine();
+            numberOfFeatures = line.split(separator).length - 1;
+            while ((line = br.readLine()) != null) {
+                String[] outputs = line.split(separator);
+                SparseVector features = (SparseVector) VectorFactory.build(numberOfFeatures, VectorType.SPARSE);
+                int label = Integer.parseInt(outputs[0]);
+                for (int i = 0; i < numberOfFeatures; i++) {
+                    features.set(i, Double.parseDouble(outputs[i + 1]));
+                }
+                data.add(new DataInstance<Vector, Integer>(features, label));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return data.toArray(new DataInstance[data.size()]);
+    }
+
+    public static DataInstance<Vector, Integer>[] parseLabeledDataFromLIBSVMFile(String filename,
+                                                                                 boolean sparseFeatures) {
+        String separator = " ";
+
+        List<DataInstance<Vector, Integer>> data = new ArrayList<>();
+
+        BufferedReader br = null;
+        String line;
+
+        try {
+            br = new BufferedReader(new FileReader(filename));
+            while ((line = br.readLine()) != null) {
+                String[] tokens = line.split(separator);
+                int label = Integer.parseInt(tokens[0]) - 1;
+                Vector features;
+                if (sparseFeatures) {
+                    features = VectorFactory.build(54, VectorType.SPARSE);
+                } else {
+                    features = VectorFactory.build(54, VectorType.DENSE);
+                }
+                for (int i = 1; i < tokens.length; i++) {
+                    String[] featurePair = tokens[i].split(":");
+                    features.set(Integer.parseInt(featurePair[0]) - 1, Double.parseDouble(featurePair[1]));
+                }
+                data.add(new DataInstance<Vector, Integer>(features, label));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return data.toArray(new DataInstance[data.size()]);
     }
 }

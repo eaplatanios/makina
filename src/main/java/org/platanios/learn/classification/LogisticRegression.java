@@ -67,7 +67,7 @@ public class LogisticRegression {
 
         if (builder.stochastic) {
             solver = new StochasticGradientDescentSolver.Builder(new StochasticLikelihoodFunction(),
-                                                                 weights.getColumnPackedArrayCopy())
+                                                                 VectorFactory.buildDense(weights.getColumnPackedArrayCopy()))
                     .sampleWithReplacement(false)
                     .maximumNumberOfIterations(10000)
                     .maximumNumberOfIterationsWithNoPointChange(5)
@@ -80,7 +80,8 @@ public class LogisticRegression {
             return;
         }
         if (!builder.largeScale) {
-            solver = new QuasiNewtonSolver.Builder(new LikelihoodFunction(), weights.getColumnPackedArrayCopy())
+            solver = new QuasiNewtonSolver.Builder(new LikelihoodFunction(),
+                                                   VectorFactory.buildDense(weights.getColumnPackedArrayCopy()))
                     .method(QuasiNewtonSolver.Method.BROYDEN_FLETCHER_GOLDFARB_SHANNO)
                     .maximumNumberOfIterations(10000)
                     .maximumNumberOfFunctionEvaluations(1000000)
@@ -92,7 +93,8 @@ public class LogisticRegression {
                     .checkForGradientConvergence(true)
                     .build();
         } else {
-            solver = new QuasiNewtonSolver.Builder(new LikelihoodFunction(), weights.getColumnPackedArrayCopy())
+            solver = new QuasiNewtonSolver.Builder(new LikelihoodFunction(),
+                                                   VectorFactory.buildDense(weights.getColumnPackedArrayCopy()))
                     .method(QuasiNewtonSolver.Method.LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO)
                     .m(10)
                     .maximumNumberOfIterations(10000)
