@@ -45,12 +45,7 @@ public final class AdaptiveGradientSolver extends AbstractStochasticIterativeSol
         } else {
             sumOfGradientSquares.addInPlace(currentGradient.map(gradient -> Math.pow(gradient, 2)));
         }
-        currentDirection =
-                currentGradient.mult(-1).divElementwise(
-                        sumOfGradientSquares
-                            .map(x -> { if (x == 0) return epsilon; else return x; }) // TODO: Find a better way to deal with this issue.
-                            .map(Math::sqrt)
-                );
+        currentDirection = currentGradient.mult(-1).divElementwise(sumOfGradientSquares.map(Math::sqrt).add(epsilon));
     }
 
     @Override
