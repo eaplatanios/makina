@@ -15,7 +15,7 @@ import java.util.function.Function;
 public class SparseVector extends Vector {
     /** The smallest value allowed in this vector. Values smaller than this are assumed to be equal to zero. */
     private final double epsilon = Math.sqrt(Double.MIN_VALUE);
-
+    /** The size which the internal hash map uses as its initial capacity. */
     private final int initialSize = 128;
     /** The size of the vector. */
     private final int size;

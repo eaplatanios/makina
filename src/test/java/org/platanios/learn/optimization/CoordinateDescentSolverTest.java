@@ -15,7 +15,8 @@ public class CoordinateDescentSolverTest {
     public void testCycleMethodSolver() {
         System.out.println("Rosenbrock Function Coordinate Descent (Cycle Method):\n");
         CoordinateDescentSolver coordinateDescentSolver =
-                new CoordinateDescentSolver.Builder(new RosenbrockFunction(), new double[] { -1.2, 1 })
+                new CoordinateDescentSolver.Builder(new RosenbrockFunction(),
+                                                    VectorFactory.buildDense(new double[] { -1.2, 1 }))
                         .method(CoordinateDescentSolver.Method.CYCLE)
                         .build();
         double[] actualResult = coordinateDescentSolver.solve().getDenseArray();
@@ -26,7 +27,8 @@ public class CoordinateDescentSolverTest {
         Matrix A = new Matrix(new double[][] { { 1, 0.5 }, { 0.5, 1 } });
         Vector b = VectorFactory.buildDense(new double[] { 1, 2 });
         coordinateDescentSolver =
-                new CoordinateDescentSolver.Builder(new QuadraticFunction(A, b), new double[] { 0, 0 })
+                new CoordinateDescentSolver.Builder(new QuadraticFunction(A, b),
+                                                    VectorFactory.buildDense(new double[] { 0, 0 }))
                         .method(CoordinateDescentSolver.Method.CYCLE)
                         .build();
         actualResult = coordinateDescentSolver.solve().getDenseArray();
@@ -38,7 +40,8 @@ public class CoordinateDescentSolverTest {
     public void testBackAndForthMethodSolver() {
         System.out.println("Rosenbrock Function Coordinate Descent (Back and Forth Method):\n");
         CoordinateDescentSolver coordinateDescentSolver =
-                new CoordinateDescentSolver.Builder(new RosenbrockFunction(), new double[] { -1.2, 1 })
+                new CoordinateDescentSolver.Builder(new RosenbrockFunction(),
+                                                    VectorFactory.buildDense(new double[] { -1.2, 1 }))
                         .method(CoordinateDescentSolver.Method.BACK_AND_FORTH)
                         .build();
         double[] actualResult = coordinateDescentSolver.solve().getDenseArray();
@@ -49,7 +52,8 @@ public class CoordinateDescentSolverTest {
         Matrix A = new Matrix(new double[][] { { 1, 0.5 }, { 0.5, 1 } });
         Vector b = VectorFactory.buildDense(new double[] { 1, 2 });
         coordinateDescentSolver =
-                new CoordinateDescentSolver.Builder(new QuadraticFunction(A, b), new double[] { 0, 0 })
+                new CoordinateDescentSolver.Builder(new QuadraticFunction(A, b),
+                                                    VectorFactory.buildDense(new double[] { 0, 0 }))
                         .method(CoordinateDescentSolver.Method.BACK_AND_FORTH)
                         .build();
         actualResult = coordinateDescentSolver.solve().getDenseArray();
@@ -61,7 +65,8 @@ public class CoordinateDescentSolverTest {
     public void testCycleAndJoinEndpointsMethodSolver() {
         System.out.println("Rosenbrock Function Coordinate Descent (Cycle and Join Endpoints Method):\n");
         CoordinateDescentSolver coordinateDescentSolver =
-                new CoordinateDescentSolver.Builder(new RosenbrockFunction(), new double[] { -1.2, 1 })
+                new CoordinateDescentSolver.Builder(new RosenbrockFunction(),
+                                                    VectorFactory.buildDense(new double[] { -1.2, 1 }))
                         .method(CoordinateDescentSolver.Method.CYCLE_AND_JOIN_ENDPOINTS)
                         .build();
         double[] actualResult = coordinateDescentSolver.solve().getDenseArray();
@@ -72,7 +77,8 @@ public class CoordinateDescentSolverTest {
         Matrix A = new Matrix(new double[][] { { 1, 0.5 }, { 0.5, 1 } });
         Vector b = VectorFactory.buildDense(new double[] { 1, 2 });
         coordinateDescentSolver =
-                new CoordinateDescentSolver.Builder(new QuadraticFunction(A, b), new double[] { 0, 0 })
+                new CoordinateDescentSolver.Builder(new QuadraticFunction(A, b),
+                                                    VectorFactory.buildDense(new double[] { 0, 0 }))
                         .method(CoordinateDescentSolver.Method.CYCLE_AND_JOIN_ENDPOINTS)
                         .build();
         actualResult = coordinateDescentSolver.solve().getDenseArray();

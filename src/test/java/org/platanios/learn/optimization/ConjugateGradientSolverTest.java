@@ -18,7 +18,8 @@ public class ConjugateGradientSolverTest {
         Matrix A = new Matrix(new double[][] { { 1, 0.5 }, { 0.5, 1 } });
         Vector b = VectorFactory.buildDense(new double[]{1, 2});
         ConjugateGradientSolver conjugateGradientSolver =
-                new ConjugateGradientSolver.Builder(new QuadraticFunction(A, b), new double[] { 0, 0 })
+                new ConjugateGradientSolver.Builder(new QuadraticFunction(A, b),
+                                                    VectorFactory.buildDense(new double[] { 0, 0 }))
                 .preconditioningMethod(ConjugateGradientSolver.PreconditioningMethod.IDENTITY)
                 .build();
         double[] actualResult = conjugateGradientSolver.solve().getDenseArray();
