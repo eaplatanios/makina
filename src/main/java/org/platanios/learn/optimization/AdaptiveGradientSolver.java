@@ -7,6 +7,8 @@ import org.platanios.learn.math.matrix.Vector;
  * @author Emmanouil Antonios Platanios
  */
 public final class AdaptiveGradientSolver extends AbstractStochasticIterativeSolver {
+    private final double epsilon = Math.sqrt(Double.MIN_VALUE);
+
     private Vector sumOfGradientSquares;
 
     protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
@@ -44,7 +46,11 @@ public final class AdaptiveGradientSolver extends AbstractStochasticIterativeSol
             sumOfGradientSquares.addInPlace(currentGradient.map(gradient -> Math.pow(gradient, 2)));
         }
         currentDirection =
-                currentGradient.mult(-1).divElementwise(sumOfGradientSquares.map(Math::sqrt));
+                currentGradient.mult(-1).divElementwise(
+                        sumOfGradientSquares
+                            .map(x -> { if (x == 0) return epsilon; else return x; }) // TODO: Find a better way to deal with this issue.
+                            .map(Math::sqrt)
+                );
     }
 
     @Override
