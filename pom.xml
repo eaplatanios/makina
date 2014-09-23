@@ -41,6 +41,11 @@
             <version>18.0</version>
         </dependency>
         <dependency>
+            <groupId>colt</groupId>
+            <artifactId>colt</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+        <dependency>
             <groupId>knitro</groupId>
             <artifactId>knitro</artifactId>
             <version>9.01</version>

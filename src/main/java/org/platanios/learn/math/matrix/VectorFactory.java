@@ -1,6 +1,6 @@
 package org.platanios.learn.math.matrix;
 
-import java.util.HashMap;
+import cern.colt.map.OpenIntDoubleHashMap;
 
 /**
  * This class provides several static methods to build vectors of different types and initialize them in various ways.
@@ -58,7 +58,7 @@ public class VectorFactory {
      *                      elements as values.
      * @return              The new vector.
      */
-    public static Vector buildSparse(int size, HashMap<Integer, Double> elements) {
+    public static Vector buildSparse(int size, OpenIntDoubleHashMap elements) {
         return new SparseVector(size, elements);
     }
 }

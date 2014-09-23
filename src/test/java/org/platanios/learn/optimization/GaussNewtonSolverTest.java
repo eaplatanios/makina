@@ -17,7 +17,8 @@ public class GaussNewtonSolverTest {
         double[] t = { 1, 2, 4, 5, 8 };
         double[] y = { 3.2939, 4.2699, 7.1749, 9.3008, 20.259 };
         GaussNewtonSolver gaussNewtonSolver =
-                new GaussNewtonSolver.Builder(new ExponentialLeastSquaresFunction(t, y), new double[] { 0, 0 })
+                new GaussNewtonSolver.Builder(new ExponentialLeastSquaresFunction(t, y),
+                                              VectorFactory.buildDense(new double[] { 0, 0 }))
                         .linearLeastSquaresSubproblemMethod(LinearLeastSquaresSolver.Method.CHOLESKY_DECOMPOSITION)
                         .build();
         double[] actualResult = gaussNewtonSolver.solve().getDenseArray();
@@ -31,7 +32,8 @@ public class GaussNewtonSolverTest {
         double[] t = { 1, 2, 4, 5, 8 };
         double[] y = { 3.2939, 4.2699, 7.1749, 9.3008, 20.259 };
         GaussNewtonSolver gaussNewtonSolver =
-                new GaussNewtonSolver.Builder(new ExponentialLeastSquaresFunction(t, y), new double[] { 0, 0 })
+                new GaussNewtonSolver.Builder(new ExponentialLeastSquaresFunction(t, y),
+                                              VectorFactory.buildDense(new double[] { 0, 0 }))
                         .linearLeastSquaresSubproblemMethod(LinearLeastSquaresSolver.Method.QR_DECOMPOSITION)
                         .build();
         double[] actualResult = gaussNewtonSolver.solve().getDenseArray();
@@ -45,7 +47,8 @@ public class GaussNewtonSolverTest {
         double[] t = { 1, 2, 4, 5, 8 };
         double[] y = { 3.2939, 4.2699, 7.1749, 9.3008, 20.259 };
         GaussNewtonSolver gaussNewtonSolver =
-                new GaussNewtonSolver.Builder(new ExponentialLeastSquaresFunction(t, y), new double[] { 0, 0 })
+                new GaussNewtonSolver.Builder(new ExponentialLeastSquaresFunction(t, y),
+                                              VectorFactory.buildDense(new double[] { 0, 0 }))
                         .linearLeastSquaresSubproblemMethod(LinearLeastSquaresSolver.Method.SINGULAR_VALUE_DECOMPOSITION)
                         .build();
         double[] actualResult = gaussNewtonSolver.solve().getDenseArray();
@@ -59,7 +62,8 @@ public class GaussNewtonSolverTest {
         double[] t = { 1, 2, 4, 5, 8 };
         double[] y = { 3.2939, 4.2699, 7.1749, 9.3008, 20.259 };
         GaussNewtonSolver gaussNewtonSolver =
-                new GaussNewtonSolver.Builder(new ExponentialLeastSquaresFunction(t, y), new double[] { 0, 0 })
+                new GaussNewtonSolver.Builder(new ExponentialLeastSquaresFunction(t, y),
+                                              VectorFactory.buildDense(new double[] { 0, 0 }))
                         .linearLeastSquaresSubproblemMethod(LinearLeastSquaresSolver.Method.CONJUGATE_GRADIENT)
                         .build();
         double[] actualResult = gaussNewtonSolver.solve().getDenseArray();
