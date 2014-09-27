@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 public class BinaryLogisticRegressionTest {
     @Test
     public void testDenseBinaryLogisticRegressionUsingSGD() {
-        String filename = LogisticRegressionTest.class.getResource("/covtype.binary.scale.txt").getPath();
+        String filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.txt";
         DataInstance<Vector, Integer>[] data = parseCovTypeDataFromFile(filename, false);
         BinaryLogisticRegressionSGD classifier =
                 new BinaryLogisticRegressionSGD.Builder(Arrays.copyOfRange(data, 0, 500000))
@@ -41,7 +41,7 @@ public class BinaryLogisticRegressionTest {
 
     @Test
     public void testSparseBinaryLogisticRegressionUsingSGD() {
-        String filename = LogisticRegressionTest.class.getResource("/covtype.binary.scale.txt").getPath();
+        String filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.txt";
         DataInstance<Vector, Integer>[] data = parseCovTypeDataFromFile(filename, true);
         BinaryLogisticRegressionSGD classifier =
                 new BinaryLogisticRegressionSGD.Builder(Arrays.copyOfRange(data, 0, 500000))
@@ -60,7 +60,7 @@ public class BinaryLogisticRegressionTest {
 
     @Test
     public void testSmallDenseBinaryLogisticRegressionUsingSGD() {
-        String filename = LogisticRegressionTest.class.getResource("/fisher.binary.txt").getPath();
+        String filename = "/Users/Anthony/Development/Data Sets/Classification/fisher.binary.txt";
         DataInstance<Vector, Integer>[] data = parseFisherDataFromFile(filename);
         BinaryLogisticRegressionSGD classifier = new BinaryLogisticRegressionSGD.Builder(Arrays.copyOfRange(data, 0, 80))
                 .sparse(false)
@@ -78,7 +78,7 @@ public class BinaryLogisticRegressionTest {
 
     @Test
     public void testDenseBinaryLogisticRegressionUsingAdaGrad() {
-        String filename = LogisticRegressionTest.class.getResource("/covtype.binary.scale.txt").getPath();
+        String filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.txt";
         DataInstance<Vector, Integer>[] data = parseCovTypeDataFromFile(filename, false);
         BinaryLogisticRegressionAdaGrad classifier =
                 new BinaryLogisticRegressionAdaGrad.Builder(Arrays.copyOfRange(data, 0, 500000))
@@ -98,7 +98,7 @@ public class BinaryLogisticRegressionTest {
 
     @Test
     public void testSparseBinaryLogisticRegressionUsingAdaGrad() {
-        String filename = LogisticRegressionTest.class.getResource("/covtype.binary.scale.txt").getPath();
+        String filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.txt";
         DataInstance<Vector, Integer>[] data = parseCovTypeDataFromFile(filename, true);
         BinaryLogisticRegressionAdaGrad classifier =
                 new BinaryLogisticRegressionAdaGrad.Builder(Arrays.copyOfRange(data, 0, 500000))
@@ -117,7 +117,7 @@ public class BinaryLogisticRegressionTest {
 
     @Test
     public void testSmallDenseBinaryLogisticRegressionUsingAdaGrad() {
-        String filename = LogisticRegressionTest.class.getResource("/fisher.binary.txt").getPath();
+        String filename = "/Users/Anthony/Development/Data Sets/Classification/fisher.binary.txt";
         DataInstance<Vector, Integer>[] data = parseFisherDataFromFile(filename);
         BinaryLogisticRegressionAdaGrad classifier =
                 new BinaryLogisticRegressionAdaGrad.Builder(Arrays.copyOfRange(data, 0, 80))
@@ -136,7 +136,7 @@ public class BinaryLogisticRegressionTest {
 
     @Test
     public void testLargeSparseBinaryLogisticRegressionUsingAdaGrad() {
-        String filename = LogisticRegressionTest.class.getResource("/url.binary.txt").getPath();
+        String filename = "/Users/Anthony/Development/Data Sets/Classification/url.binary.txt";
         DataInstance<Vector, Integer>[] data = parseURLDataFromFile(filename, true);
         BinaryLogisticRegressionAdaGrad classifier =
                 new BinaryLogisticRegressionAdaGrad.Builder(Arrays.copyOfRange(data, 0, 280000))
