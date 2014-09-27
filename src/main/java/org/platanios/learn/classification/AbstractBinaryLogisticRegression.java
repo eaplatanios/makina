@@ -22,6 +22,11 @@ abstract class AbstractBinaryLogisticRegression {
     private final DataInstance<Vector, Integer>[] trainingData;
     /** The number of features used. */
     protected final int numberOfFeatures;
+    /** Indicates whether /(L_2/) regularization is used. */
+    protected final boolean useL2Regularization;
+    /** The /(L_2/) regularization weight used. This variable is only used when {@link #useL2Regularization} is set to
+     * true. */
+    protected final double l2RegularizationWeight;
 
     /** The weights (i.e., parameters) used by this logistic regression model. */
     protected Vector weights;
@@ -46,6 +51,11 @@ abstract class AbstractBinaryLogisticRegression {
 
         /** Indicates whether sparse vectors should be used. */
         private boolean sparse = false;
+        /** Indicates whether /(L_2/) regularization is used. */
+        private boolean useL2Regularization = false;
+        /** The /(L_2/) regularization weight used. This variable is only used when {@link #useL2Regularization} is set
+         * to true. */
+        private double l2RegularizationWeight = 1;
 
         /**
          * Constructs a builder object for a binary logistic regression model that will be trained with the provided
@@ -68,6 +78,31 @@ abstract class AbstractBinaryLogisticRegression {
          */
         public T sparse(boolean sparse) {
             this.sparse = sparse;
+            return self();
+        }
+
+        /**
+         * Sets the {@link #useL2Regularization} field that indicates whether /(L_2/) regularization is used.
+         *
+         * @param   usel2Regularization The value to which to set the {@link #useL2Regularization} field.
+         * @return                      This builder object itself. That is done so that we can use a nice and
+         *                              expressive code format when we build objects using this builder class.
+         */
+        public T useL2Regularization(boolean usel2Regularization) {
+            this.useL2Regularization = usel2Regularization;
+            return self();
+        }
+
+        /**
+         * Sets the {@link #l2RegularizationWeight} field that contains the value of the /(L_2/) regularization weight
+         * used. This variable is only used when {@link #useL2Regularization} is set to true.
+         *
+         * @param   l2RegularizationWeight  The value to which to set the {@link #l2RegularizationWeight} field.
+         * @return                          This builder object itself. That is done so that we can use a nice and
+         *                                  expressive code format when we build objects using this builder class.
+         */
+        public T l2RegularizationWeight(double l2RegularizationWeight) {
+            this.l2RegularizationWeight = l2RegularizationWeight;
             return self();
         }
     }
@@ -104,6 +139,8 @@ abstract class AbstractBinaryLogisticRegression {
     protected AbstractBinaryLogisticRegression(AbstractBuilder<?> builder) {
         trainingData = builder.trainingData;
         numberOfFeatures = builder.numberOfFeatures;
+        useL2Regularization = builder.useL2Regularization;
+        l2RegularizationWeight = builder.l2RegularizationWeight;
         if (builder.sparse) {
             weights = VectorFactory.build(numberOfFeatures, VectorType.SPARSE);
         } else {
@@ -163,7 +200,11 @@ abstract class AbstractBinaryLogisticRegression {
                 double probability = weights.dot(dataInstance.getFeatures());
                 likelihood += probability * dataInstance.getLabel() - Utilities.computeLogSumExp(0, probability);
             }
-            return -likelihood;
+            if (!useL2Regularization) {
+                return -likelihood;
+            } else {
+                return -likelihood + l2RegularizationWeight * weights.dot(weights);
+            }
         }
 
         /**
@@ -181,7 +222,11 @@ abstract class AbstractBinaryLogisticRegression {
                         Math.exp(probability - Utilities.computeLogSumExp(0, probability)) - dataInstance.getLabel()
                 ));
             }
-            return gradient;
+            if (!useL2Regularization) {
+                return gradient;
+            } else {
+                return gradient.addInPlace(weights.mult(2 * l2RegularizationWeight));
+            }
         }
     }
 
@@ -211,7 +256,11 @@ abstract class AbstractBinaryLogisticRegression {
                         Math.exp(probability - Utilities.computeLogSumExp(0, probability)) - dataInstance.getLabel()
                 ));
             }
-            return gradient;
+            if (!useL2Regularization) {
+                return gradient;
+            } else {
+                return gradient.addInPlace(weights.mult(2 * l2RegularizationWeight));
+            }
         }
     }
 }
