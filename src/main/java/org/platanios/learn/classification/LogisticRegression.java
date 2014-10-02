@@ -122,7 +122,7 @@ public class LogisticRegression {
 
     public double[] predict(double[] point) {
         Vector probabilities = weights.transpose().multiply(VectorFactory.buildDense(point));
-        probabilities = probabilities.sub(Utilities.computeLogSumExp(probabilities));
+        probabilities = probabilities.sub(MatrixUtilities.computeLogSumExp(probabilities));
         probabilities = probabilities.map(Math::exp);
         return probabilities.getDenseArray();
     }
@@ -156,7 +156,7 @@ public class LogisticRegression {
                 }
                 Vector innerProductWithLastClass = VectorFactory.build(numberOfClasses, VectorType.DENSE);
                 innerProductWithLastClass.set(0, numberOfClasses - 2, innerProduct);
-                likelihood -= Utilities.computeLogSumExp(innerProductWithLastClass);
+                likelihood -= MatrixUtilities.computeLogSumExp(innerProductWithLastClass);
             }
             return -likelihood;
         }
@@ -175,7 +175,7 @@ public class LogisticRegression {
                 Vector probabilities = W.transpose().multiply(trainingData[n].features);
                 Vector innerProductWithLastClass = VectorFactory.build(numberOfClasses, VectorType.DENSE);
                 innerProductWithLastClass.set(0, numberOfClasses - 2, probabilities);
-                probabilities = probabilities.sub(Utilities.computeLogSumExp(innerProductWithLastClass));
+                probabilities = probabilities.sub(MatrixUtilities.computeLogSumExp(innerProductWithLastClass));
                 probabilities = probabilities.map(Math::exp);
                 if (trainingData[n].label != numberOfClasses - 1) {
                     probabilities.set(trainingData[n].label, probabilities.get(trainingData[n].label) - 1);
@@ -209,7 +209,7 @@ public class LogisticRegression {
                 Vector probabilities = W.transpose().multiply(trainingData[n].features);
                 Vector innerProductWithLastClass = VectorFactory.build(numberOfClasses, VectorType.DENSE);
                 innerProductWithLastClass.set(0, numberOfClasses - 2, probabilities);
-                probabilities = probabilities.sub(Utilities.computeLogSumExp(innerProductWithLastClass));
+                probabilities = probabilities.sub(MatrixUtilities.computeLogSumExp(innerProductWithLastClass));
                 probabilities = probabilities.map(Math::exp);
                 for (int i = 0; i < numberOfClasses - 1; i++) {
                     for (int j = 0; j <= i; j++) {
@@ -282,7 +282,7 @@ public class LogisticRegression {
                 Vector probabilities = W.transpose().multiply(example.features);
                 Vector innerProductWithLastClass = VectorFactory.build(numberOfClasses, VectorType.DENSE);
                 innerProductWithLastClass.set(0, numberOfClasses - 2, probabilities);
-                probabilities = probabilities.sub(Utilities.computeLogSumExp(innerProductWithLastClass));
+                probabilities = probabilities.sub(MatrixUtilities.computeLogSumExp(innerProductWithLastClass));
                 probabilities = probabilities.map(Math::exp);
                 if (example.label != numberOfClasses - 1) {
                     probabilities.set(example.label, probabilities.get(example.label) - 1);

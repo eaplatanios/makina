@@ -2,7 +2,7 @@ package org.platanios.learn.classification;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.platanios.learn.math.Utilities;
+import org.platanios.learn.math.MathUtilities;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -35,7 +35,7 @@ public class LogisticRegressionTest {
         });
         int[] actualPredictions = new int[actualPredictionsProbabilities.length];
         for (int i = 0; i < actualPredictions.length; i++) {
-            actualPredictions[i] = Utilities.computeArgMax(actualPredictionsProbabilities[i]);
+            actualPredictions[i] = MathUtilities.computeArgMax(actualPredictionsProbabilities[i]);
         }
         int[] expectedPredictions = new int[] { 1, 0, 2, 1, 0, 1, 2, 0, 1, 0 };
         Assert.assertArrayEquals(expectedPredictions, actualPredictions);
@@ -96,7 +96,7 @@ public class LogisticRegressionTest {
         });
         int[] actualPredictions = new int[actualPredictionsProbabilities.length];
         for (int i = 0; i < actualPredictions.length; i++) {
-            actualPredictions[i] = Utilities.computeArgMax(actualPredictionsProbabilities[i]);
+            actualPredictions[i] = MathUtilities.computeArgMax(actualPredictionsProbabilities[i]);
         }
         int[] expectedPredictions = new int[] { 1, 0, 2, 1, 0, 1, 2, 0, 1, 0 };
         Assert.assertArrayEquals(expectedPredictions, actualPredictions);
@@ -125,7 +125,7 @@ public class LogisticRegressionTest {
         });
         int[] actualPredictions = new int[actualPredictionsProbabilities.length];
         for (int i = 0; i < actualPredictions.length; i++) {
-            actualPredictions[i] = Utilities.computeArgMax(actualPredictionsProbabilities[i]);
+            actualPredictions[i] = MathUtilities.computeArgMax(actualPredictionsProbabilities[i]);
         }
         int[] expectedPredictions = new int[] { 1, 0, 2, 1, 0, 1, 2, 0, 1, 0 };
         Assert.assertArrayEquals(expectedPredictions, actualPredictions);

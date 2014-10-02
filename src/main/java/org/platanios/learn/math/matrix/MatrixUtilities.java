@@ -3,9 +3,9 @@ package org.platanios.learn.math.matrix;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class Utilities {
+public class MatrixUtilities {
     // Suppress default constructor for noninstantiability
-    private Utilities() {
+    private MatrixUtilities() {
         throw new AssertionError();
     }
 

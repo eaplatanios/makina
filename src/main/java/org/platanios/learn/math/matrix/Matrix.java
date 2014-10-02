@@ -1,6 +1,6 @@
 package org.platanios.learn.math.matrix;
 
-import org.platanios.learn.math.Utilities;
+import org.platanios.learn.math.MathUtilities;
 
 import java.util.function.Function;
 
@@ -734,7 +734,7 @@ public class Matrix {
         double frobeniusNorm = 0;
         for (int i = 0; i < rowDimension; i++) {
             for (int j = 0; j < columnDimension; j++) {
-                frobeniusNorm = Utilities.computeHypotenuse(frobeniusNorm, array[i][j]);
+                frobeniusNorm = MathUtilities.computeHypotenuse(frobeniusNorm, array[i][j]);
             }
         }
         return frobeniusNorm;

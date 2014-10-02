@@ -1,8 +1,8 @@
 package org.platanios.learn.optimization.function;
 
+import org.platanios.learn.math.MathUtilities;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Matrix;
-import org.platanios.learn.math.Utilities;
 import org.platanios.learn.math.matrix.VectorFactory;
 
 /**
@@ -49,7 +49,7 @@ public final class DerivativesApproximation {
     public enum Method {
         FORWARD_DIFFERENCE {
             protected double computeEpsilon() {
-                return Math.sqrt(Utilities.computeMachineEpsilonDouble());
+                return Math.sqrt(MathUtilities.computeMachineEpsilonDouble());
             }
 
             protected Vector approximateGradient(DerivativesApproximation owner, Vector point) {
@@ -121,7 +121,7 @@ public final class DerivativesApproximation {
          * \(O(\epsilon)\)). */
         CENTRAL_DIFFERENCE {
             protected double computeEpsilon() {
-                return Math.cbrt(Utilities.computeMachineEpsilonDouble());
+                return Math.cbrt(MathUtilities.computeMachineEpsilonDouble());
             }
 
             protected Vector approximateGradient(DerivativesApproximation owner, Vector point) {

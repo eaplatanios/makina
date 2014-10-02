@@ -1,9 +1,9 @@
 package org.platanios.learn.optimization;
 
+import org.platanios.learn.math.MathUtilities;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.VectorFactory;
 import org.platanios.learn.optimization.function.AbstractFunction;
-import org.platanios.learn.math.Utilities;
 
 /**
  * This is a derivative-free optimization algorithm.
@@ -17,7 +17,7 @@ import org.platanios.learn.math.Utilities;
  */
 public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
     private final Method method;
-    private final double epsilon = Math.sqrt(Utilities.computeMachineEpsilonDouble());
+    private final double epsilon = Math.sqrt(MathUtilities.computeMachineEpsilonDouble());
     private final int numberOfDimensions;
 
     private int currentDimension = 0;

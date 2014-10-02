@@ -1,6 +1,6 @@
 package org.platanios.learn.classification;
 
-import org.platanios.learn.math.matrix.Utilities;
+import org.platanios.learn.math.matrix.MatrixUtilities;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.VectorFactory;
 import org.platanios.learn.math.matrix.VectorType;
@@ -17,7 +17,7 @@ import java.util.List;
  *
  * @author Emmanouil Antonios Platanios
  */
-abstract class AbstractBinaryLogisticRegression {
+abstract class AbstractBinaryLogisticRegression implements Classifier<Vector, Integer> {
     /** The data used to train this model. */
     private final DataInstance<Vector, Integer>[] trainingData;
     /** The number of features used. */
@@ -161,7 +161,7 @@ abstract class AbstractBinaryLogisticRegression {
      */
     public double predict(DataInstance<Vector, Integer> dataInstance) {
         double probability = weights.dot(dataInstance.getFeatures());
-        probability = Math.exp(probability - Utilities.computeLogSumExp(0, probability));
+        probability = Math.exp(probability - MatrixUtilities.computeLogSumExp(0, probability));
         return probability;
     }
 
@@ -198,7 +198,7 @@ abstract class AbstractBinaryLogisticRegression {
             double likelihood = 0;
             for (DataInstance<Vector, Integer> dataInstance : trainingData) {
                 double probability = weights.dot(dataInstance.getFeatures());
-                likelihood += probability * dataInstance.getLabel() - Utilities.computeLogSumExp(0, probability);
+                likelihood += probability * dataInstance.getLabel() - MatrixUtilities.computeLogSumExp(0, probability);
             }
             if (!useL2Regularization) {
                 return -likelihood;
@@ -219,7 +219,7 @@ abstract class AbstractBinaryLogisticRegression {
             for (DataInstance<Vector, Integer> dataInstance : trainingData) {
                 double probability = weights.dot(dataInstance.getFeatures());
                 gradient.addInPlace(dataInstance.getFeatures().mult(
-                        Math.exp(probability - Utilities.computeLogSumExp(0, probability)) - dataInstance.getLabel()
+                        Math.exp(probability - MatrixUtilities.computeLogSumExp(0, probability)) - dataInstance.getLabel()
                 ));
             }
             if (!useL2Regularization) {
@@ -253,7 +253,7 @@ abstract class AbstractBinaryLogisticRegression {
             for (DataInstance<Vector, Integer> dataInstance : dataBatch) {
                 double probability = weights.dot(dataInstance.getFeatures());
                 gradient.addInPlace(dataInstance.getFeatures().mult(
-                        Math.exp(probability - Utilities.computeLogSumExp(0, probability)) - dataInstance.getLabel()
+                        Math.exp(probability - MatrixUtilities.computeLogSumExp(0, probability)) - dataInstance.getLabel()
                 ));
             }
             if (!useL2Regularization) {

@@ -7,9 +7,9 @@ import java.util.List;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class Utilities {
+public class StatisticsUtilities {
     // Suppress default constructor for noninstantiability
-    private Utilities() {
+    private StatisticsUtilities() {
         throw new AssertionError();
     }
 

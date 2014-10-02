@@ -1,5 +1,7 @@
 package org.platanios.learn.math.matrix;
 
+import org.platanios.learn.math.MathUtilities;
+
 /**
  * Implements the QR decomposition algorithm for matrix \(A\). Given \(A\in\mathbb{R}^{m\times n}\), with \(m\geq n\),
  * the QR decomposition is an orthogonal matrix \(Q\in\mathbb{R}^{m\times n}\) and an upper triangular matrix
@@ -39,7 +41,7 @@ public class QRDecomposition {
         for (int k = 0; k < columnDimension; k++) {
             double columnL2Norm = 0;
             for (int i = k; i < rowDimension; i++) {
-                columnL2Norm = org.platanios.learn.math.Utilities.computeHypotenuse(columnL2Norm, QR[i][k]);
+                columnL2Norm = MathUtilities.computeHypotenuse(columnL2Norm, QR[i][k]);
             }
             if (columnL2Norm != 0.0) {
                 if (QR[k][k] < 0) {

@@ -3,9 +3,9 @@ package org.platanios.learn.math;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class Utilities {
+public class MathUtilities {
     // Suppress default constructor for noninstantiability
-    private Utilities() {
+    private MathUtilities() {
         throw new AssertionError();
     }
 

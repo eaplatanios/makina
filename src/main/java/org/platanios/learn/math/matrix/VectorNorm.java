@@ -1,6 +1,6 @@
 package org.platanios.learn.math.matrix;
 
-import org.platanios.learn.math.Utilities;
+import org.platanios.learn.math.MathUtilities;
 
 import java.util.Collection;
 
@@ -47,7 +47,7 @@ public enum VectorNorm {
         public double compute(double[] nonzeroValues) {
             double l2Norm = 0;
             for (double value : nonzeroValues) {
-                l2Norm = Utilities.computeHypotenuse(l2Norm, value);
+                l2Norm = MathUtilities.computeHypotenuse(l2Norm, value);
             }
             return l2Norm;
         }
@@ -57,7 +57,7 @@ public enum VectorNorm {
         public double compute(Collection<Double> nonzeroValues) {
             double l2Norm = 0;
             for (double value : nonzeroValues) {
-                l2Norm = Utilities.computeHypotenuse(l2Norm, value);
+                l2Norm = MathUtilities.computeHypotenuse(l2Norm, value);
             }
             return l2Norm;
         }
