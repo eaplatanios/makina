@@ -79,6 +79,16 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
+    public int numberOfNonzeroElements() {
+        int numberOfNonzeroElements = 0;
+        for (double element : array)
+            if (element <= epsilon)
+                numberOfNonzeroElements++;
+        return numberOfNonzeroElements;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public double get(int index) {
         if (index < 0 || index >= size) {
             throw new IllegalArgumentException(

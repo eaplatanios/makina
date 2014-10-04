@@ -13,8 +13,6 @@ import java.util.function.Function;
  * @author Emmanouil Antonios Platanios
  */
 public class SparseVector extends Vector {
-    /** The smallest value allowed in this vector. Values smaller than this are assumed to be equal to zero. */
-    private final double epsilon = Math.sqrt(Double.MIN_VALUE);
     /** The size which the internal hash map uses as its initial capacity. */
     private final int initialSize = 128;
     /** The size of the vector. */
@@ -69,6 +67,12 @@ public class SparseVector extends Vector {
     @Override
     public int size() {
         return size;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int numberOfNonzeroElements() {
+        return hashMap.keys().size();
     }
 
     /** {@inheritDoc} */
@@ -342,7 +346,7 @@ public class SparseVector extends Vector {
                 resultVector.set(key, hashMap.get(key) * vector.get(key));
             }
         } else {
-            if (size <= vector.size()) {
+            if (this.numberOfNonzeroElements() <= vector.numberOfNonzeroElements()) {
                 for (int key : hashMap.keys().elements()) {
                     if (((SparseVector) vector).hashMap.containsKey(key)) {
                         resultVector.set(key, hashMap.get(key) * vector.get(key));
@@ -368,7 +372,7 @@ public class SparseVector extends Vector {
                 this.set(key, hashMap.get(key) * vector.get(key));
             }
         } else {
-            if (size <= vector.size()) {
+            if (this.numberOfNonzeroElements() <= vector.numberOfNonzeroElements()) {
                 for (int key : hashMap.keys().elements()) {
                     if (((SparseVector) vector).hashMap.containsKey(key)) {
                         this.set(key, hashMap.get(key) * vector.get(key));
@@ -483,7 +487,7 @@ public class SparseVector extends Vector {
                 result += hashMap.get(key) * vector.get(key);
             }
         } else {
-            if (size <= vector.size()) {
+            if (this.numberOfNonzeroElements() <= vector.numberOfNonzeroElements()) {
                 for (int key : hashMap.keys().elements()) {
                     if (((SparseVector) vector).hashMap.containsKey(key)) {
                         result += hashMap.get(key) * vector.get(key);

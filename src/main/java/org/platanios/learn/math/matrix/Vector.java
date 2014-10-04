@@ -10,6 +10,10 @@ import java.util.function.Function;
  * @author Emmanouil Antonios Platanios
  */
 public abstract class Vector {
+    /** The threshold value for elements to be considered equal to zero when counting the number of non-zero elements of
+     * this vector (i.e., in method {@link #numberOfNonzeroElements()}) and when handling sparse vectors. */
+    protected final double epsilon = Math.sqrt(Double.MIN_VALUE);
+
     /**
      * Gets the type of this vector (i.e., dense, sparse, etc.).
      *
@@ -38,6 +42,13 @@ public abstract class Vector {
      * @return  The dimension of this vector.
      */
     public abstract int size();
+
+    /**
+     * Gets the number of non-zero elements in this vector.
+     *
+     * @return  The number of non-zero elements in this vector.
+     */
+    public abstract int numberOfNonzeroElements();
 
     /**
      * Gets the value of the vector element at the provided index.
