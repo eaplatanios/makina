@@ -11,7 +11,7 @@ import java.util.function.Function;
  */
 public abstract class Vector {
     /** The threshold value for elements to be considered equal to zero when counting the number of non-zero elements of
-     * this vector (i.e., in method {@link #numberOfNonzeroElements()}) and when handling sparse vectors. */
+     * this vector (i.e., in method {@link #cardinality()}) and when handling sparse vectors. */
     protected final double epsilon = Math.sqrt(Double.MIN_VALUE);
 
     /**
@@ -44,11 +44,11 @@ public abstract class Vector {
     public abstract int size();
 
     /**
-     * Gets the number of non-zero elements in this vector.
+     * Gets the cardinality of this vector. The cardinality of a vector is the number of nonzero elements it contains.
      *
-     * @return  The number of non-zero elements in this vector.
+     * @return  The cardinality of this vector.
      */
-    public abstract int numberOfNonzeroElements();
+    public abstract int cardinality();
 
     /**
      * Gets the value of the vector element at the provided index.

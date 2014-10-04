@@ -79,7 +79,7 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public int numberOfNonzeroElements() {
+    public int cardinality() {
         int numberOfNonzeroElements = 0;
         for (double element : array)
             if (element <= epsilon)
