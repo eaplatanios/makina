@@ -139,19 +139,21 @@ public class BinaryLogisticRegressionTest {
         String filename = "/Users/Anthony/Development/Data Sets/Classification/url.binary.txt";
         DataInstance<Vector, Integer>[] data = parseURLDataFromFile(filename, true);
         BinaryLogisticRegressionAdaGrad classifier =
-                new BinaryLogisticRegressionAdaGrad.Builder(Arrays.copyOfRange(data, 0, 280000))
+                new BinaryLogisticRegressionAdaGrad.Builder(Arrays.copyOfRange(data, 0, 20000))
                         .sparse(true)
-                        .maximumNumberOfIterations(100)
-                        .batchSize(10000)
+                        .maximumNumberOfIterations(1000)
+                        .batchSize(1000)
+                        .useL1Regularization(true)
+                        .l1RegularizationWeight(1)
                         .build();
         classifier.train();
-        double[] actualPredictionsProbabilities = classifier.predict(Arrays.copyOfRange(data, 280000, data.length));
+        double[] actualPredictionsProbabilities = classifier.predict(Arrays.copyOfRange(data, 20000, data.length));
         int[] actualPredictions = new int[actualPredictionsProbabilities.length];
         int[] expectedPredictions = new int[actualPredictionsProbabilities.length];
         double accuracy = 0;
         for (int i = 0; i < actualPredictions.length; i++) {
             actualPredictions[i] = actualPredictionsProbabilities[i] >= 0.5 ? 1 : 0;
-            expectedPredictions[i] = data[280000 + i].getLabel();
+            expectedPredictions[i] = data[20000 + i].getLabel();
             accuracy += actualPredictions[i] == expectedPredictions[i] ? 1 : 0;
         }
         accuracy /= actualPredictions.length;
@@ -209,7 +211,7 @@ public class BinaryLogisticRegressionTest {
         String separator = " ";
         List<DataInstance<Vector, Integer>> data = new ArrayList<>();
         try (Stream<String> lines = Files.lines(Paths.get(filename), Charset.defaultCharset())) {
-            lines.forEachOrdered(line -> {
+            lines.limit(30000).forEachOrdered(line -> {
                 String[] tokens = line.split(separator);
                 int label = tokens[0].equals("+1") ? 1 : 0;
                 Vector features;

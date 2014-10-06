@@ -5,6 +5,8 @@ import org.platanios.learn.math.matrix.VectorNorm;
 import org.platanios.learn.optimization.function.AbstractFunction;
 
 /**
+ * TODO: Add support for regularization.
+ *
  * @author Emmanouil Antonios Platanios
  */
 abstract class AbstractIterativeSolver implements Solver {

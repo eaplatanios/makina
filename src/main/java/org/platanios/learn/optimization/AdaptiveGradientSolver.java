@@ -9,6 +9,7 @@ import org.platanios.learn.math.matrix.Vector;
 public final class AdaptiveGradientSolver extends AbstractStochasticIterativeSolver {
     private final double epsilon = Math.sqrt(Double.MIN_VALUE);
 
+    private Vector sumOfGradients;
     private Vector sumOfGradientSquares;
 
     protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
@@ -42,14 +43,33 @@ public final class AdaptiveGradientSolver extends AbstractStochasticIterativeSol
     public void updateDirection() {
         if (currentIteration == 0) {
             sumOfGradientSquares = currentGradient.map(gradient -> Math.pow(gradient, 2)).copy();
+            if (useL1Regularization) {
+                sumOfGradients = currentGradient.copy();
+            }
         } else {
             sumOfGradientSquares.addInPlace(currentGradient.map(gradient -> Math.pow(gradient, 2)));
+            if (useL1Regularization) {
+                sumOfGradients.addInPlace(currentGradient);
+            }
         }
-        currentDirection = currentGradient.mult(-1).divElementwise(sumOfGradientSquares.map(Math::sqrt).add(epsilon));
+        if (useL1Regularization) {
+            currentDirection = sumOfGradients
+                    .map(x -> Math.abs(x) / currentIteration <= l1RegularizationWeight ?
+                            0.0 : Math.signum(x) * (Math.abs(x) / currentIteration - l1RegularizationWeight))
+                    .mult(-1)
+                    .divElementwise(sumOfGradientSquares.map(Math::sqrt).add(epsilon))
+                    .mult(currentIteration);
+        } else {
+            currentDirection = currentGradient.mult(-1).divElementwise(sumOfGradientSquares.map(Math::sqrt).add(epsilon));
+        }
     }
 
     @Override
     public void updatePoint() {
-        currentPoint = previousPoint.add(currentDirection.mult(currentStepSize));
+        if (!useL1Regularization) {
+            currentPoint = previousPoint.add(currentDirection.mult(currentStepSize));
+        } else {
+            currentPoint = currentDirection.mult(currentStepSize);
+        }
     }
 }

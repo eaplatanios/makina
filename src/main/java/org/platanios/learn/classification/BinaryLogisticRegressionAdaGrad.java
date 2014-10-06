@@ -124,6 +124,10 @@ public class BinaryLogisticRegressionAdaGrad extends AbstractBinaryLogisticRegre
                 .batchSize(builder.batchSize)
                 .stepSize(builder.stepSize)
                 .stepSizeParameters(builder.stepSizeParameters)
+                .useL1Regularization(builder.useL1Regularization)
+                .l1RegularizationWeight(builder.l1RegularizationWeight)
+                .useL2Regularization(builder.useL2Regularization)
+                .l2RegularizationWeight(builder.l2RegularizationWeight)
                 .build();
     }
 

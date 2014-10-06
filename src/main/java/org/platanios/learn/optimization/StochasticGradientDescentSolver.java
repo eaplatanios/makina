@@ -4,6 +4,8 @@ import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractStochasticFunction;
 
 /**
+ * TODO: Add support for L1 regularization.
+ *
  * @author Emmanouil Antonios Platanios
  */
 public final class StochasticGradientDescentSolver extends AbstractStochasticIterativeSolver {

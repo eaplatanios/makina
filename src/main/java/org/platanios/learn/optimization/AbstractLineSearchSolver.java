@@ -89,6 +89,23 @@ abstract class AbstractLineSearchSolver extends AbstractIterativeSolver {
                                                      previousStepSize);
     }
 
+    /**
+     *
+     *
+     * Note: Care must be taken when implementing this method because the previousDirection and the previousPoint
+     * variables are simply updated to point to currentDirection and currentPoint respectively, at the beginning of each
+     * iteration. That means that when the new values are computed, new objects have to be instantiated for holding
+     * those values.
+     */
     public abstract void updateDirection();
+
+    /**
+     *
+     *
+     * Note: Care must be taken when implementing this method because the previousDirection and the previousPoint
+     * variables are simply updated to point to currentDirection and currentPoint respectively, at the beginning of each
+     * iteration. That means that when the new values are computed, new objects have to be instantiated for holding
+     * those values.
+     */
     public abstract void updatePoint();
 }

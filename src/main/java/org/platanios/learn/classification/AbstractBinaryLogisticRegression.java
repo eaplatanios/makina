@@ -22,6 +22,11 @@ abstract class AbstractBinaryLogisticRegression implements Classifier<Vector, In
     private final DataInstance<Vector, Integer>[] trainingData;
     /** The number of features used. */
     protected final int numberOfFeatures;
+    /** Indicates whether /(L_1/) regularization is used. */
+    protected final boolean useL1Regularization;
+    /** The /(L_1/) regularization weight used. This variable is only used when {@link #useL1Regularization} is set to
+     * true. */
+    protected final double l1RegularizationWeight;
     /** Indicates whether /(L_2/) regularization is used. */
     protected final boolean useL2Regularization;
     /** The /(L_2/) regularization weight used. This variable is only used when {@link #useL2Regularization} is set to
@@ -51,11 +56,16 @@ abstract class AbstractBinaryLogisticRegression implements Classifier<Vector, In
 
         /** Indicates whether sparse vectors should be used. */
         private boolean sparse = false;
+        /** Indicates whether /(L_1/) regularization is used. */
+        protected boolean useL1Regularization = false;
+        /** The /(L_1/) regularization weight used. This variable is only used when {@link #useL1Regularization} is set
+         * to true. */
+        protected double l1RegularizationWeight = 1;
         /** Indicates whether /(L_2/) regularization is used. */
-        private boolean useL2Regularization = false;
+        protected boolean useL2Regularization = false;
         /** The /(L_2/) regularization weight used. This variable is only used when {@link #useL2Regularization} is set
          * to true. */
-        private double l2RegularizationWeight = 1;
+        protected double l2RegularizationWeight = 1;
 
         /**
          * Constructs a builder object for a binary logistic regression model that will be trained with the provided
@@ -78,6 +88,31 @@ abstract class AbstractBinaryLogisticRegression implements Classifier<Vector, In
          */
         public T sparse(boolean sparse) {
             this.sparse = sparse;
+            return self();
+        }
+
+        /**
+         * Sets the {@link #useL1Regularization} field that indicates whether /(L_1/) regularization is used.
+         *
+         * @param   useL1Regularization The value to which to set the {@link #useL1Regularization} field.
+         * @return                      This builder object itself. That is done so that we can use a nice and
+         *                              expressive code format when we build objects using this builder class.
+         */
+        public T useL1Regularization(boolean useL1Regularization) {
+            this.useL1Regularization = useL1Regularization;
+            return self();
+        }
+
+        /**
+         * Sets the {@link #l1RegularizationWeight} field that contains the value of the /(L_1/) regularization weight
+         * used. This variable is only used when {@link #useL1Regularization} is set to true.
+         *
+         * @param   l1RegularizationWeight  The value to which to set the {@link #l1RegularizationWeight} field.
+         * @return                          This builder object itself. That is done so that we can use a nice and
+         *                                  expressive code format when we build objects using this builder class.
+         */
+        public T l1RegularizationWeight(double l1RegularizationWeight) {
+            this.l1RegularizationWeight = l1RegularizationWeight;
             return self();
         }
 
@@ -139,6 +174,8 @@ abstract class AbstractBinaryLogisticRegression implements Classifier<Vector, In
     protected AbstractBinaryLogisticRegression(AbstractBuilder<?> builder) {
         trainingData = builder.trainingData;
         numberOfFeatures = builder.numberOfFeatures;
+        useL1Regularization = builder.useL1Regularization;
+        l1RegularizationWeight = builder.l1RegularizationWeight;
         useL2Regularization = builder.useL2Regularization;
         l2RegularizationWeight = builder.l2RegularizationWeight;
         if (builder.sparse) {
@@ -200,11 +237,7 @@ abstract class AbstractBinaryLogisticRegression implements Classifier<Vector, In
                 double probability = weights.dot(dataInstance.getFeatures());
                 likelihood += probability * dataInstance.getLabel() - MatrixUtilities.computeLogSumExp(0, probability);
             }
-            if (!useL2Regularization) {
-                return -likelihood;
-            } else {
-                return -likelihood + l2RegularizationWeight * weights.dot(weights);
-            }
+            return -likelihood;
         }
 
         /**
@@ -222,11 +255,7 @@ abstract class AbstractBinaryLogisticRegression implements Classifier<Vector, In
                         Math.exp(probability - MatrixUtilities.computeLogSumExp(0, probability)) - dataInstance.getLabel()
                 ));
             }
-            if (!useL2Regularization) {
-                return gradient;
-            } else {
-                return gradient.addInPlace(weights.mult(2 * l2RegularizationWeight));
-            }
+            return gradient;
         }
     }
 
@@ -256,11 +285,7 @@ abstract class AbstractBinaryLogisticRegression implements Classifier<Vector, In
                         Math.exp(probability - MatrixUtilities.computeLogSumExp(0, probability)) - dataInstance.getLabel()
                 ));
             }
-            if (!useL2Regularization) {
-                return gradient;
-            } else {
-                return gradient.addInPlace(weights.mult(2 * l2RegularizationWeight));
-            }
+            return gradient;
         }
     }
 }
