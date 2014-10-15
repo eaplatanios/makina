@@ -8,6 +8,9 @@ import java.util.function.Function;
  * Implements a class representing matrices and supporting operations related to matrices. Matrices are stored in an
  * internal two-dimensional array.
  *
+ * TODO: Make the Matrix class serializable -- well, not exactly -- look at the Vector classes for details. We need a
+ * constructor that takes a stream as input and a write to stream function, along with an equals() and a hashCode()
+ * function.
  * TODO: Allow transposing all matrix arguments.
  * TODO: Implement the outer product update: A = A + xy^T.
  * TODO: Implement the matrix-matrix update: C = C + AB.

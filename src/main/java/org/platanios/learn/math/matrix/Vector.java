@@ -1,5 +1,9 @@
 package org.platanios.learn.math.matrix;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.function.Function;
 
 /**
@@ -10,6 +14,8 @@ import java.util.function.Function;
  * @author Emmanouil Antonios Platanios
  */
 public abstract class Vector {
+    private static final long serialVersionUID = -6542607523957470903L;
+
     /** The threshold value for elements to be considered equal to zero when counting the number of non-zero elements of
      * this vector (i.e., in method {@link #cardinality()}) and when handling sparse vectors. */
     protected final double epsilon = Math.sqrt(Double.MIN_VALUE);
@@ -388,4 +394,20 @@ public abstract class Vector {
             throw new IllegalArgumentException("Vector sizes must agree.");
         }
     }
+
+    /**
+     * Writes the contents of this vector to the provided output stream.
+     *
+     * @param   outputStream    The output stream to write the contents of this vector to.
+     * @throws  IOException
+     */
+    public abstract void writeToStream(ObjectOutputStream outputStream) throws IOException;
+
+    /** {@inheritDoc} */
+    @Override
+    public abstract boolean equals(Object obj);
+
+    /** {@inheritDoc} */
+    @Override
+    public abstract int hashCode();
 }

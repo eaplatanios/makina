@@ -2,7 +2,12 @@ package org.platanios.learn.math.matrix;
 
 import cern.colt.list.IntArrayList;
 import cern.colt.map.OpenIntDoubleHashMap;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.function.Function;
 
 /**
@@ -41,6 +46,26 @@ public class SparseVector extends Vector {
     protected SparseVector(int size, OpenIntDoubleHashMap elements) {
         this.size = size;
         hashMap = (OpenIntDoubleHashMap) elements.copy();
+    }
+
+    /**
+     * Constructs a sparse vector from the contents of the provided input stream. Note that the contents of the stream
+     * must have been written using the {@link #writeToStream(java.io.ObjectOutputStream)} function of this class in
+     * order to be compatible with this constructor. If the contents are not compatible, then an
+     * {@link java.io.IOException} might be thrown, or the constructed vector might be corrupted in some way.
+     *
+     * @param   inputStream The input stream to read the contents of this vector from.
+     * @throws  IOException
+     */
+    protected SparseVector(ObjectInputStream inputStream) throws IOException {
+        size = inputStream.readInt();
+        hashMap = new OpenIntDoubleHashMap(initialSize);
+        int numberOfNonzeroEntries = inputStream.readInt();
+        for (int i = 0; i < numberOfNonzeroEntries; i++) {
+            int key = inputStream.readInt();
+            double value = inputStream.readDouble();
+            hashMap.put(key, value);
+        }
     }
 
     /** {@inheritDoc} */
@@ -526,5 +551,40 @@ public class SparseVector extends Vector {
     @Override
     public Vector transMult(Matrix matrix) {
         return null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void writeToStream(ObjectOutputStream outputStream) throws IOException {
+        outputStream.writeInt(size);
+        outputStream.writeInt(hashMap.keys().size());
+        for (int key : hashMap.keys().elements()) {
+            outputStream.writeInt(key);
+            outputStream.writeDouble(hashMap.get(key));
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof SparseVector))
+            return false;
+        if (object == this)
+            return true;
+
+        SparseVector other = (SparseVector) object;
+        return new EqualsBuilder()
+                .append(size, other.size)
+                .append(hashMap, other.hashMap)
+                .isEquals();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 31) // Two randomly chosen prime numbers.
+                .append(size)
+                .append(hashMap)
+                .toHashCode();
     }
 }

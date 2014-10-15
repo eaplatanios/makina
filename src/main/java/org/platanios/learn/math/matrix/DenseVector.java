@@ -1,5 +1,11 @@
 package org.platanios.learn.math.matrix;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.function.Function;
 
@@ -49,6 +55,23 @@ public class DenseVector extends Vector {
     protected DenseVector(double[] elements) {
         size = elements.length;
         array = Arrays.copyOf(elements, size);
+    }
+
+    /**
+     * Constructs a dense vector from the contents of the provided input stream. Note that the contents of the stream
+     * must have been written using the {@link #writeToStream(java.io.ObjectOutputStream)} function of this class in
+     * order to be compatible with this constructor. If the contents are not compatible, then an
+     * {@link java.io.IOException} might be thrown, or the constructed vector might be corrupted in some way.
+     *
+     * @param   inputStream The input stream to read the contents of this vector from.
+     * @throws  IOException
+     */
+    protected DenseVector(ObjectInputStream inputStream) throws IOException {
+        size = inputStream.readInt();
+        array = new double[size];
+        for (int i = 0; i < size; i++) {
+            array[i] = inputStream.readDouble();
+        }
     }
 
     /** {@inheritDoc} */
@@ -543,5 +566,38 @@ public class DenseVector extends Vector {
      */
     private double[] getArray() {
         return array;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void writeToStream(ObjectOutputStream outputStream) throws IOException {
+        outputStream.writeInt(size);
+        for (int i = 0; i < size; i++) {
+            outputStream.writeDouble(array[i]);
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof DenseVector))
+            return false;
+        if (object == this)
+            return true;
+
+        DenseVector other = (DenseVector) object;
+        return new EqualsBuilder()
+                .append(size, other.size)
+                .append(array, other.array)
+                .isEquals();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 31) // Two randomly chosen prime numbers.
+                .append(size)
+                .append(array)
+                .toHashCode();
     }
 }
