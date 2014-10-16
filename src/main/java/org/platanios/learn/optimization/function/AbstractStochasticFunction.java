@@ -42,7 +42,7 @@ public abstract class AbstractStochasticFunction<T> {
                 Collections.shuffle(data);
                 dataBatch = new ArrayList<>(data.subList(0, batchSize));
             } else {
-                if (currentSampleIndex == 0 || currentSampleIndex >= data.size()) {
+                if (currentSampleIndex == 0 || currentSampleIndex + batchSize >= data.size()) {
                     currentSampleIndex = 0;
                     Collections.shuffle(data);
                 }
