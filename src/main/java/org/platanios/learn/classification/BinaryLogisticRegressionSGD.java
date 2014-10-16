@@ -10,7 +10,7 @@ import org.platanios.learn.optimization.StochasticSolverStepSize;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class BinaryLogisticRegressionSGD extends AbstractBinaryLogisticRegression {
+public class BinaryLogisticRegressionSGD extends AbstractTrainableBinaryLogisticRegression {
     /** The stochastic gradient descent solver that is used to train this binary logistic regression model. */
     private final StochasticGradientDescentSolver solver;
 
@@ -24,13 +24,13 @@ public class BinaryLogisticRegressionSGD extends AbstractBinaryLogisticRegressio
      *              {@link org.platanios.learn.classification.BinaryLogisticRegressionSGD} class.
      */
     protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
-            extends AbstractBinaryLogisticRegression.AbstractBuilder<T> {
+            extends AbstractTrainableBinaryLogisticRegression.AbstractBuilder<T> {
         protected boolean sampleWithReplacement = false;
         protected int maximumNumberOfIterations = 10000;
         protected int maximumNumberOfIterationsWithNoPointChange = 5;
         protected double pointChangeTolerance = 1e-10;
         protected boolean checkForPointConvergence = true;
-        protected int batchSize = 1000;
+        protected int batchSize = 100;
         protected StochasticSolverStepSize stepSize = StochasticSolverStepSize.SCALED;
         protected double[] stepSizeParameters = new double[] { 10, 0.75 };
 
@@ -78,6 +78,7 @@ public class BinaryLogisticRegressionSGD extends AbstractBinaryLogisticRegressio
             return self();
         }
 
+        @Override
         public BinaryLogisticRegressionSGD build() {
             return new BinaryLogisticRegressionSGD(this);
         }

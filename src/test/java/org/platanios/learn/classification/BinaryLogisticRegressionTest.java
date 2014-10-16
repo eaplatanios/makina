@@ -7,7 +7,7 @@ import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.VectorFactory;
 import org.platanios.learn.math.matrix.VectorType;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -83,7 +83,6 @@ public class BinaryLogisticRegressionTest {
         BinaryLogisticRegressionAdaGrad classifier =
                 new BinaryLogisticRegressionAdaGrad.Builder(Arrays.copyOfRange(data, 0, 500000))
                 .sparse(false)
-                .batchSize(10000)
                 .build();
         classifier.train();
         double[] actualPredictionsProbabilities = classifier.predict(Arrays.copyOfRange(data, 500000, data.length));
@@ -160,6 +159,54 @@ public class BinaryLogisticRegressionTest {
         Assert.assertArrayEquals(expectedPredictions, actualPredictions);
     }
 
+    @Test
+    public void testDenseBinaryLogisticRegressionPrediction() {
+        String filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.txt";
+        DataInstance<Vector, Integer>[] data = parseCovTypeDataFromFile(filename, false);
+        try {
+            filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.dense.model";
+            FileInputStream fin = new FileInputStream(filename);
+            ObjectInputStream ois = new ObjectInputStream(fin);
+            BinaryLogisticRegressionPrediction classifier =
+                    new BinaryLogisticRegressionPrediction.Builder(ois).build();
+            ois.close();
+            double[] actualPredictionsProbabilities = classifier.predict(Arrays.copyOfRange(data, 500000, data.length));
+            int[] actualPredictions = new int[actualPredictionsProbabilities.length];
+            int[] expectedPredictions = new int[actualPredictionsProbabilities.length];
+            for (int i = 0; i < actualPredictions.length; i++) {
+                actualPredictions[i] = actualPredictionsProbabilities[i] >= 0.5 ? 1 : 0;
+                expectedPredictions[i] = data[500000 + i].getLabel();
+            }
+            Assert.assertArrayEquals(expectedPredictions, actualPredictions);
+        } catch (IOException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void testSparseBinaryLogisticRegressionPrediction() {
+        String filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.txt";
+        DataInstance<Vector, Integer>[] data = parseCovTypeDataFromFile(filename, false);
+        try {
+            filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.sparse.model";
+            FileInputStream fin = new FileInputStream(filename);
+            ObjectInputStream ois = new ObjectInputStream(fin);
+            BinaryLogisticRegressionPrediction classifier =
+                    new BinaryLogisticRegressionPrediction.Builder(ois).build();
+            ois.close();
+            double[] actualPredictionsProbabilities = classifier.predict(Arrays.copyOfRange(data, 500000, data.length));
+            int[] actualPredictions = new int[actualPredictionsProbabilities.length];
+            int[] expectedPredictions = new int[actualPredictionsProbabilities.length];
+            for (int i = 0; i < actualPredictions.length; i++) {
+                actualPredictions[i] = actualPredictionsProbabilities[i] >= 0.5 ? 1 : 0;
+                expectedPredictions[i] = data[500000 + i].getLabel();
+            }
+            Assert.assertArrayEquals(expectedPredictions, actualPredictions);
+        } catch (IOException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
     public static DataInstance<Vector, Integer>[] parseCovTypeDataFromFile(String filename,
                                                                            boolean sparseFeatures) {
         String separator = " ";
@@ -190,8 +237,8 @@ public class BinaryLogisticRegressionTest {
         String separator = ",";
         List<DataInstance<Vector, Integer>> data = new ArrayList<>();
         try (Stream<String> lines = Files.lines(Paths.get(filename), Charset.defaultCharset())) {
-            final int numberOfFeatures = lines.findFirst().toString().split(separator).length - 1;
             lines.forEachOrdered(line -> {
+                int numberOfFeatures = line.split(separator).length - 1;
                 String[] outputs = line.split(separator);
                 SparseVector features = (SparseVector) VectorFactory.build(numberOfFeatures, VectorType.SPARSE);
                 int label = Integer.parseInt(outputs[0]);
