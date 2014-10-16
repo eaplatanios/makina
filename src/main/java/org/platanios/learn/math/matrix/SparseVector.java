@@ -373,15 +373,11 @@ public class SparseVector extends Vector {
         } else {
             if (hashMap.keys().size() <= ((SparseVector) vector).hashMap.keys().size()) {
                 for (int key : hashMap.keys().elements()) {
-                    if (((SparseVector) vector).hashMap.containsKey(key)) {
-                        resultVector.set(key, hashMap.get(key) * vector.get(key));
-                    }
+                    resultVector.set(key, hashMap.get(key) * vector.get(key));
                 }
             } else {
                 for (int key : ((SparseVector) vector).hashMap.keys().elements()) {
-                    if (hashMap.containsKey(key)) {
-                        resultVector.set(key, hashMap.get(key) * vector.get(key));
-                    }
+                    resultVector.set(key, hashMap.get(key) * vector.get(key));
                 }
             }
         }
@@ -399,15 +395,11 @@ public class SparseVector extends Vector {
         } else {
             if (this.cardinality() <= vector.cardinality()) {
                 for (int key : hashMap.keys().elements()) {
-                    if (((SparseVector) vector).hashMap.containsKey(key)) {
-                        this.set(key, hashMap.get(key) * vector.get(key));
-                    }
+                    this.set(key, hashMap.get(key) * vector.get(key));
                 }
             } else {
                 for (int key : ((SparseVector) vector).hashMap.keys().elements()) {
-                    if (hashMap.containsKey(key)) {
-                        this.set(key, hashMap.get(key) * vector.get(key));
-                    }
+                    this.set(key, hashMap.get(key) * vector.get(key));
                 }
             }
         }
@@ -514,15 +506,11 @@ public class SparseVector extends Vector {
         } else {
             if (this.cardinality() <= vector.cardinality()) {
                 for (int key : hashMap.keys().elements()) {
-                    if (((SparseVector) vector).hashMap.containsKey(key)) {
-                        result += hashMap.get(key) * vector.get(key);
-                    }
+                    result += hashMap.get(key) * vector.get(key);
                 }
             } else {
                 for (int key : ((SparseVector) vector).hashMap.keys().elements()) {
-                    if (hashMap.containsKey(key)) {
-                        result += hashMap.get(key) * vector.get(key);
-                    }
+                    result += hashMap.get(key) * vector.get(key);
                 }
             }
         }

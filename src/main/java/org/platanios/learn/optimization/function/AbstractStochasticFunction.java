@@ -2,7 +2,6 @@ package org.platanios.learn.optimization.function;
 
 import org.platanios.learn.math.matrix.Vector;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -40,13 +39,13 @@ public abstract class AbstractStochasticFunction<T> {
             List<T> dataBatch;
             if (sampleWithReplacement) {
                 Collections.shuffle(data);
-                dataBatch = new ArrayList<>(data.subList(0, batchSize));
+                dataBatch = data.subList(0, batchSize);
             } else {
                 if (currentSampleIndex == 0 || currentSampleIndex + batchSize >= data.size()) {
                     currentSampleIndex = 0;
                     Collections.shuffle(data);
                 }
-                dataBatch = new ArrayList<>(data.subList(currentSampleIndex, currentSampleIndex + batchSize));
+                dataBatch = data.subList(currentSampleIndex, currentSampleIndex + batchSize);
                 currentSampleIndex += batchSize;
             }
             return estimateGradient(point, dataBatch);
