@@ -55,7 +55,7 @@ public final class AdaptiveGradientSolver extends AbstractStochasticIterativeSol
         if (useL1Regularization) {
             currentDirection = sumOfGradients
                     .map(x -> Math.abs(x) / currentIteration <= l1RegularizationWeight ?
-                            0.0 : Math.signum(x) * (Math.abs(x) / currentIteration - l1RegularizationWeight))
+                            0.0 : Math.signum(x) * (Math.abs(x) / (currentIteration + 1) - l1RegularizationWeight))
                     .mult(-1)
                     .divElementwise(sumOfGradientSquares.map(Math::sqrt).add(epsilon))
                     .mult(currentIteration);
