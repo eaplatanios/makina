@@ -27,13 +27,26 @@ public enum VectorType {
         /** {@inheritDoc} */
         @Override
         public SparseVector buildVector(int size) {
-            return new SparseVector(size);
+            return new SparseVector.Builder(size).build();
         }
 
         /** {@inheritDoc} */
         @Override
         public SparseVector buildVector(ObjectInputStream inputStream) throws IOException {
-            return new SparseVector(inputStream);
+            return new SparseVector.Builder(inputStream).build();
+        }
+    },
+    HASH {
+        /** {@inheritDoc} */
+        @Override
+        public HashVector buildVector(int size) {
+            return new HashVector(size);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public HashVector buildVector(ObjectInputStream inputStream) throws IOException {
+            return new HashVector(inputStream);
         }
     };
 

@@ -2,10 +2,12 @@ package org.platanios.learn.classification;
 
 import org.platanios.learn.math.matrix.MatrixUtilities;
 import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.matrix.VectorFactory;
+import org.platanios.learn.math.matrix.Vectors;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.AbstractStochasticFunction;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -44,6 +46,7 @@ abstract class AbstractTrainableBinaryLogisticRegression
         /** The /(L_2/) regularization weight used. This variable is only used when {@link #useL2Regularization} is set
          * to true. */
         protected double l2RegularizationWeight = 1;
+        protected int loggingLevel = 0;
 
         /**
          * Constructs a builder object for a binary logistic regression model that will be trained with the provided
@@ -54,6 +57,14 @@ abstract class AbstractTrainableBinaryLogisticRegression
          *                          this builder will be trained.
          */
         protected AbstractBuilder(DataInstance<Vector, Integer>[] trainingData) {
+            this.trainingData = trainingData;
+            numberOfFeatures = trainingData[0].getFeatures().size();
+        }
+
+        protected AbstractBuilder(DataInstance<Vector, Integer>[] trainingData, ObjectInputStream inputStream)
+                throws IOException {
+            super(inputStream);
+
             this.trainingData = trainingData;
             numberOfFeatures = trainingData[0].getFeatures().size();
         }
@@ -107,6 +118,11 @@ abstract class AbstractTrainableBinaryLogisticRegression
             this.l2RegularizationWeight = l2RegularizationWeight;
             return self();
         }
+
+        public T loggingLevel(int loggingLevel) {
+            this.loggingLevel = loggingLevel;
+            return self();
+        }
     }
 
     /**
@@ -123,6 +139,18 @@ abstract class AbstractTrainableBinaryLogisticRegression
          */
         public Builder(DataInstance<Vector, Integer>[] trainingData) {
             super(trainingData);
+        }
+
+        /**
+         * Constructs a builder object for a binary logistic regression model and loads the model parameters (i.e., the
+         * weight vectors from the provided input stream. This constructor should be used if the logistic regression
+         * model that is being built is going to be used for making predictions alone (i.e., no training is supported).
+         *
+         * @param   inputStream The input stream from which to read the model parameters from.
+         * @throws java.io.IOException
+         */
+        public Builder(DataInstance<Vector, Integer>[] trainingData, ObjectInputStream inputStream) throws IOException {
+            super(trainingData, inputStream);
         }
 
         /** {@inheritDoc} */
@@ -178,7 +206,7 @@ abstract class AbstractTrainableBinaryLogisticRegression
          */
         @Override
         public Vector computeGradient(Vector weights) {
-            Vector gradient = VectorFactory.build(weights.size(), weights.type());
+            Vector gradient = Vectors.build(weights.size(), weights.type());
             for (DataInstance<Vector, Integer> dataInstance : trainingData) {
                 double probability = weights.dot(dataInstance.getFeatures());
                 gradient.addInPlace(dataInstance.getFeatures().mult(
@@ -208,7 +236,7 @@ abstract class AbstractTrainableBinaryLogisticRegression
          */
         @Override
         public Vector estimateGradient(Vector weights, List<DataInstance<Vector, Integer>> dataBatch) {
-            Vector gradient = VectorFactory.build(weights.size(), weights.type());
+            Vector gradient = Vectors.build(weights.size(), weights.type());
             for (DataInstance<Vector, Integer> dataInstance : dataBatch) {
                 double probability = weights.dot(dataInstance.getFeatures());
                 gradient.addInPlace(dataInstance.getFeatures().mult(

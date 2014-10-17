@@ -171,6 +171,8 @@ public abstract class Vector {
      */
     public abstract Vector map(Function<Double, Double> function);
 
+    // TODO: Add mapInPlace().
+
     /**
      * Adds a scalar to all entries of the current vector and returns the result in a new vector.
      *

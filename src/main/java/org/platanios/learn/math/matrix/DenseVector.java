@@ -13,6 +13,7 @@ import java.util.function.Function;
  * Implements a class representing dense vectors and supporting operations related to them. The dense vectors are stored
  * in an internal one-dimensional array.
  * TODO: Add toSparseVector() method (or appropriate constructors).
+ * TODO: Add Builder class and remove constructors.
  *
  * @author Emmanouil Antonios Platanios
  */

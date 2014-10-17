@@ -28,6 +28,7 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
     /** The /(L_2/) regularization weight used. This variable is only used when {@link #useL2Regularization} is set
      * to true. */
     private final double l2RegularizationWeight;
+    private final int loggingLevel;
 
     private double pointChange;
     private int numberOfIterationsWithNoPointChange = 0;
@@ -66,6 +67,7 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
         /** The /(L_2/) regularization weight used. This variable is only used when {@link #useL2Regularization} is set
          * to true. */
         private double l2RegularizationWeight = 1;
+        private int loggingLevel = 0;
 
         protected AbstractBuilder(AbstractStochasticFunction objective,
                                   Vector initialPoint) {
@@ -162,6 +164,11 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
             this.l2RegularizationWeight = l2RegularizationWeight;
             return self();
         }
+
+        public T loggingLevel(int loggingLevel) {
+            this.loggingLevel = loggingLevel;
+            return self();
+        }
     }
 
     public static class Builder extends AbstractBuilder<Builder> {
@@ -190,6 +197,7 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
         l1RegularizationWeight = builder.l1RegularizationWeight;
         useL2Regularization = builder.useL2Regularization;
         l2RegularizationWeight = builder.l2RegularizationWeight;
+        loggingLevel = builder.loggingLevel;
         currentPoint = builder.initialPoint;
         currentGradient = objective.getGradientEstimate(currentPoint, batchSize);
         currentIteration = 0;
@@ -197,13 +205,19 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
 
     @Override
     public Vector solve() {
-        printHeader();
+        if (loggingLevel > 0)
+            printHeader();
         while (!checkTerminationConditions()) {
             performIterationUpdates();
             currentIteration++;
-            printIteration();
+            if ((loggingLevel == 1 && currentIteration % 10 == 0)
+                    || (loggingLevel == 2 && currentIteration % 100 == 0)
+                    || (loggingLevel == 3 && currentIteration % 1000 == 0)
+                    || loggingLevel > 3)
+                printIteration();
         }
-        printTerminationMessage();
+        if (loggingLevel > 0)
+            printTerminationMessage();
         return currentPoint;
     }
 
@@ -244,25 +258,17 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
     }
 
     public void printHeader() {
-        System.out.println("|----------------" +
-                                   "----------------------|");
-        System.out.format("| %13s | %20s |%n",
-                          "Iteration #",
-                          "Point Change");
-        System.out.println("|===============|" +
-                                   "======================|");
+        System.out.println("|--------------------------------------|");
+        System.out.format("| %13s | %20s |%n", "Iteration #", "Point Change");
+        System.out.println("|======================================|");
     }
 
     public void printIteration() {
-        System.out.format("| %13d | %20s |%n",
-                          currentIteration,
-                          DECIMAL_FORMAT.format(pointChange));
+        System.out.format("| %13d | %20s |%n", currentIteration, DECIMAL_FORMAT.format(pointChange));
     }
 
     public void printTerminationMessage() {
-        System.out.println("|----------------" +
-                                   "----------------------|\n");
-
+        System.out.println("|--------------------------------------|\n");
         if (pointConverged) {
             System.out.println("The L2 norm of the point change, "
                                        + DECIMAL_FORMAT.format(pointChange)

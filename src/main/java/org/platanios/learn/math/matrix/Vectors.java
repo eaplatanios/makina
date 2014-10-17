@@ -4,13 +4,14 @@ import cern.colt.map.OpenIntDoubleHashMap;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.Map;
 
 /**
  * This class provides several static methods to build vectors of different types and initialize them in various ways.
  *
  * @author Emmanouil Antonios Platanios
  */
-public class VectorFactory {
+public class Vectors {
     /**
      * Builds a vector of the given size and type and fills it with zeros.
      *
@@ -83,14 +84,30 @@ public class VectorFactory {
         return new DenseVector(inputStream);
     }
 
+    public static SparseVector buildSparse(int size) {
+        return new SparseVector.Builder(size).build();
+    }
+
+    public static SparseVector buildSparse(int size, Map<Integer, Double> vectorElements) {
+        return new SparseVector.Builder(size, vectorElements).build();
+    }
+
+    public static SparseVector buildSparse(int size, int[] indexes, double[] values) {
+        return new SparseVector.Builder(size, indexes, values).build();
+    }
+
+    public static SparseVector buildSparse(ObjectInputStream inputStream) throws IOException {
+        return new SparseVector.Builder(inputStream).build();
+    }
+
     /**
      * Builds a sparse vector of the given size containing only zeros.
      *
      * @param   size        The size of the vector.
      * @return              The new vector.
      */
-    public static SparseVector buildSparse(int size) {
-        return new SparseVector(size);
+    public static HashVector buildHash(int size) {
+        return new HashVector(size);
     }
 
     /**
@@ -101,22 +118,11 @@ public class VectorFactory {
      *                      elements as values.
      * @return              The new vector.
      */
-    public static SparseVector buildSparse(int size, OpenIntDoubleHashMap elements) {
-        return new SparseVector(size, elements);
+    public static HashVector buildHash(int size, OpenIntDoubleHashMap elements) {
+        return new HashVector(size, elements);
     }
 
-    /**
-     * Constructs a sparse vector from the contents of the provided input stream. Note that the contents of the stream
-     * must have been written using the
-     * {@link org.platanios.learn.math.matrix.SparseVector#writeToStream(java.io.ObjectOutputStream)} function of this
-     * class in order to be compatible with this constructor. If the contents are not compatible, then an
-     * {@link java.io.IOException} might be thrown, or the constructed vector might be corrupted in some way.
-     *
-     * @param   inputStream The input stream to read the contents of this vector from.
-     * @return              The new vector.
-     * @throws  IOException
-     */
-    public static SparseVector buildSparse(ObjectInputStream inputStream) throws IOException {
-        return new SparseVector(inputStream);
+    public static HashVector buildHash(ObjectInputStream inputStream) throws IOException {
+        return new HashVector(inputStream);
     }
 }

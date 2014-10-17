@@ -2,7 +2,7 @@ package org.platanios.learn.classification;
 
 import org.platanios.learn.math.matrix.MatrixUtilities;
 import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.matrix.VectorFactory;
+import org.platanios.learn.math.matrix.Vectors;
 import org.platanios.learn.math.matrix.VectorType;
 
 import java.io.IOException;
@@ -59,9 +59,9 @@ public class BinaryLogisticRegressionPrediction implements Classifier<Vector, In
             numberOfFeatures = inputStream.readInt();
             sparse = inputStream.readBoolean();
             if (sparse) {
-                weights = VectorFactory.build(inputStream, VectorType.SPARSE);
+                weights = Vectors.build(inputStream, VectorType.SPARSE);
             } else {
-                weights = VectorFactory.build(inputStream, VectorType.DENSE);
+                weights = Vectors.build(inputStream, VectorType.DENSE);
             }
         }
 
@@ -119,9 +119,9 @@ public class BinaryLogisticRegressionPrediction implements Classifier<Vector, In
             weights = builder.weights;
         } else {
             if (sparse) {
-                weights = VectorFactory.build(numberOfFeatures, VectorType.SPARSE);
+                weights = Vectors.build(numberOfFeatures, VectorType.SPARSE);
             } else {
-                weights = VectorFactory.build(numberOfFeatures, VectorType.DENSE);
+                weights = Vectors.build(numberOfFeatures, VectorType.DENSE);
             }
         }
     }

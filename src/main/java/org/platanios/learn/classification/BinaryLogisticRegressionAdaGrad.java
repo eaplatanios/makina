@@ -4,6 +4,9 @@ import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.AdaptiveGradientSolver;
 import org.platanios.learn.optimization.StochasticSolverStepSize;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+
 /**
  * This class implements a binary logistic regression model that is trained using the adaptive gradient algorithm.
  *
@@ -35,6 +38,11 @@ public class BinaryLogisticRegressionAdaGrad extends AbstractTrainableBinaryLogi
 
         public AbstractBuilder(DataInstance<Vector, Integer>[] trainingData) {
             super(trainingData);
+        }
+
+        protected AbstractBuilder(DataInstance<Vector, Integer>[] trainingData, ObjectInputStream inputStream)
+                throws IOException {
+            super(trainingData, inputStream);
         }
 
         public T sampleWithReplacement(boolean sampleWithReplacement) {
@@ -99,6 +107,18 @@ public class BinaryLogisticRegressionAdaGrad extends AbstractTrainableBinaryLogi
             super(trainingData);
         }
 
+        /**
+         * Constructs a builder object for a binary logistic regression model and loads the model parameters (i.e., the
+         * weight vectors from the provided input stream. This constructor should be used if the logistic regression
+         * model that is being built is going to be used for making predictions alone (i.e., no training is supported).
+         *
+         * @param   inputStream The input stream from which to read the model parameters from.
+         * @throws java.io.IOException
+         */
+        public Builder(DataInstance<Vector, Integer>[] trainingData, ObjectInputStream inputStream) throws IOException {
+            super(trainingData, inputStream);
+        }
+
         /** {@inheritDoc} */
         @Override
         protected Builder self() {
@@ -129,6 +149,7 @@ public class BinaryLogisticRegressionAdaGrad extends AbstractTrainableBinaryLogi
                 .l1RegularizationWeight(builder.l1RegularizationWeight)
                 .useL2Regularization(builder.useL2Regularization)
                 .l2RegularizationWeight(builder.l2RegularizationWeight)
+                .loggingLevel(builder.loggingLevel)
                 .build();
     }
 

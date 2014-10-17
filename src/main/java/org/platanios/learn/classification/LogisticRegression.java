@@ -67,7 +67,7 @@ public class LogisticRegression {
 
         if (builder.stochastic) {
             solver = new StochasticGradientDescentSolver.Builder(new StochasticLikelihoodFunction(),
-                                                                 VectorFactory.buildDense(weights.getColumnPackedArrayCopy()))
+                                                                 Vectors.buildDense(weights.getColumnPackedArrayCopy()))
                     .sampleWithReplacement(false)
                     .maximumNumberOfIterations(10000)
                     .maximumNumberOfIterationsWithNoPointChange(5)
@@ -81,7 +81,7 @@ public class LogisticRegression {
         }
         if (!builder.largeScale) {
             solver = new QuasiNewtonSolver.Builder(new LikelihoodFunction(),
-                                                   VectorFactory.buildDense(weights.getColumnPackedArrayCopy()))
+                                                   Vectors.buildDense(weights.getColumnPackedArrayCopy()))
                     .method(QuasiNewtonSolver.Method.BROYDEN_FLETCHER_GOLDFARB_SHANNO)
                     .maximumNumberOfIterations(10000)
                     .maximumNumberOfFunctionEvaluations(1000000)
@@ -94,7 +94,7 @@ public class LogisticRegression {
                     .build();
         } else {
             solver = new QuasiNewtonSolver.Builder(new LikelihoodFunction(),
-                                                   VectorFactory.buildDense(weights.getColumnPackedArrayCopy()))
+                                                   Vectors.buildDense(weights.getColumnPackedArrayCopy()))
                     .method(QuasiNewtonSolver.Method.LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO)
                     .m(10)
                     .maximumNumberOfIterations(10000)
@@ -121,7 +121,7 @@ public class LogisticRegression {
     }
 
     public double[] predict(double[] point) {
-        Vector probabilities = weights.transpose().multiply(VectorFactory.buildDense(point));
+        Vector probabilities = weights.transpose().multiply(Vectors.buildDense(point));
         probabilities = probabilities.sub(MatrixUtilities.computeLogSumExp(probabilities));
         probabilities = probabilities.map(Math::exp);
         return probabilities.getDenseArray();
@@ -154,7 +154,7 @@ public class LogisticRegression {
                 if (trainingData[n].label != numberOfClasses - 1) {
                     likelihood += innerProduct.get(trainingData[n].label);
                 }
-                Vector innerProductWithLastClass = VectorFactory.build(numberOfClasses, VectorType.DENSE);
+                Vector innerProductWithLastClass = Vectors.build(numberOfClasses, VectorType.DENSE);
                 innerProductWithLastClass.set(0, numberOfClasses - 2, innerProduct);
                 likelihood -= MatrixUtilities.computeLogSumExp(innerProductWithLastClass);
             }
@@ -173,7 +173,7 @@ public class LogisticRegression {
             Matrix gradient = new Matrix(W.getRowDimension(), W.getColumnDimension());
             for (int n = 0; n < trainingDataSize; n++) {
                 Vector probabilities = W.transpose().multiply(trainingData[n].features);
-                Vector innerProductWithLastClass = VectorFactory.build(numberOfClasses, VectorType.DENSE);
+                Vector innerProductWithLastClass = Vectors.build(numberOfClasses, VectorType.DENSE);
                 innerProductWithLastClass.set(0, numberOfClasses - 2, probabilities);
                 probabilities = probabilities.sub(MatrixUtilities.computeLogSumExp(innerProductWithLastClass));
                 probabilities = probabilities.map(Math::exp);
@@ -187,7 +187,7 @@ public class LogisticRegression {
                     );
                 }
             }
-            return VectorFactory.buildDense(gradient.getColumnPackedArrayCopy());
+            return Vectors.buildDense(gradient.getColumnPackedArrayCopy());
         }
 
         /**
@@ -207,7 +207,7 @@ public class LogisticRegression {
             Matrix hessian = new Matrix(new double[weights.size()][weights.size()]);
             for (int n = 0; n < trainingDataSize; n++) {
                 Vector probabilities = W.transpose().multiply(trainingData[n].features);
-                Vector innerProductWithLastClass = VectorFactory.build(numberOfClasses, VectorType.DENSE);
+                Vector innerProductWithLastClass = Vectors.build(numberOfClasses, VectorType.DENSE);
                 innerProductWithLastClass.set(0, numberOfClasses - 2, probabilities);
                 probabilities = probabilities.sub(MatrixUtilities.computeLogSumExp(innerProductWithLastClass));
                 probabilities = probabilities.map(Math::exp);
@@ -280,7 +280,7 @@ public class LogisticRegression {
             Matrix gradient = new Matrix(W.getRowDimension(), W.getColumnDimension());
             for (TrainingData.Entry example : dataBatch) {
                 Vector probabilities = W.transpose().multiply(example.features);
-                Vector innerProductWithLastClass = VectorFactory.build(numberOfClasses, VectorType.DENSE);
+                Vector innerProductWithLastClass = Vectors.build(numberOfClasses, VectorType.DENSE);
                 innerProductWithLastClass.set(0, numberOfClasses - 2, probabilities);
                 probabilities = probabilities.sub(MatrixUtilities.computeLogSumExp(innerProductWithLastClass));
                 probabilities = probabilities.map(Math::exp);
@@ -294,7 +294,7 @@ public class LogisticRegression {
                     );
                 }
             }
-            return VectorFactory.buildDense(gradient.getColumnPackedArrayCopy());
+            return Vectors.buildDense(gradient.getColumnPackedArrayCopy());
         }
     }
 }

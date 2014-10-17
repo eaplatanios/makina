@@ -2,9 +2,9 @@ package org.platanios.learn.classification;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.platanios.learn.math.matrix.SparseVector;
+import org.platanios.learn.math.matrix.HashVector;
 import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.matrix.VectorFactory;
+import org.platanios.learn.math.matrix.Vectors;
 import org.platanios.learn.math.matrix.VectorType;
 
 import java.io.*;
@@ -26,8 +26,8 @@ public class BinaryLogisticRegressionTest {
         DataInstance<Vector, Integer>[] data = parseCovTypeDataFromFile(filename, false);
         BinaryLogisticRegressionSGD classifier =
                 new BinaryLogisticRegressionSGD.Builder(Arrays.copyOfRange(data, 0, 500000))
-                .sparse(false)
-                .build();
+                        .sparse(false)
+                        .build();
         classifier.train();
         double[] actualPredictionsProbabilities = classifier.predict(Arrays.copyOfRange(data, 500000, data.length));
         int[] actualPredictions = new int[actualPredictionsProbabilities.length];
@@ -45,8 +45,8 @@ public class BinaryLogisticRegressionTest {
         DataInstance<Vector, Integer>[] data = parseCovTypeDataFromFile(filename, true);
         BinaryLogisticRegressionSGD classifier =
                 new BinaryLogisticRegressionSGD.Builder(Arrays.copyOfRange(data, 0, 500000))
-                .sparse(true)
-                .build();
+                        .sparse(true)
+                        .build();
         classifier.train();
         double[] actualPredictionsProbabilities = classifier.predict(Arrays.copyOfRange(data, 500000, data.length));
         int[] actualPredictions = new int[actualPredictionsProbabilities.length];
@@ -62,9 +62,10 @@ public class BinaryLogisticRegressionTest {
     public void testSmallDenseBinaryLogisticRegressionUsingSGD() {
         String filename = "/Users/Anthony/Development/Data Sets/Classification/fisher.binary.txt";
         DataInstance<Vector, Integer>[] data = parseFisherDataFromFile(filename);
-        BinaryLogisticRegressionSGD classifier = new BinaryLogisticRegressionSGD.Builder(Arrays.copyOfRange(data, 0, 80))
-                .sparse(false)
-                .build();
+        BinaryLogisticRegressionSGD classifier =
+                new BinaryLogisticRegressionSGD.Builder(Arrays.copyOfRange(data, 0, 80))
+                        .sparse(false)
+                        .build();
         classifier.train();
         double[] actualPredictionsProbabilities = classifier.predict(Arrays.copyOfRange(data, 80, data.length));
         int[] actualPredictions = new int[actualPredictionsProbabilities.length];
@@ -82,8 +83,8 @@ public class BinaryLogisticRegressionTest {
         DataInstance<Vector, Integer>[] data = parseCovTypeDataFromFile(filename, false);
         BinaryLogisticRegressionAdaGrad classifier =
                 new BinaryLogisticRegressionAdaGrad.Builder(Arrays.copyOfRange(data, 0, 500000))
-                .sparse(false)
-                .build();
+                        .sparse(false)
+                        .build();
         classifier.train();
         double[] actualPredictionsProbabilities = classifier.predict(Arrays.copyOfRange(data, 500000, data.length));
         int[] actualPredictions = new int[actualPredictionsProbabilities.length];
@@ -101,8 +102,11 @@ public class BinaryLogisticRegressionTest {
         DataInstance<Vector, Integer>[] data = parseCovTypeDataFromFile(filename, true);
         BinaryLogisticRegressionAdaGrad classifier =
                 new BinaryLogisticRegressionAdaGrad.Builder(Arrays.copyOfRange(data, 0, 500000))
-                .sparse(true)
-                .build();
+                        .batchSize(1000)
+                        .maximumNumberOfIterations(1000)
+                        .loggingLevel(2)
+                        .sparse(true)
+                        .build();
         classifier.train();
         double[] actualPredictionsProbabilities = classifier.predict(Arrays.copyOfRange(data, 500000, data.length));
         int[] actualPredictions = new int[actualPredictionsProbabilities.length];
@@ -120,8 +124,8 @@ public class BinaryLogisticRegressionTest {
         DataInstance<Vector, Integer>[] data = parseFisherDataFromFile(filename);
         BinaryLogisticRegressionAdaGrad classifier =
                 new BinaryLogisticRegressionAdaGrad.Builder(Arrays.copyOfRange(data, 0, 80))
-                .sparse(false)
-                .build();
+                        .sparse(false)
+                        .build();
         classifier.train();
         double[] actualPredictionsProbabilities = classifier.predict(Arrays.copyOfRange(data, 80, data.length));
         int[] actualPredictions = new int[actualPredictionsProbabilities.length];
@@ -217,9 +221,9 @@ public class BinaryLogisticRegressionTest {
                 int label = tokens[0].equals("+1") ? 1 : 0;
                 Vector features;
                 if (sparseFeatures) {
-                    features = VectorFactory.build(54, VectorType.SPARSE);
+                    features = Vectors.build(54, VectorType.SPARSE);
                 } else {
-                    features = VectorFactory.build(54, VectorType.DENSE);
+                    features = Vectors.build(54, VectorType.DENSE);
                 }
                 for (int i = 1; i < tokens.length; i++) {
                     String[] featurePair = tokens[i].split(":");
@@ -240,7 +244,7 @@ public class BinaryLogisticRegressionTest {
             lines.forEachOrdered(line -> {
                 int numberOfFeatures = line.split(separator).length - 1;
                 String[] outputs = line.split(separator);
-                SparseVector features = (SparseVector) VectorFactory.build(numberOfFeatures, VectorType.SPARSE);
+                HashVector features = (HashVector) Vectors.build(numberOfFeatures, VectorType.SPARSE);
                 int label = Integer.parseInt(outputs[0]);
                 for (int i = 0; i < numberOfFeatures; i++) {
                     features.set(i, Double.parseDouble(outputs[i + 1]));
@@ -263,9 +267,9 @@ public class BinaryLogisticRegressionTest {
                 int label = tokens[0].equals("+1") ? 1 : 0;
                 Vector features;
                 if (sparseFeatures) {
-                    features = VectorFactory.build(3231961, VectorType.SPARSE);
+                    features = Vectors.build(3231961, VectorType.SPARSE);
                 } else {
-                    features = VectorFactory.build(3231961, VectorType.DENSE);
+                    features = Vectors.build(3231961, VectorType.DENSE);
                 }
                 for (int i = 1; i < tokens.length; i++) {
                     String[] featurePair = tokens[i].split(":");

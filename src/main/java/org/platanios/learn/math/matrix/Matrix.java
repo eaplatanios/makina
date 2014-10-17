@@ -1058,7 +1058,7 @@ public class Matrix {
                     "The column dimension of the matrix must agree with the dimension of the vector."
             );
         }
-        Vector resultVector = VectorFactory.build(rowDimension, vector.type());
+        Vector resultVector = Vectors.build(rowDimension, vector.type());
         for (int i = 0; i < rowDimension; i++) {
             for (int j = 0; j < columnDimension; j++) {
                 resultVector.set(i, resultVector.get(i) + array[i][j] * vector.get(j));
