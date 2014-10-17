@@ -1,5 +1,6 @@
 package org.platanios.learn.optimization;
 
+import org.platanios.learn.math.matrix.Vectors;
 import org.platanios.learn.optimization.function.AbstractStochasticFunction;
 import org.platanios.learn.math.matrix.Vector;
 
@@ -37,30 +38,24 @@ public final class AdaptiveGradientSolver extends AbstractStochasticIterativeSol
 
     private AdaptiveGradientSolver(AbstractBuilder<?> builder) {
         super(builder);
+
+        sumOfGradients = Vectors.build(currentGradient.size(), currentGradient.type());
+        sumOfGradientSquares = Vectors.build(currentGradient.size(), currentGradient.type());
     }
 
     @Override
     public void updateDirection() {
-        if (currentIteration == 0) {
-            sumOfGradientSquares = currentGradient.map(gradient -> Math.pow(gradient, 2)).copy();
-            if (useL1Regularization) {
-                sumOfGradients = currentGradient.copy();
-            }
-        } else {
-            sumOfGradientSquares.addInPlace(currentGradient.map(gradient -> Math.pow(gradient, 2)));
-            if (useL1Regularization) {
-                sumOfGradients.addInPlace(currentGradient);
-            }
-        }
+        sumOfGradientSquares.addInPlace(currentGradient.map(gradient -> Math.pow(gradient, 2)));
         if (useL1Regularization) {
             currentDirection = sumOfGradients
-                    .map(x -> Math.abs(x) / currentIteration <= l1RegularizationWeight ?
-                            0.0 : Math.signum(x) * (Math.abs(x) / (currentIteration + 1) - l1RegularizationWeight))
-                    .mult(-1)
-                    .divElementwise(sumOfGradientSquares.map(Math::sqrt).add(epsilon))
-                    .mult(currentIteration);
+                    .addInPlace(currentGradient)
+                    .map(x -> Math.abs(x) / (currentIteration + 1) <= l1RegularizationWeight ?
+                            0.0 :
+                            -currentIteration * Math.signum(x)
+                                    * (Math.abs(x) / (currentIteration + 1) - l1RegularizationWeight))
+                    .divElementwise(sumOfGradientSquares.map(x -> Math.sqrt(x) + epsilon));
         } else {
-            currentDirection = currentGradient.mult(-1).divElementwise(sumOfGradientSquares.map(Math::sqrt).add(epsilon));
+            currentDirection = currentGradient.divElementwise(sumOfGradientSquares.map(x -> -(Math.sqrt(x) + epsilon)));
         }
     }
 

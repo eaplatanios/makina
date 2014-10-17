@@ -265,8 +265,6 @@ public class SparseVector extends Vector {
         values = newValues;
     }
 
-    // TODO: Create a compact() method to get rid of zero elements.
-
     /** {@inheritDoc} */
     @Override
     public void set(int initialIndex, int finalIndex, Vector vector) { // TODO: It may be possible to make this method faster.
@@ -353,6 +351,25 @@ public class SparseVector extends Vector {
     /** {@inheritDoc} */
     @Override
     public SparseVector map(Function<Double, Double> function) { // TODO: What happens when the function is applied to zeros? Maybe store the "zero" value somewhere and modify that.
+        int[] newIndexes = new int[numberOfNonzeroEntries];
+        double[] newValues = new double[numberOfNonzeroEntries];
+        int numberOfSkippedValues = 0;
+        for (int i = 0; i < numberOfNonzeroEntries; i++) {
+            double tempValue = function.apply(values[i]);
+            if (Math.abs(tempValue) >= epsilon) {
+                newIndexes[i - numberOfSkippedValues] = indexes[i];
+                newValues[i - numberOfSkippedValues] = tempValue;
+            } else {
+                numberOfSkippedValues++;
+            }
+        }
+        return new Builder(size,
+                           Arrays.copyOfRange(newIndexes, 0, numberOfNonzeroEntries - numberOfSkippedValues),
+                           Arrays.copyOfRange(newValues, 0, numberOfNonzeroEntries - numberOfSkippedValues))
+                .build();
+    }
+
+    public SparseVector mapNoCompact(Function<Double, Double> function) { // TODO: What happens when the function is applied to zeros? Maybe store the "zero" value somewhere and modify that.
         SparseVector resultVector = new Builder(size, indexes, values).build();
         for (int i = 0; i < numberOfNonzeroEntries; i++) {
             resultVector.values[i] = function.apply(resultVector.values[i]);
@@ -848,7 +865,8 @@ public class SparseVector extends Vector {
                         vector2Index++;
                     } else {
                         newIndexes[currentIndex] = indexes[vector1Index];
-                        newValues[currentIndex] = values[vector1Index] + scalar * ((SparseVector) vector).values[vector2Index];
+                        newValues[currentIndex] =
+                                values[vector1Index] + scalar * ((SparseVector) vector).values[vector2Index];
                         currentIndex++;
                         vector1Index++;
                         vector2Index++;
@@ -904,7 +922,8 @@ public class SparseVector extends Vector {
                         vector2Index++;
                     } else {
                         newIndexes[currentIndex] = indexes[vector1Index];
-                        newValues[currentIndex] = values[vector1Index] + scalar * ((SparseVector) vector).values[vector2Index];
+                        newValues[currentIndex] =
+                                values[vector1Index] + scalar * ((SparseVector) vector).values[vector2Index];
                         currentIndex++;
                         vector1Index++;
                         vector2Index++;
@@ -991,6 +1010,24 @@ public class SparseVector extends Vector {
         return null;
     }
 
+    public SparseVector compact() {
+        int[] newIndexes = new int[numberOfNonzeroEntries];
+        double[] newValues = new double[numberOfNonzeroEntries];
+        int numberOfSkippedValues = 0;
+        for (int i = 0; i < numberOfNonzeroEntries; i++) {
+            if (Math.abs(values[i]) >= epsilon) {
+                newIndexes[i - numberOfSkippedValues] = indexes[i];
+                newValues[i - numberOfSkippedValues] = values[i];
+            } else {
+                numberOfSkippedValues++;
+            }
+        }
+        numberOfNonzeroEntries -= numberOfSkippedValues;
+        indexes = Arrays.copyOfRange(newIndexes, 0, numberOfNonzeroEntries);
+        values = Arrays.copyOfRange(newValues, 0, numberOfNonzeroEntries);
+        return this;
+    }
+
     /** {@inheritDoc} */
     @Override
     public void writeToStream(ObjectOutputStream outputStream) throws IOException {
@@ -1004,7 +1041,7 @@ public class SparseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public boolean equals(Object object) {
+    public boolean equals(Object object) { // TODO: This method needs to check for any "stored" zero elements as well.
         if (!(object instanceof SparseVector))
             return false;
         if (object == this)
