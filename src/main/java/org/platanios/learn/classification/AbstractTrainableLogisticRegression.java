@@ -1,6 +1,5 @@
 package org.platanios.learn.classification;
 
-import org.platanios.learn.math.matrix.MatrixUtilities;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
 import org.platanios.learn.optimization.function.AbstractFunction;
@@ -17,8 +16,8 @@ import java.util.List;
  *
  * @author Emmanouil Antonios Platanios
  */
-abstract class AbstractTrainableBinaryLogisticRegression
-        extends BinaryLogisticRegressionPrediction implements TrainableClassifier<Vector, Integer> {
+abstract class AbstractTrainableLogisticRegression
+        extends LogisticRegressionPrediction implements TrainableClassifier<Vector, Integer> {
     /** The data used to train this model. */
     private final DataInstance<Vector, Integer>[] trainingData;
 
@@ -29,10 +28,10 @@ abstract class AbstractTrainableBinaryLogisticRegression
      *
      * @param   <T> This type corresponds to the type of the final object to be built. That is, the super class of the
      *              builder class that extends this class, which in this case will be the
-     *              {@link org.platanios.learn.classification.BinaryLogisticRegressionSGD} class.
+     *              {@link LogisticRegressionSGD} class.
      */
     protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
-            extends BinaryLogisticRegressionPrediction.AbstractBuilder<T> {
+            extends LogisticRegressionPrediction.AbstractBuilder<T> {
         /** The data used to train the logistic regression model to be built. */
         private final DataInstance<Vector, Integer>[] trainingData;
 
@@ -167,7 +166,7 @@ abstract class AbstractTrainableBinaryLogisticRegression
      *
      * @param   builder The builder object to use.
      */
-    protected AbstractTrainableBinaryLogisticRegression(AbstractBuilder<?> builder) {
+    protected AbstractTrainableLogisticRegression(AbstractBuilder<?> builder) {
         super(builder);
         trainingData = builder.trainingData;
     }
@@ -193,7 +192,7 @@ abstract class AbstractTrainableBinaryLogisticRegression
             double likelihood = 0;
             for (DataInstance<Vector, Integer> dataInstance : trainingData) {
                 double probability = weights.dot(dataInstance.getFeatures());
-                likelihood += probability * dataInstance.getLabel() - MatrixUtilities.computeLogSumExp(0, probability);
+                likelihood += probability * (dataInstance.getLabel() - 1) - Math.log(1 + Math.exp(-probability));
             }
             return -likelihood;
         }
@@ -208,10 +207,10 @@ abstract class AbstractTrainableBinaryLogisticRegression
         public Vector computeGradient(Vector weights) {
             Vector gradient = Vectors.build(weights.size(), weights.type());
             for (DataInstance<Vector, Integer> dataInstance : trainingData) {
-                double probability = weights.dot(dataInstance.getFeatures());
-                gradient.addInPlace(dataInstance.getFeatures().mult(
-                        Math.exp(probability - MatrixUtilities.computeLogSumExp(0, probability)) - dataInstance.getLabel()
-                ));
+                gradient.saxpyInPlace(
+                        (1 / (1 + Math.exp(-weights.dot(dataInstance.getFeatures())))) - dataInstance.getLabel(),
+                        dataInstance.getFeatures()
+                );
             }
             return gradient;
         }
@@ -238,10 +237,10 @@ abstract class AbstractTrainableBinaryLogisticRegression
         public Vector estimateGradient(Vector weights, List<DataInstance<Vector, Integer>> dataBatch) {
             Vector gradient = Vectors.build(weights.size(), weights.type());
             for (DataInstance<Vector, Integer> dataInstance : dataBatch) {
-                double probability = weights.dot(dataInstance.getFeatures());
-                gradient.addInPlace(dataInstance.getFeatures().mult(
-                        Math.exp(probability - MatrixUtilities.computeLogSumExp(0, probability)) - dataInstance.getLabel()
-                ));
+                gradient.saxpyInPlace(
+                        (1 / (1 + Math.exp(-weights.dot(dataInstance.getFeatures())))) - dataInstance.getLabel(),
+                        dataInstance.getFeatures()
+                );
             }
             return gradient;
         }

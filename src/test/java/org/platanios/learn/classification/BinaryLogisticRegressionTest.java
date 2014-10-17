@@ -24,8 +24,8 @@ public class BinaryLogisticRegressionTest {
     public void testDenseBinaryLogisticRegressionUsingSGD() {
         String filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.txt";
         DataInstance<Vector, Integer>[] data = parseCovTypeDataFromFile(filename, false);
-        BinaryLogisticRegressionSGD classifier =
-                new BinaryLogisticRegressionSGD.Builder(Arrays.copyOfRange(data, 0, 500000))
+        LogisticRegressionSGD classifier =
+                new LogisticRegressionSGD.Builder(Arrays.copyOfRange(data, 0, 500000))
                         .sparse(false)
                         .build();
         classifier.train();
@@ -43,8 +43,8 @@ public class BinaryLogisticRegressionTest {
     public void testSparseBinaryLogisticRegressionUsingSGD() {
         String filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.txt";
         DataInstance<Vector, Integer>[] data = parseCovTypeDataFromFile(filename, true);
-        BinaryLogisticRegressionSGD classifier =
-                new BinaryLogisticRegressionSGD.Builder(Arrays.copyOfRange(data, 0, 500000))
+        LogisticRegressionSGD classifier =
+                new LogisticRegressionSGD.Builder(Arrays.copyOfRange(data, 0, 500000))
                         .sparse(true)
                         .build();
         classifier.train();
@@ -62,8 +62,8 @@ public class BinaryLogisticRegressionTest {
     public void testSmallDenseBinaryLogisticRegressionUsingSGD() {
         String filename = "/Users/Anthony/Development/Data Sets/Classification/fisher.binary.txt";
         DataInstance<Vector, Integer>[] data = parseFisherDataFromFile(filename);
-        BinaryLogisticRegressionSGD classifier =
-                new BinaryLogisticRegressionSGD.Builder(Arrays.copyOfRange(data, 0, 80))
+        LogisticRegressionSGD classifier =
+                new LogisticRegressionSGD.Builder(Arrays.copyOfRange(data, 0, 80))
                         .sparse(false)
                         .build();
         classifier.train();
@@ -81,8 +81,8 @@ public class BinaryLogisticRegressionTest {
     public void testDenseBinaryLogisticRegressionUsingAdaGrad() {
         String filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.txt";
         DataInstance<Vector, Integer>[] data = parseCovTypeDataFromFile(filename, false);
-        BinaryLogisticRegressionAdaGrad classifier =
-                new BinaryLogisticRegressionAdaGrad.Builder(Arrays.copyOfRange(data, 0, 500000))
+        LogisticRegressionAdaGrad classifier =
+                new LogisticRegressionAdaGrad.Builder(Arrays.copyOfRange(data, 0, 500000))
                         .sparse(false)
                         .build();
         classifier.train();
@@ -100,8 +100,8 @@ public class BinaryLogisticRegressionTest {
     public void testSparseBinaryLogisticRegressionUsingAdaGrad() {
         String filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.txt";
         DataInstance<Vector, Integer>[] data = parseCovTypeDataFromFile(filename, true);
-        BinaryLogisticRegressionAdaGrad classifier =
-                new BinaryLogisticRegressionAdaGrad.Builder(Arrays.copyOfRange(data, 0, 500000))
+        LogisticRegressionAdaGrad classifier =
+                new LogisticRegressionAdaGrad.Builder(Arrays.copyOfRange(data, 0, 500000))
                         .batchSize(1000)
                         .maximumNumberOfIterations(1000)
                         .loggingLevel(2)
@@ -122,8 +122,8 @@ public class BinaryLogisticRegressionTest {
     public void testSmallDenseBinaryLogisticRegressionUsingAdaGrad() {
         String filename = "/Users/Anthony/Development/Data Sets/Classification/fisher.binary.txt";
         DataInstance<Vector, Integer>[] data = parseFisherDataFromFile(filename);
-        BinaryLogisticRegressionAdaGrad classifier =
-                new BinaryLogisticRegressionAdaGrad.Builder(Arrays.copyOfRange(data, 0, 80))
+        LogisticRegressionAdaGrad classifier =
+                new LogisticRegressionAdaGrad.Builder(Arrays.copyOfRange(data, 0, 80))
                         .sparse(false)
                         .build();
         classifier.train();
@@ -141,13 +141,14 @@ public class BinaryLogisticRegressionTest {
     public void testLargeSparseBinaryLogisticRegressionUsingAdaGrad() {
         String filename = "/Users/Anthony/Development/Data Sets/Classification/url.binary.txt";
         DataInstance<Vector, Integer>[] data = parseURLDataFromFile(filename, true);
-        BinaryLogisticRegressionAdaGrad classifier =
-                new BinaryLogisticRegressionAdaGrad.Builder(Arrays.copyOfRange(data, 0, 20000))
+        LogisticRegressionAdaGrad classifier =
+                new LogisticRegressionAdaGrad.Builder(Arrays.copyOfRange(data, 0, 20000))
                         .sparse(true)
                         .maximumNumberOfIterations(1000)
                         .batchSize(1000)
                         .useL1Regularization(true)
                         .l1RegularizationWeight(1)
+                        .loggingLevel(2)
                         .build();
         classifier.train();
         double[] actualPredictionsProbabilities = classifier.predict(Arrays.copyOfRange(data, 20000, data.length));
@@ -171,8 +172,8 @@ public class BinaryLogisticRegressionTest {
             filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.dense.model";
             FileInputStream fin = new FileInputStream(filename);
             ObjectInputStream ois = new ObjectInputStream(fin);
-            BinaryLogisticRegressionPrediction classifier =
-                    new BinaryLogisticRegressionPrediction.Builder(ois).build();
+            LogisticRegressionPrediction classifier =
+                    new LogisticRegressionPrediction.Builder(ois).build();
             ois.close();
             double[] actualPredictionsProbabilities = classifier.predict(Arrays.copyOfRange(data, 500000, data.length));
             int[] actualPredictions = new int[actualPredictionsProbabilities.length];
@@ -195,8 +196,8 @@ public class BinaryLogisticRegressionTest {
             filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.sparse.model";
             FileInputStream fin = new FileInputStream(filename);
             ObjectInputStream ois = new ObjectInputStream(fin);
-            BinaryLogisticRegressionPrediction classifier =
-                    new BinaryLogisticRegressionPrediction.Builder(ois).build();
+            LogisticRegressionPrediction classifier =
+                    new LogisticRegressionPrediction.Builder(ois).build();
             ois.close();
             double[] actualPredictionsProbabilities = classifier.predict(Arrays.copyOfRange(data, 500000, data.length));
             int[] actualPredictions = new int[actualPredictionsProbabilities.length];

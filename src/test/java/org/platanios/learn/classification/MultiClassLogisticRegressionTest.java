@@ -7,12 +7,12 @@ import org.platanios.learn.math.MathUtilities;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class LogisticRegressionTest {
+public class MultiClassLogisticRegressionTest {
     @Test
     public void testLogisticRegressionUsingSGDWithConstantStepSize() {
-        String filename = LogisticRegressionTest.class.getResource("/FishersIris.csv").getPath();
+        String filename = MultiClassLogisticRegressionTest.class.getResource("/FishersIris.csv").getPath();
         TrainingData data = DataPreprocessing.parseLabeledDataFromCSVFile(filename);
-        LogisticRegression classifier = new LogisticRegression.Builder(data)
+        MultiClassLogisticRegression classifier = new MultiClassLogisticRegression.Builder(data)
                 .stochastic(true)
 //                .batchSize(5)
 //                .pointChangeTolerance(1e-2)
@@ -75,9 +75,9 @@ public class LogisticRegressionTest {
 
     @Test
     public void testLogisticRegressionUsingBFGS() {
-        String filename = LogisticRegressionTest.class.getResource("/FishersIris.csv").getPath();
+        String filename = MultiClassLogisticRegressionTest.class.getResource("/FishersIris.csv").getPath();
         TrainingData data = DataPreprocessing.parseLabeledDataFromCSVFile(filename);
-        LogisticRegression classifier = new LogisticRegression.Builder(data)
+        MultiClassLogisticRegression classifier = new MultiClassLogisticRegression.Builder(data)
                 .stochastic(false)
                 .largeScale(false)
                 .build();
@@ -104,9 +104,9 @@ public class LogisticRegressionTest {
 
     @Test
     public void testLogisticRegressionUsingLBFGS() {
-        String filename = LogisticRegressionTest.class.getResource("/FishersIris.csv").getPath();
+        String filename = MultiClassLogisticRegressionTest.class.getResource("/FishersIris.csv").getPath();
         TrainingData data = DataPreprocessing.parseLabeledDataFromCSVFile(filename);
-        LogisticRegression classifier = new LogisticRegression.Builder(data)
+        MultiClassLogisticRegression classifier = new MultiClassLogisticRegression.Builder(data)
                 .stochastic(false)
                 .largeScale(true)
                 .build();

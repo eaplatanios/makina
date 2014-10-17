@@ -13,7 +13,7 @@ import java.io.ObjectInputStream;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class BinaryLogisticRegressionSGD extends AbstractTrainableBinaryLogisticRegression {
+public class LogisticRegressionSGD extends AbstractTrainableLogisticRegression {
     /** The stochastic gradient descent solver that is used to train this binary logistic regression model. */
     private final StochasticGradientDescentSolver solver;
 
@@ -24,10 +24,10 @@ public class BinaryLogisticRegressionSGD extends AbstractTrainableBinaryLogistic
      *
      * @param   <T> This type corresponds to the type of the final object to be built. That is, the super class of the
      *              builder class that extends this class, which in this case will be the
-     *              {@link org.platanios.learn.classification.BinaryLogisticRegressionSGD} class.
+     *              {@link LogisticRegressionSGD} class.
      */
     protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
-            extends AbstractTrainableBinaryLogisticRegression.AbstractBuilder<T> {
+            extends AbstractTrainableLogisticRegression.AbstractBuilder<T> {
         protected boolean sampleWithReplacement = false;
         protected int maximumNumberOfIterations = 10000;
         protected int maximumNumberOfIterationsWithNoPointChange = 5;
@@ -87,8 +87,8 @@ public class BinaryLogisticRegressionSGD extends AbstractTrainableBinaryLogistic
         }
 
         @Override
-        public BinaryLogisticRegressionSGD build() {
-            return new BinaryLogisticRegressionSGD(this);
+        public LogisticRegressionSGD build() {
+            return new LogisticRegressionSGD(this);
         }
     }
 
@@ -134,7 +134,7 @@ public class BinaryLogisticRegressionSGD extends AbstractTrainableBinaryLogistic
      *
      * @param   builder The builder object to use.
      */
-    private BinaryLogisticRegressionSGD(AbstractBuilder<?> builder) {
+    private LogisticRegressionSGD(AbstractBuilder<?> builder) {
         super(builder);
 
         solver = new StochasticGradientDescentSolver.Builder(new StochasticLikelihoodFunction(), weights)

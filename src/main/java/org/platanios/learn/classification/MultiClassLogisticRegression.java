@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class LogisticRegression {
+public class MultiClassLogisticRegression {
     private final Solver solver;
     private final TrainingData.Entry[] trainingData;
     private final int trainingDataSize;
@@ -53,12 +53,12 @@ public class LogisticRegression {
             return this;
         }
 
-        public LogisticRegression build() {
-            return new LogisticRegression(this);
+        public MultiClassLogisticRegression build() {
+            return new MultiClassLogisticRegression(this);
         }
     }
 
-    private LogisticRegression(Builder builder) {
+    private MultiClassLogisticRegression(Builder builder) {
         trainingData = builder.trainingData;
         trainingDataSize = builder.trainingDataSize;
         numberOfFeatures = builder.numberOfFeatures;

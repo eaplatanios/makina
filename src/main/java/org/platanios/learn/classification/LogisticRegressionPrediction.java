@@ -1,6 +1,5 @@
 package org.platanios.learn.classification;
 
-import org.platanios.learn.math.matrix.MatrixUtilities;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
 import org.platanios.learn.math.matrix.VectorType;
@@ -16,7 +15,7 @@ import java.io.ObjectOutputStream;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class BinaryLogisticRegressionPrediction implements Classifier<Vector, Integer> {
+public class LogisticRegressionPrediction implements Classifier<Vector, Integer> {
     /** The number of features used. */
     protected final int numberOfFeatures;
     /** Indicates whether sparse vectors are being used or not. */
@@ -77,8 +76,8 @@ public class BinaryLogisticRegressionPrediction implements Classifier<Vector, In
             return self();
         }
 
-        public BinaryLogisticRegressionPrediction build() {
-            return new BinaryLogisticRegressionPrediction(this);
+        public LogisticRegressionPrediction build() {
+            return new LogisticRegressionPrediction(this);
         }
     }
 
@@ -112,7 +111,7 @@ public class BinaryLogisticRegressionPrediction implements Classifier<Vector, In
      *
      * @param   builder The builder object to use.
      */
-    protected BinaryLogisticRegressionPrediction(AbstractBuilder<?> builder) {
+    protected LogisticRegressionPrediction(AbstractBuilder<?> builder) {
         numberOfFeatures = builder.numberOfFeatures;
         sparse = builder.sparse;
         if (builder.weights != null) {
@@ -133,9 +132,7 @@ public class BinaryLogisticRegressionPrediction implements Classifier<Vector, In
      * @return                  The probability of the class label being 1 for the given data instance.
      */
     public double predict(DataInstance<Vector, Integer> dataInstance) {
-        double probability = weights.dot(dataInstance.getFeatures());
-        probability = Math.exp(probability - MatrixUtilities.computeLogSumExp(0, probability));
-        return probability;
+        return 1 / (1 + Math.exp(-weights.dot(dataInstance.getFeatures())));
     }
 
     /**
@@ -150,7 +147,7 @@ public class BinaryLogisticRegressionPrediction implements Classifier<Vector, In
     public double[] predict(DataInstance<Vector, Integer>[] dataInstances) {
         double[] probabilities = new double[dataInstances.length];
         for (int i = 0; i < dataInstances.length; i++) {
-            probabilities[i] = predict(dataInstances[i]);
+            probabilities[i] = 1 / (1 + Math.exp(-weights.dot(dataInstances[i].getFeatures())));
         }
         return probabilities;
     }
