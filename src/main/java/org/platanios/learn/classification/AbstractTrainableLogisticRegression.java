@@ -224,22 +224,24 @@ abstract class AbstractTrainableLogisticRegression
         public StochasticLikelihoodFunction() {
             // Using the method Arrays.asList so that the training data array is not duplicated. The newly created list
             // is backed by the existing array and any changes made to the list also "write through" to the array.
-            this.data = Arrays.asList(trainingData);
+            this.data = trainingData;
         }
 
         /**
          * Computes the gradient of the likelihood function for the multi-class logistic regression model.
          *
-         * @param weights The current weights vector.
+         * @param weights       The current weights vector.
+         * @param startIndex
+         * @param endIndex
          * @return The gradient vector of the logistic regression likelihood function.
          */
         @Override
-        public Vector estimateGradient(Vector weights, List<DataInstance<Vector, Integer>> dataBatch) {
+        public Vector estimateGradient(Vector weights, int startIndex, int endIndex) {
             Vector gradient = Vectors.build(weights.size(), weights.type());
-            for (DataInstance<Vector, Integer> dataInstance : dataBatch) {
+            for (int i = startIndex; i < endIndex; i++) {
                 gradient.saxpyInPlace(
-                        (1 / (1 + Math.exp(-weights.dot(dataInstance.getFeatures())))) - dataInstance.getLabel(),
-                        dataInstance.getFeatures()
+                        (1 / (1 + Math.exp(-weights.dot(data[i].getFeatures())))) - data[i].getLabel(),
+                        data[i].getFeatures()
                 );
             }
             return gradient;

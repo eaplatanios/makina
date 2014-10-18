@@ -4,12 +4,15 @@ import org.platanios.learn.math.matrix.Vector;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
 public abstract class AbstractStochasticFunction<T> {
-    protected List<T> data;
+    private final Random random = new Random();
+
+    protected T[] data;
 
     private int numberOfGradientEvaluations = 0;
     private boolean sampleWithReplacement = true;
@@ -35,22 +38,34 @@ public abstract class AbstractStochasticFunction<T> {
      * @return          The values of the first derivatives of the objective function, estimated at the given point.
      */
     public final Vector estimateGradient(Vector point, int batchSize) {
-        if (batchSize < data.size()) {
-            List<T> dataBatch;
+        if (batchSize < data.length) {
+            int startIndex;
+            int endIndex;
             if (sampleWithReplacement) {
-                Collections.shuffle(data);
-                dataBatch = data.subList(0, batchSize);
+                shuffle(data);
+                startIndex = 0;
+                endIndex = batchSize;
             } else {
-                if (currentSampleIndex == 0 || currentSampleIndex + batchSize >= data.size()) {
+                if (currentSampleIndex == 0 || currentSampleIndex + batchSize >= data.length) {
                     currentSampleIndex = 0;
-                    Collections.shuffle(data);
+                    shuffle(data);
                 }
-                dataBatch = data.subList(currentSampleIndex, currentSampleIndex + batchSize);
+                startIndex = currentSampleIndex;
+                endIndex = currentSampleIndex + batchSize;
                 currentSampleIndex += batchSize;
             }
-            return estimateGradient(point, dataBatch);
+            return estimateGradient(point, startIndex, endIndex);
         } else {
-            return estimateGradient(point, data);
+            return estimateGradient(point, 0, data.length);
+        }
+    }
+
+    private void shuffle(T[] array) {
+        for (int i = array.length - 1; i > 0; i--) {
+            int j = random.nextInt(i + 1);
+            T tempValue = array[j];
+            array[j] = array[i];
+            array[i] = tempValue;
         }
     }
 
@@ -59,10 +74,11 @@ public abstract class AbstractStochasticFunction<T> {
      * given data.
      *
      * @param   point       The point in which to estimate the derivatives.
-     * @param   dataBatch   The data to use to perform the gradient estimation.
+     * @param   startIndex
+     * @param   endIndex
      * @return              The values of the first derivatives of the objective function, estimated at the given point.
      */
-    public abstract Vector estimateGradient(Vector point, List<T> dataBatch);
+    public abstract Vector estimateGradient(Vector point, int startIndex, int endIndex);
 
     public int getNumberOfGradientEvaluations() {
         return numberOfGradientEvaluations;

@@ -265,7 +265,7 @@ public class MultiClassLogisticRegression {
         public StochasticLikelihoodFunction() {
             // Using the method Arrays.asList so that the training data array is not duplicated. The newly created list
             // is backed by the existing array and any changes made to the list also "write through" to the array.
-            this.data = Arrays.asList(trainingData);
+            this.data = trainingData;
         }
 
         /**
@@ -275,22 +275,22 @@ public class MultiClassLogisticRegression {
          * @return The gradient vector of the logistic regression likelihood function.
          */
         @Override
-        public Vector estimateGradient(Vector weights, List<TrainingData.Entry> dataBatch) {
+        public Vector estimateGradient(Vector weights, int startIndex, int endIndex) {
             Matrix W = new Matrix(weights, numberOfFeatures);
             Matrix gradient = new Matrix(W.getRowDimension(), W.getColumnDimension());
-            for (TrainingData.Entry example : dataBatch) {
-                Vector probabilities = W.transpose().multiply(example.features);
+            for (int i = startIndex; i < endIndex; i++) {
+                Vector probabilities = W.transpose().multiply(data[i].features);
                 Vector innerProductWithLastClass = Vectors.build(numberOfClasses, VectorType.DENSE);
                 innerProductWithLastClass.set(0, numberOfClasses - 2, probabilities);
                 probabilities = probabilities.sub(MatrixUtilities.computeLogSumExp(innerProductWithLastClass));
                 probabilities = probabilities.map(Math::exp);
-                if (example.label != numberOfClasses - 1) {
-                    probabilities.set(example.label, probabilities.get(example.label) - 1);
+                if (data[i].label != numberOfClasses - 1) {
+                    probabilities.set(data[i].label, probabilities.get(data[i].label) - 1);
                 }
                 for (int c = 0; c < numberOfClasses - 1; c++) {
                     gradient.setColumn(
                             c,
-                            gradient.getColumn(c).add(example.features.mult(probabilities.get(c)))
+                            gradient.getColumn(c).add(data[i].features.mult(probabilities.get(c)))
                     );
                 }
             }
