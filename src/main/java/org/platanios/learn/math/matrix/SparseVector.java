@@ -68,6 +68,16 @@ public class SparseVector extends Vector {
             this.values = Arrays.copyOf(values, values.length);
         }
 
+        public Builder(int size, int numberOfNonzeroEntries, int[] indexes, double[] values) {
+            if (indexes.length != values.length)
+                throw new IllegalArgumentException("The indexes array and the values array must have the same length");
+
+            this.size = size;
+            this.numberOfNonzeroEntries = numberOfNonzeroEntries;
+            this.indexes = Arrays.copyOf(indexes, indexes.length);
+            this.values = Arrays.copyOf(values, values.length);
+        }
+
         /**
          * Constructs a sparse vector from the contents of the provided input stream. Note that the contents of the stream
          * must have been written using the {@link #writeToStream(java.io.ObjectOutputStream)} function of this class in
@@ -363,10 +373,11 @@ public class SparseVector extends Vector {
                 numberOfSkippedValues++;
             }
         }
-        return new Builder(size,
-                           Arrays.copyOfRange(newIndexes, 0, numberOfNonzeroEntries - numberOfSkippedValues),
-                           Arrays.copyOfRange(newValues, 0, numberOfNonzeroEntries - numberOfSkippedValues))
-                .build();
+        return new Builder(size, numberOfNonzeroEntries - numberOfSkippedValues, newIndexes, newValues).build();
+//        return new Builder(size,
+//                           Arrays.copyOfRange(newIndexes, 0, numberOfNonzeroEntries - numberOfSkippedValues),
+//                           Arrays.copyOfRange(newValues, 0, numberOfNonzeroEntries - numberOfSkippedValues))
+//                .build();
     }
 
     public SparseVector mapNoCompact(Function<Double, Double> function) { // TODO: What happens when the function is applied to zeros? Maybe store the "zero" value somewhere and modify that.
@@ -407,46 +418,43 @@ public class SparseVector extends Vector {
             int currentIndex = 0;
             int vector1Index = 0;
             int vector2Index = 0;
-            while (true) {
-                if (numberOfNonzeroEntries > 0
-                        && vector1Index < numberOfNonzeroEntries
-                        && ((SparseVector) vector).numberOfNonzeroEntries > 0
-                        && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
-                    if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
-                        newIndexes[currentIndex] = indexes[vector1Index];
-                        newValues[currentIndex] = values[vector1Index];
-                        currentIndex++;
-                        vector1Index++;
-                    } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
-                        newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
-                        newValues[currentIndex] = ((SparseVector) vector).values[vector2Index];
-                        currentIndex++;
-                        vector2Index++;
-                    } else {
-                        newIndexes[currentIndex] = indexes[vector1Index];
-                        newValues[currentIndex] = values[vector1Index] + ((SparseVector) vector).values[vector2Index];
-                        currentIndex++;
-                        vector1Index++;
-                        vector2Index++;
-                    }
-                } else if (numberOfNonzeroEntries > 0 && vector1Index < numberOfNonzeroEntries) {
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
                     newIndexes[currentIndex] = indexes[vector1Index];
                     newValues[currentIndex] = values[vector1Index];
                     currentIndex++;
                     vector1Index++;
-                } else if (((SparseVector) vector).numberOfNonzeroEntries > 0
-                        && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
                     newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
                     newValues[currentIndex] = ((SparseVector) vector).values[vector2Index];
                     currentIndex++;
                     vector2Index++;
                 } else {
-                    break;
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] =
+                            values[vector1Index] + ((SparseVector) vector).values[vector2Index];
+                    currentIndex++;
+                    vector1Index++;
+                    vector2Index++;
                 }
             }
-            resultVector = new Builder(size,
-                                       Arrays.copyOfRange(newIndexes, 0, currentIndex),
-                                       Arrays.copyOfRange(newValues, 0, currentIndex)).build();
+            while (vector1Index < numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = indexes[vector1Index];
+                newValues[currentIndex] = values[vector1Index];
+                currentIndex++;
+                vector1Index++;
+            }
+            while (vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                newValues[currentIndex] = ((SparseVector) vector).values[vector2Index];
+                currentIndex++;
+                vector2Index++;
+            }
+            resultVector = new Builder(size, currentIndex, newIndexes, newValues).build();
+//            resultVector = new Builder(size,
+//                                       Arrays.copyOfRange(newIndexes, 0, currentIndex),
+//                                       Arrays.copyOfRange(newValues, 0, currentIndex)).build();
         } else {
             throw new NotImplementedException();
         }
@@ -463,45 +471,40 @@ public class SparseVector extends Vector {
             int currentIndex = 0;
             int vector1Index = 0;
             int vector2Index = 0;
-            while (true) {
-                if (numberOfNonzeroEntries > 0
-                        && vector1Index < numberOfNonzeroEntries
-                        && ((SparseVector) vector).numberOfNonzeroEntries > 0
-                        && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
-                    if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
-                        newIndexes[currentIndex] = indexes[vector1Index];
-                        newValues[currentIndex] = values[vector1Index];
-                        currentIndex++;
-                        vector1Index++;
-                    } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
-                        newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
-                        newValues[currentIndex] = ((SparseVector) vector).values[vector2Index];
-                        currentIndex++;
-                        vector2Index++;
-                    } else {
-                        newIndexes[currentIndex] = indexes[vector1Index];
-                        newValues[currentIndex] = values[vector1Index] + ((SparseVector) vector).values[vector2Index];
-                        currentIndex++;
-                        vector1Index++;
-                        vector2Index++;
-                    }
-                } else if (numberOfNonzeroEntries > 0 && vector1Index < numberOfNonzeroEntries) {
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
                     newIndexes[currentIndex] = indexes[vector1Index];
                     newValues[currentIndex] = values[vector1Index];
                     currentIndex++;
                     vector1Index++;
-                } else if (((SparseVector) vector).numberOfNonzeroEntries > 0
-                        && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
                     newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
                     newValues[currentIndex] = ((SparseVector) vector).values[vector2Index];
                     currentIndex++;
                     vector2Index++;
                 } else {
-                    break;
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] = values[vector1Index] + ((SparseVector) vector).values[vector2Index];
+                    currentIndex++;
+                    vector1Index++;
+                    vector2Index++;
                 }
             }
-            indexes = Arrays.copyOfRange(newIndexes, 0, currentIndex);
-            values = Arrays.copyOfRange(newValues, 0, currentIndex);
+            while (vector1Index < numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = indexes[vector1Index];
+                newValues[currentIndex] = values[vector1Index];
+                currentIndex++;
+                vector1Index++;
+            }
+            while (vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                newValues[currentIndex] = ((SparseVector) vector).values[vector2Index];
+                currentIndex++;
+                vector2Index++;
+            }
+            indexes = newIndexes; // Arrays.copyOfRange(newIndexes, 0, currentIndex);
+            values = newValues; // Arrays.copyOfRange(newValues, 0, currentIndex);
             numberOfNonzeroEntries = currentIndex;
         } else {
             throw new NotImplementedException();
@@ -539,46 +542,42 @@ public class SparseVector extends Vector {
             int currentIndex = 0;
             int vector1Index = 0;
             int vector2Index = 0;
-            while (true) {
-                if (numberOfNonzeroEntries > 0
-                        && vector1Index < numberOfNonzeroEntries
-                        && ((SparseVector) vector).numberOfNonzeroEntries > 0
-                        && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
-                    if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
-                        newIndexes[currentIndex] = indexes[vector1Index];
-                        newValues[currentIndex] = values[vector1Index];
-                        currentIndex++;
-                        vector1Index++;
-                    } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
-                        newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
-                        newValues[currentIndex] = - ((SparseVector) vector).values[vector2Index];
-                        currentIndex++;
-                        vector2Index++;
-                    } else {
-                        newIndexes[currentIndex] = indexes[vector1Index];
-                        newValues[currentIndex] = values[vector1Index] - ((SparseVector) vector).values[vector2Index];
-                        currentIndex++;
-                        vector1Index++;
-                        vector2Index++;
-                    }
-                } else if (numberOfNonzeroEntries > 0 && vector1Index < numberOfNonzeroEntries) {
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
                     newIndexes[currentIndex] = indexes[vector1Index];
                     newValues[currentIndex] = values[vector1Index];
                     currentIndex++;
                     vector1Index++;
-                } else if (((SparseVector) vector).numberOfNonzeroEntries > 0
-                        && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
                     newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
                     newValues[currentIndex] = - ((SparseVector) vector).values[vector2Index];
                     currentIndex++;
                     vector2Index++;
                 } else {
-                    break;
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] = values[vector1Index] - ((SparseVector) vector).values[vector2Index];
+                    currentIndex++;
+                    vector1Index++;
+                    vector2Index++;
                 }
             }
-            resultVector = new Builder(size,
-                                       Arrays.copyOfRange(newIndexes, 0, currentIndex),
-                                       Arrays.copyOfRange(newValues, 0, currentIndex)).build();
+            while (vector1Index < numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = indexes[vector1Index];
+                newValues[currentIndex] = values[vector1Index];
+                currentIndex++;
+                vector1Index++;
+            }
+            while (vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                newValues[currentIndex] = - ((SparseVector) vector).values[vector2Index];
+                currentIndex++;
+                vector2Index++;
+            }
+            resultVector = new Builder(size, currentIndex, newIndexes, newValues).build();
+//            resultVector = new Builder(size,
+//                                       Arrays.copyOfRange(newIndexes, 0, currentIndex),
+//                                       Arrays.copyOfRange(newValues, 0, currentIndex)).build();
         } else {
             throw new NotImplementedException();
         }
@@ -595,45 +594,40 @@ public class SparseVector extends Vector {
             int currentIndex = 0;
             int vector1Index = 0;
             int vector2Index = 0;
-            while (true) {
-                if (numberOfNonzeroEntries > 0
-                        && vector1Index < numberOfNonzeroEntries
-                        && ((SparseVector) vector).numberOfNonzeroEntries > 0
-                        && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
-                    if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
-                        newIndexes[currentIndex] = indexes[vector1Index];
-                        newValues[currentIndex] = values[vector1Index];
-                        currentIndex++;
-                        vector1Index++;
-                    } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
-                        newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
-                        newValues[currentIndex] = - ((SparseVector) vector).values[vector2Index];
-                        currentIndex++;
-                        vector2Index++;
-                    } else {
-                        newIndexes[currentIndex] = indexes[vector1Index];
-                        newValues[currentIndex] = values[vector1Index] - ((SparseVector) vector).values[vector2Index];
-                        currentIndex++;
-                        vector1Index++;
-                        vector2Index++;
-                    }
-                } else if (numberOfNonzeroEntries > 0 && vector1Index < numberOfNonzeroEntries) {
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
                     newIndexes[currentIndex] = indexes[vector1Index];
                     newValues[currentIndex] = values[vector1Index];
                     currentIndex++;
                     vector1Index++;
-                } else if (((SparseVector) vector).numberOfNonzeroEntries > 0
-                        && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
                     newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
                     newValues[currentIndex] = - ((SparseVector) vector).values[vector2Index];
                     currentIndex++;
                     vector2Index++;
                 } else {
-                    break;
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] = values[vector1Index] - ((SparseVector) vector).values[vector2Index];
+                    currentIndex++;
+                    vector1Index++;
+                    vector2Index++;
                 }
             }
-            indexes = Arrays.copyOfRange(newIndexes, 0, currentIndex);
-            values = Arrays.copyOfRange(newValues, 0, currentIndex);
+            while (vector1Index < numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = indexes[vector1Index];
+                newValues[currentIndex] = values[vector1Index];
+                currentIndex++;
+                vector1Index++;
+            }
+            while (vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                newValues[currentIndex] = - ((SparseVector) vector).values[vector2Index];
+                currentIndex++;
+                vector2Index++;
+            }
+            indexes = newIndexes; // Arrays.copyOfRange(newIndexes, 0, currentIndex);
+            values = newValues; // Arrays.copyOfRange(newValues, 0, currentIndex);
             numberOfNonzeroEntries = currentIndex;
         } else {
             throw new NotImplementedException();
@@ -652,29 +646,24 @@ public class SparseVector extends Vector {
             int currentIndex = 0;
             int vector1Index = 0;
             int vector2Index = 0;
-            while (true) {
-                if (numberOfNonzeroEntries > 0
-                        && vector1Index < numberOfNonzeroEntries
-                        && ((SparseVector) vector).numberOfNonzeroEntries > 0
-                        && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
-                    if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
-                        vector1Index++;
-                    } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
-                        vector2Index++;
-                    } else {
-                        newIndexes[currentIndex] = indexes[vector1Index];
-                        newValues[currentIndex] = values[vector1Index] * ((SparseVector) vector).values[vector2Index];
-                        currentIndex++;
-                        vector1Index++;
-                        vector2Index++;
-                    }
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
+                    vector1Index++;
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
+                    vector2Index++;
                 } else {
-                    break;
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] = values[vector1Index] * ((SparseVector) vector).values[vector2Index];
+                    currentIndex++;
+                    vector1Index++;
+                    vector2Index++;
                 }
             }
-            resultVector = new Builder(size,
-                                       Arrays.copyOfRange(newIndexes, 0, currentIndex),
-                                       Arrays.copyOfRange(newValues, 0, currentIndex)).build();
+            resultVector = new Builder(size, currentIndex, newIndexes, newValues).build();
+//            resultVector = new Builder(size,
+//                                       Arrays.copyOfRange(newIndexes, 0, currentIndex),
+//                                       Arrays.copyOfRange(newValues, 0, currentIndex)).build();
         } else {
             throw new NotImplementedException();
         }
@@ -691,28 +680,22 @@ public class SparseVector extends Vector {
             int currentIndex = 0;
             int vector1Index = 0;
             int vector2Index = 0;
-            while (true) {
-                if (numberOfNonzeroEntries > 0
-                        && vector1Index < numberOfNonzeroEntries
-                        && ((SparseVector) vector).numberOfNonzeroEntries > 0
-                        && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
-                    if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
-                        vector1Index++;
-                    } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
-                        vector2Index++;
-                    } else {
-                        newIndexes[currentIndex] = indexes[vector1Index];
-                        newValues[currentIndex] = values[vector1Index] * ((SparseVector) vector).values[vector2Index];
-                        currentIndex++;
-                        vector1Index++;
-                        vector2Index++;
-                    }
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
+                    vector1Index++;
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
+                    vector2Index++;
                 } else {
-                    break;
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] = values[vector1Index] * ((SparseVector) vector).values[vector2Index];
+                    currentIndex++;
+                    vector1Index++;
+                    vector2Index++;
                 }
             }
-            indexes = Arrays.copyOfRange(newIndexes, 0, currentIndex);
-            values = Arrays.copyOfRange(newValues, 0, currentIndex);
+            indexes = newIndexes; // Arrays.copyOfRange(newIndexes, 0, currentIndex);
+            values = newValues; // Arrays.copyOfRange(newValues, 0, currentIndex);
             numberOfNonzeroEntries = currentIndex;
         } else {
             throw new NotImplementedException();
@@ -731,29 +714,24 @@ public class SparseVector extends Vector {
             int currentIndex = 0;
             int vector1Index = 0;
             int vector2Index = 0;
-            while (true) {
-                if (numberOfNonzeroEntries > 0
-                        && vector1Index < numberOfNonzeroEntries
-                        && ((SparseVector) vector).numberOfNonzeroEntries > 0
-                        && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
-                    if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
-                        vector1Index++;
-                    } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
-                        vector2Index++;
-                    } else {
-                        newIndexes[currentIndex] = indexes[vector1Index];
-                        newValues[currentIndex] = values[vector1Index] / ((SparseVector) vector).values[vector2Index];
-                        currentIndex++;
-                        vector1Index++;
-                        vector2Index++;
-                    }
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
+                    vector1Index++;
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
+                    vector2Index++;
                 } else {
-                    break;
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] = values[vector1Index] / ((SparseVector) vector).values[vector2Index];
+                    currentIndex++;
+                    vector1Index++;
+                    vector2Index++;
                 }
             }
-            resultVector = new Builder(size,
-                                       Arrays.copyOfRange(newIndexes, 0, currentIndex),
-                                       Arrays.copyOfRange(newValues, 0, currentIndex)).build();
+            resultVector = new Builder(size, currentIndex, newIndexes, newValues).build();
+//            resultVector = new Builder(size,
+//                                       Arrays.copyOfRange(newIndexes, 0, currentIndex),
+//                                       Arrays.copyOfRange(newValues, 0, currentIndex)).build();
         } else {
             throw new NotImplementedException();
         }
@@ -770,28 +748,22 @@ public class SparseVector extends Vector {
             int currentIndex = 0;
             int vector1Index = 0;
             int vector2Index = 0;
-            while (true) {
-                if (numberOfNonzeroEntries > 0
-                        && vector1Index < numberOfNonzeroEntries
-                        && ((SparseVector) vector).numberOfNonzeroEntries > 0
-                        && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
-                    if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
-                        vector1Index++;
-                    } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
-                        vector2Index++;
-                    } else {
-                        newIndexes[currentIndex] = indexes[vector1Index];
-                        newValues[currentIndex] = values[vector1Index] / ((SparseVector) vector).values[vector2Index];
-                        currentIndex++;
-                        vector1Index++;
-                        vector2Index++;
-                    }
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
+                    vector1Index++;
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
+                    vector2Index++;
                 } else {
-                    break;
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] = values[vector1Index] / ((SparseVector) vector).values[vector2Index];
+                    currentIndex++;
+                    vector1Index++;
+                    vector2Index++;
                 }
             }
-            indexes = Arrays.copyOfRange(newIndexes, 0, currentIndex);
-            values = Arrays.copyOfRange(newValues, 0, currentIndex);
+            indexes = newIndexes; // Arrays.copyOfRange(newIndexes, 0, currentIndex);
+            values = newValues; // Arrays.copyOfRange(newValues, 0, currentIndex);
             numberOfNonzeroEntries = currentIndex;
         } else {
             throw new NotImplementedException();
@@ -848,47 +820,43 @@ public class SparseVector extends Vector {
             int currentIndex = 0;
             int vector1Index = 0;
             int vector2Index = 0;
-            while (true) {
-                if (numberOfNonzeroEntries > 0
-                        && vector1Index < numberOfNonzeroEntries
-                        && ((SparseVector) vector).numberOfNonzeroEntries > 0
-                        && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
-                    if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
-                        newIndexes[currentIndex] = indexes[vector1Index];
-                        newValues[currentIndex] = values[vector1Index];
-                        currentIndex++;
-                        vector1Index++;
-                    } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
-                        newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
-                        newValues[currentIndex] = scalar * ((SparseVector) vector).values[vector2Index];
-                        currentIndex++;
-                        vector2Index++;
-                    } else {
-                        newIndexes[currentIndex] = indexes[vector1Index];
-                        newValues[currentIndex] =
-                                values[vector1Index] + scalar * ((SparseVector) vector).values[vector2Index];
-                        currentIndex++;
-                        vector1Index++;
-                        vector2Index++;
-                    }
-                } else if (numberOfNonzeroEntries > 0 && vector1Index < numberOfNonzeroEntries) {
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
                     newIndexes[currentIndex] = indexes[vector1Index];
                     newValues[currentIndex] = values[vector1Index];
                     currentIndex++;
                     vector1Index++;
-                } else if (((SparseVector) vector).numberOfNonzeroEntries > 0
-                        && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
                     newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
                     newValues[currentIndex] = scalar * ((SparseVector) vector).values[vector2Index];
                     currentIndex++;
                     vector2Index++;
                 } else {
-                    break;
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] =
+                            values[vector1Index] + scalar * ((SparseVector) vector).values[vector2Index];
+                    currentIndex++;
+                    vector1Index++;
+                    vector2Index++;
                 }
             }
-            resultVector = new Builder(size,
-                                       Arrays.copyOfRange(newIndexes, 0, currentIndex),
-                                       Arrays.copyOfRange(newValues, 0, currentIndex)).build();
+            while (vector1Index < numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = indexes[vector1Index];
+                newValues[currentIndex] = values[vector1Index];
+                currentIndex++;
+                vector1Index++;
+            }
+            while (vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                newValues[currentIndex] = scalar * ((SparseVector) vector).values[vector2Index];
+                currentIndex++;
+                vector2Index++;
+            }
+            resultVector = new Builder(size, currentIndex, newIndexes, newValues).build();
+//            resultVector = new Builder(size,
+//                                       Arrays.copyOfRange(newIndexes, 0, currentIndex),
+//                                       Arrays.copyOfRange(newValues, 0, currentIndex)).build();
         } else {
             throw new NotImplementedException();
         }
@@ -905,46 +873,41 @@ public class SparseVector extends Vector {
             int currentIndex = 0;
             int vector1Index = 0;
             int vector2Index = 0;
-            while (true) {
-                if (numberOfNonzeroEntries > 0
-                        && vector1Index < numberOfNonzeroEntries
-                        && ((SparseVector) vector).numberOfNonzeroEntries > 0
-                        && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
-                    if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
-                        newIndexes[currentIndex] = indexes[vector1Index];
-                        newValues[currentIndex] = values[vector1Index];
-                        currentIndex++;
-                        vector1Index++;
-                    } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
-                        newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
-                        newValues[currentIndex] = scalar * ((SparseVector) vector).values[vector2Index];
-                        currentIndex++;
-                        vector2Index++;
-                    } else {
-                        newIndexes[currentIndex] = indexes[vector1Index];
-                        newValues[currentIndex] =
-                                values[vector1Index] + scalar * ((SparseVector) vector).values[vector2Index];
-                        currentIndex++;
-                        vector1Index++;
-                        vector2Index++;
-                    }
-                } else if (numberOfNonzeroEntries > 0 && vector1Index < numberOfNonzeroEntries) {
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
                     newIndexes[currentIndex] = indexes[vector1Index];
                     newValues[currentIndex] = values[vector1Index];
                     currentIndex++;
                     vector1Index++;
-                } else if (((SparseVector) vector).numberOfNonzeroEntries > 0
-                        && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
                     newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
                     newValues[currentIndex] = scalar * ((SparseVector) vector).values[vector2Index];
                     currentIndex++;
                     vector2Index++;
                 } else {
-                    break;
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] =
+                            values[vector1Index] + scalar * ((SparseVector) vector).values[vector2Index];
+                    currentIndex++;
+                    vector1Index++;
+                    vector2Index++;
                 }
             }
-            indexes = Arrays.copyOfRange(newIndexes, 0, currentIndex);
-            values = Arrays.copyOfRange(newValues, 0, currentIndex);
+            while (vector1Index < numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = indexes[vector1Index];
+                newValues[currentIndex] = values[vector1Index];
+                currentIndex++;
+                vector1Index++;
+            }
+            while (vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                newValues[currentIndex] = scalar * ((SparseVector) vector).values[vector2Index];
+                currentIndex++;
+                vector2Index++;
+            }
+            indexes = newIndexes; // Arrays.copyOfRange(newIndexes, 0, currentIndex);
+            values = newValues; // Arrays.copyOfRange(newValues, 0, currentIndex);
             numberOfNonzeroEntries = currentIndex;
         } else {
             throw new NotImplementedException();
@@ -957,31 +920,23 @@ public class SparseVector extends Vector {
     public double inner(Vector vector) {
         checkVectorSize(vector);
         double result = 0;
-        if (numberOfNonzeroEntries > 0) {
-            if (vector.type() == VectorType.SPARSE) {
-                int vector1Index = 0;
-                int vector2Index = 0;
-                while (true) {
-                    if (numberOfNonzeroEntries > 0
-                            && vector1Index < numberOfNonzeroEntries
-                            && ((SparseVector) vector).numberOfNonzeroEntries > 0
-                            && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
-                        if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
-                            vector1Index++;
-                        } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
-                            vector2Index++;
-                        } else {
-                            result += values[vector1Index] * ((SparseVector) vector).values[vector2Index];
-                            vector1Index++;
-                            vector2Index++;
-                        }
-                    } else {
-                        break;
-                    }
+        if (vector.type() == VectorType.SPARSE) {
+            int vector1Index = 0;
+            int vector2Index = 0;
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
+                    vector1Index++;
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
+                    vector2Index++;
+                } else {
+                    result += values[vector1Index] * ((SparseVector) vector).values[vector2Index];
+                    vector1Index++;
+                    vector2Index++;
                 }
-            } else {
-                throw new NotImplementedException();
             }
+        } else {
+            throw new NotImplementedException();
         }
         return result;
     }
