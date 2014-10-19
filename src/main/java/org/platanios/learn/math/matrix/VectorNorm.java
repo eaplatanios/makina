@@ -40,6 +40,8 @@ public enum VectorNorm {
      * The \(L_2\) norm of this vector. Denoting a vector by \(\boldsymbol{x}\in\mathbb{R}^{n}\), its element at index
      * \(i\) by \(x_i\) and its \(L_2\) norm by \(\|\boldsymbol{x}\|_2\), we have that:
      * \[\|\boldsymbol{x}\|_2=\sqrt{\sum_{i=1}^n{x_i^2}}.\]
+     * This implementation attempts to avoid numerical underflow or overflow, but is slower than {@link #L2_FAST} that
+     * does not.
      */
     L2 {
         /** {@inheritDoc} */
@@ -60,6 +62,34 @@ public enum VectorNorm {
                 l2Norm = MathUtilities.computeHypotenuse(l2Norm, value);
             }
             return l2Norm;
+        }
+    },
+    /**
+     * The \(L_2\) norm of this vector. Denoting a vector by \(\boldsymbol{x}\in\mathbb{R}^{n}\), its element at index
+     * \(i\) by \(x_i\) and its \(L_2\) norm by \(\|\boldsymbol{x}\|_2\), we have that:
+     * \[\|\boldsymbol{x}\|_2=\sqrt{\sum_{i=1}^n{x_i^2}}.\]
+     * This implementation does not attempt to avoid numerical underflow or overflow, but is faster than {@link #L2}
+     * that does.
+     */
+    L2_FAST {
+        /** {@inheritDoc} */
+        @Override
+        public double compute(double[] nonzeroValues) {
+            double l2Norm = 0;
+            for (double value : nonzeroValues) {
+                l2Norm += value * value;
+            }
+            return Math.sqrt(l2Norm);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double compute(Collection<Double> nonzeroValues) {
+            double l2Norm = 0;
+            for (double value : nonzeroValues) {
+                l2Norm += value * value;
+            }
+            return Math.sqrt(l2Norm);
         }
     },
     /**

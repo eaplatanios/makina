@@ -33,7 +33,7 @@ public class MatrixUtilities {
      * @return          The natural logarithm of the sum of the exponential of the values in the given array.
      */
     public static double computeLogSumExp(double... array) {
-        Vector vector = Vectors.buildDense(array);
+        Vector vector = Vectors.dense(array);
         return computeLogSumExp(vector);
     }
 }

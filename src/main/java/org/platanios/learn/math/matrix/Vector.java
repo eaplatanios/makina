@@ -1,21 +1,19 @@
 package org.platanios.learn.math.matrix;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
  * Interface for classes representing vectors and supporting operations related to vectors.
  *
  * TODO: Allow transposing all matrix arguments.
+ * TODO: Add vector iterators support (over all elements and nonzero elements only).
  *
  * @author Emmanouil Antonios Platanios
  */
 public abstract class Vector {
-    private static final long serialVersionUID = -6542607523957470903L;
-
     /** The threshold value for elements to be considered equal to zero when counting the number of non-zero elements of
      * this vector (i.e., in method {@link #cardinality()}) and when handling sparse vectors. */
     protected final double epsilon = Math.sqrt(Double.MIN_VALUE);
@@ -41,6 +39,15 @@ public abstract class Vector {
      * @return  A dense array representation of this vector.
      */
     public abstract double[] getDenseArray();
+
+    /**
+     * Returns a dense vector copy of the current vector.
+     *
+     * @return  A dense vector copy of this vector.
+     */
+    public DenseVector toDenseVector() {
+        return new DenseVector(getDenseArray());
+    }
 
     /**
      * Gets the dimension of this vector.
@@ -163,17 +170,6 @@ public abstract class Vector {
     public abstract double norm(VectorNorm normType);
 
     /**
-     * Computes the result of applying the supplied function element-wise to the current vector and returns it in a new
-     * vector.
-     *
-     * @param   function    The function to apply to the current vector element-wise.
-     * @return              A new vector holding the result of the operation.
-     */
-    public abstract Vector map(Function<Double, Double> function);
-
-    // TODO: Add mapInPlace().
-
-    /**
      * Adds a scalar to all entries of the current vector and returns the result in a new vector.
      *
      * @param   scalar  The scalar to add to entries of the current vector.
@@ -185,6 +181,7 @@ public abstract class Vector {
      * Adds a scalar to all entries of the current vector and replaces the current vector with the result.
      *
      * @param   scalar  The scalar to add to entries of the current vector.
+     * @return          The current vector holding the result of the addition.
      */
     public abstract Vector addInPlace(double scalar);
 
@@ -200,6 +197,7 @@ public abstract class Vector {
      * Adds another vector to the current vector and replaces the current vector with the result.
      *
      * @param   vector  The vector to add to the current vector.
+     * @return          The current vector holding the result of the addition.
      */
     public abstract Vector addInPlace(Vector vector);
 
@@ -215,6 +213,7 @@ public abstract class Vector {
      * Subtracts a scalar from all entries of the current vector and replaces the current vector with the result.
      *
      * @param   scalar  The scalar to subtract from all entries of the current vector.
+     * @return          The current vector holding the result of the subtraction.
      */
     public abstract Vector subInPlace(double scalar);
 
@@ -230,6 +229,7 @@ public abstract class Vector {
      * Subtracts another vector from the current vector and replaces the current vector with the result.
      *
      * @param   vector  The vector to subtract from the current vector.
+     * @return          The current vector holding the result of the subtraction.
      */
     public abstract Vector subInPlace(Vector vector);
 
@@ -245,6 +245,7 @@ public abstract class Vector {
      * Multiplies another vector with the current vector element-wise and replaces the current vector with the result.
      *
      * @param   vector  The vector to multiply with the current vector element-wise.
+     * @return          The current vector holding the result of the multiplication.
      */
     public abstract Vector multElementwiseInPlace(Vector vector);
 
@@ -260,6 +261,7 @@ public abstract class Vector {
      * Divides another vector with the current vector element-wise and replaces the current vector with the result.
      *
      * @param   vector  The vector to divide with the current vector element-wise.
+     * @return          The current vector holding the result of the division.
      */
     public abstract Vector divElementwiseInPlace(Vector vector);
 
@@ -275,6 +277,7 @@ public abstract class Vector {
      * Multiplies the current vector with a scalar and replaces the current vector with the result.
      *
      * @param   scalar  The scalar with which to multiply the current vector.
+     * @return          The current vector holding the result of the multiplication.
      */
     public abstract Vector multInPlace(double scalar);
 
@@ -290,6 +293,7 @@ public abstract class Vector {
      * Divides the current vector with a scalar and replaces the current vector with the result.
      *
      * @param   scalar  The scalar with which to divide the current vector.
+     * @return          The current vector holding the result of the division.
      */
     public abstract Vector divInPlace(double scalar);
 
@@ -334,6 +338,185 @@ public abstract class Vector {
     public abstract double inner(Vector vector);
 
     /**
+     * Computes the square root of the sum of the squares of each pair of vector elements (that is equivalent to
+     * computing length of the hypotenuse of a right triangle given the lengths of the other two sides) without having
+     * an underflow or an overflow. Denoting the two vectors by \(\boldsymbol{a}\) (the current vector) and
+     * \(\boldsymbol{b}\) (the provided vector), respectively, this function computes the quantity:
+     * \[c_i=\sqrt{a_i^2+b_i^2},\]
+     * where \(\boldsymbol{c}\) is the resulting vector. The result is returned in a new vector. This method is slower
+     * than {@link #hypotenuseFast(Vector)}, but it tries to avoid numerical precision errors, while
+     * {@link #hypotenuseFast(Vector)} does not.
+     *
+     * @param   vector  The vector to use as vector \(\boldsymbol{b}\) in the above equation.
+     * @return          A new vector holding the result of this operation.
+     */
+    public abstract Vector hypotenuse(Vector vector);
+
+    /**
+     * Computes the square root of the sum of the squares of each pair of vector elements (that is equivalent to
+     * computing length of the hypotenuse of a right triangle given the lengths of the other two sides) without having
+     * an underflow or an overflow. Denoting the two vectors by \(\boldsymbol{a}\) (the current vector) and
+     * \(\boldsymbol{b}\) (the provided vector), respectively, this function computes the quantity:
+     * \[c_i=\sqrt{a_i^2+b_i^2},\]
+     * where \(\boldsymbol{c}\) is the resulting vector. The current vector is replaced with the result. This method is
+     * slower than {@link #hypotenuseFastInPlace(Vector)}, but it tries to avoid numerical precision errors, while
+     * {@link #hypotenuseFastInPlace(Vector)} does not.
+     *
+     * @param   vector  The vector to use as vector \(\boldsymbol{b}\) in the above equation.
+     * @return          The current vector holding the result of this operation.
+     */
+    public abstract Vector hypotenuseInPlace(Vector vector);
+
+    /**
+     * Computes the square root of the sum of the squares of each pair of vector elements (that is equivalent to
+     * computing length of the hypotenuse of a right triangle given the lengths of the other two sides) without avoiding
+     * an underflow or an overflow. Denoting the two vectors by \(\boldsymbol{a}\) (the current vector) and
+     * \(\boldsymbol{b}\) (the provided vector), respectively, this function computes the quantity:
+     * \[c_i=\sqrt{a_i^2+b_i^2},\]
+     * where \(\boldsymbol{c}\) is the resulting vector. The result is returned in a new vector. This method is faster
+     * than {@link #hypotenuse(Vector)}, but it does not try to avoid numerical precision errors, while
+     * {@link #hypotenuse(Vector)} does try to avoid such errors.
+     *
+     * @param   vector  The vector to use as vector \(\boldsymbol{b}\) in the above equation.
+     * @return          A new vector holding the result of this operation.
+     */
+    public abstract Vector hypotenuseFast(Vector vector);
+
+    /**
+     * Computes the square root of the sum of the squares of each pair of vector elements (that is equivalent to
+     * computing length of the hypotenuse of a right triangle given the lengths of the other two sides) without avoiding
+     * an underflow or an overflow. Denoting the two vectors by \(\boldsymbol{a}\) (the current vector) and
+     * \(\boldsymbol{b}\) (the provided vector), respectively, this function computes the quantity:
+     * \[c_i=\sqrt{a_i^2+b_i^2},\]
+     * where \(\boldsymbol{c}\) is the resulting vector. The current vector is replaced with the result. This method is
+     * faster than {@link #hypotenuseInPlace(Vector)}, but it does not try to avoid numerical precision errors, while
+     * {@link #hypotenuseInPlace(Vector)} does try to avoid such errors.
+     *
+     * @param   vector  The vector to use as vector \(\boldsymbol{b}\) in the above equation.
+     * @return          A new vector holding the result of this operation.
+     */
+    public abstract Vector hypotenuseFastInPlace(Vector vector);
+
+    /**
+     * Computes the result of applying the supplied function element-wise to the current vector and returns it in a new
+     * vector.
+     *
+     * @param   function    The function to apply to the current vector element-wise.
+     * @return              A new vector holding the result of the operation.
+     */
+    public abstract Vector map(Function<Double, Double> function);
+
+    /**
+     * Computes the result of applying the supplied function element-wise to the current vector and replaces the current
+     * vector with the result.
+     *
+     * @param   function    The function to apply to the current vector element-wise.
+     * @return              The current vector holding the result of the operation.
+     */
+    public abstract Vector mapInPlace(Function<Double, Double> function);
+
+    /**
+     * Computes the result of applying the supplied function element-wise to the current vector and the provided vector
+     * (the elements of the two vectors with the same index are considered in pairs) and returns it in a new vector.
+     *
+     * @param   function    The function to apply to the current vector element-wise.
+     * @param   vector      The vector to use for second argument of the function.
+     * @return              A new vector holding the result of the operation.
+     */
+    public abstract Vector mapBiFunction(BiFunction<Double, Double, Double> function, Vector vector);
+
+    /**
+     * Computes the result of applying the supplied function element-wise to the current vector and the provided vector
+     * (the elements of the two vectors with the same index are considered in pairs) and replaces the current vector
+     * with the result.
+     *
+     * @param   function    The function to apply to the current vector element-wise.
+     * @param   vector      The vector to use for second argument of the function.
+     * @return              The current vector holding the result of the operation.
+     */
+    public abstract Vector mapBiFunctionInPlace(BiFunction<Double, Double, Double> function, Vector vector);
+
+    /**
+     * Computes the result of applying the supplied function element-wise to the current vector and adding the provided
+     * vector to the result, and returns it in a new vector.
+     *
+     * @param   function    The function to apply to the current vector element-wise.
+     * @param   vector      The vector to add to the function result.
+     * @return              A new vector holding the result of the operation.
+     */
+    public abstract Vector mapAdd(Function<Double, Double> function, Vector vector);
+
+    /**
+     * Computes the result of applying the supplied function element-wise to the current vector and adding the provided
+     * vector to the result, and replaces the current vector with the result.
+     *
+     * @param   function    The function to apply to the current vector element-wise.
+     * @param   vector      The vector to add to the function result.
+     * @return              The current vector holding the result of the operation.
+     */
+    public abstract Vector mapAddInPlace(Function<Double, Double> function, Vector vector);
+
+    /**
+     * Computes the result of applying the supplied function element-wise to the current vector and subtracting the
+     * provided vector from the result, and returns it in a new vector.
+     *
+     * @param   function    The function to apply to the current vector element-wise.
+     * @param   vector      The vector to subtract from the function result.
+     * @return              A new vector holding the result of the operation.
+     */
+    public abstract Vector mapSub(Function<Double, Double> function, Vector vector);
+
+    /**
+     * Computes the result of applying the supplied function element-wise to the current vector and subtracting the
+     * provided vector from the result, and replaces the current vector with the result.
+     *
+     * @param   function    The function to apply to the current vector element-wise.
+     * @param   vector      The vector to subtract from the function result.
+     * @return              The current vector holding the result of the operation.
+     */
+    public abstract Vector mapSubInPlace(Function<Double, Double> function, Vector vector);
+
+    /**
+     * Computes the result of applying the supplied function element-wise to the current vector and multiplying the
+     * provided vector with the result element-wise, and returns it in a new vector.
+     *
+     * @param   function    The function to apply to the current vector element-wise.
+     * @param   vector      The vector to multiply with the function result element-wise.
+     * @return              A new vector holding the result of the operation.
+     */
+    public abstract Vector mapMultElementwise(Function<Double, Double> function, Vector vector);
+
+    /**
+     * Computes the result of applying the supplied function element-wise to the current vector and multiplying the
+     * provided vector with the result element-wise, and replaces the current vector with the result.
+     *
+     * @param   function    The function to apply to the current vector element-wise.
+     * @param   vector      The vector to multiply with the function result element-wise.
+     * @return              The current vector holding the result of the operation.
+     */
+    public abstract Vector mapMultElementwiseInPlace(Function<Double, Double> function, Vector vector);
+
+    /**
+     * Computes the result of applying the supplied function element-wise to the current vector and dividing the
+     * provided vector with the result element-wise, and returns it in a new vector.
+     *
+     * @param   function    The function to apply to the current vector element-wise.
+     * @param   vector      The vector to divide with the function result element-wise.
+     * @return              A new vector holding the result of the operation.
+     */
+    public abstract Vector mapDivElementwise(Function<Double, Double> function, Vector vector);
+
+    /**
+     * Computes the result of applying the supplied function element-wise to the current vector and dividing the
+     * provided vector with the result element-wise, and replaces the current vector with the result.
+     *
+     * @param   function    The function to apply to the current vector element-wise.
+     * @param   vector      The vector to divide with the function result element-wise.
+     * @return              The current vector holding the result of the operation.
+     */
+    public abstract Vector mapDivElementwiseInPlace(Function<Double, Double> function, Vector vector);
+
+    /**
      * Computes the outer product between the current vector and another vector and returns the result in a new matrix.
      *
      * @param   vector  The vector used to compute the outer product with the current vector.
@@ -350,24 +533,24 @@ public abstract class Vector {
      * @param   vector  The vector \(\boldsymbol{x}\).
      * @return          The value of \(\boldsymbol{y}+A\boldsymbol{x}\).
      *
-     * @throws  java.lang.IllegalArgumentException  The row dimension of the matrix must agree with the size of the
-     *                                              current vector and the column dimension of the matrix must agree
-     *                                              with the size of the provided vector.
+     * @throws  IllegalArgumentException    The row dimension of the matrix must agree with the size of the current
+     *                                      vector and the column dimension of the matrix must agree with the size of
+     *                                      the provided vector.
      */
     public abstract Vector gaxpy(Matrix matrix, Vector vector);
 
     /**
      * Performs the gaxpy operation, as it is named in LAPACK, in-place. Let us denote the current vector by
-     * \(\boldsymbol{y}\). Given a matrix \(A\) and another vector \(\boldsymbol{x}\), this function replaces
-     * this vector with the value of \(\boldsymbol{y}+A\boldsymbol{x}\) and returns it.
+     * \(\boldsymbol{y}\). Given a matrix \(A\) and another vector \(\boldsymbol{x}\), this function replaces this
+     * vector with the value of \(\boldsymbol{y}+A\boldsymbol{x}\) and returns it.
      *
      * @param   matrix  The matrix \(A\).
      * @param   vector  The vector \(\boldsymbol{x}\).
      * @return          The value of \(\boldsymbol{y}+A\boldsymbol{x}\).
      *
-     * @throws  java.lang.IllegalArgumentException  The row dimension of the matrix must agree with the size of the
-     *                                              current vector and the column dimension of the matrix must agree
-     *                                              with the size of the provided vector.
+     * @throws  IllegalArgumentException    The row dimension of the matrix must agree with the size of the current
+     *                                      vector and the column dimension of the matrix must agree with the size of
+     *                                      the provided vector.
      */
     public abstract Vector gaxpyInPlace(Matrix matrix, Vector vector);
 
@@ -378,8 +561,7 @@ public abstract class Vector {
      * @param   matrix  The matrix \(A\).
      * @return          The value of \(\boldsymbol{y}^{\top}A\).
      *
-     * @throws  java.lang.IllegalArgumentException  The row dimension of the matrix must agree with the size of the
-     *                                              vector.
+     * @throws  IllegalArgumentException    The row dimension of the matrix must agree with the size of the vector.
      */
     public abstract Vector transMult(Matrix matrix);
 
@@ -405,9 +587,18 @@ public abstract class Vector {
      */
     public abstract void writeToStream(ObjectOutputStream outputStream) throws IOException;
 
-    /** {@inheritDoc} */
+    /**
+     * Compares the current vector with another object for equality. Note that if the provided object is not a vector
+     * object, then this method returns false. Otherwise, it checks for equality of the element values of the two
+     * vectors, with some tolerance that is equal to the square root of the smallest possible value that can be
+     * represented by a double precision floating point number. That tolerance is used because double precision floating
+     * point number values are compared.
+     *
+     * @param   object  The object with which to compare this vector.
+     * @return          True if this vector is equal to the provided object and false if it is not.
+     */
     @Override
-    public abstract boolean equals(Object obj);
+    public abstract boolean equals(Object object);
 
     /** {@inheritDoc} */
     @Override

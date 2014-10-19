@@ -4,10 +4,12 @@ import cern.colt.list.IntArrayList;
 import cern.colt.map.OpenIntDoubleHashMap;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -21,12 +23,12 @@ import java.util.function.Function;
  */
 public class HashVector extends Vector {
     /** The size which the internal hash map uses as its initial capacity. */
-    private final int initialSize = 128;
+    protected final int initialSize = 128;
     /** The size of the vector. */
-    private final int size;
+    protected final int size;
 
     /** Hash map for internal storage of the vector elements. */
-    private OpenIntDoubleHashMap hashMap;
+    protected OpenIntDoubleHashMap hashMap;
 
     /**
      * Constructs a sparse vector of the given size and fills it with zeros.
@@ -249,14 +251,6 @@ public class HashVector extends Vector {
     @Override
     public double norm(VectorNorm normType) {
         return normType.compute(hashMap.values().elements());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public HashVector map(Function<Double, Double> function) {
-        HashVector resultVector = new HashVector(size, hashMap); // TODO: What happens when the function is applied to zeros?
-        resultVector.hashMap.assign(function::apply);
-        return resultVector;
     }
 
     /** {@inheritDoc} */
@@ -517,6 +511,105 @@ public class HashVector extends Vector {
             }
         }
         return result;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public HashVector hypotenuse(Vector vector) {
+        throw new NotImplementedException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public HashVector hypotenuseInPlace(Vector vector) {
+        throw new NotImplementedException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public HashVector hypotenuseFast(Vector vector) {
+        throw new NotImplementedException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public HashVector hypotenuseFastInPlace(Vector vector) {
+        throw new NotImplementedException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public HashVector map(Function<Double, Double> function) {
+        HashVector resultVector = new HashVector(size, hashMap); // TODO: What happens when the function is applied to zeros?
+        resultVector.hashMap.assign(function::apply);
+        return resultVector;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public HashVector mapInPlace(Function<Double, Double> function) { // TODO: What happens when the function is applied to zeros?
+        hashMap.assign(function::apply);
+        return this;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public HashVector mapBiFunction(BiFunction<Double, Double, Double> function, Vector vector) {
+        throw new NotImplementedException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public HashVector mapBiFunctionInPlace(BiFunction<Double, Double, Double> function, Vector vector) {
+        throw new NotImplementedException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public HashVector mapAdd(Function<Double, Double> function, Vector vector) {
+        throw new NotImplementedException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public HashVector mapAddInPlace(Function<Double, Double> function, Vector vector) {
+        throw new NotImplementedException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public HashVector mapSub(Function<Double, Double> function, Vector vector) {
+        throw new NotImplementedException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public HashVector mapSubInPlace(Function<Double, Double> function, Vector vector) {
+        throw new NotImplementedException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public HashVector mapMultElementwise(Function<Double, Double> function, Vector vector) {
+        throw new NotImplementedException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public HashVector mapMultElementwiseInPlace(Function<Double, Double> function, Vector vector) {
+        throw new NotImplementedException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public HashVector mapDivElementwise(Function<Double, Double> function, Vector vector) {
+        throw new NotImplementedException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public HashVector mapDivElementwiseInPlace(Function<Double, Double> function, Vector vector) {
+        throw new NotImplementedException();
     }
 
     /** {@inheritDoc} */

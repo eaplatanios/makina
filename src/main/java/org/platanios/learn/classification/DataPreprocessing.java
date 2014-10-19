@@ -35,7 +35,7 @@ public class DataPreprocessing {
                 for (int i = 0; i < numberOfFeatures; i++) {
                     dataSample[i] = Double.parseDouble(outputs[i+1]);
                 }
-                data.add(Vectors.buildDense(dataSample));
+                data.add(Vectors.dense(dataSample));
             }
         } catch (IOException e) {
             e.printStackTrace();

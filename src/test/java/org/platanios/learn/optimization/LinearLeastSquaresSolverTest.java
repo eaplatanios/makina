@@ -19,7 +19,7 @@ public class LinearLeastSquaresSolverTest {
                 { 1, 3 },
                 { 1, 4 }
         });
-        Vector y = Vectors.buildDense(new double[]{6, 5, 7, 10});
+        Vector y = Vectors.dense(new double[]{6, 5, 7, 10});
         LinearLeastSquaresSolver linearLeastSquaresSolver =
                 new LinearLeastSquaresSolver.Builder(new LinearLeastSquaresFunction(J, y))
                         .method(LinearLeastSquaresSolver.Method.CHOLESKY_DECOMPOSITION)
@@ -37,7 +37,7 @@ public class LinearLeastSquaresSolverTest {
                 { 1, 3 },
                 { 1, 4 }
         });
-        Vector y = Vectors.buildDense(new double[]{6, 5, 7, 10});
+        Vector y = Vectors.dense(new double[]{6, 5, 7, 10});
         LinearLeastSquaresSolver linearLeastSquaresSolver =
                 new LinearLeastSquaresSolver.Builder(new LinearLeastSquaresFunction(J, y))
                         .method(LinearLeastSquaresSolver.Method.QR_DECOMPOSITION)
@@ -55,7 +55,7 @@ public class LinearLeastSquaresSolverTest {
                 { 1, 3 },
                 { 1, 4 }
         });
-        Vector y = Vectors.buildDense(new double[]{6, 5, 7, 10});
+        Vector y = Vectors.dense(new double[]{6, 5, 7, 10});
         LinearLeastSquaresSolver linearLeastSquaresSolver =
                 new LinearLeastSquaresSolver.Builder(new LinearLeastSquaresFunction(J, y))
                         .method(LinearLeastSquaresSolver.Method.SINGULAR_VALUE_DECOMPOSITION)
@@ -73,7 +73,7 @@ public class LinearLeastSquaresSolverTest {
                 { 1, 3 },
                 { 1, 4 }
         });
-        Vector y = Vectors.buildDense(new double[]{6, 5, 7, 10});
+        Vector y = Vectors.dense(new double[]{6, 5, 7, 10});
         LinearLeastSquaresSolver linearLeastSquaresSolver =
                 new LinearLeastSquaresSolver.Builder(new LinearLeastSquaresFunction(J, y))
                         .method(LinearLeastSquaresSolver.Method.CONJUGATE_GRADIENT)

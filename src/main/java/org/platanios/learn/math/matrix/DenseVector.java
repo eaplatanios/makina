@@ -2,11 +2,13 @@ package org.platanios.learn.math.matrix;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.platanios.learn.math.MathUtilities;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -19,10 +21,10 @@ import java.util.function.Function;
  */
 public class DenseVector extends Vector {
     /** The size of the vector. */
-    private final int size;
+    protected final int size;
 
     /** Array for internal storage of the vector elements. */
-    private double[] array;
+    protected double[] array;
 
     /**
      * Constructs a dense vector of the given size and fills it with zeros.
@@ -241,17 +243,6 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public DenseVector map(Function<Double, Double> function) {
-        DenseVector resultVector = new DenseVector(size);
-        double[] resultVectorArray = resultVector.getArray();
-        for (int i = 0; i < size; i++) {
-            resultVectorArray[i] = function.apply(array[i]);
-        }
-        return resultVector;
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public DenseVector add(double scalar) {
         DenseVector resultVector = new DenseVector(size);
         double[] resultVectorArray = resultVector.getArray();
@@ -449,6 +440,180 @@ public class DenseVector extends Vector {
             dotProduct += array[i] * vector.get(i);
         }
         return dotProduct;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DenseVector hypotenuse(Vector vector) {
+        checkVectorSize(vector);
+        DenseVector resultVector = new DenseVector(size);
+        double[] resultVectorArray = resultVector.getArray();
+        for (int i = 0; i < size; i++) {
+            resultVectorArray[i] = MathUtilities.computeHypotenuse(array[i], vector.get(i));
+        }
+        return resultVector;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DenseVector hypotenuseInPlace(Vector vector) {
+        checkVectorSize(vector);
+        for (int i = 0; i < size; i++) {
+            array[i] = MathUtilities.computeHypotenuse(array[i], vector.get(i));
+        }
+        return this;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DenseVector hypotenuseFast(Vector vector) {
+        checkVectorSize(vector);
+        DenseVector resultVector = new DenseVector(size);
+        double[] resultVectorArray = resultVector.getArray();
+        for (int i = 0; i < size; i++) {
+            resultVectorArray[i] = Math.sqrt(array[i] * array[i] + vector.get(i) * vector.get(i));
+        }
+        return resultVector;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DenseVector hypotenuseFastInPlace(Vector vector) {
+        checkVectorSize(vector);
+        for (int i = 0; i < size; i++) {
+            array[i] = Math.sqrt(array[i] * array[i] + vector.get(i) * vector.get(i));
+        }
+        return this;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DenseVector map(Function<Double, Double> function) {
+        DenseVector resultVector = new DenseVector(size);
+        double[] resultVectorArray = resultVector.getArray();
+        for (int i = 0; i < size; i++) {
+            resultVectorArray[i] = function.apply(array[i]);
+        }
+        return resultVector;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DenseVector mapInPlace(Function<Double, Double> function) {
+        for (int i = 0; i < size; i++) {
+            array[i] = function.apply(array[i]);
+        }
+        return this;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DenseVector mapBiFunction(BiFunction<Double, Double, Double> function, Vector vector) { // TODO: Check other vector type.
+        checkVectorSize(vector);
+        DenseVector resultVector = new DenseVector(size);
+        double[] resultVectorArray = resultVector.getArray();
+        for (int i = 0; i < size; i++) {
+            resultVectorArray[i] = function.apply(array[i], vector.get(i));
+        }
+        return resultVector;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DenseVector mapBiFunctionInPlace(BiFunction<Double, Double, Double> function, Vector vector) { // TODO: Check other vector type.
+        checkVectorSize(vector);
+        for (int i = 0; i < size; i++) {
+            array[i] = function.apply(array[i], vector.get(i));
+        }
+        return this;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DenseVector mapAdd(Function<Double, Double> function, Vector vector) {
+        checkVectorSize(vector);
+        DenseVector resultVector = new DenseVector(size);
+        double[] resultVectorArray = resultVector.getArray();
+        for (int i = 0; i < size; i++) {
+            resultVectorArray[i] = function.apply(array[i]) + vector.get(i);
+        }
+        return resultVector;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DenseVector mapAddInPlace(Function<Double, Double> function, Vector vector) {
+        checkVectorSize(vector);
+        for (int i = 0; i < size; i++) {
+            array[i] = function.apply(array[i]) + vector.get(i);
+        }
+        return this;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DenseVector mapSub(Function<Double, Double> function, Vector vector) {
+        checkVectorSize(vector);
+        DenseVector resultVector = new DenseVector(size);
+        double[] resultVectorArray = resultVector.getArray();
+        for (int i = 0; i < size; i++) {
+            resultVectorArray[i] = function.apply(array[i]) - vector.get(i);
+        }
+        return resultVector;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DenseVector mapSubInPlace(Function<Double, Double> function, Vector vector) {
+        checkVectorSize(vector);
+        for (int i = 0; i < size; i++) {
+            array[i] = function.apply(array[i]) - vector.get(i);
+        }
+        return this;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DenseVector mapMultElementwise(Function<Double, Double> function, Vector vector) {
+        checkVectorSize(vector);
+        DenseVector resultVector = new DenseVector(size);
+        double[] resultVectorArray = resultVector.getArray();
+        for (int i = 0; i < size; i++) {
+            resultVectorArray[i] = function.apply(array[i]) * vector.get(i);
+        }
+        return resultVector;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DenseVector mapMultElementwiseInPlace(Function<Double, Double> function, Vector vector) {
+        checkVectorSize(vector);
+        for (int i = 0; i < size; i++) {
+            array[i] = function.apply(array[i]) * vector.get(i);
+        }
+        return this;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DenseVector mapDivElementwise(Function<Double, Double> function, Vector vector) {
+        checkVectorSize(vector);
+        DenseVector resultVector = new DenseVector(size);
+        double[] resultVectorArray = resultVector.getArray();
+        for (int i = 0; i < size; i++) {
+            resultVectorArray[i] = function.apply(array[i]) / vector.get(i);
+        }
+        return resultVector;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DenseVector mapDivElementwiseInPlace(Function<Double, Double> function, Vector vector) {
+        checkVectorSize(vector);
+        for (int i = 0; i < size; i++) {
+            array[i] = function.apply(array[i]) / vector.get(i);
+        }
+        return this;
     }
 
     /** {@inheritDoc} */

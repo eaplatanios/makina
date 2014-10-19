@@ -155,7 +155,7 @@ abstract class AbstractIterativeSolver implements Solver {
             }
 
             if (checkForPointConvergence) {
-                pointChange = currentPoint.sub(previousPoint).norm(VectorNorm.L2);
+                pointChange = currentPoint.sub(previousPoint).norm(VectorNorm.L2_FAST);
                 pointConverged = pointChange <= pointChangeTolerance;
             }
 
@@ -170,7 +170,7 @@ abstract class AbstractIterativeSolver implements Solver {
                             Math.abs(currentGradient.max()) / (1 + Math.abs(currentObjectiveValue));
                     gradientConverged = gradientNorm <= gradientTolerance;
                 } else {
-                    gradientNorm = currentGradient.norm(VectorNorm.L2);
+                    gradientNorm = currentGradient.norm(VectorNorm.L2_FAST);
                     gradientConverged = gradientNorm <= gradientTolerance;
                 }
             }

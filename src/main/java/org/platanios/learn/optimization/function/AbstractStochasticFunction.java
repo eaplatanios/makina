@@ -1,17 +1,12 @@
 package org.platanios.learn.optimization.function;
 
 import org.platanios.learn.math.matrix.Vector;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import org.platanios.learn.math.statistics.StatisticsUtilities;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
 public abstract class AbstractStochasticFunction<T> {
-    private final Random random = new Random();
-
     protected T[] data;
 
     private int numberOfGradientEvaluations = 0;
@@ -42,13 +37,13 @@ public abstract class AbstractStochasticFunction<T> {
             int startIndex;
             int endIndex;
             if (sampleWithReplacement) {
-                shuffle(data);
+                StatisticsUtilities.shuffle(data);
                 startIndex = 0;
                 endIndex = batchSize;
             } else {
                 if (currentSampleIndex == 0 || currentSampleIndex + batchSize >= data.length) {
                     currentSampleIndex = 0;
-                    shuffle(data);
+                    StatisticsUtilities.shuffle(data);
                 }
                 startIndex = currentSampleIndex;
                 endIndex = currentSampleIndex + batchSize;
@@ -57,15 +52,6 @@ public abstract class AbstractStochasticFunction<T> {
             return estimateGradient(point, startIndex, endIndex);
         } else {
             return estimateGradient(point, 0, data.length);
-        }
-    }
-
-    private void shuffle(T[] array) {
-        for (int i = array.length - 1; i > 0; i--) {
-            int j = random.nextInt(i + 1);
-            T tempValue = array[j];
-            array[j] = array[i];
-            array[i] = tempValue;
         }
     }
 

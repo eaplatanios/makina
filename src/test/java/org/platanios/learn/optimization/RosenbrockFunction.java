@@ -22,7 +22,7 @@ class RosenbrockFunction extends AbstractFunction {
         double x2 = optimizationVariables.get(1);
         double dx1 = - 400 * (x2 - Math.pow(x1, 2)) * x1 - 2 * (1 - x1);
         double dx2 = 200 * (x2 - Math.pow(x1, 2));
-        return Vectors.buildDense(new double[]{dx1, dx2});
+        return Vectors.dense(new double[]{dx1, dx2});
     }
 
     @Override

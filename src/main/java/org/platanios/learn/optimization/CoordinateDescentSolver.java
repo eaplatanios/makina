@@ -92,7 +92,7 @@ public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
         CYCLE {
             @Override
             protected void updateDirection(CoordinateDescentSolver solver) {
-                solver.currentDirection = Vectors.buildDense(solver.numberOfDimensions, 0);
+                solver.currentDirection = Vectors.dense(solver.numberOfDimensions, 0);
                 solver.currentDirection.set(solver.currentDimension, 1);
                 if (solver.currentDimension >= solver.numberOfDimensions - 1) {
                     solver.currentDimension = 0;
@@ -112,7 +112,7 @@ public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
         BACK_AND_FORTH {
             @Override
             protected void updateDirection(CoordinateDescentSolver solver) {
-                solver.currentDirection = Vectors.buildDense(solver.numberOfDimensions, 0);
+                solver.currentDirection = Vectors.dense(solver.numberOfDimensions, 0);
                 if (solver.currentDimension < solver.numberOfDimensions) {
                     solver.currentDirection.set(solver.currentDimension, 1);
                     solver.currentDimension++;
@@ -138,7 +138,7 @@ public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
         CYCLE_AND_JOIN_ENDPOINTS {
             @Override
             protected void updateDirection(CoordinateDescentSolver solver) {
-                solver.currentDirection = Vectors.buildDense(solver.numberOfDimensions, 0);
+                solver.currentDirection = Vectors.dense(solver.numberOfDimensions, 0);
                 if (!solver.completedCycle) {
                     solver.currentDirection.set(solver.currentDimension, 1);
                     if (solver.currentDimension >= solver.numberOfDimensions - 1) {

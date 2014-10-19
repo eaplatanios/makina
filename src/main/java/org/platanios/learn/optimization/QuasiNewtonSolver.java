@@ -20,7 +20,7 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
     private Matrix previousH;
     Vector[] s;
     Vector[] y;
-    private Vector initialHessianInverseDiagonal = Vectors.buildDense(currentPoint.size(), 1);
+    private Vector initialHessianInverseDiagonal = Vectors.dense(currentPoint.size(), 1);
 
     private double symmetricRankOneSkippingParameter = 1e-8;
 
@@ -166,7 +166,7 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
             protected void updateDirection(QuasiNewtonSolver solver) {
                 if (solver.currentIteration > 0) {
                     solver.initialHessianInverseDiagonal =
-                            Vectors.buildDense(solver.currentPoint.size(), 1)
+                            Vectors.dense(solver.currentPoint.size(), 1)
                                     .mult(solver.s[0].inner(solver.y[0])
                                                   / solver.y[0].inner(solver.y[0]));
                 }

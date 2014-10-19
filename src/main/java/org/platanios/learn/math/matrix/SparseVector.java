@@ -1,7 +1,7 @@
 package org.platanios.learn.math.matrix;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.platanios.learn.math.MathUtilities;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
@@ -10,13 +10,16 @@ import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
- * Implements a class representing sparse vectors and supporting operations related to them. The sparse vectors are
- * stored in an internal hash map.
- * TODO: Add toDenseVector() method (or appropriate constructors).
- * TODO: Make this implementation faster by iterating over key-value pairs instead of iterating over keys and then retrieving values.
+ * Implements a class representing sparse vectors and supporting operations related to them. The sparse vector is stored
+ * in two internal parallel arrays: one holding the indexes of the nonzero elements of the vector, and one holding the
+ * values of the corresponding vector elements. Note that the indexes array is sorted and therefore, changing values of
+ * this vector's elements is a slow, O(n), operation, when n is the number of nonzero elements of the vector. Retrieving
+ * elements from this vector is an O(log(n)) operation (binary search is used).
+ *
  * TODO: Make unsafe versions of all the methods.
  *
  * Performs binary search to retrieve elements within the vector.
@@ -25,101 +28,167 @@ import java.util.function.Function;
  */
 public class SparseVector extends Vector {
     /** The size of the vector. */
-    private final int size;
+    protected final int size;
 
-    private int numberOfNonzeroEntries;
+    /** The cardinality of the vector (i.e., the number of nonzero elements of the vector). This value also limits the
+     * effective length of {@link #indexes} and {@link #values} (i.e., only the first numberOfNonzeroEntries elements of
+     * those two arrays are ever used -- the rest of the values are considered to be equal to zero). */
+    protected int numberOfNonzeroEntries;
     /** Integer array for internal storage of the indexes of the non-zero vector elements. This array is always ordered
      * and is "parallel" to the {@link #values} array. */
-    private int[] indexes;
+    protected int[] indexes;
     /** Double array for internal storage of the values of the non-zero vector elements. This array is always "parallel"
      * to the {@link #indexes} array. */
-    private double[] values;
+    protected double[] values;
 
-    public static class Builder {
-        private int size;
-        private int numberOfNonzeroEntries;
-        private boolean usingMap = false;
-        private int[] indexes;
-        private double[] values;
-        private Map<Integer, Double> vectorElements;
+    /**
+     * Constructs a sparse vector of the given size and fills it with zeros.
+     *
+     * @param   size    The size of the vector.
+     */
+    public SparseVector(int size) {
+        this.size = size;
+        numberOfNonzeroEntries = 0;
+        indexes = new int[0];
+        values = new double[0];
+    }
 
-        public Builder(int size) {
-            this.size = size;
-            numberOfNonzeroEntries = 0;
-            indexes = new int[0];
-            values = new double[0];
-        }
-
-        public Builder(int size, Map<Integer, Double> vectorElements) {
-            this.size = size;
-            numberOfNonzeroEntries = vectorElements.size();
-            usingMap = true;
-            this.vectorElements = new TreeMap<>();
-            this.vectorElements.putAll(vectorElements);
-        }
-
-        public Builder(int size, int[] indexes, double[] values) {
-            if (indexes.length != values.length)
-                throw new IllegalArgumentException("The indexes array and the values array must have the same length");
-
-            this.size = size;
-            numberOfNonzeroEntries = indexes.length;
-            this.indexes = Arrays.copyOf(indexes, indexes.length);
-            this.values = Arrays.copyOf(values, values.length);
-        }
-
-        public Builder(int size, int numberOfNonzeroEntries, int[] indexes, double[] values) {
-            if (indexes.length != values.length)
-                throw new IllegalArgumentException("The indexes array and the values array must have the same length");
-
-            this.size = size;
-            this.numberOfNonzeroEntries = numberOfNonzeroEntries;
-            this.indexes = Arrays.copyOf(indexes, indexes.length);
-            this.values = Arrays.copyOf(values, values.length);
-        }
-
-        /**
-         * Constructs a sparse vector from the contents of the provided input stream. Note that the contents of the stream
-         * must have been written using the {@link #writeToStream(java.io.ObjectOutputStream)} function of this class in
-         * order to be compatible with this constructor. If the contents are not compatible, then an
-         * {@link java.io.IOException} might be thrown, or the constructed vector might be corrupted in some way.
-         *
-         * The indexes must be ordered.
-         *
-         * @param   inputStream The input stream to read the contents of this vector from.
-         * @throws  IOException
-         */
-        public Builder(ObjectInputStream inputStream) throws IOException {
-            size = inputStream.readInt();
-            numberOfNonzeroEntries = inputStream.readInt();
-            indexes = new int[numberOfNonzeroEntries];
-            values = new double[numberOfNonzeroEntries];
-            for (int i = 0; i < numberOfNonzeroEntries; i++) {
-                indexes[i] = inputStream.readInt();
-                values[i] = inputStream.readDouble();
-            }
-        }
-
-        public SparseVector build() {
-            return new SparseVector(this);
+    /**
+     * Constructs a sparse vector of the given size and fills it with the values stored in the provided map. The map
+     * must contain key-value pairs where the key corresponds to an element index and the value to the corresponding
+     * element's value. Note that the map does not need to be an sorted map; all the necessary sorting is performed
+     * within this constructor.
+     *
+     * @param   size            The size of the vector.
+     * @param   vectorElements  The map containing the vector indexes and values used to initialize the values of the
+     *                          elements of this vector.
+     */
+    public SparseVector(int size, Map<Integer, Double> vectorElements) {
+        this.size = size;
+        numberOfNonzeroEntries = vectorElements.size();
+        TreeMap<Integer, Double> sortingMap = new TreeMap<>();
+        sortingMap.putAll(vectorElements);
+        indexes = new int[numberOfNonzeroEntries];
+        values = new double[numberOfNonzeroEntries];
+        int i = 0;
+        for (int key : sortingMap.keySet()) {
+            indexes[i] = key;
+            values[i] = sortingMap.get(key);
+            i++;
         }
     }
 
-    private SparseVector(Builder builder) {
-        size = builder.size;
-        numberOfNonzeroEntries = builder.numberOfNonzeroEntries;
-        if (builder.usingMap) {
-            indexes = new int[numberOfNonzeroEntries];
-            values = new double[numberOfNonzeroEntries];
-            int i = 0;
-            for (int key : builder.vectorElements.keySet()) {
-                indexes[i] = key;
-                values[i] = builder.vectorElements.get(key);
-                i++;
+    /**
+     * Constructs a sparse vector of the given size from the provided parallel arrays containing indexes of vector
+     * elements and the values corresponding to those indexes.
+     *
+     * @param   size    The size of the vector.
+     * @param   indexes Integer array containing the indexes of the vector elements for which values are provided. This
+     *                  array is "parallel" to the values array, which is also provided as a parameter to this
+     *                  constructor.
+     * @param   values  Double array containing the values of the vector elements that correspond to the indexes
+     *                  provided in the indexes parameter to this constructor. This array is "parallel" to the values
+     *                  array, which is also provided as a parameter to this constructor.
+     */
+    public SparseVector(int size, int[] indexes, double[] values) {
+        if (indexes.length != values.length)
+            throw new IllegalArgumentException("The indexes array and the values array must have the same length");
+
+        this.size = size;
+        numberOfNonzeroEntries = indexes.length;
+        this.indexes = Arrays.copyOf(indexes, indexes.length);
+        this.values = Arrays.copyOf(values, values.length);
+    }
+
+    /**
+     * Constructs a sparse vector of the given size from the provided parallel arrays containing indexes of vector
+     * elements and the values corresponding to those indexes. Only the first numberOfNonzeroEntries elements of the
+     * provided parallel arrays are used and the rest are considered to be equal to zero. This mechanism is used (as
+     * opposed to simply resizing the parallel arrays) for time efficiency reasons. Resizing the arrays is slow and the
+     * memory cost can generally be considered small.
+     *
+     * @param   size                    The size of the vector.
+     * @param   numberOfNonzeroEntries  The number of elements to consider as corresponding to nonzero vector values in
+     *                                  the provided parallel arrays. This number also corresponds to the number of
+     *                                  nonzero elements (i.e., the cardinality) of the sparse vector being constructed.
+     * @param   indexes                 Integer array containing the indexes of the vector elements for which values are
+     *                                  provided. This array is "parallel" to the values array, which is also provided
+     *                                  as a parameter to this constructor.
+     * @param   values                  Double array containing the values of the vector elements that correspond to the
+     *                                  indexes provided in the indexes parameter to this constructor. This array is
+     *                                  "parallel" to the values array, which is also provided as a parameter to this
+     *                                  constructor.
+     */
+    public SparseVector(int size, int numberOfNonzeroEntries, int[] indexes, double[] values) {
+        if (indexes.length != values.length)
+            throw new IllegalArgumentException("The indexes array and the values array must have the same length");
+
+        this.size = size;
+        this.numberOfNonzeroEntries = numberOfNonzeroEntries;
+        this.indexes = Arrays.copyOf(indexes, indexes.length);
+        this.values = Arrays.copyOf(values, values.length);
+    }
+
+    /**
+     * Constructs a sparse vector from a dense vector. This constructor does not simply transform the dense vector
+     * structure into a sparse vector structure, but it also throws away elements of the dense vector that have a value
+     * effectively 0 (i.e., absolute value \(<\epsilon\), where \(\epsilon\) is the square root of the smallest possible
+     * value that can be represented by a double precision floating point number).
+     *
+     * @param   vector  The dense vector from which to construct this sparse vector.
+     */
+    public SparseVector(DenseVector vector) {
+        size = vector.size();
+        indexes = new int[size];
+        values = new double[size];
+        int currentIndex = 0;
+        for (int i = 0; i < size; i++) {
+            if (Math.abs(vector.array[i]) >= epsilon) {
+                indexes[currentIndex] = i;
+                values[currentIndex] = vector.array[i];
+                currentIndex++;
             }
-        } else {
-            indexes = builder.indexes;
-            values = builder.values;
+        }
+        numberOfNonzeroEntries = currentIndex;
+    }
+
+    /**
+     * Constructs a sparse vector from another sparse vector. This constructor basically constructs a copy of the
+     * provided sparse vector.
+     *
+     * @param   vector  The sparse vector from which to construct this sparse vector.
+     */
+    public SparseVector(SparseVector vector) {
+        this(vector.size, vector.numberOfNonzeroEntries, vector.indexes, vector.values);
+    }
+
+    /**
+     * Constructs a sparse vector from another hash vector.
+     *
+     * @param   vector  The hash vector from which to construct this sparse vector.
+     */
+    public SparseVector(HashVector vector) {
+        throw new NotImplementedException();
+    }
+
+    /**
+     * Constructs a sparse vector from the contents of the provided input stream. Note that the contents of the stream
+     * must have been written using the {@link #writeToStream(java.io.ObjectOutputStream)} method of this class in order
+     * to be compatible with this constructor. If the contents are not compatible, then an {@link java.io.IOException}
+     * might be thrown, or the constructed vector might be corrupted in some way.
+     *
+     * @param   inputStream The input stream to read the contents of the vector to be constructed from.
+     *
+     * @throws  IOException
+     */
+    public SparseVector(ObjectInputStream inputStream) throws IOException {
+        size = inputStream.readInt();
+        numberOfNonzeroEntries = inputStream.readInt();
+        indexes = new int[numberOfNonzeroEntries];
+        values = new double[numberOfNonzeroEntries];
+        for (int i = 0; i < numberOfNonzeroEntries; i++) {
+            indexes[i] = inputStream.readInt();
+            values[i] = inputStream.readDouble();
         }
     }
 
@@ -132,7 +201,7 @@ public class SparseVector extends Vector {
     /** {@inheritDoc} */
     @Override
     public SparseVector copy() {
-        return new Builder(size, indexes, values).build();
+        return new SparseVector(size, indexes, values);
     }
 
     /** {@inheritDoc} */
@@ -193,14 +262,14 @@ public class SparseVector extends Vector {
         if (endIndex < 0) {
             endIndex = -endIndex - 2;
         }
-        return new Builder(finalIndex - initialIndex + 1,
-                           Arrays.copyOfRange(indexes, startIndex, endIndex + 1),
-                           Arrays.copyOfRange(values, startIndex, endIndex + 1)).build();
+        return new SparseVector(finalIndex - initialIndex + 1,
+                                Arrays.copyOfRange(indexes, startIndex, endIndex + 1),
+                                Arrays.copyOfRange(values, startIndex, endIndex + 1));
     }
 
     /** {@inheritDoc} */
     @Override
-    public SparseVector get(int[] indexes) { // TODO: It may be possible to make this method faster.
+    public SparseVector get(int[] indexes) {
         Map<Integer, Double> elements = new TreeMap<>();
         for (int i = 0; i < indexes.length; i++) {
             if (i < 0 || i >= size) {
@@ -210,12 +279,12 @@ public class SparseVector extends Vector {
             }
             elements.put(i, get(indexes[i]));
         }
-        return new Builder(indexes.length, elements).build();
+        return new SparseVector(indexes.length, elements);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void set(int index, double value) { // TODO: Not working correctly for some reason.
+    public void set(int index, double value) {
         if (index < 0 || index >= size) {
             throw new IllegalArgumentException(
                     "The provided index must be between 0 (inclusive) and the size of the vector (exclusive)."
@@ -246,38 +315,9 @@ public class SparseVector extends Vector {
         }
     }
 
-    public void setFromZero(int index, double value) {
-        if (index < 0 || index >= size) {
-            throw new IllegalArgumentException(
-                    "The provided index must be between 0 (inclusive) and the size of the vector (exclusive)."
-            );
-        }
-        numberOfNonzeroEntries++;
-        int[] newIndexes = new int[numberOfNonzeroEntries];
-        double[] newValues = new double[numberOfNonzeroEntries];
-        boolean passedIndex = false;
-        for (int i = 0; i < numberOfNonzeroEntries; i++) {
-            if (indexes[i] < index) {
-                newIndexes[i] = indexes[i];
-                newValues[i] = values[i];
-            } else {
-                if (!passedIndex) {
-                    newIndexes[i] = index;
-                    newValues[i] = value;
-                    passedIndex = true;
-                } else {
-                    newIndexes[i] = indexes[i - 1];
-                    newValues[i] = values[i - 1];
-                }
-            }
-        }
-        indexes = newIndexes;
-        values = newValues;
-    }
-
     /** {@inheritDoc} */
-    @Override
-    public void set(int initialIndex, int finalIndex, Vector vector) { // TODO: It may be possible to make this method faster.
+    @Override // TODO: It may be possible to make this method faster.
+    public void set(int initialIndex, int finalIndex, Vector vector) {
         if (initialIndex < 0 || initialIndex >= size || finalIndex < 0 || finalIndex >= size) {
             throw new IllegalArgumentException(
                     "The provided indexes must be between 0 (inclusive) and the size of the vector (exclusive)."
@@ -360,38 +400,8 @@ public class SparseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public SparseVector map(Function<Double, Double> function) { // TODO: What happens when the function is applied to zeros? Maybe store the "zero" value somewhere and modify that.
-        int[] newIndexes = new int[numberOfNonzeroEntries];
-        double[] newValues = new double[numberOfNonzeroEntries];
-        int numberOfSkippedValues = 0;
-        for (int i = 0; i < numberOfNonzeroEntries; i++) {
-            double tempValue = function.apply(values[i]);
-            if (Math.abs(tempValue) >= epsilon) {
-                newIndexes[i - numberOfSkippedValues] = indexes[i];
-                newValues[i - numberOfSkippedValues] = tempValue;
-            } else {
-                numberOfSkippedValues++;
-            }
-        }
-        return new Builder(size, numberOfNonzeroEntries - numberOfSkippedValues, newIndexes, newValues).build();
-//        return new Builder(size,
-//                           Arrays.copyOfRange(newIndexes, 0, numberOfNonzeroEntries - numberOfSkippedValues),
-//                           Arrays.copyOfRange(newValues, 0, numberOfNonzeroEntries - numberOfSkippedValues))
-//                .build();
-    }
-
-    public SparseVector mapNoCompact(Function<Double, Double> function) { // TODO: What happens when the function is applied to zeros? Maybe store the "zero" value somewhere and modify that.
-        SparseVector resultVector = new Builder(size, indexes, values).build();
-        for (int i = 0; i < numberOfNonzeroEntries; i++) {
-            resultVector.values[i] = function.apply(resultVector.values[i]);
-        }
-        return resultVector;
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public SparseVector add(double scalar) {
-        SparseVector resultVector = new Builder(size, indexes, values).build();
+        SparseVector resultVector = new SparseVector(size, indexes, values);
         for (int i = 0; i < numberOfNonzeroEntries; i++) {
             resultVector.values[i] += scalar;
         }
@@ -413,6 +423,7 @@ public class SparseVector extends Vector {
         checkVectorSize(vector);
         SparseVector resultVector;
         if (vector.type() == VectorType.SPARSE) {
+            // TODO: Perform the sparse vector casting earlier and only once.
             int[] newIndexes = new int[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
             double[] newValues = new double[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
             int currentIndex = 0;
@@ -451,10 +462,7 @@ public class SparseVector extends Vector {
                 currentIndex++;
                 vector2Index++;
             }
-            resultVector = new Builder(size, currentIndex, newIndexes, newValues).build();
-//            resultVector = new Builder(size,
-//                                       Arrays.copyOfRange(newIndexes, 0, currentIndex),
-//                                       Arrays.copyOfRange(newValues, 0, currentIndex)).build();
+            resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
         } else {
             throw new NotImplementedException();
         }
@@ -503,8 +511,8 @@ public class SparseVector extends Vector {
                 currentIndex++;
                 vector2Index++;
             }
-            indexes = newIndexes; // Arrays.copyOfRange(newIndexes, 0, currentIndex);
-            values = newValues; // Arrays.copyOfRange(newValues, 0, currentIndex);
+            indexes = newIndexes;
+            values = newValues;
             numberOfNonzeroEntries = currentIndex;
         } else {
             throw new NotImplementedException();
@@ -515,7 +523,7 @@ public class SparseVector extends Vector {
     /** {@inheritDoc} */
     @Override
     public SparseVector sub(double scalar) {
-        SparseVector resultVector = new Builder(size, indexes, values).build();
+        SparseVector resultVector = new SparseVector(size, indexes, values);
         for (int i = 0; i < numberOfNonzeroEntries; i++) {
             resultVector.values[i] -= scalar;
         }
@@ -574,10 +582,7 @@ public class SparseVector extends Vector {
                 currentIndex++;
                 vector2Index++;
             }
-            resultVector = new Builder(size, currentIndex, newIndexes, newValues).build();
-//            resultVector = new Builder(size,
-//                                       Arrays.copyOfRange(newIndexes, 0, currentIndex),
-//                                       Arrays.copyOfRange(newValues, 0, currentIndex)).build();
+            resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
         } else {
             throw new NotImplementedException();
         }
@@ -626,8 +631,8 @@ public class SparseVector extends Vector {
                 currentIndex++;
                 vector2Index++;
             }
-            indexes = newIndexes; // Arrays.copyOfRange(newIndexes, 0, currentIndex);
-            values = newValues; // Arrays.copyOfRange(newValues, 0, currentIndex);
+            indexes = newIndexes;
+            values = newValues;
             numberOfNonzeroEntries = currentIndex;
         } else {
             throw new NotImplementedException();
@@ -660,10 +665,7 @@ public class SparseVector extends Vector {
                     vector2Index++;
                 }
             }
-            resultVector = new Builder(size, currentIndex, newIndexes, newValues).build();
-//            resultVector = new Builder(size,
-//                                       Arrays.copyOfRange(newIndexes, 0, currentIndex),
-//                                       Arrays.copyOfRange(newValues, 0, currentIndex)).build();
+            resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
         } else {
             throw new NotImplementedException();
         }
@@ -694,8 +696,8 @@ public class SparseVector extends Vector {
                     vector2Index++;
                 }
             }
-            indexes = newIndexes; // Arrays.copyOfRange(newIndexes, 0, currentIndex);
-            values = newValues; // Arrays.copyOfRange(newValues, 0, currentIndex);
+            indexes = newIndexes;
+            values = newValues;
             numberOfNonzeroEntries = currentIndex;
         } else {
             throw new NotImplementedException();
@@ -728,10 +730,7 @@ public class SparseVector extends Vector {
                     vector2Index++;
                 }
             }
-            resultVector = new Builder(size, currentIndex, newIndexes, newValues).build();
-//            resultVector = new Builder(size,
-//                                       Arrays.copyOfRange(newIndexes, 0, currentIndex),
-//                                       Arrays.copyOfRange(newValues, 0, currentIndex)).build();
+            resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
         } else {
             throw new NotImplementedException();
         }
@@ -762,8 +761,8 @@ public class SparseVector extends Vector {
                     vector2Index++;
                 }
             }
-            indexes = newIndexes; // Arrays.copyOfRange(newIndexes, 0, currentIndex);
-            values = newValues; // Arrays.copyOfRange(newValues, 0, currentIndex);
+            indexes = newIndexes;
+            values = newValues;
             numberOfNonzeroEntries = currentIndex;
         } else {
             throw new NotImplementedException();
@@ -774,7 +773,7 @@ public class SparseVector extends Vector {
     /** {@inheritDoc} */
     @Override
     public SparseVector mult(double scalar) {
-        SparseVector resultVector = new Builder(size, indexes, values).build();
+        SparseVector resultVector = new SparseVector(size, indexes, values);
         for (int i = 0; i < numberOfNonzeroEntries; i++) {
             resultVector.values[i] *= scalar;
         }
@@ -793,7 +792,7 @@ public class SparseVector extends Vector {
     /** {@inheritDoc} */
     @Override
     public SparseVector div(double scalar) {
-        SparseVector resultVector = new Builder(size, indexes, values).build();
+        SparseVector resultVector = new SparseVector(size, indexes, values);
         for (int i = 0; i < numberOfNonzeroEntries; i++) {
             resultVector.values[i] /= scalar;
         }
@@ -853,10 +852,7 @@ public class SparseVector extends Vector {
                 currentIndex++;
                 vector2Index++;
             }
-            resultVector = new Builder(size, currentIndex, newIndexes, newValues).build();
-//            resultVector = new Builder(size,
-//                                       Arrays.copyOfRange(newIndexes, 0, currentIndex),
-//                                       Arrays.copyOfRange(newValues, 0, currentIndex)).build();
+            resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
         } else {
             throw new NotImplementedException();
         }
@@ -906,8 +902,8 @@ public class SparseVector extends Vector {
                 currentIndex++;
                 vector2Index++;
             }
-            indexes = newIndexes; // Arrays.copyOfRange(newIndexes, 0, currentIndex);
-            values = newValues; // Arrays.copyOfRange(newValues, 0, currentIndex);
+            indexes = newIndexes;
+            values = newValues;
             numberOfNonzeroEntries = currentIndex;
         } else {
             throw new NotImplementedException();
@@ -943,6 +939,852 @@ public class SparseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
+    public SparseVector hypotenuse(Vector vector) {
+        checkVectorSize(vector);
+        SparseVector resultVector;
+        if (vector.type() == VectorType.SPARSE) {
+            int[] newIndexes = new int[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            double[] newValues = new double[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            int currentIndex = 0;
+            int vector1Index = 0;
+            int vector2Index = 0;
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] = values[vector1Index];
+                    currentIndex++;
+                    vector1Index++;
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
+                    newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                    newValues[currentIndex] = ((SparseVector) vector).values[vector2Index];
+                    currentIndex++;
+                    vector2Index++;
+                } else {
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] = MathUtilities.computeHypotenuse(
+                            values[vector1Index],
+                            ((SparseVector) vector).values[vector2Index]
+                    );
+                    currentIndex++;
+                    vector1Index++;
+                    vector2Index++;
+                }
+            }
+            while (vector1Index < numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = indexes[vector1Index];
+                newValues[currentIndex] = values[vector1Index];
+                currentIndex++;
+                vector1Index++;
+            }
+            while (vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                newValues[currentIndex] = ((SparseVector) vector).values[vector2Index];
+                currentIndex++;
+                vector2Index++;
+            }
+            resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
+        } else {
+            throw new NotImplementedException();
+        }
+        return resultVector;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public SparseVector hypotenuseInPlace(Vector vector) {
+        checkVectorSize(vector);
+        if (vector.type() == VectorType.SPARSE) {
+            int[] newIndexes = new int[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            double[] newValues = new double[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            int currentIndex = 0;
+            int vector1Index = 0;
+            int vector2Index = 0;
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] = values[vector1Index];
+                    currentIndex++;
+                    vector1Index++;
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
+                    newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                    newValues[currentIndex] = ((SparseVector) vector).values[vector2Index];
+                    currentIndex++;
+                    vector2Index++;
+                } else {
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] = MathUtilities.computeHypotenuse(
+                            values[vector1Index],
+                            ((SparseVector) vector).values[vector2Index]
+                    );
+                    currentIndex++;
+                    vector1Index++;
+                    vector2Index++;
+                }
+            }
+            while (vector1Index < numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = indexes[vector1Index];
+                newValues[currentIndex] = values[vector1Index];
+                currentIndex++;
+                vector1Index++;
+            }
+            while (vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                newValues[currentIndex] = ((SparseVector) vector).values[vector2Index];
+                currentIndex++;
+                vector2Index++;
+            }
+            indexes = newIndexes;
+            values = newValues;
+            numberOfNonzeroEntries = currentIndex;
+        } else {
+            throw new NotImplementedException();
+        }
+        return this;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public SparseVector hypotenuseFast(Vector vector) {
+        checkVectorSize(vector);
+        SparseVector resultVector;
+        if (vector.type() == VectorType.SPARSE) {
+            int[] newIndexes = new int[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            double[] newValues = new double[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            int currentIndex = 0;
+            int vector1Index = 0;
+            int vector2Index = 0;
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] = values[vector1Index];
+                    currentIndex++;
+                    vector1Index++;
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
+                    newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                    newValues[currentIndex] = ((SparseVector) vector).values[vector2Index];
+                    currentIndex++;
+                    vector2Index++;
+                } else {
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] = Math.sqrt(
+                            values[vector1Index] * values[vector1Index]
+                                    + ((SparseVector) vector).values[vector2Index]
+                                    * ((SparseVector) vector).values[vector2Index]
+                    );
+                    currentIndex++;
+                    vector1Index++;
+                    vector2Index++;
+                }
+            }
+            while (vector1Index < numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = indexes[vector1Index];
+                newValues[currentIndex] = values[vector1Index];
+                currentIndex++;
+                vector1Index++;
+            }
+            while (vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                newValues[currentIndex] = ((SparseVector) vector).values[vector2Index];
+                currentIndex++;
+                vector2Index++;
+            }
+            resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
+        } else {
+            throw new NotImplementedException();
+        }
+        return resultVector;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public SparseVector hypotenuseFastInPlace(Vector vector) {
+        checkVectorSize(vector);
+        if (vector.type() == VectorType.SPARSE) {
+            int[] newIndexes = new int[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            double[] newValues = new double[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            int currentIndex = 0;
+            int vector1Index = 0;
+            int vector2Index = 0;
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] = values[vector1Index];
+                    currentIndex++;
+                    vector1Index++;
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
+                    newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                    newValues[currentIndex] = ((SparseVector) vector).values[vector2Index];
+                    currentIndex++;
+                    vector2Index++;
+                } else {
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] = Math.sqrt(
+                            values[vector1Index] * values[vector1Index]
+                                    + ((SparseVector) vector).values[vector2Index]
+                                    * ((SparseVector) vector).values[vector2Index]
+                    );
+                    currentIndex++;
+                    vector1Index++;
+                    vector2Index++;
+                }
+            }
+            while (vector1Index < numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = indexes[vector1Index];
+                newValues[currentIndex] = values[vector1Index];
+                currentIndex++;
+                vector1Index++;
+            }
+            while (vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                newValues[currentIndex] = ((SparseVector) vector).values[vector2Index];
+                currentIndex++;
+                vector2Index++;
+            }
+            indexes = newIndexes;
+            values = newValues;
+            numberOfNonzeroEntries = currentIndex;
+        } else {
+            throw new NotImplementedException();
+        }
+        return this;
+    }
+
+    /**
+     * Computes the result of applying the supplied function element-wise to the current vector and returns it in a new
+     * vector. The function is assumed to return 0 when applied to 0. Therefore, it is only applied to the nonzero
+     * elements of this vector.
+     *
+     * @param   function    The function to apply to the current vector element-wise.
+     * @return              A new vector holding the result of the operation.
+     */
+    @Override
+    public SparseVector map(Function<Double, Double> function) {
+        int[] newIndexes = new int[numberOfNonzeroEntries];
+        double[] newValues = new double[numberOfNonzeroEntries];
+        int numberOfSkippedValues = 0;
+        for (int i = 0; i < numberOfNonzeroEntries; i++) {
+            double tempValue = function.apply(values[i]);
+            if (Math.abs(tempValue) >= epsilon) {
+                newIndexes[i - numberOfSkippedValues] = indexes[i];
+                newValues[i - numberOfSkippedValues] = tempValue;
+            } else {
+                numberOfSkippedValues++;
+            }
+        }
+        return new SparseVector(size, numberOfNonzeroEntries - numberOfSkippedValues, newIndexes, newValues);
+    }
+
+    /**
+     * Computes the result of applying the supplied function element-wise to the current vector and replaces the current
+     * vector with the result. The function is assumed to return 0 when applied to 0. Therefore, it is only applied to
+     * the nonzero elements of this vector.
+     *
+     * @param   function    The function to apply to the current vector element-wise.
+     * @return              The current vector holding the result of the operation.
+     */
+    @Override
+    public SparseVector mapInPlace(Function<Double, Double> function) {
+        int[] newIndexes = new int[numberOfNonzeroEntries];
+        double[] newValues = new double[numberOfNonzeroEntries];
+        int numberOfSkippedValues = 0;
+        for (int i = 0; i < numberOfNonzeroEntries; i++) {
+            double tempValue = function.apply(values[i]);
+            if (Math.abs(tempValue) >= epsilon) {
+                newIndexes[i - numberOfSkippedValues] = indexes[i];
+                newValues[i - numberOfSkippedValues] = tempValue;
+            } else {
+                numberOfSkippedValues++;
+            }
+        }
+        numberOfNonzeroEntries -= numberOfSkippedValues;
+        indexes = newIndexes;
+        values = newValues;
+        return this;
+    }
+
+    /**
+     * Computes the result of applying the supplied function element-wise to the current vector and the provided vector
+     * (the elements of the two vectors with the same index are considered in pairs) and returns it in a new vector. The
+     * function is assumed to return 0 when both of its arguments are 0. Therefore, it is only applied when either one
+     * or both of the two vector values are nonzero for a each index.
+     *
+     * @param   function    The function to apply to the current vector element-wise.
+     * @param   vector      The vector to use for second argument of the function.
+     * @return              A new vector holding the result of the operation.
+     */
+    @Override
+    public SparseVector mapBiFunction(BiFunction<Double, Double, Double> function, Vector vector) {
+        checkVectorSize(vector);
+        SparseVector resultVector;
+        if (vector.type() == VectorType.SPARSE) {
+            int[] newIndexes = new int[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            double[] newValues = new double[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            int currentIndex = 0;
+            int vector1Index = 0;
+            int vector2Index = 0;
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] = function.apply(values[vector1Index], 0.0);
+                    currentIndex++;
+                    vector1Index++;
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
+                    newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                    newValues[currentIndex] = function.apply(0.0, ((SparseVector) vector).values[vector2Index]);
+                    currentIndex++;
+                    vector2Index++;
+                } else {
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] = function.apply(values[vector1Index],
+                                                             ((SparseVector) vector).values[vector2Index]);
+                    currentIndex++;
+                    vector1Index++;
+                    vector2Index++;
+                }
+            }
+            while (vector1Index < numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = indexes[vector1Index];
+                newValues[currentIndex] = function.apply(values[vector1Index], 0.0);
+                currentIndex++;
+                vector1Index++;
+            }
+            while (vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                newValues[currentIndex] = function.apply(0.0, ((SparseVector) vector).values[vector2Index]);
+                currentIndex++;
+                vector2Index++;
+            }
+            resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
+        } else {
+            throw new NotImplementedException();
+        }
+        return resultVector;
+    }
+
+    /**
+     * Computes the result of applying the supplied function element-wise to the current vector and the provided vector
+     * (the elements of the two vectors with the same index are considered in pairs) and replaces the current vector
+     * with the result. The function is assumed to return 0 when both of its arguments are 0. Therefore, it is only
+     * applied when either one or both of the two vector values are nonzero for a each index.
+     *
+     * @param   function    The function to apply to the current vector element-wise.
+     * @param   vector      The vector to use for second argument of the function.
+     * @return              The current vector holding the result of the operation.
+     */
+    @Override
+    public SparseVector mapBiFunctionInPlace(BiFunction<Double, Double, Double> function, Vector vector) {
+        checkVectorSize(vector);
+        if (vector.type() == VectorType.SPARSE) {
+            int[] newIndexes = new int[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            double[] newValues = new double[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            int currentIndex = 0;
+            int vector1Index = 0;
+            int vector2Index = 0;
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] = function.apply(values[vector1Index], 0.0);
+                    currentIndex++;
+                    vector1Index++;
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
+                    newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                    newValues[currentIndex] = function.apply(0.0, ((SparseVector) vector).values[vector2Index]);
+                    currentIndex++;
+                    vector2Index++;
+                } else {
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] = function.apply(values[vector1Index],
+                                                             ((SparseVector) vector).values[vector2Index]);
+                    currentIndex++;
+                    vector1Index++;
+                    vector2Index++;
+                }
+            }
+            while (vector1Index < numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = indexes[vector1Index];
+                newValues[currentIndex] = function.apply(values[vector1Index], 0.0);
+                currentIndex++;
+                vector1Index++;
+            }
+            while (vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                newValues[currentIndex] = function.apply(0.0, ((SparseVector) vector).values[vector2Index]);
+                currentIndex++;
+                vector2Index++;
+            }
+            indexes = newIndexes;
+            values = newValues;
+            numberOfNonzeroEntries = currentIndex;
+        } else {
+            throw new NotImplementedException();
+        }
+        return this;
+    }
+
+    /**
+     * Computes the result of applying the supplied function element-wise to the current vector and adding the provided
+     * vector to the result, and returns it in a new vector. The function is assumed to return 0 when applied to 0.
+     * Therefore, it is only applied to the nonzero elements of this vector.
+     *
+     * @param   function    The function to apply to the current vector element-wise.
+     * @param   vector      The vector to add to the function result.
+     * @return              A new vector holding the result of the operation.
+     */
+    @Override
+    public SparseVector mapAdd(Function<Double, Double> function, Vector vector) {
+        checkVectorSize(vector);
+        SparseVector resultVector;
+        if (vector.type() == VectorType.SPARSE) {
+            int[] newIndexes = new int[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            double[] newValues = new double[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            int currentIndex = 0;
+            int vector1Index = 0;
+            int vector2Index = 0;
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
+                    double tempValue = function.apply(values[vector1Index]);
+                    if (Math.abs(tempValue) >= epsilon) {
+                        newIndexes[currentIndex] = indexes[vector1Index];
+                        newValues[currentIndex] = function.apply(values[vector1Index]);
+                        currentIndex++;
+                    }
+                    vector1Index++;
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
+                    newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                    newValues[currentIndex] = ((SparseVector) vector).values[vector2Index];
+                    currentIndex++;
+                    vector2Index++;
+                } else {
+                    double tempValue = function.apply(values[vector1Index]);
+                    if (Math.abs(tempValue) >= epsilon) {
+                        newIndexes[currentIndex] = indexes[vector1Index];
+                        newValues[currentIndex] = function.apply(values[vector1Index])
+                                + ((SparseVector) vector).values[vector2Index];
+                        currentIndex++;
+                    }
+                    vector1Index++;
+                    vector2Index++;
+                }
+            }
+            while (vector1Index < numberOfNonzeroEntries) {
+                double tempValue = function.apply(values[vector1Index]);
+                if (Math.abs(tempValue) >= epsilon) {
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] = function.apply(values[vector1Index]);
+                    currentIndex++;
+                }
+                vector1Index++;
+            }
+            while (vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                newValues[currentIndex] = ((SparseVector) vector).values[vector2Index];
+                currentIndex++;
+                vector2Index++;
+            }
+            resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
+        } else {
+            throw new NotImplementedException();
+        }
+        return resultVector;
+    }
+
+    /**
+     * Computes the result of applying the supplied function element-wise to the current vector and adding the provided
+     * vector to the result, and replaces the current vector with the result. The function is assumed to return 0 when
+     * applied to 0. Therefore, it is only applied to the nonzero elements of this vector.
+     *
+     * @param   function    The function to apply to the current vector element-wise.
+     * @param   vector      The vector to add to the function result.
+     * @return              The current vector holding the result of the operation.
+     */
+    @Override
+    public SparseVector mapAddInPlace(Function<Double, Double> function, Vector vector) {
+        checkVectorSize(vector);
+        if (vector.type() == VectorType.SPARSE) {
+            int[] newIndexes = new int[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            double[] newValues = new double[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            int currentIndex = 0;
+            int vector1Index = 0;
+            int vector2Index = 0;
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
+                    double tempValue = function.apply(values[vector1Index]);
+                    if (Math.abs(tempValue) >= epsilon) {
+                        newIndexes[currentIndex] = indexes[vector1Index];
+                        newValues[currentIndex] = function.apply(values[vector1Index]);
+                        currentIndex++;
+                    }
+                    vector1Index++;
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
+                    newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                    newValues[currentIndex] = ((SparseVector) vector).values[vector2Index];
+                    currentIndex++;
+                    vector2Index++;
+                } else {
+                    double tempValue = function.apply(values[vector1Index]);
+                    if (Math.abs(tempValue) >= epsilon) {
+                        newIndexes[currentIndex] = indexes[vector1Index];
+                        newValues[currentIndex] = function.apply(values[vector1Index])
+                                + ((SparseVector) vector).values[vector2Index];
+                        currentIndex++;
+                    }
+                    vector1Index++;
+                    vector2Index++;
+                }
+            }
+            while (vector1Index < numberOfNonzeroEntries) {
+                double tempValue = function.apply(values[vector1Index]);
+                if (Math.abs(tempValue) >= epsilon) {
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] = function.apply(values[vector1Index]);
+                    currentIndex++;
+                }
+                vector1Index++;
+            }
+            while (vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                newValues[currentIndex] = ((SparseVector) vector).values[vector2Index];
+                currentIndex++;
+                vector2Index++;
+            }
+            indexes = newIndexes;
+            values = newValues;
+            numberOfNonzeroEntries = currentIndex;
+        } else {
+            throw new NotImplementedException();
+        }
+        return this;
+    }
+
+    /**
+     * Computes the result of applying the supplied function element-wise to the current vector and subtracting the
+     * provided vector from the result, and returns it in a new vector. The function is assumed to return 0 when applied
+     * to 0. Therefore, it is only applied to the nonzero elements of this vector.
+     *
+     * @param   function    The function to apply to the current vector element-wise.
+     * @param   vector      The vector to subtract from the function result.
+     * @return              A new vector holding the result of the operation.
+     */
+    @Override
+    public SparseVector mapSub(Function<Double, Double> function, Vector vector) {
+        checkVectorSize(vector);
+        SparseVector resultVector;
+        if (vector.type() == VectorType.SPARSE) {
+            int[] newIndexes = new int[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            double[] newValues = new double[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            int currentIndex = 0;
+            int vector1Index = 0;
+            int vector2Index = 0;
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
+                    double tempValue = function.apply(values[vector1Index]);
+                    if (Math.abs(tempValue) >= epsilon) {
+                        newIndexes[currentIndex] = indexes[vector1Index];
+                        newValues[currentIndex] = function.apply(values[vector1Index]);
+                        currentIndex++;
+                    }
+                    vector1Index++;
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
+                    newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                    newValues[currentIndex] = - ((SparseVector) vector).values[vector2Index];
+                    currentIndex++;
+                    vector2Index++;
+                } else {
+                    double tempValue = function.apply(values[vector1Index]);
+                    if (Math.abs(tempValue) >= epsilon) {
+                        newIndexes[currentIndex] = indexes[vector1Index];
+                        newValues[currentIndex] = function.apply(values[vector1Index])
+                                - ((SparseVector) vector).values[vector2Index];
+                        currentIndex++;
+                    }
+                    vector1Index++;
+                    vector2Index++;
+                }
+            }
+            while (vector1Index < numberOfNonzeroEntries) {
+                double tempValue = function.apply(values[vector1Index]);
+                if (Math.abs(tempValue) >= epsilon) {
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] = function.apply(values[vector1Index]);
+                    currentIndex++;
+                }
+                vector1Index++;
+            }
+            while (vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                newValues[currentIndex] = - ((SparseVector) vector).values[vector2Index];
+                currentIndex++;
+                vector2Index++;
+            }
+            resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
+        } else {
+            throw new NotImplementedException();
+        }
+        return resultVector;
+    }
+
+    /**
+     * Computes the result of applying the supplied function element-wise to the current vector and subtracting the
+     * provided vector from the result, and replaces the current vector with the result. The function is assumed to
+     * return 0 when applied to 0. Therefore, it is only applied to the nonzero elements of this vector.
+     *
+     * @param   function    The function to apply to the current vector element-wise.
+     * @param   vector      The vector to subtract from the function result.
+     * @return              The current vector holding the result of the operation.
+     */
+    @Override
+    public SparseVector mapSubInPlace(Function<Double, Double> function, Vector vector) {
+        checkVectorSize(vector);
+        if (vector.type() == VectorType.SPARSE) {
+            int[] newIndexes = new int[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            double[] newValues = new double[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            int currentIndex = 0;
+            int vector1Index = 0;
+            int vector2Index = 0;
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
+                    double tempValue = function.apply(values[vector1Index]);
+                    if (Math.abs(tempValue) >= epsilon) {
+                        newIndexes[currentIndex] = indexes[vector1Index];
+                        newValues[currentIndex] = function.apply(values[vector1Index]);
+                        currentIndex++;
+                    }
+                    vector1Index++;
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
+                    newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                    newValues[currentIndex] = - ((SparseVector) vector).values[vector2Index];
+                    currentIndex++;
+                    vector2Index++;
+                } else {
+                    double tempValue = function.apply(values[vector1Index]);
+                    if (Math.abs(tempValue) >= epsilon) {
+                        newIndexes[currentIndex] = indexes[vector1Index];
+                        newValues[currentIndex] = function.apply(values[vector1Index])
+                                - ((SparseVector) vector).values[vector2Index];
+                        currentIndex++;
+                    }
+                    vector1Index++;
+                    vector2Index++;
+                }
+            }
+            while (vector1Index < numberOfNonzeroEntries) {
+                double tempValue = function.apply(values[vector1Index]);
+                if (Math.abs(tempValue) >= epsilon) {
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] = function.apply(values[vector1Index]);
+                    currentIndex++;
+                }
+                vector1Index++;
+            }
+            while (vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                newValues[currentIndex] = - ((SparseVector) vector).values[vector2Index];
+                currentIndex++;
+                vector2Index++;
+            }
+            indexes = newIndexes;
+            values = newValues;
+            numberOfNonzeroEntries = currentIndex;
+        } else {
+            throw new NotImplementedException();
+        }
+        return this;
+    }
+
+    /**
+     * Computes the result of applying the supplied function element-wise to the current vector and multiplying the
+     * provided vector with the result element-wise, and returns it in a new vector. The function is assumed to return 0
+     * when applied to 0. Therefore, it is only applied to the nonzero elements of this vector.
+     *
+     * @param   function    The function to apply to the current vector element-wise.
+     * @param   vector      The vector to multiply with the function result element-wise.
+     * @return              A new vector holding the result of the operation.
+     */
+    @Override
+    public SparseVector mapMultElementwise(Function<Double, Double> function, Vector vector) {
+        checkVectorSize(vector);
+        SparseVector resultVector;
+        if (vector.type() == VectorType.SPARSE) {
+            int[] newIndexes = new int[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            double[] newValues = new double[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            int currentIndex = 0;
+            int vector1Index = 0;
+            int vector2Index = 0;
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
+                    vector1Index++;
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
+                    vector2Index++;
+                } else {
+                    double tempValue = function.apply(values[vector1Index]);
+                    if (Math.abs(tempValue) >= epsilon) {
+                        newIndexes[currentIndex] = indexes[vector1Index];
+                        newValues[currentIndex] = function.apply(values[vector1Index])
+                                * ((SparseVector) vector).values[vector2Index];
+                        currentIndex++;
+                    }
+                    vector1Index++;
+                    vector2Index++;
+                }
+            }
+            resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
+        } else {
+            throw new NotImplementedException();
+        }
+        return resultVector;
+    }
+
+    /**
+     * Computes the result of applying the supplied function element-wise to the current vector and multiplying the
+     * provided vector with the result element-wise, and replaces the current vector with the result. The function is
+     * assumed to return 0 when applied to 0. Therefore, it is only applied to the nonzero elements of this vector.
+     *
+     * @param   function    The function to apply to the current vector element-wise.
+     * @param   vector      The vector to multiply with the function result element-wise.
+     * @return              The current vector holding the result of the operation.
+     */
+    @Override
+    public SparseVector mapMultElementwiseInPlace(Function<Double, Double> function, Vector vector) {
+        checkVectorSize(vector);
+        if (vector.type() == VectorType.SPARSE) {
+            int[] newIndexes = new int[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            double[] newValues = new double[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            int currentIndex = 0;
+            int vector1Index = 0;
+            int vector2Index = 0;
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
+                    vector1Index++;
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
+                    vector2Index++;
+                } else {
+                    double tempValue = function.apply(values[vector1Index]);
+                    if (Math.abs(tempValue) >= epsilon) {
+                        newIndexes[currentIndex] = indexes[vector1Index];
+                        newValues[currentIndex] = function.apply(values[vector1Index])
+                                * ((SparseVector) vector).values[vector2Index];
+                        currentIndex++;
+                    }
+                    vector1Index++;
+                    vector2Index++;
+                }
+            }
+            indexes = newIndexes;
+            values = newValues;
+            numberOfNonzeroEntries = currentIndex;
+        } else {
+            throw new NotImplementedException();
+        }
+        return this;
+    }
+
+    /**
+     * Computes the result of applying the supplied function element-wise to the current vector and dividing the
+     * provided vector with the result element-wise, and returns it in a new vector. The function is assumed to return 0
+     * when applied to 0. Therefore, it is only applied to the nonzero elements of this vector. Cases where we have
+     * division by 0 are not considered. For those cases the returned result is 0 and so the user of this class
+     * should take care to avoid such cases on his own.
+     *
+     * @param   function    The function to apply to the current vector element-wise.
+     * @param   vector      The vector to divide with the function result element-wise.
+     * @return              A new vector holding the result of the operation.
+     */
+    @Override
+    public SparseVector mapDivElementwise(Function<Double, Double> function, Vector vector) {
+        checkVectorSize(vector);
+        SparseVector resultVector;
+        if (vector.type() == VectorType.SPARSE) {
+            int[] newIndexes = new int[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            double[] newValues = new double[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            int currentIndex = 0;
+            int vector1Index = 0;
+            int vector2Index = 0;
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
+                    vector1Index++;
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
+                    vector2Index++;
+                } else {
+                    double tempValue = function.apply(values[vector1Index]);
+                    if (Math.abs(tempValue) >= epsilon) {
+                        newIndexes[currentIndex] = indexes[vector1Index];
+                        newValues[currentIndex] = function.apply(values[vector1Index])
+                                / ((SparseVector) vector).values[vector2Index];
+                        currentIndex++;
+                    }
+                    vector1Index++;
+                    vector2Index++;
+                }
+            }
+            resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
+        } else {
+            throw new NotImplementedException();
+        }
+        return resultVector;
+    }
+
+    /**
+     * Computes the result of applying the supplied function element-wise to the current vector and dividing the
+     * provided vector with the result element-wise, and replaces the current vector with the result. The function is
+     * assumed to return 0 when applied to 0. Therefore, it is only applied to the nonzero elements of this vector.
+     * Cases where we have division by 0 are not considered. For those cases the returned result is 0 and so the user of
+     * this class should take care to avoid such cases on his own.
+     *
+     * @param   function    The function to apply to the current vector element-wise.
+     * @param   vector      The vector to divide with the function result element-wise.
+     * @return              The current vector holding the result of the operation.
+     */
+    @Override
+    public SparseVector mapDivElementwiseInPlace(Function<Double, Double> function, Vector vector) {
+        checkVectorSize(vector);
+        if (vector.type() == VectorType.SPARSE) {
+            int[] newIndexes = new int[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            double[] newValues = new double[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            int currentIndex = 0;
+            int vector1Index = 0;
+            int vector2Index = 0;
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
+                    vector1Index++;
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
+                    vector2Index++;
+                } else {
+                    double tempValue = function.apply(values[vector1Index]);
+                    if (Math.abs(tempValue) >= epsilon) {
+                        newIndexes[currentIndex] = indexes[vector1Index];
+                        newValues[currentIndex] = function.apply(values[vector1Index])
+                                / ((SparseVector) vector).values[vector2Index];
+                        currentIndex++;
+                    }
+                    vector1Index++;
+                    vector2Index++;
+                }
+            }
+            indexes = newIndexes;
+            values = newValues;
+            numberOfNonzeroEntries = currentIndex;
+        } else {
+            throw new NotImplementedException();
+        }
+        return this;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public Matrix outer(Vector vector) {
         return null;
     }
@@ -965,6 +1807,14 @@ public class SparseVector extends Vector {
         return null;
     }
 
+    /**
+     * This method compacts this vector. Compacting in this case is the process of removing elements that are
+     * effectively equal to 0 (i.e., absolute value \(<\epsilon\), where \(\epsilon\) is the square root of the smallest
+     * possible value that can be represented by a double precision floating point number) from the two parallel arrays
+     * used to store the sparse vector internally.
+     *
+     * @return  The current vector after the compacting operation is completed.
+     */
     public SparseVector compact() {
         int[] newIndexes = new int[numberOfNonzeroEntries];
         double[] newValues = new double[numberOfNonzeroEntries];
@@ -996,18 +1846,46 @@ public class SparseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public boolean equals(Object object) { // TODO: This method needs to check for any "stored" zero elements as well.
-        if (!(object instanceof SparseVector))
+    public boolean equals(Object object) {
+        if (!(object instanceof Vector))
             return false;
         if (object == this)
             return true;
 
-        SparseVector other = (SparseVector) object;
-        return new EqualsBuilder()
-                .append(size, other.size)
-                .append(indexes, other.indexes)
-                .append(values, other.values)
-                .isEquals();
+        if (((Vector) object).type() == VectorType.SPARSE) {
+            SparseVector otherVector = (SparseVector) object;
+            int vector1Index = 0;
+            int vector2Index = 0;
+            while (vector1Index < numberOfNonzeroEntries && vector2Index < otherVector.numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < otherVector.indexes[vector2Index]) {
+                    if (Math.abs(values[vector1Index]) >= epsilon)
+                        return false;
+                    vector1Index++;
+                } else if (indexes[vector1Index] > otherVector.indexes[vector2Index]) {
+                    if (Math.abs(otherVector.values[vector1Index]) >= epsilon)
+                        return false;
+                    vector2Index++;
+                } else {
+                    if (Math.abs(values[vector1Index] - otherVector.values[vector1Index]) >= epsilon)
+                        return false;
+                    vector1Index++;
+                    vector2Index++;
+                }
+            }
+            while (vector1Index < numberOfNonzeroEntries) {
+                if (Math.abs(values[vector1Index]) >= epsilon)
+                    return false;
+                vector1Index++;
+            }
+            while (vector2Index < otherVector.numberOfNonzeroEntries) {
+                if (Math.abs(otherVector.values[vector1Index]) >= epsilon)
+                    return false;
+                vector2Index++;
+            }
+            return true;
+        } else {
+            throw new NotImplementedException();
+        }
     }
 
     /** {@inheritDoc} */

@@ -13,7 +13,7 @@ public class QuasiNewtonSolverTest {
         System.out.println("Rosenbrock Function Quasi-Newton DFP Solver:\n");
         QuasiNewtonSolver quasiNewtonDFPSolver =
                 new QuasiNewtonSolver.Builder(new RosenbrockFunction(),
-                                              Vectors.buildDense(new double[]{-1.2, 1}))
+                                              Vectors.dense(new double[]{-1.2, 1}))
                 .method(QuasiNewtonSolver.Method.DAVIDON_FLETCHER_POWELL)
                 .build();
         double[] actualResult = quasiNewtonDFPSolver.solve().getDenseArray();
@@ -26,7 +26,7 @@ public class QuasiNewtonSolverTest {
         System.out.println("Rosenbrock Function Quasi-Newton BFGS Solver:\n");
         QuasiNewtonSolver quasiNewtonBFGSSolver =
                 new QuasiNewtonSolver.Builder(new RosenbrockFunction(),
-                                              Vectors.buildDense(new double[]{-1.2, 1}))
+                                              Vectors.dense(new double[]{-1.2, 1}))
                         .method(QuasiNewtonSolver.Method.BROYDEN_FLETCHER_GOLDFARB_SHANNO)
                         .build();
         double[] actualResult = quasiNewtonBFGSSolver.solve().getDenseArray();
@@ -39,7 +39,7 @@ public class QuasiNewtonSolverTest {
 //        System.out.println("Rosenbrock Function Quasi-Newton SR1 Solver:\n");
 //        QuasiNewtonSolver quasiNewtonSR1Solver =
 //                new QuasiNewtonSolver.Builder(new RosenbrockFunction(),
-//                                              VectorFactory.buildDense(new double[] { -1.2, 1 }))
+//                                              VectorFactory.dense(new double[] { -1.2, 1 }))
 //                .method(QuasiNewtonSolver.Method.SYMMETRIC_RANK_ONE)
 //                .build();
 //        double[] actualResult = quasiNewtonSR1Solver.solve().getDenseArray();
@@ -52,7 +52,7 @@ public class QuasiNewtonSolverTest {
 //        System.out.println("Rosenbrock Function Quasi-Newton Broyden Solver:\n");
 //        QuasiNewtonSolver quasiNewtonBroydenSolver =
 //                new QuasiNewtonSolver.Builder(new RosenbrockFunction(),
-//                                              VectorFactory.buildDense(new double[] { -1.2, 1 }))
+//                                              VectorFactory.dense(new double[] { -1.2, 1 }))
 //                        .method(QuasiNewtonSolver.Method.BROYDEN)
 //                        .build();
 //        double[] actualResult = quasiNewtonBroydenSolver.solve().getDenseArray();
@@ -65,7 +65,7 @@ public class QuasiNewtonSolverTest {
         System.out.println("Rosenbrock Function Quasi-Newton L-BFGS Solver:\n");
         QuasiNewtonSolver quasiNewtonLBFGSSolver =
                 new QuasiNewtonSolver.Builder(new RosenbrockFunction(),
-                                              Vectors.buildDense(new double[]{-1.2, 1}))
+                                              Vectors.dense(new double[]{-1.2, 1}))
                 .method(QuasiNewtonSolver.Method.LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO)
                 .m(10)
                 .build();

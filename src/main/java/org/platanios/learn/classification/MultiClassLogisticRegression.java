@@ -9,7 +9,6 @@ import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.AbstractStochasticFunction;
 
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -67,7 +66,7 @@ public class MultiClassLogisticRegression {
 
         if (builder.stochastic) {
             solver = new StochasticGradientDescentSolver.Builder(new StochasticLikelihoodFunction(),
-                                                                 Vectors.buildDense(weights.getColumnPackedArrayCopy()))
+                                                                 Vectors.dense(weights.getColumnPackedArrayCopy()))
                     .sampleWithReplacement(false)
                     .maximumNumberOfIterations(10000)
                     .maximumNumberOfIterationsWithNoPointChange(5)
@@ -81,7 +80,7 @@ public class MultiClassLogisticRegression {
         }
         if (!builder.largeScale) {
             solver = new QuasiNewtonSolver.Builder(new LikelihoodFunction(),
-                                                   Vectors.buildDense(weights.getColumnPackedArrayCopy()))
+                                                   Vectors.dense(weights.getColumnPackedArrayCopy()))
                     .method(QuasiNewtonSolver.Method.BROYDEN_FLETCHER_GOLDFARB_SHANNO)
                     .maximumNumberOfIterations(10000)
                     .maximumNumberOfFunctionEvaluations(1000000)
@@ -94,7 +93,7 @@ public class MultiClassLogisticRegression {
                     .build();
         } else {
             solver = new QuasiNewtonSolver.Builder(new LikelihoodFunction(),
-                                                   Vectors.buildDense(weights.getColumnPackedArrayCopy()))
+                                                   Vectors.dense(weights.getColumnPackedArrayCopy()))
                     .method(QuasiNewtonSolver.Method.LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO)
                     .m(10)
                     .maximumNumberOfIterations(10000)
@@ -121,7 +120,7 @@ public class MultiClassLogisticRegression {
     }
 
     public double[] predict(double[] point) {
-        Vector probabilities = weights.transpose().multiply(Vectors.buildDense(point));
+        Vector probabilities = weights.transpose().multiply(Vectors.dense(point));
         probabilities = probabilities.sub(MatrixUtilities.computeLogSumExp(probabilities));
         probabilities = probabilities.map(Math::exp);
         return probabilities.getDenseArray();
@@ -187,7 +186,7 @@ public class MultiClassLogisticRegression {
                     );
                 }
             }
-            return Vectors.buildDense(gradient.getColumnPackedArrayCopy());
+            return Vectors.dense(gradient.getColumnPackedArrayCopy());
         }
 
         /**
@@ -294,7 +293,7 @@ public class MultiClassLogisticRegression {
                     );
                 }
             }
-            return Vectors.buildDense(gradient.getColumnPackedArrayCopy());
+            return Vectors.dense(gradient.getColumnPackedArrayCopy());
         }
     }
 }

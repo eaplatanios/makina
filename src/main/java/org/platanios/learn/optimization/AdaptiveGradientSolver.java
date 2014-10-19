@@ -11,7 +11,7 @@ public final class AdaptiveGradientSolver extends AbstractStochasticIterativeSol
     private final double epsilon = Math.sqrt(Double.MIN_VALUE);
 
     private Vector sumOfGradients;
-    private Vector sumOfGradientSquares;
+    private Vector squareRootOfSumOfGradientSquares;
 
     protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
             extends AbstractStochasticIterativeSolver.AbstractBuilder<T> {
@@ -40,21 +40,21 @@ public final class AdaptiveGradientSolver extends AbstractStochasticIterativeSol
         super(builder);
 
         sumOfGradients = Vectors.build(currentGradient.size(), currentGradient.type());
-        sumOfGradientSquares = Vectors.build(currentGradient.size(), currentGradient.type()).add(epsilon);
+        squareRootOfSumOfGradientSquares = Vectors.build(currentGradient.size(), currentGradient.type()).add(epsilon);
     }
 
     @Override
     public void updateDirection() {
-        sumOfGradientSquares.addInPlace(currentGradient.map(gradient -> Math.pow(gradient, 2)));
+        squareRootOfSumOfGradientSquares.hypotenuseFastInPlace(currentGradient);
         if (useL1Regularization) {
             currentDirection = sumOfGradients
                     .addInPlace(currentGradient)
-                    .map(x -> Math.abs(x) / (currentIteration + 1) <= l1RegularizationWeight ?
-                            0.0 : - Math.signum(x) * (Math.abs(x) / (currentIteration + 1) - l1RegularizationWeight))
-                    .divElementwise(sumOfGradientSquares.map(Math::sqrt))
-                    .mult(currentIteration);
+                    .mapDivElementwise(x -> Math.abs(x) / (currentIteration + 1) <= l1RegularizationWeight ?
+                            0.0 : - currentIteration * Math.signum(x)
+                                               * (Math.abs(x) / (currentIteration + 1) - l1RegularizationWeight),
+                                          squareRootOfSumOfGradientSquares);
         } else {
-            currentDirection = currentGradient.divElementwise(sumOfGradientSquares.map(Math::sqrt)).mult(-1);
+            currentDirection = currentGradient.divElementwise(squareRootOfSumOfGradientSquares).mult(-1);
         }
     }
 

@@ -16,10 +16,10 @@ public class ConjugateGradientSolverTest {
     public void testConjugateGradientSolver() throws NonPositiveDefiniteMatrixException {
         System.out.println("Quadratic Function Conjugate Gradient Solver:\n");
         Matrix A = new Matrix(new double[][] { { 1, 0.5 }, { 0.5, 1 } });
-        Vector b = Vectors.buildDense(new double[]{1, 2});
+        Vector b = Vectors.dense(new double[]{1, 2});
         ConjugateGradientSolver conjugateGradientSolver =
                 new ConjugateGradientSolver.Builder(new QuadraticFunction(A, b),
-                                                    Vectors.buildDense(new double[]{0, 0}))
+                                                    Vectors.dense(new double[]{0, 0}))
                 .preconditioningMethod(ConjugateGradientSolver.PreconditioningMethod.IDENTITY)
                 .build();
         double[] actualResult = conjugateGradientSolver.solve().getDenseArray();
