@@ -40,7 +40,7 @@ public final class AdaptiveGradientSolver extends AbstractStochasticIterativeSol
         super(builder);
 
         sumOfGradients = Vectors.build(currentGradient.size(), currentGradient.type());
-        squareRootOfSumOfGradientSquares = Vectors.build(currentGradient.size(), currentGradient.type()).add(epsilon);
+        squareRootOfSumOfGradientSquares = Vectors.build(currentGradient.size(), currentGradient.type());
     }
 
     @Override
@@ -52,9 +52,9 @@ public final class AdaptiveGradientSolver extends AbstractStochasticIterativeSol
                     .mapDivElementwise(x -> Math.abs(x) / (currentIteration + 1) <= l1RegularizationWeight ?
                             0.0 : - currentIteration * Math.signum(x)
                                                * (Math.abs(x) / (currentIteration + 1) - l1RegularizationWeight),
-                                          squareRootOfSumOfGradientSquares);
+                                          squareRootOfSumOfGradientSquares.add(epsilon));
         } else {
-            currentDirection = currentGradient.divElementwise(squareRootOfSumOfGradientSquares).mult(-1);
+            currentDirection = currentGradient.divElementwise(squareRootOfSumOfGradientSquares.add(epsilon)).mult(-1);
         }
     }
 
