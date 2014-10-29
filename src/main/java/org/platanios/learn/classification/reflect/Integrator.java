@@ -60,6 +60,7 @@ public class Integrator<T extends Vector, S> {
                         }
                         classifiers.add((TrainableClassifier<T, S>) classifier);
                     }
+                    objectInputStream.close();
                 } catch (IOException e) {
                     System.out.println("Could not open the file \""
                                                + inputFile.getAbsolutePath() + "\" to load the models from!");
@@ -210,6 +211,7 @@ public class Integrator<T extends Vector, S> {
                 objectOutputStream.writeInt(classifier.type().ordinal());
                 classifier.writeModelToStream(objectOutputStream);
             }
+            objectOutputStream.close();
         } catch (IOException e) {
             System.out.println("Could not create or open the file \""
                                        + outputFile.getAbsolutePath() + "\" to store the models!");
