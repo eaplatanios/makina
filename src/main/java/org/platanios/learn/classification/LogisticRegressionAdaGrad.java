@@ -1,6 +1,5 @@
 package org.platanios.learn.classification;
 
-import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.AdaptiveGradientSolver;
 import org.platanios.learn.optimization.StochasticSolverStepSize;
 
@@ -13,8 +12,14 @@ import java.io.ObjectInputStream;
  * @author Emmanouil Antonios Platanios
  */
 public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegression {
-    /** The adaptive gradient solver that is used to train this binary logistic regression model. */
-    private final AdaptiveGradientSolver solver;
+    private final boolean sampleWithReplacement;
+    private final int maximumNumberOfIterations;
+    private final int maximumNumberOfIterationsWithNoPointChange;
+    private final double pointChangeTolerance;
+    private final boolean checkForPointConvergence;
+    private final int batchSize;
+    private final StochasticSolverStepSize stepSize;
+    private final double[] stepSizeParameters;
 
     /**
      * This abstract class needs to be extended by the builder of its parent binary logistic regression class. It
@@ -36,13 +41,13 @@ public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegressi
         protected StochasticSolverStepSize stepSize = StochasticSolverStepSize.SCALED;
         protected double[] stepSizeParameters = new double[] { 10, 0.75 };
 
-        public AbstractBuilder(DataInstance<Vector, Integer>[] trainingData) {
-            super(trainingData);
+        public AbstractBuilder(int numberOfFeatures) {
+            super(numberOfFeatures);
         }
 
-        protected AbstractBuilder(DataInstance<Vector, Integer>[] trainingData, ObjectInputStream inputStream)
+        protected AbstractBuilder(ObjectInputStream inputStream)
                 throws IOException {
-            super(trainingData, inputStream);
+            super(inputStream);
         }
 
         public T sampleWithReplacement(boolean sampleWithReplacement) {
@@ -98,13 +103,12 @@ public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegressi
     public static class Builder extends AbstractBuilder<Builder> {
         /**
          * Constructs a builder object for a binary logistic regression model that will be trained with the provided
-         * training data using the adaptive gradient algorithm.
+         * training data using the stochastic gradient descent algorithm.
          *
-         * @param   trainingData    The training data with which the binary logistic regression model to be built by
-         *                          this builder will be trained.
+         * @param   numberOfFeatures    The number of features used.
          */
-        public Builder(DataInstance<Vector, Integer>[] trainingData) {
-            super(trainingData);
+        public Builder(int numberOfFeatures) {
+            super(numberOfFeatures);
         }
 
         /**
@@ -112,11 +116,12 @@ public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegressi
          * weight vectors from the provided input stream. This constructor should be used if the logistic regression
          * model that is being built is going to be used for making predictions alone (i.e., no training is supported).
          *
-         * @param   inputStream The input stream from which to read the model parameters from.
-         * @throws java.io.IOException
+         * @param   inputStream         The input stream from which to read the model parameters from.
+         *
+         * @throws IOException
          */
-        public Builder(DataInstance<Vector, Integer>[] trainingData, ObjectInputStream inputStream) throws IOException {
-            super(trainingData, inputStream);
+        public Builder(ObjectInputStream inputStream) throws IOException {
+            super(inputStream);
         }
 
         /** {@inheritDoc} */
@@ -136,26 +141,38 @@ public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegressi
     private LogisticRegressionAdaGrad(AbstractBuilder<?> builder) {
         super(builder);
 
-        solver = new AdaptiveGradientSolver.Builder(new StochasticLikelihoodFunction(), weights)
-                .sampleWithReplacement(builder.sampleWithReplacement)
-                .maximumNumberOfIterations(builder.maximumNumberOfIterations)
-                .maximumNumberOfIterationsWithNoPointChange(builder.maximumNumberOfIterationsWithNoPointChange)
-                .pointChangeTolerance(builder.pointChangeTolerance)
-                .checkForPointConvergence(builder.checkForPointConvergence)
-                .batchSize(builder.batchSize)
-                .stepSize(builder.stepSize)
-                .stepSizeParameters(builder.stepSizeParameters)
-                .useL1Regularization(builder.useL1Regularization)
-                .l1RegularizationWeight(builder.l1RegularizationWeight)
-                .useL2Regularization(builder.useL2Regularization)
-                .l2RegularizationWeight(builder.l2RegularizationWeight)
-                .loggingLevel(builder.loggingLevel)
-                .build();
+        sampleWithReplacement = builder.sampleWithReplacement;
+        maximumNumberOfIterations = builder.maximumNumberOfIterations;
+        maximumNumberOfIterationsWithNoPointChange = builder.maximumNumberOfIterationsWithNoPointChange;
+        pointChangeTolerance = builder.pointChangeTolerance;
+        checkForPointConvergence = builder.checkForPointConvergence;
+        batchSize = builder.batchSize;
+        stepSize = builder.stepSize;
+        stepSizeParameters = builder.stepSizeParameters;
+    }
+
+    @Override
+    public ClassifierType type() {
+        return ClassifierType.LOGISTIC_REGRESSION_ADAGRAD;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void train() {
-        weights = solver.solve();
+    protected void train() {
+        weights = new AdaptiveGradientSolver.Builder(new StochasticLikelihoodFunction(), weights)
+                .sampleWithReplacement(sampleWithReplacement)
+                .maximumNumberOfIterations(maximumNumberOfIterations)
+                .maximumNumberOfIterationsWithNoPointChange(maximumNumberOfIterationsWithNoPointChange)
+                .pointChangeTolerance(pointChangeTolerance)
+                .checkForPointConvergence(checkForPointConvergence)
+                .batchSize(batchSize)
+                .stepSize(stepSize)
+                .stepSizeParameters(stepSizeParameters)
+                .useL1Regularization(useL1Regularization)
+                .l1RegularizationWeight(l1RegularizationWeight)
+                .useL2Regularization(useL2Regularization)
+                .l2RegularizationWeight(l2RegularizationWeight)
+                .loggingLevel(loggingLevel)
+                .build().solve();
     }
 }

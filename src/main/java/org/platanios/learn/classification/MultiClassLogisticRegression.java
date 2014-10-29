@@ -9,13 +9,14 @@ import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.AbstractStochasticFunction;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
 public class MultiClassLogisticRegression {
     private final Solver solver;
-    private final TrainingData.Entry[] trainingData;
+    private final List<TrainingData.Entry> trainingData;
     private final int trainingDataSize;
     private final int numberOfFeatures;
     private final int numberOfClasses;
@@ -23,7 +24,7 @@ public class MultiClassLogisticRegression {
     private Matrix weights;
 
     public static class Builder {
-        private final TrainingData.Entry[] trainingData;
+        private final List<TrainingData.Entry> trainingData;
         private final int trainingDataSize;
         private final int numberOfFeatures;
         private final int numberOfClasses;
@@ -33,13 +34,13 @@ public class MultiClassLogisticRegression {
 
         public Builder(TrainingData trainingData) {
             this.trainingData = trainingData.getData();
-            Integer[] trainingDataLabels = new Integer[this.trainingData.length];
-            for (int i = 0; i < this.trainingData.length; i++) {
-                trainingDataLabels[i] = this.trainingData[i].label;
+            Integer[] trainingDataLabels = new Integer[this.trainingData.size()];
+            for (int i = 0; i < this.trainingData.size(); i++) {
+                trainingDataLabels[i] = this.trainingData.get(i).label;
             }
-            trainingDataSize = this.trainingData.length;
+            trainingDataSize = this.trainingData.size();
             numberOfClasses = 1 + Arrays.asList(trainingDataLabels).stream().max(Integer::compare).get();
-            numberOfFeatures = this.trainingData[0].features.size();
+            numberOfFeatures = this.trainingData.get(0).features.size();
         }
 
         public Builder stochastic(boolean stochastic) {
@@ -149,9 +150,9 @@ public class MultiClassLogisticRegression {
             Matrix W = new Matrix(weights, numberOfFeatures);
             double likelihood = 0;
             for (int n = 0; n < trainingDataSize; n++) {
-                Vector innerProduct = W.transpose().multiply(trainingData[n].features);
-                if (trainingData[n].label != numberOfClasses - 1) {
-                    likelihood += innerProduct.get(trainingData[n].label);
+                Vector innerProduct = W.transpose().multiply(trainingData.get(n).features);
+                if (trainingData.get(n).label != numberOfClasses - 1) {
+                    likelihood += innerProduct.get(trainingData.get(n).label);
                 }
                 Vector innerProductWithLastClass = Vectors.build(numberOfClasses, VectorType.DENSE);
                 innerProductWithLastClass.set(0, numberOfClasses - 2, innerProduct);
@@ -171,18 +172,18 @@ public class MultiClassLogisticRegression {
             Matrix W = new Matrix(weights, numberOfFeatures);
             Matrix gradient = new Matrix(W.getRowDimension(), W.getColumnDimension());
             for (int n = 0; n < trainingDataSize; n++) {
-                Vector probabilities = W.transpose().multiply(trainingData[n].features);
+                Vector probabilities = W.transpose().multiply(trainingData.get(n).features);
                 Vector innerProductWithLastClass = Vectors.build(numberOfClasses, VectorType.DENSE);
                 innerProductWithLastClass.set(0, numberOfClasses - 2, probabilities);
                 probabilities = probabilities.sub(MatrixUtilities.computeLogSumExp(innerProductWithLastClass));
                 probabilities = probabilities.map(Math::exp);
-                if (trainingData[n].label != numberOfClasses - 1) {
-                    probabilities.set(trainingData[n].label, probabilities.get(trainingData[n].label) - 1);
+                if (trainingData.get(n).label != numberOfClasses - 1) {
+                    probabilities.set(trainingData.get(n).label, probabilities.get(trainingData.get(n).label) - 1);
                 }
                 for (int c = 0; c < numberOfClasses - 1; c++) {
                     gradient.setColumn(
                             c,
-                            gradient.getColumn(c).add(trainingData[n].features.mult(probabilities.get(c)))
+                            gradient.getColumn(c).add(trainingData.get(n).features.mult(probabilities.get(c)))
                     );
                 }
             }
@@ -205,7 +206,7 @@ public class MultiClassLogisticRegression {
             Matrix W = new Matrix(weights, numberOfFeatures);
             Matrix hessian = new Matrix(new double[weights.size()][weights.size()]);
             for (int n = 0; n < trainingDataSize; n++) {
-                Vector probabilities = W.transpose().multiply(trainingData[n].features);
+                Vector probabilities = W.transpose().multiply(trainingData.get(n).features);
                 Vector innerProductWithLastClass = Vectors.build(numberOfClasses, VectorType.DENSE);
                 innerProductWithLastClass.set(0, numberOfClasses - 2, probabilities);
                 probabilities = probabilities.sub(MatrixUtilities.computeLogSumExp(innerProductWithLastClass));
@@ -218,8 +219,8 @@ public class MultiClassLogisticRegression {
                                                                 (j + 1) * numberOfFeatures - 1);
                         if (i != j) {
                             subMatrix = subMatrix.add(
-                                    trainingData[n].features
-                                            .outer(trainingData[n].features)
+                                    trainingData.get(n).features
+                                            .outer(trainingData.get(n).features)
                                             .multiply(-probabilities.get(i) * probabilities.get(j))
                             );
                             hessian.setSubMatrix(
@@ -238,8 +239,8 @@ public class MultiClassLogisticRegression {
                             );
                         } else {
                             subMatrix = subMatrix.add(
-                                    trainingData[n].features
-                                            .outer(trainingData[n].features)
+                                    trainingData.get(n).features
+                                            .outer(trainingData.get(n).features)
                                             .multiply(probabilities.get(i) * (1 - probabilities.get(i)))
                             );
                             hessian.setSubMatrix(
@@ -278,18 +279,18 @@ public class MultiClassLogisticRegression {
             Matrix W = new Matrix(weights, numberOfFeatures);
             Matrix gradient = new Matrix(W.getRowDimension(), W.getColumnDimension());
             for (int i = startIndex; i < endIndex; i++) {
-                Vector probabilities = W.transpose().multiply(data[i].features);
+                Vector probabilities = W.transpose().multiply(data.get(i).features);
                 Vector innerProductWithLastClass = Vectors.build(numberOfClasses, VectorType.DENSE);
                 innerProductWithLastClass.set(0, numberOfClasses - 2, probabilities);
                 probabilities = probabilities.sub(MatrixUtilities.computeLogSumExp(innerProductWithLastClass));
                 probabilities = probabilities.map(Math::exp);
-                if (data[i].label != numberOfClasses - 1) {
-                    probabilities.set(data[i].label, probabilities.get(data[i].label) - 1);
+                if (data.get(i).label != numberOfClasses - 1) {
+                    probabilities.set(data.get(i).label, probabilities.get(data.get(i).label) - 1);
                 }
                 for (int c = 0; c < numberOfClasses - 1; c++) {
                     gradient.setColumn(
                             c,
-                            gradient.getColumn(c).add(data[i].features.mult(probabilities.get(c)))
+                            gradient.getColumn(c).add(data.get(i).features.mult(probabilities.get(c)))
                     );
                 }
             }

@@ -7,6 +7,7 @@ import org.platanios.learn.math.matrix.VectorType;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.List;
 
 /**
  * This abstract class provides some functionality that is common to all binary logistic regression classes. All those
@@ -125,6 +126,11 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Integer>
         }
     }
 
+    @Override
+    public ClassifierType type() {
+        return ClassifierType.LOGISTIC_REGRESSION_PREDICTION;
+    }
+
     /**
      * Predict the probability of the class label being 1 for some data instance.
      *
@@ -132,7 +138,7 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Integer>
      * @return                  The probability of the class label being 1 for the given data instance.
      */
     public double predict(DataInstance<Vector, Integer> dataInstance) {
-        return 1 / (1 + Math.exp(-weights.dot(dataInstance.getFeatures())));
+        return 1 / (1 + Math.exp(-weights.dot(dataInstance.features())));
     }
 
     /**
@@ -144,12 +150,33 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Integer>
      * @return                  The probabilities of the class labels being equal to 1 for the given set of data
      *                          instances.
      */
-    public double[] predict(DataInstance<Vector, Integer>[] dataInstances) {
-        double[] probabilities = new double[dataInstances.length];
-        for (int i = 0; i < dataInstances.length; i++) {
-            probabilities[i] = 1 / (1 + Math.exp(-weights.dot(dataInstances[i].getFeatures())));
+    public double[] predict(List<DataInstance<Vector, Integer>> dataInstances) {
+        double[] probabilities = new double[dataInstances.size()];
+        for (int i = 0; i < dataInstances.size(); i++) {
+            probabilities[i] = 1 / (1 + Math.exp(-weights.dot(dataInstances.get(i).features())));
         }
         return probabilities;
+    }
+
+    public List<DataInstance<Vector, Integer>> predictInPlace(List<DataInstance<Vector, Integer>> dataInstances) {
+        for (int i = 0; i < dataInstances.size(); i++) {
+            DataInstance<Vector, Integer> currentDataInstance = dataInstances.get(i);
+            double probability = 1 / (1 + Math.exp(-weights.dot(currentDataInstance.features())));
+            if (probability >= 0.5) {
+                dataInstances.set(i,
+                                  new DataInstance.Builder<>(currentDataInstance)
+                                          .label(1)
+                                          .probability(probability)
+                                          .build());
+            } else {
+                dataInstances.set(i,
+                                  new DataInstance.Builder<>(currentDataInstance)
+                                          .label(0)
+                                          .probability(1 - probability)
+                                          .build());
+            }
+        }
+        return dataInstances;
     }
 
     /**
@@ -158,6 +185,7 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Integer>
      * @param   outputStream    The output stream to write the current logistic regression model to.
      * @throws  IOException
      */
+    @Override
     public void writeModelToStream(ObjectOutputStream outputStream) throws IOException {
         outputStream.writeInt(numberOfFeatures);
         outputStream.writeBoolean(sparse);

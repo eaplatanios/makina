@@ -2,17 +2,19 @@ package org.platanios.learn.classification;
 
 import org.platanios.learn.math.matrix.Vector;
 
+import java.util.List;
+
 /**
  * @author Emmanouil Antonios Platanios
  */
 public class TrainingData {
-    private Entry[] data;
+    private List<Entry> data;
 
-    public TrainingData(Entry[] data) {
+    public TrainingData(List<Entry> data) {
         this.data = data;
     }
 
-    public Entry[] getData() {
+    public List<Entry> getData() {
         return data;
     }
 

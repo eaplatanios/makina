@@ -7,7 +7,6 @@ import org.platanios.learn.optimization.function.AbstractStochasticFunction;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -19,7 +18,18 @@ import java.util.List;
 abstract class AbstractTrainableLogisticRegression
         extends LogisticRegressionPrediction implements TrainableClassifier<Vector, Integer> {
     /** The data used to train this model. */
-    private final DataInstance<Vector, Integer>[] trainingData;
+    private List<DataInstance<Vector, Integer>> trainingData;
+    /** Indicates whether /(L_1/) regularization is used. */
+    protected final boolean useL1Regularization;
+    /** The /(L_1/) regularization weight used. This variable is only used when {@link #useL1Regularization} is set to
+     * true. */
+    protected final double l1RegularizationWeight;
+    /** Indicates whether /(L_2/) regularization is used. */
+    protected final boolean useL2Regularization;
+    /** The /(L_2/) regularization weight used. This variable is only used when {@link #useL2Regularization} is set to
+     * true. */
+    protected final double l2RegularizationWeight;
+    protected final int loggingLevel;
 
     /**
      * This abstract class needs to be extended by the builder of its parent binary logistic regression class. It
@@ -32,9 +42,6 @@ abstract class AbstractTrainableLogisticRegression
      */
     protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
             extends LogisticRegressionPrediction.AbstractBuilder<T> {
-        /** The data used to train the logistic regression model to be built. */
-        private final DataInstance<Vector, Integer>[] trainingData;
-
         /** Indicates whether /(L_1/) regularization is used. */
         protected boolean useL1Regularization = false;
         /** The /(L_1/) regularization weight used. This variable is only used when {@link #useL1Regularization} is set
@@ -52,20 +59,24 @@ abstract class AbstractTrainableLogisticRegression
          * training data. This constructor should be used if the logistic regression model that is being built is going
          * to be trained.
          *
-         * @param   trainingData    The training data with which the binary logistic regression model to be built by
-         *                          this builder will be trained.
+         * @param   numberOfFeatures    The number of features used.
          */
-        protected AbstractBuilder(DataInstance<Vector, Integer>[] trainingData) {
-            this.trainingData = trainingData;
-            numberOfFeatures = trainingData[0].getFeatures().size();
+        protected AbstractBuilder(int numberOfFeatures) {
+            this.numberOfFeatures = numberOfFeatures;
         }
 
-        protected AbstractBuilder(DataInstance<Vector, Integer>[] trainingData, ObjectInputStream inputStream)
+        /**
+         * Constructs a builder object for a binary logistic regression model and loads the model parameters (i.e., the
+         * weight vectors from the provided input stream. This constructor should be used if the logistic regression
+         * model that is being built is going to be used for making predictions alone (i.e., no training is supported).
+         *
+         * @param   inputStream         The input stream from which to read the model parameters from.
+         *
+         * @throws IOException
+         */
+        protected AbstractBuilder(ObjectInputStream inputStream)
                 throws IOException {
             super(inputStream);
-
-            this.trainingData = trainingData;
-            numberOfFeatures = trainingData[0].getFeatures().size();
         }
 
         /**
@@ -133,11 +144,10 @@ abstract class AbstractTrainableLogisticRegression
          * Constructs a builder object for a binary logistic regression model that will be trained with the provided
          * training data using the stochastic gradient descent algorithm.
          *
-         * @param   trainingData    The training data with which the binary logistic regression model to be built by
-         *                          this builder will be trained.
+         * @param   numberOfFeatures    The number of features used.
          */
-        public Builder(DataInstance<Vector, Integer>[] trainingData) {
-            super(trainingData);
+        public Builder(int numberOfFeatures) {
+            super(numberOfFeatures);
         }
 
         /**
@@ -145,11 +155,12 @@ abstract class AbstractTrainableLogisticRegression
          * weight vectors from the provided input stream. This constructor should be used if the logistic regression
          * model that is being built is going to be used for making predictions alone (i.e., no training is supported).
          *
-         * @param   inputStream The input stream from which to read the model parameters from.
-         * @throws java.io.IOException
+         * @param   inputStream         The input stream from which to read the model parameters from.
+         *
+         * @throws IOException
          */
-        public Builder(DataInstance<Vector, Integer>[] trainingData, ObjectInputStream inputStream) throws IOException {
-            super(trainingData, inputStream);
+        public Builder(ObjectInputStream inputStream) throws IOException {
+            super(inputStream);
         }
 
         /** {@inheritDoc} */
@@ -168,13 +179,28 @@ abstract class AbstractTrainableLogisticRegression
      */
     protected AbstractTrainableLogisticRegression(AbstractBuilder<?> builder) {
         super(builder);
-        trainingData = builder.trainingData;
+
+        useL1Regularization = builder.useL1Regularization;
+        l1RegularizationWeight = builder.l1RegularizationWeight;
+        useL2Regularization = builder.useL2Regularization;
+        l2RegularizationWeight = builder.l2RegularizationWeight;
+        loggingLevel = builder.loggingLevel;
+    }
+
+    public boolean train(List<DataInstance<Vector, Integer>> trainingData) {
+        this.trainingData = trainingData;
+        try {
+            train();
+            return true;
+        } catch(Exception e) {
+            return false;
+        }
     }
 
     /**
      * Trains this logistic regression model using the data provided while building this object.
      */
-    public abstract void train();
+    protected abstract void train();
 
     /**
      * Class implementing the likelihood function for the binary logistic regression model. No function is provided to
@@ -191,8 +217,8 @@ abstract class AbstractTrainableLogisticRegression
         public double computeValue(Vector weights) {
             double likelihood = 0;
             for (DataInstance<Vector, Integer> dataInstance : trainingData) {
-                double probability = weights.dot(dataInstance.getFeatures());
-                likelihood += probability * (dataInstance.getLabel() - 1) - Math.log(1 + Math.exp(-probability));
+                double probability = weights.dot(dataInstance.features());
+                likelihood += probability * (dataInstance.label() - 1) - Math.log(1 + Math.exp(-probability));
             }
             return -likelihood;
         }
@@ -208,8 +234,8 @@ abstract class AbstractTrainableLogisticRegression
             Vector gradient = Vectors.build(weights.size(), weights.type());
             for (DataInstance<Vector, Integer> dataInstance : trainingData) {
                 gradient.saxpyInPlace(
-                        (1 / (1 + Math.exp(-weights.dot(dataInstance.getFeatures())))) - dataInstance.getLabel(),
-                        dataInstance.getFeatures()
+                        (1 / (1 + Math.exp(-weights.dot(dataInstance.features())))) - dataInstance.label(),
+                        dataInstance.features()
                 );
             }
             return gradient;
@@ -240,8 +266,8 @@ abstract class AbstractTrainableLogisticRegression
             Vector gradient = Vectors.build(weights.size(), weights.type());
             for (int i = startIndex; i < endIndex; i++) {
                 gradient.saxpyInPlace(
-                        (1 / (1 + Math.exp(-weights.dot(data[i].getFeatures())))) - data[i].getLabel(),
-                        data[i].getFeatures()
+                        (1 / (1 + Math.exp(-weights.dot(data.get(i).features())))) - data.get(i).label(),
+                        data.get(i).features()
                 );
             }
             return gradient;

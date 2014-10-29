@@ -2,29 +2,31 @@ package org.platanios.learn.classification;
 
 import org.platanios.learn.math.matrix.Vector;
 
+import java.util.Map;
+
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class DataInstance<T extends Vector, S> {
+public class MultiViewDataInstance<T extends Vector, S> {
     private final String name;
-    private final T features;
+    private final Map<Integer, T> features;
     private final S label;
     private final double probability;
     private final Object source;
 
     public static class Builder<T extends Vector, S> {
-        private final T features;
+        private final Map<Integer, T> features;
 
         private String name;
         private S label = null;
         private double probability = 1;
         private Object source = null;
 
-        public Builder(T features) {
+        public Builder(Map<Integer, T> features) {
             this.features = features;
         }
 
-        public Builder(DataInstance<T, S> dataInstance) {
+        public Builder(MultiViewDataInstance<T, S> dataInstance) {
             this.name = dataInstance.name;
             this.features = dataInstance.features;
             this.label = dataInstance.label;
@@ -52,12 +54,12 @@ public class DataInstance<T extends Vector, S> {
             return this;
         }
 
-        public DataInstance<T, S> build() {
-            return new DataInstance<>(this);
+        public MultiViewDataInstance<T, S> build() {
+            return new MultiViewDataInstance<>(this);
         }
     }
 
-    private DataInstance(Builder<T, S> builder) {
+    private MultiViewDataInstance(Builder<T, S> builder) {
         this.name = builder.name;
         this.features = builder.features;
         this.label = builder.label;
@@ -69,7 +71,7 @@ public class DataInstance<T extends Vector, S> {
         return name;
     }
 
-    public T features() {
+    public Map<Integer, T> features() {
         return features;
     }
 
@@ -83,5 +85,9 @@ public class DataInstance<T extends Vector, S> {
 
     public Object source() {
         return source;
+    }
+
+    public DataInstance<T, S> getSingleViewDataInstance(int view) {
+        return new DataInstance.Builder<T, S>(features.get(view)).name(name).label(label).source(source).build();
     }
 }

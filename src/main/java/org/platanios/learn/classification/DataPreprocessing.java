@@ -53,9 +53,9 @@ public class DataPreprocessing {
             throw new IllegalArgumentException("The number of data labels and data samples does not match."); // TODO: Maybe the IllegalArgumentException is not the most appropriate here.
         }
 
-        TrainingData.Entry[] trainingData = new TrainingData.Entry[data.size()];
+        List<TrainingData.Entry> trainingData = new ArrayList<>();
         for (int i = 0; i < data.size(); i++) {
-            trainingData[i] = new TrainingData.Entry(data.get(i), labels.get(i));
+            trainingData.add(new TrainingData.Entry(data.get(i), labels.get(i)));
         }
 
         return new TrainingData(trainingData);

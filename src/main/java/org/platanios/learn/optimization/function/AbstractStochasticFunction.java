@@ -1,13 +1,16 @@
 package org.platanios.learn.optimization.function;
 
 import org.platanios.learn.math.matrix.Vector;
+import org.platanios.learn.math.matrix.Vectors;
 import org.platanios.learn.math.statistics.StatisticsUtilities;
+
+import java.util.List;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
 public abstract class AbstractStochasticFunction<T> {
-    protected T[] data;
+    protected List<T> data;
 
     private int numberOfGradientEvaluations = 0;
     private boolean sampleWithReplacement = true;
@@ -33,7 +36,7 @@ public abstract class AbstractStochasticFunction<T> {
      * @return          The values of the first derivatives of the objective function, estimated at the given point.
      */
     public final Vector estimateGradient(Vector point, int batchSize) {
-        if (batchSize < data.length) {
+        if (batchSize < data.size()) {
             int startIndex;
             int endIndex;
             if (sampleWithReplacement) {
@@ -41,7 +44,7 @@ public abstract class AbstractStochasticFunction<T> {
                 startIndex = 0;
                 endIndex = batchSize;
             } else {
-                if (currentSampleIndex == 0 || currentSampleIndex + batchSize >= data.length) {
+                if (currentSampleIndex == 0 || currentSampleIndex + batchSize >= data.size()) {
                     currentSampleIndex = 0;
                     StatisticsUtilities.shuffle(data);
                 }
@@ -51,7 +54,7 @@ public abstract class AbstractStochasticFunction<T> {
             }
             return estimateGradient(point, startIndex, endIndex);
         } else {
-            return estimateGradient(point, 0, data.length);
+            return estimateGradient(point, 0, data.size());
         }
     }
 
