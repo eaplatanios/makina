@@ -1,5 +1,7 @@
 package org.platanios.learn.classification.reflect;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.platanios.learn.classification.*;
 import org.platanios.learn.math.matrix.Vector;
 
@@ -12,6 +14,8 @@ import java.util.concurrent.*;
  * @author Emmanouil Antonios Platanios
  */
 public class Integrator<T extends Vector, S> {
+    private static final Logger logger = LogManager.getLogger("Classification / Integrator");
+
     private final List<TrainableClassifier<T, S>> classifiers;
     private final DataSelectionMethod dataSelectionMethod;
     private final double dataSelectionParameter;
@@ -62,8 +66,8 @@ public class Integrator<T extends Vector, S> {
                     }
                     objectInputStream.close();
                 } catch (IOException e) {
-                    System.out.println("Could not open the file \""
-                                               + inputFile.getAbsolutePath() + "\" to load the models from!");
+                    logger.error("Could not open the file \""
+                                         + inputFile.getAbsolutePath() + "\" to load the models from!");
                 }
             }
         }
@@ -141,7 +145,7 @@ public class Integrator<T extends Vector, S> {
     private void initializeWorkingDirectory() {
         File directory = new File(workingDirectory);
         if (!directory.exists() && !directory.mkdirs()) {
-            System.out.println("Unable to create directory " + directory.getAbsolutePath());
+            logger.error("Unable to create directory " + directory.getAbsolutePath());
         }
     }
 
@@ -155,7 +159,7 @@ public class Integrator<T extends Vector, S> {
         try {
             taskExecutor.invokeAll(classifierTrainingTasks);
         } catch (InterruptedException e) {
-            System.out.println("Execution was interrupted while training the classifiers.");
+            logger.error("Execution was interrupted while training the classifiers.");
         }
     }
 
@@ -181,9 +185,9 @@ public class Integrator<T extends Vector, S> {
                 }
             }
         } catch (InterruptedException e) {
-            System.out.println("Execution was interrupted while making predictions with the classifiers.");
+            logger.error("Execution was interrupted while making predictions with the classifiers.");
         } catch (ExecutionException e) {
-            System.out.println("Something went wrong while making predictions with the classifiers.");
+            logger.error("Something went wrong while making predictions with the classifiers.");
         }
     }
 
@@ -193,16 +197,14 @@ public class Integrator<T extends Vector, S> {
 
     private void saveModels(boolean useDifferentFilePerIteration) {
         File outputFile;
-        if (useDifferentFilePerIteration) {
+        if (useDifferentFilePerIteration)
             outputFile = new File(workingDirectory + File.separator + "Iteration_" + iterationNumber + ".integrator");
-        } else {
+        else
             outputFile = new File(workingDirectory + File.separator + "Models.integrator");
-        }
+
         try {
-            if (!outputFile.exists() && outputFile.createNewFile()) {
-                System.out.println("Could not create the file \""
-                                           + outputFile.getAbsolutePath() + "\" to store the models!");
-            }
+            if (!outputFile.exists() && outputFile.createNewFile())
+                logger.error("Could not create the file \"" + outputFile.getAbsolutePath() + "\" to store the models!");
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream(outputFile, false));
             objectOutputStream.writeInt(dataSelectionMethod.ordinal());
             objectOutputStream.writeDouble(dataSelectionParameter);
@@ -213,8 +215,8 @@ public class Integrator<T extends Vector, S> {
             }
             objectOutputStream.close();
         } catch (IOException e) {
-            System.out.println("Could not create or open the file \""
-                                       + outputFile.getAbsolutePath() + "\" to store the models!");
+            logger.error("Could not create or open the file \""
+                                 + outputFile.getAbsolutePath() + "\" to store the models!");
         }
     }
 
