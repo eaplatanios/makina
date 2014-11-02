@@ -1,5 +1,7 @@
 package org.platanios.learn.optimization;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.VectorNorm;
 import org.platanios.learn.optimization.function.AbstractStochasticFunction;
@@ -11,6 +13,8 @@ import org.platanios.learn.optimization.function.AbstractStochasticFunction;
  * @author Emmanouil Antonios Platanios
  */
 abstract class AbstractStochasticIterativeSolver implements Solver {
+    private static final Logger logger = LogManager.getFormatterLogger("Stochastic Optimization");
+
     private final int maximumNumberOfIterations;
     private final int maximumNumberOfIterationsWithNoPointChange;
     private final double pointChangeTolerance;
@@ -205,14 +209,12 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
 
     @Override
     public Vector solve() {
-        if (loggingLevel > 0)
-            printHeader();
         while (!checkTerminationConditions()) {
             performIterationUpdates();
             currentIteration++;
-            if ((loggingLevel == 1 && currentIteration % 10 == 0)
+            if ((loggingLevel == 1 && currentIteration % 1000 == 0)
                     || (loggingLevel == 2 && currentIteration % 100 == 0)
-                    || (loggingLevel == 3 && currentIteration % 1000 == 0)
+                    || (loggingLevel == 3 && currentIteration % 10 == 0)
                     || loggingLevel > 3)
                 printIteration();
         }
@@ -231,17 +233,14 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
         previousPoint = currentPoint;
         updatePoint();
         currentGradient = objective.getGradientEstimate(currentPoint, batchSize);
-        if (useL2Regularization) {
+        if (useL2Regularization)
             currentGradient.addInPlace(currentPoint.mult(2 * l2RegularizationWeight));
-        }
     }
 
     public boolean checkTerminationConditions() {
         if (currentIteration > 0) {
-            if (currentIteration >= maximumNumberOfIterations) {
+            if (currentIteration >= maximumNumberOfIterations)
                 return true;
-            }
-
             if (checkForPointConvergence) {
                 pointChange = currentPoint.sub(previousPoint).norm(VectorNorm.L2_FAST);
                 numberOfIterationsWithNoPointChange =
@@ -250,39 +249,25 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
                     pointConverged = true;
                 }
             }
-
             return checkForPointConvergence && pointConverged;
         } else {
             return false;
         }
     }
 
-    public void printHeader() {
-        System.out.println("|--------------------------------------|");
-        System.out.format("| %13s | %20s |%n", "Iteration #", "Point Change");
-        System.out.println("|======================================|");
-    }
-
     public void printIteration() {
-        System.out.format("| %13d | %20s |%n", currentIteration, DECIMAL_FORMAT.format(pointChange));
+        logger.info("Iteration #: %10d | Point Change: %20s", currentIteration, DECIMAL_FORMAT.format(pointChange));
     }
 
     public void printTerminationMessage() {
-        System.out.println("|--------------------------------------|\n");
-        if (pointConverged) {
-            System.out.println("The L2 norm of the point change, "
-                                       + DECIMAL_FORMAT.format(pointChange)
-                                       + ", was below the convergence threshold of "
-                                       + DECIMAL_FORMAT.format(pointChangeTolerance)
-                                       + " for more than "
-                                       + maximumNumberOfIterationsWithNoPointChange
-                                       + " iterations!");
-        }
-        if (currentIteration >= maximumNumberOfIterations) {
-            System.out.println("Reached the maximum number of allowed iterations ("
-                                       + maximumNumberOfIterations
-                                       + ")!");
-        }
+        if (pointConverged)
+            logger.info("The L2 norm of the point change, %s, " +
+                                "was below the convergence threshold of %s for more than %d iterations.",
+                        DECIMAL_FORMAT.format(pointChange),
+                        DECIMAL_FORMAT.format(pointChangeTolerance),
+                        maximumNumberOfIterationsWithNoPointChange);
+        if (currentIteration >= maximumNumberOfIterations)
+            logger.info("Reached the maximum number of allowed iterations, %d.", maximumNumberOfIterations);
     }
 
     /**
