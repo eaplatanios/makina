@@ -1,4 +1,4 @@
-package org.platanios.learn.combination.error;
+package org.platanios.learn.classification.reflection.perception;
 
 import com.google.common.primitives.Booleans;
 

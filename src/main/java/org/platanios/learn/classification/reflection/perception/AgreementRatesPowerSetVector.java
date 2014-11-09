@@ -1,4 +1,4 @@
-package org.platanios.learn.combination.error;
+package org.platanios.learn.classification.reflection.perception;
 
 import com.google.common.collect.BiMap;
 
@@ -69,16 +69,13 @@ public class AgreementRatesPowerSetVector extends PowerSetVector {
             for (BiMap.Entry<List<Integer>, Integer> entry : indexKeyMapping.entrySet()) {
                 boolean equal = true;
                 List<Integer> indexes = entry.getKey();
-                for (int index : indexes.subList(1, indexes.size())) {
+                for (int index : indexes.subList(1, indexes.size()))
                     equal = equal && (classifiersOutput[indexes.get(0)] == classifiersOutput[index]);
-                }
-                if (equal) {
+                if (equal)
                     array[entry.getValue()] += 1;
-                }
             }
         }
-        for (int i = 0; i < length; i++) {
+        for (int i = 0; i < length; i++)
             array[i] /= classifiersOutputs.length;
-        }
     }
 }

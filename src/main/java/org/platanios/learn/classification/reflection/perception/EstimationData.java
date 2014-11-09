@@ -1,4 +1,4 @@
-package org.platanios.learn.combination.error;
+package org.platanios.learn.classification.reflection.perception;
 
 /**
  * A data structure that holds all the data necessary to estimate error rates of functions from unlabeled data. In case
@@ -155,8 +155,10 @@ public class EstimationData {
 
     /**
      * @param   errorRatesValues    The new error rates values to which the error rates structure array values are set.
+     * @return                      The current {@link EstimationData} object, after settings the error rates values.
      */
-    public void setErrorRatesValues(double[] errorRatesValues) {
+    public EstimationData setErrorRatesValues(double[] errorRatesValues) {
         errorRates.array = errorRatesValues;
+        return this;
     }
 }

@@ -1,4 +1,4 @@
-package org.platanios.learn.combination.error;
+package org.platanios.learn.classification.reflection.perception;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
@@ -14,14 +14,11 @@ import java.util.List;
  * @author Emmanouil Antonios Platanios
  */
 abstract class PowerSetVector {
-    /** The array that contains the stored elements. */
-    public double[] array;  // TODO: Change that to using a generic type and move the whole class to a different package
     /** The total number of elements (that is equivalent to the length of the one-dimensional array storing all those
      * elements). */
     public final int length;
     /** A mapping between the power set indexing of those elements and their one-dimensional array indexing. */
     public final BiMap<List<Integer>, Integer> indexKeyMapping;
-
     /** The number of elements of the whole set, out of which the power set is constructed. */
     private final int highestIndex;
     /** The smallest cardinality of sets to consider, out of the whole power set. */
@@ -34,8 +31,12 @@ abstract class PowerSetVector {
      * all subsets of functions of even cardinality less than the original subset cardinality. */
     private final boolean onlyEvenCardinalitySubsets;
 
+    /** The array that contains the stored elements. */
+    public double[] array;  // TODO: Change that to using a generic type and move the whole class to a different package
+
     /**
-     * Constructs a power set indexed vector stored as a one-dimensional array.
+     * Constructs a power set indexed vector stored as a one-dimensional array. By default, all possible index sets,
+     * within the cardinality limits selected, are considered.
      *
      * @param   highestIndex    The number of elements of the whole set, out of which the power set is constructed.
      * @param   lowestOrder     The smallest cardinality of sets to consider, out of the whole power set.
@@ -62,37 +63,32 @@ abstract class PowerSetVector {
         this.highestOrder = highestOrder;
         this.onlyEvenCardinalitySubsets = onlyEvenCardinalitySubsets;
         int length = 0;
-        for (int m = this.lowestOrder; m <= highestOrder; m++) {
-            if ((m % 2 == 0) || (m % 2 != 0 && !onlyEvenCardinalitySubsets)) {
+        for (int m = this.lowestOrder; m <= highestOrder; m++)
+            if ((m % 2 == 0) || (m % 2 != 0 && !onlyEvenCardinalitySubsets))
                 length += CombinatoricsUtilities.getBinomialCoefficient(highestIndex, m);
-            }
-        }
         this.length = length;
         array = new double[this.length];
         indexKeyMapping = createIndexKeyMapping();
     }
 
     /**
-     * Builds the mapping between the power set indexes and the one-dimensional indexes of the elements.
+     * Builds the mapping between the power set indexes and the one-dimensional indexes of the power set vector
+     * elements.
      *
      * @return  A {@link com.google.common.collect.BiMap} containing the mapping between the power set indexes and the
-     * one-dimensional indexes of the elements.
+     *          one-dimensional indexes of the power set vector elements.
      */
     private ImmutableBiMap<List<Integer>, Integer> createIndexKeyMapping() {
-        ImmutableBiMap.Builder<List<Integer>, Integer> indexKeyMappingBuilder
-                = new ImmutableBiMap.Builder<List<Integer>, Integer>();
-
+        ImmutableBiMap.Builder<List<Integer>, Integer> indexKeyMappingBuilder = new ImmutableBiMap.Builder<>();
         int offset = 0;
         for (int m = this.lowestOrder; m <= highestOrder; m++) {
             if ((m % 2 == 0) || (m % 2 != 0 && !onlyEvenCardinalitySubsets)) {
                 int[][] indexes = CombinatoricsUtilities.getCombinations(highestIndex, m);
-                for (int i = 0; i < indexes.length; i++) {
+                for (int i = 0; i < indexes.length; i++)
                     indexKeyMappingBuilder.put(Ints.asList(indexes[i]), offset + i);
-                }
                 offset += CombinatoricsUtilities.getBinomialCoefficient(highestIndex, m);
             }
         }
-
         return indexKeyMappingBuilder.build();
     }
 }

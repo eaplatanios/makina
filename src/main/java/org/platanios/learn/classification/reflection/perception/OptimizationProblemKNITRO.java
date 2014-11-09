@@ -1,4 +1,4 @@
-package org.platanios.learn.combination.error;
+package org.platanios.learn.classification.reflection.perception;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
@@ -11,11 +11,11 @@ import java.util.*;
 /**
  * Implementation of the numerical optimization problem that needs to be solved in order to estimate error rates of
  * several approximations to a single function, by using only the agreement rates of those functions on an unlabeled set
- * of data, for use with the KNITRO solver.
+ * of data, and that uses the KNITRO solver.
  *
  * @author Emmanouil Antonios Platanios
  */
-class OptimizationProblem {
+class OptimizationProblemKNITRO implements OptimizationProblem {
     /** The error rates structure used for this optimization (this structure contains the power set indexing
      * information used to index the error rates over all possible power sets of functions as a simple one-dimensional
      * array). */
@@ -39,18 +39,18 @@ class OptimizationProblem {
     private ObjectiveFunction objectiveFunction;
     /** Array with the variables with respect to which the optimization is performed. That is, the array with the error
      * rates. */
-    private double[] optimizationVariables;
+    private double[] point;
     /** Array with the value of the objective function (it is defined as an array but it holds a single value). */
-    private double[] optimizationObjective;
+    private double[] objectiveValue;
     /** Array with the values of the constraints of the optimization problem (both inequality and equality
      * constraints). */
-    private double[] optimizationConstraints;
+    private double[] constraints;
     /** Array with the values of the objective function derivatives. */
-    private double[] optimizationObjectiveGradients;
+    private double[] objectiveGradient;
     /** Array with the values of the constraints derivatives (or, equivalently, the constraints Jacobian). */
-    private double[] optimizationConstraintsJacobian;
+    private double[] constraintsGradients;
     /** The Hessian of the Lagrangian. */
-    private double[] optimizationHessian;
+    private double[] objectiveHessian;
 
     /**
      * Initializes all parameters needed for performing the optimization procedure using the KNITRO solver. It also
@@ -69,11 +69,11 @@ class OptimizationProblem {
      * @param   objectiveFunctionType   The type of objective function to minimize (e.g. minimize dependency, scaled
      *                                  dependency, etc.).
      */
-    OptimizationProblem(int numberOfFunctions,
-                        int highestOrder,
-                        ErrorRatesPowerSetVector errorRates,
-                        AgreementRatesPowerSetVector agreementRates,
-                        ObjectiveFunctionType objectiveFunctionType) {
+    OptimizationProblemKNITRO(int numberOfFunctions,
+                              int highestOrder,
+                              ErrorRatesPowerSetVector errorRates,
+                              AgreementRatesPowerSetVector agreementRates,
+                              ObjectiveFunctionType objectiveFunctionType) {
         this.errorRates = errorRates;
         this.agreementRates = agreementRates;
 
@@ -103,18 +103,18 @@ class OptimizationProblem {
             constraintTypes[k] = KnitroJava.KTR_CONTYPE_LINEAR;
         }
 
-        double[] constraintLowerBounds = new double[numberOfConstraints];
-        double[] constraintUpperBounds = new double[numberOfConstraints];
+        double[] constraintsLowerBounds = new double[numberOfConstraints];
+        double[] constraintsUpperBounds = new double[numberOfConstraints];
         int constraintIndex = 0;
         while(constraintIndex < numberOfConstraints - agreementRates.indexKeyMapping.size()) {
-            constraintLowerBounds[constraintIndex] = -KnitroJava.KTR_INFBOUND;
-            constraintUpperBounds[constraintIndex++] = 0;
+            constraintsLowerBounds[constraintIndex] = -KnitroJava.KTR_INFBOUND;
+            constraintsUpperBounds[constraintIndex++] = 0;
         }
 
         int agreementRatesIndex = 0;
         while(constraintIndex < numberOfConstraints) {
-            constraintLowerBounds[constraintIndex] = agreementRates.array[agreementRatesIndex] - 1;
-            constraintUpperBounds[constraintIndex++] = agreementRates.array[agreementRatesIndex++] - 1;
+            constraintsLowerBounds[constraintIndex] = agreementRates.array[agreementRatesIndex] - 1;
+            constraintsUpperBounds[constraintIndex++] = agreementRates.array[agreementRatesIndex++] - 1;
         }
 
         int numberOfNonZerosInConstraintsJacobian = 0;
@@ -191,35 +191,7 @@ class OptimizationProblem {
         }
 
         // Instantiate the chosen objective function class
-        switch (objectiveFunctionType) {
-            case DEPENDENCY:
-                objectiveFunction = new DependencyObjectiveFunction(errorRates, hessianIndexKeyMapping);
-                break;
-            case SCALED_DEPENDENCY:
-                // TODO: Implement relevant class
-                break;
-            case DEPENDENCY_ACROSS_DOMAINS:
-                // TODO: Implement relevant class
-                break;
-            case SCALED_DEPENDENCY_ACROSS_DOMAINS:
-                // TODO: Implement relevant class
-                break;
-            case L2_NORM:
-                // TODO: Implement relevant class
-                break;
-            case DEPENDENCY_AND_L2_NORM:
-                // TODO: Implement relevant class
-                break;
-            case SCALED_DEPENDENCY_AND_L2_NORM:
-                // TODO: Implement relevant class
-                break;
-            case DEPENDENCY_ACROSS_DOMAINS_AND_L2_NORM:
-                // TODO: Implement relevant class
-                break;
-            case SCALED_DEPENDENCY_ACROSS_DOMAINS_AND_L2_NORM:
-                // TODO: Implement relevant class
-                break;
-        }
+        objectiveFunction = objectiveFunctionType.build(errorRates, hessianIndexKeyMapping);
 
         // Instantiate the KNITRO solver
         try {
@@ -295,8 +267,8 @@ class OptimizationProblem {
                                 variableUpperBounds,
                                 numberOfConstraints,
                                 constraintTypes,
-                                constraintLowerBounds,
-                                constraintUpperBounds,
+                                constraintsLowerBounds,
+                                constraintsUpperBounds,
                                 numberOfNonZerosInConstraintsJacobian,
                                 constraintsJacobianVariableIndexes,
                                 constraintsJacobianConstraintIndexes,
@@ -305,55 +277,50 @@ class OptimizationProblem {
                                 hessianColumnIndexes,
                                 optimizationStartingPoint,
                                 null)) {
-            System.err.println ("Error initializing the problem, "
-                    + "KNITRO status = "
-                    + solver.getKnitroStatusCode());
+            System.err.println ("Error initializing the problem, KNITRO status = " + solver.getKnitroStatusCode());
             return;
         }
 
         // Instantiate the global variables used by the KNITRO solver
-        optimizationVariables = new double[numberOfVariables];
-        optimizationObjective = new double[1];
-        optimizationConstraints = new double[numberOfConstraints];
-        optimizationObjectiveGradients = new double[numberOfVariables];
-        optimizationConstraintsJacobian = new double[numberOfNonZerosInConstraintsJacobian];
-        optimizationHessian = new double[numberOfNonZerosInHessian];
+        point = new double[numberOfVariables];
+        objectiveValue = new double[1];
+        constraints = new double[numberOfConstraints];
+        objectiveGradient = new double[numberOfVariables];
+        constraintsGradients = new double[numberOfNonZerosInConstraintsJacobian];
+        objectiveHessian = new double[numberOfNonZerosInHessian];
     }
 
     /**
      * Computes the constraints values at a particular point.
      *
-     * @param   optimizationVariables   The point in which to evaluate the objective function and the constraints.
-     * @param   optimizationConstraints The constraints values to set for the given point.
+     * @param   currentPoint    The point in which to evaluate the objective function and the constraints.
+     * @param   constraints     The constraints values to set for the given point.
      */
-    private void computeConstraints(double[] optimizationVariables,
-                                    double[] optimizationConstraints) {
+    private void computeConstraints(double[] currentPoint,
+                                    double[] constraints) {
         int constraintIndex = -1;
-
         for (BiMap.Entry<List<Integer>, Integer> entry : errorRates.indexKeyMapping.entrySet()) {
             List<Integer> entryKey = entry.getKey();
             int k = entryKey.size();
             if (k > 1) {
                 for (int inner_index : inequalityConstraintsIndexes.get(entry.getValue())) {
-                    optimizationConstraints[++constraintIndex] =
-                            optimizationVariables[errorRates.indexKeyMapping.get(entryKey)]
-                                    - optimizationVariables[inner_index];
+                    constraints[++constraintIndex] =
+                            currentPoint[errorRates.indexKeyMapping.get(entryKey)]
+                                    - currentPoint[inner_index];
                 }
             }
         }
-
         int[][] inner_indexes;
-
         for (BiMap.Entry<List<Integer>, Integer> entry : agreementRates.indexKeyMapping.entrySet()) {
             List<Integer> entryKey = entry.getKey();
             int k = entryKey.size();
-            optimizationConstraints[++constraintIndex] =
-                    2 * optimizationVariables[errorRates.indexKeyMapping.get(entry.getKey())];
+            constraints[++constraintIndex] =
+                    2 * currentPoint[errorRates.indexKeyMapping.get(entry.getKey())];
             for (int l = 1; l < k; l++) {
                 inner_indexes = CombinatoricsUtilities.getCombinationsOfIntegers(Ints.toArray(entryKey), l);
                 for (int[] inner_index : inner_indexes) {
-                    optimizationConstraints[constraintIndex] += Math.pow(-1, l)
-                            * optimizationVariables[errorRates.indexKeyMapping.get(Ints.asList(inner_index))];
+                    constraints[constraintIndex] += Math.pow(-1, l)
+                            * currentPoint[errorRates.indexKeyMapping.get(Ints.asList(inner_index))];
                 }
             }
         }
@@ -363,14 +330,12 @@ class OptimizationProblem {
      * Computes the first derivatives of the constraints at a particular point (the constraints are actually linear in
      * this case and so their derivatives values are constant).
      *
-     * @param   optimizationConstraintsJacobian The constraints Jacobian (in sparse/vector form) to modify.
+     * @param   constraintsJacobian The constraints Jacobian (in sparse form) to modify.
      */
-    private void computeConstraintsGradients(double[] optimizationConstraintsJacobian) {
+    private void computeConstraintsGradients(double[] constraintsJacobian) {
         int i = 0;
-
-        for (Integer[] constraintsIndex : constraintsJacobian) {
-            optimizationConstraintsJacobian[i++] = constraintsIndex[2];
-        }
+        for (Integer[] constraintsIndex : this.constraintsJacobian)
+            constraintsJacobian[i++] = constraintsIndex[2];
     }
 
     /**
@@ -378,36 +343,36 @@ class OptimizationProblem {
      *
      * @return  The error rates estimates in a {@code double[]} format.
      */
-    double[] solve() {
+    public double[] solve() {
         // Solve the optimization problem using KNITRO and record its status code
-        int  knitroStatusCode;
+        int knitroStatusCode;
         do {
             knitroStatusCode = solver.solve(0,
-                                            optimizationObjective,
-                                            optimizationConstraints,
-                                            optimizationObjectiveGradients,
-                                            optimizationConstraintsJacobian,
-                                            optimizationHessian);
+                                            objectiveValue,
+                                            constraints,
+                                            objectiveGradient,
+                                            constraintsGradients,
+                                            objectiveHessian);
 
             switch (knitroStatusCode) {
                 case KnitroJava.KTR_RC_EVALFC:
-                    optimizationVariables = solver.getCurrentX();
-                    objectiveFunction.computeObjective(optimizationVariables, optimizationObjective);
-                    computeConstraints(optimizationVariables, optimizationConstraints);
+                    point = solver.getCurrentX();
+                    objectiveFunction.computeObjective(point, objectiveValue);
+                    computeConstraints(point, constraints);
                     break;
                 case KnitroJava.KTR_RC_EVALGA:
-                    optimizationVariables = solver.getCurrentX();
-                    objectiveFunction.computeGradient(optimizationVariables, optimizationObjectiveGradients);
-                    computeConstraintsGradients(optimizationConstraintsJacobian);
+                    point = solver.getCurrentX();
+                    objectiveFunction.computeGradient(point, objectiveGradient);
+                    computeConstraintsGradients(constraintsGradients);
                     break;
                 case KnitroJava.KTR_RC_EVALH:
-                    optimizationVariables = solver.getCurrentX();
-                    objectiveFunction.computeHessian(optimizationVariables, optimizationHessian);
+                    point = solver.getCurrentX();
+                    objectiveFunction.computeHessian(point, objectiveHessian);
                     break;
                 case KnitroJava.KTR_RC_EVALH_NO_F:
-                    optimizationVariables = solver.getCurrentX();
-                    for (int i = 0; i < optimizationHessian.length; i++) {
-                        optimizationHessian[i] = 0;
+                    point = solver.getCurrentX();
+                    for (int i = 0; i < objectiveHessian.length; i++) {
+                        objectiveHessian[i] = 0;
                     }
                     break;
             }
@@ -439,6 +404,6 @@ class OptimizationProblem {
         // Destroy the KNITRO native object
         solver.destroyInstance();
 
-        return optimizationVariables;
+        return point;
     }
 }

@@ -1,4 +1,4 @@
-package org.platanios.learn.classification.reflect;
+package org.platanios.learn.classification.reflection;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,13 +16,13 @@ import java.util.concurrent.*;
 public class Integrator<T extends Vector, S> {
     private static final Logger logger = LogManager.getLogger("Classification / Integrator");
 
-    private final List<TrainableClassifier<T, S>> classifiers;
-    private final DataSelectionMethod dataSelectionMethod;
-    private final double dataSelectionParameter;
-    private final ExecutorService taskExecutor;
-    private final String workingDirectory;
-    private final boolean saveModelsOnEveryIteration;
-    private final boolean useDifferentFilePerIteration;
+    private List<TrainableClassifier<T, S>> classifiers;
+    private DataSelectionMethod dataSelectionMethod;
+    private double dataSelectionParameter;
+    private ExecutorService taskExecutor;
+    private String workingDirectory;
+    private boolean saveModelsOnEveryIteration;
+    private boolean useDifferentFilePerIteration;
 
     private List<MultiViewDataInstance<T, S>> labeledDataInstances;
     private List<MultiViewDataInstance<T, S>> unlabeledDataInstances;
@@ -44,6 +44,7 @@ public class Integrator<T extends Vector, S> {
             dataInstances = new ArrayList<>();
         }
 
+        @SuppressWarnings("unchecked")
         public Builder(String modelsFileAbsolutePath, boolean resumeTraining) {
             classifiers = new ArrayList<>();
             dataInstances = new ArrayList<>();
@@ -52,22 +53,13 @@ public class Integrator<T extends Vector, S> {
                 workingDirectory = inputFile.getParentFile().getAbsolutePath();
                 try {
                     ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(inputFile));
-                    dataSelectionMethod = DataSelectionMethod.values()[objectInputStream.readInt()];
-                    dataSelectionParameter = objectInputStream.readDouble();
                     int numberOfClassifiers = objectInputStream.readInt();
-                    for (int i = 0; i < numberOfClassifiers; i++) {
-                        ClassifierType classifierType = ClassifierType.values()[objectInputStream.readInt()];
-                        Classifier<T, S> classifier = Classifiers.build(objectInputStream, classifierType);
-                        if (!(classifier instanceof TrainableClassifier)) {
-                            throw new RuntimeException("The stored classifier is not a trainable classifier and " +
-                                                               "so cannot be used with the integrator!");
-                        }
-                        classifiers.add((TrainableClassifier<T, S>) classifier);
-                    }
+                    for (int i = 0; i < numberOfClassifiers; i++)
+                        classifiers.add((TrainableClassifier<T, S>) objectInputStream.readObject());
                     objectInputStream.close();
-                } catch (IOException e) {
-                    logger.error("Could not open the file \""
-                                         + inputFile.getAbsolutePath() + "\" to load the models from!");
+                } catch (IOException|ClassNotFoundException e) {
+                    logger.error("Could load the classifier models from the file \""
+                                         + inputFile.getAbsolutePath() + "\"!");
                 }
             }
         }
@@ -195,6 +187,15 @@ public class Integrator<T extends Vector, S> {
         dataSelectionMethod.transferData(labeledDataInstances, unlabeledDataInstances, dataSelectionParameter);
     }
 
+    public void performSingleIteration() {
+        trainClassifiers();
+        makePredictions();
+        transferData();
+        if (saveModelsOnEveryIteration)
+            saveModels(useDifferentFilePerIteration);
+        iterationNumber++;
+    }
+
     private void saveModels(boolean useDifferentFilePerIteration) {
         File outputFile;
         if (useDifferentFilePerIteration)
@@ -205,29 +206,33 @@ public class Integrator<T extends Vector, S> {
         try {
             if (!outputFile.exists() && outputFile.createNewFile())
                 logger.error("Could not create the file \"" + outputFile.getAbsolutePath() + "\" to store the models!");
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream(outputFile, false));
-            objectOutputStream.writeInt(dataSelectionMethod.ordinal());
-            objectOutputStream.writeDouble(dataSelectionParameter);
-            objectOutputStream.writeInt(classifiers.size());
-            for (TrainableClassifier classifier : classifiers) {
-                objectOutputStream.writeInt(classifier.type().ordinal());
-                classifier.writeModelToStream(objectOutputStream);
-            }
-            objectOutputStream.close();
+            ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(outputFile, false));
+            outputStream.writeInt(iterationNumber);
+            outputStream.writeInt(classifiers.size());
+            for (TrainableClassifier<T, S> classifier : classifiers)
+                outputStream.writeObject(classifier);
+            outputStream.close();
         } catch (IOException e) {
             logger.error("Could not create or open the file \""
                                  + outputFile.getAbsolutePath() + "\" to store the models!");
         }
     }
 
-    public void performSingleIteration() {
-        trainClassifiers();
-        makePredictions();
-        transferData();
-        if (saveModelsOnEveryIteration) {
-            saveModels(useDifferentFilePerIteration);
+    @SuppressWarnings("unchecked")
+    private void loadModels(String modelsFileAbsolutePath) {
+        classifiers = new ArrayList<>();
+        File inputFile = new File(modelsFileAbsolutePath);
+        workingDirectory = inputFile.getParentFile().getAbsolutePath();
+        try {
+            ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(inputFile));
+            iterationNumber = inputStream.readInt();
+            int numberOfClassifiers = inputStream.readInt();
+            for (int i = 0; i < numberOfClassifiers; i++)
+                classifiers.add((TrainableClassifier<T, S>) inputStream.readObject());
+            inputStream.close();
+        } catch (IOException|ClassNotFoundException e) {
+            logger.error("Could load the classifier models from the file \"" + inputFile.getAbsolutePath() + "\"!");
         }
-        iterationNumber++;
     }
 
     public enum DataSelectionMethod {

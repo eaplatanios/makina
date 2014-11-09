@@ -1,4 +1,4 @@
-package org.platanios.learn.combination.error;
+package org.platanios.learn.classification.reflection.perception;
 
 import com.google.common.collect.BiMap;
 import com.google.common.primitives.Ints;
@@ -85,9 +85,8 @@ public class ErrorRatesPowerSetVector extends PowerSetVector {
                 array[key] = initialValue;
             } else {
                 array[key] = 1;
-                for (Integer i : index) {
+                for (Integer i : index)
                     array[key] *= array[indexKeyMapping.get(Ints.asList(i))];
-                }
             }
         }
     }
@@ -106,16 +105,13 @@ public class ErrorRatesPowerSetVector extends PowerSetVector {
             for (BiMap.Entry<List<Integer>, Integer> entry : indexKeyMapping.entrySet()) {
                 boolean equal = true;
                 List<Integer> indexes = entry.getKey();
-                for (int index : indexes.subList(1, indexes.size())) {
+                for (int index : indexes.subList(1, indexes.size()))
                     equal = equal && (classifiersOutputs[i][indexes.get(0)] == classifiersOutputs[i][index]);
-                }
-                if (equal && (classifiersOutputs[i][indexes.get(0)] != trueLabels[i])) {
+                if (equal && (classifiersOutputs[i][indexes.get(0)] != trueLabels[i]))
                     array[entry.getValue()] += 1;
-                }
             }
         }
-        for (int i = 0; i < array.length; i++) {
+        for (int i = 0; i < array.length; i++)
             array[i] /= classifiersOutputs.length;
-        }
     }
 }
