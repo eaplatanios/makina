@@ -2,6 +2,7 @@ package org.platanios.trade.data;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.sql.Timestamp;
 import java.util.List;
 
 /**
@@ -14,6 +15,8 @@ public class IndustryGroup {
     private String gicsId;
     private Sector sector;
     private String name;
+    private Timestamp dateTimeCreated;
+    private Timestamp dateTimeUpdated;
     private List<Industry> industries;
 
     @Id
@@ -57,6 +60,28 @@ public class IndustryGroup {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Basic
+    @Column(name = "date_time_created")
+    @NotNull
+    public Timestamp getDateTimeCreated() {
+        return dateTimeCreated;
+    }
+
+    public void setDateTimeCreated(Timestamp dateTimeCreated) {
+        this.dateTimeCreated = dateTimeCreated;
+    }
+
+    @Basic
+    @Column(name = "date_time_updated")
+    @NotNull
+    public Timestamp getDateTimeUpdated() {
+        return dateTimeUpdated;
+    }
+
+    public void setDateTimeUpdated(Timestamp dateTimeUpdated) {
+        this.dateTimeUpdated = dateTimeUpdated;
     }
 
     @OneToMany(mappedBy = "industryGroup", cascade = CascadeType.ALL, orphanRemoval = true)

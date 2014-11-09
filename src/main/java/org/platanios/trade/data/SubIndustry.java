@@ -2,6 +2,7 @@ package org.platanios.trade.data;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.sql.Timestamp;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -14,6 +15,8 @@ public class SubIndustry {
     private Industry industry;
     private String name;
     private String description;
+    private Timestamp dateTimeCreated;
+    private Timestamp dateTimeUpdated;
 
     @Id
     @Column(name = "id")
@@ -66,6 +69,28 @@ public class SubIndustry {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @Basic
+    @Column(name = "date_time_created")
+    @NotNull
+    public Timestamp getDateTimeCreated() {
+        return dateTimeCreated;
+    }
+
+    public void setDateTimeCreated(Timestamp dateTimeCreated) {
+        this.dateTimeCreated = dateTimeCreated;
+    }
+
+    @Basic
+    @Column(name = "date_time_updated")
+    @NotNull
+    public Timestamp getDateTimeUpdated() {
+        return dateTimeUpdated;
+    }
+
+    public void setDateTimeUpdated(Timestamp dateTimeUpdated) {
+        this.dateTimeUpdated = dateTimeUpdated;
     }
 
     @Override

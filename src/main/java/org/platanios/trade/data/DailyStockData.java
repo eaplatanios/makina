@@ -22,8 +22,8 @@ public class DailyStockData {
     private BigDecimal closePrice;
     private BigDecimal adjustedClosePrice;
     private long volume;
-    private Timestamp datetimeCreated;
-    private Timestamp datetimeUpdated;
+    private Timestamp dateTimeCreated;
+    private Timestamp dateTimeUpdated;
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -135,25 +135,25 @@ public class DailyStockData {
     }
 
     @Basic
-    @Column(name = "datetime_created")
+    @Column(name = "date_time_created")
     @NotNull
-    public Timestamp getDatetimeCreated() {
-        return datetimeCreated;
+    public Timestamp getDateTimeCreated() {
+        return dateTimeCreated;
     }
 
-    public void setDatetimeCreated(Timestamp datetimeCreated) {
-        this.datetimeCreated = datetimeCreated;
+    public void setDateTimeCreated(Timestamp dateTimeCreated) {
+        this.dateTimeCreated = dateTimeCreated;
     }
 
     @Basic
-    @Column(name = "datetime_updated")
+    @Column(name = "date_time_updated")
     @NotNull
-    public Timestamp getDatetimeUpdated() {
-        return datetimeUpdated;
+    public Timestamp getDateTimeUpdated() {
+        return dateTimeUpdated;
     }
 
-    public void setDatetimeUpdated(Timestamp datetimeUpdated) {
-        this.datetimeUpdated = datetimeUpdated;
+    public void setDateTimeUpdated(Timestamp dateTimeUpdated) {
+        this.dateTimeUpdated = dateTimeUpdated;
     }
 
     @Override
@@ -185,9 +185,9 @@ public class DailyStockData {
             return false;
         if (volume != that.volume)
             return false;
-        if (!datetimeCreated.equals(that.datetimeCreated))
+        if (!dateTimeCreated.equals(that.dateTimeCreated))
             return false;
-        if (!datetimeUpdated.equals(that.datetimeUpdated))
+        if (!dateTimeUpdated.equals(that.dateTimeUpdated))
             return false;
 
         return true;
@@ -205,8 +205,8 @@ public class DailyStockData {
         result = 31 * result + closePrice.hashCode();
         result = 31 * result + adjustedClosePrice.hashCode();
         result = 31 * result + (int) (volume ^ (volume >>> 32));
-        result = 31 * result + datetimeCreated.hashCode();
-        result = 31 * result + datetimeUpdated.hashCode();
+        result = 31 * result + dateTimeCreated.hashCode();
+        result = 31 * result + dateTimeUpdated.hashCode();
         return result;
     }
 }

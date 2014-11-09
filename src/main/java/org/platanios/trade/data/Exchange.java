@@ -17,8 +17,8 @@ public class Exchange {
     private String city;
     private String country;
     private String currency;
-    private Timestamp datetimeCreated;
-    private Timestamp datetimeUpdated;
+    private Timestamp dateTimeCreated;
+    private Timestamp dateTimeUpdated;
     private List<Stock> stocksTraded;
 
     @Id
@@ -85,25 +85,25 @@ public class Exchange {
     }
 
     @Basic
-    @Column(name = "datetime_created")
+    @Column(name = "date_time_created")
     @NotNull
-    public Timestamp getDatetimeCreated() {
-        return datetimeCreated;
+    public Timestamp getDateTimeCreated() {
+        return dateTimeCreated;
     }
 
-    public void setDatetimeCreated(Timestamp datetimeCreated) {
-        this.datetimeCreated = datetimeCreated;
+    public void setDateTimeCreated(Timestamp dateTimeCreated) {
+        this.dateTimeCreated = dateTimeCreated;
     }
 
     @Basic
-    @Column(name = "datetime_updated")
+    @Column(name = "date_time_updated")
     @NotNull
-    public Timestamp getDatetimeUpdated() {
-        return datetimeUpdated;
+    public Timestamp getDateTimeUpdated() {
+        return dateTimeUpdated;
     }
 
-    public void setDatetimeUpdated(Timestamp datetimeUpdated) {
-        this.datetimeUpdated = datetimeUpdated;
+    public void setDateTimeUpdated(Timestamp dateTimeUpdated) {
+        this.dateTimeUpdated = dateTimeUpdated;
     }
 
     @OneToMany(mappedBy = "primaryExchange", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -136,9 +136,9 @@ public class Exchange {
             return false;
         if (currency != null ? !currency.equals(that.currency) : that.currency != null)
             return false;
-        if (!datetimeCreated.equals(that.datetimeCreated))
+        if (!dateTimeCreated.equals(that.dateTimeCreated))
             return false;
-        if (!datetimeUpdated.equals(that.datetimeUpdated))
+        if (!dateTimeUpdated.equals(that.dateTimeUpdated))
             return false;
 
         return true;
@@ -152,8 +152,8 @@ public class Exchange {
         result = 31 * result + (city != null ? city.hashCode() : 0);
         result = 31 * result + (country != null ? country.hashCode() : 0);
         result = 31 * result + (currency != null ? currency.hashCode() : 0);
-        result = 31 * result + datetimeCreated.hashCode();
-        result = 31 * result + datetimeUpdated.hashCode();
+        result = 31 * result + dateTimeCreated.hashCode();
+        result = 31 * result + dateTimeUpdated.hashCode();
         return result;
     }
 }

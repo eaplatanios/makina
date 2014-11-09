@@ -16,8 +16,8 @@ public class DataVendor {
     private String abbreviation;
     private String websiteUrl;
     private String supportEmail;
-    private Timestamp datetimeCreated;
-    private Timestamp datetimeUpdated;
+    private Timestamp dateTimeCreated;
+    private Timestamp dateTimeUpdated;
 
     @Id
     @GeneratedValue
@@ -78,25 +78,25 @@ public class DataVendor {
     }
 
     @Basic
-    @Column(name = "datetime_created")
+    @Column(name = "date_time_created")
     @NotNull
-    public Timestamp getDatetimeCreated() {
-        return datetimeCreated;
+    public Timestamp getDateTimeCreated() {
+        return dateTimeCreated;
     }
 
-    public void setDatetimeCreated(Timestamp datetimeCreated) {
-        this.datetimeCreated = datetimeCreated;
+    public void setDateTimeCreated(Timestamp dateTimeCreated) {
+        this.dateTimeCreated = dateTimeCreated;
     }
 
     @Basic
-    @Column(name = "datetime_updated")
+    @Column(name = "date_time_updated")
     @NotNull
-    public Timestamp getDatetimeUpdated() {
-        return datetimeUpdated;
+    public Timestamp getDateTimeUpdated() {
+        return dateTimeUpdated;
     }
 
-    public void setDatetimeUpdated(Timestamp datetimeUpdated) {
-        this.datetimeUpdated = datetimeUpdated;
+    public void setDateTimeUpdated(Timestamp dateTimeUpdated) {
+        this.dateTimeUpdated = dateTimeUpdated;
     }
 
     @Override
@@ -118,9 +118,9 @@ public class DataVendor {
             return false;
         if (supportEmail != null ? !supportEmail.equals(that.supportEmail) : that.supportEmail != null)
             return false;
-        if (!datetimeCreated.equals(that.datetimeCreated))
+        if (!dateTimeCreated.equals(that.dateTimeCreated))
             return false;
-        if (!datetimeUpdated.equals(that.datetimeUpdated))
+        if (!dateTimeUpdated.equals(that.dateTimeUpdated))
             return false;
 
         return true;
@@ -133,8 +133,8 @@ public class DataVendor {
         result = 31 * result + abbreviation.hashCode();
         result = 31 * result + (websiteUrl != null ? websiteUrl.hashCode() : 0);
         result = 31 * result + (supportEmail != null ? supportEmail.hashCode() : 0);
-        result = 31 * result + datetimeCreated.hashCode();
-        result = 31 * result + datetimeUpdated.hashCode();
+        result = 31 * result + dateTimeCreated.hashCode();
+        result = 31 * result + dateTimeUpdated.hashCode();
         return result;
     }
 }
