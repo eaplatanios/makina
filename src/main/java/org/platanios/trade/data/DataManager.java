@@ -10,15 +10,13 @@ import java.util.Date;
  */
 public class DataManager {
     public static class ExchangeBuilder {
-        private final String code;
         private final String name;
 
         private String city = null;
         private String country = null;
         private String currency = null;
 
-        public ExchangeBuilder(String code, String name) {
-            this.code = code;
+        public ExchangeBuilder(String name) {
             this.name = name;
         }
 
@@ -39,7 +37,6 @@ public class DataManager {
 
         protected Exchange build() {
             Exchange exchange = new Exchange();
-            exchange.setCode(code);
             exchange.setName(name);
             exchange.setCity(city);
             exchange.setCountry(country);
@@ -101,11 +98,10 @@ public class DataManager {
     }
 
     public void initializeDatabase() {
-        createAndStoreExchange(new ExchangeBuilder("N", "NYSE").city("New York").country("USA").currency("USD"));
-        createAndStoreExchange(new ExchangeBuilder("A", "NYSE MKT").city("New York").country("USA").currency("USD"));
-        createAndStoreExchange(new ExchangeBuilder("R", "NYSE Arca").city("New York").country("USA").currency("USD"));
-        createAndStoreExchange(new ExchangeBuilder("Q", "NASDAQ").city("New York").country("USA").currency("USD"));
-        createAndStoreExchange(new ExchangeBuilder("X", "Other").city("New York").country("USA").currency("USD"));
+        createAndStoreExchange(new ExchangeBuilder("NYSE").city("New York").country("USA").currency("USD"));
+        createAndStoreExchange(new ExchangeBuilder("NYSE MKT").city("New York").country("USA").currency("USD"));
+        createAndStoreExchange(new ExchangeBuilder("NYSE Arca").city("New York").country("USA").currency("USD"));
+        createAndStoreExchange(new ExchangeBuilder("NASDAQ").city("New York").country("USA").currency("USD"));
         createAndStoreDataVendor(
                 new DataVendorBuilder("Wharton Research Data Services / The Center for Research in Security Prices",
                                       "WRDS/CSRP")

@@ -20,7 +20,7 @@ public class Stock {
     private SubIndustry subIndustry;
     private Timestamp dateTimeCreated;
     private Timestamp dateTimeUpdated;
-    private List<DailyStockData> dailyPrices;
+    private List<DailyStockData> dailyData;
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -119,12 +119,12 @@ public class Stock {
     }
 
     @OneToMany(mappedBy = "stock", cascade = CascadeType.ALL, orphanRemoval = true)
-    public List<DailyStockData> getDailyPrices() {
-        return dailyPrices;
+    public List<DailyStockData> getDailyData() {
+        return dailyData;
     }
 
-    private void setDailyPrices(List<DailyStockData> dailyPrices) {
-        this.dailyPrices = dailyPrices;
+    private void setDailyData(List<DailyStockData> dailyData) {
+        this.dailyData = dailyData;
     }
 
     @Override

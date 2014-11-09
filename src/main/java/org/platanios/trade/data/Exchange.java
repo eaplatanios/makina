@@ -12,7 +12,6 @@ import java.util.List;
 @Table(name = "Exchanges", schema = "", catalog = "trade")
 public class Exchange {
     private long id;
-    private String code;
     private String name;
     private String city;
     private String country;
@@ -30,17 +29,6 @@ public class Exchange {
 
     private void setId(long id) {
         this.id = id;
-    }
-
-    @Basic
-    @Column(name = "code")
-    @NotNull
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
     }
 
     @Basic
@@ -126,8 +114,6 @@ public class Exchange {
 
         if (id != that.id)
             return false;
-        if (!code.equals(that.code))
-            return false;
         if (!name.equals(that.name))
             return false;
         if (city != null ? !city.equals(that.city) : that.city != null)
@@ -147,7 +133,6 @@ public class Exchange {
     @Override
     public int hashCode() {
         int result = (int) (id ^ (id >>> 32));
-        result = 31 * result + code.hashCode();
         result = 31 * result + name.hashCode();
         result = 31 * result + (city != null ? city.hashCode() : 0);
         result = 31 * result + (country != null ? country.hashCode() : 0);
