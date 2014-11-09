@@ -9,7 +9,7 @@ import java.util.List;
  * @author Emmanouil Antonios Platanios
  */
 @Entity
-@Table(name = "Stocks", schema = "", catalog = "trade")
+@Table(name = "Stocks", catalog = "trade")
 public class Stock {
     private long id;
     private String cusipId;
@@ -54,7 +54,7 @@ public class Stock {
     }
 
     @Basic
-    @Column(name = "ticker_symbol")
+    @Column(name = "ticker_symbol", unique = true)
     @NotNull
     public String getTickerSymbol() {
         return tickerSymbol;

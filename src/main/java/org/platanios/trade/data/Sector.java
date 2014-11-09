@@ -9,7 +9,7 @@ import java.util.List;
  * @author Emmanouil Antonios Platanios
  */
 @Entity
-@Table(name = "Sectors", schema = "", catalog = "trade")
+@Table(name = "Sectors", catalog = "trade")
 public class Sector {
     private long id;
     private String gicsId;
@@ -19,6 +19,7 @@ public class Sector {
     private List<IndustryGroup> industryGroups;
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     public long getId() {
         return id;
@@ -29,7 +30,7 @@ public class Sector {
     }
 
     @Basic
-    @Column(name = "gics_id")
+    @Column(name = "gics_id", unique = true)
     @NotNull
     public String getGicsId() {
         return gicsId;
@@ -40,7 +41,7 @@ public class Sector {
     }
 
     @Basic
-    @Column(name = "name")
+    @Column(name = "name", unique = true)
     @NotNull
     public String getName() {
         return name;

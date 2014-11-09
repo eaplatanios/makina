@@ -9,7 +9,7 @@ import java.util.List;
  * @author Emmanouil Antonios Platanios
  */
 @Entity
-@Table(name = "Exchanges", schema = "", catalog = "trade")
+@Table(name = "Exchanges", catalog = "trade")
 public class Exchange {
     private long id;
     private String name;
@@ -21,7 +21,7 @@ public class Exchange {
     private List<Stock> stocksTraded;
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     public long getId() {
         return id;
@@ -32,7 +32,7 @@ public class Exchange {
     }
 
     @Basic
-    @Column(name = "name")
+    @Column(name = "name", unique = true)
     @NotNull
     public String getName() {
         return name;

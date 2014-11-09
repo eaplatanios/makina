@@ -9,7 +9,7 @@ import java.util.List;
  * @author Emmanouil Antonios Platanios
  */
 @Entity
-@Table(name = "IndustryGroups", schema = "", catalog = "trade")
+@Table(name = "IndustryGroups", catalog = "trade")
 public class IndustryGroup {
     private long id;
     private String gicsId;
@@ -20,6 +20,7 @@ public class IndustryGroup {
     private List<Industry> industries;
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     public long getId() {
         return id;
@@ -30,7 +31,7 @@ public class IndustryGroup {
     }
 
     @Basic
-    @Column(name = "gics_id")
+    @Column(name = "gics_id", unique = true)
     @NotNull
     public String getGicsId() {
         return gicsId;
@@ -52,7 +53,7 @@ public class IndustryGroup {
     }
 
     @Basic
-    @Column(name = "name")
+    @Column(name = "name", unique = true)
     @NotNull
     public String getName() {
         return name;

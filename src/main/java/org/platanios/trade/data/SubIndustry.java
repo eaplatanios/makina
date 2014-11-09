@@ -8,7 +8,7 @@ import java.sql.Timestamp;
  * @author Emmanouil Antonios Platanios
  */
 @Entity
-@Table(name = "SubIndustries", schema = "", catalog = "trade")
+@Table(name = "SubIndustries", catalog = "trade")
 public class SubIndustry {
     private long id;
     private String gicsId;
@@ -19,6 +19,7 @@ public class SubIndustry {
     private Timestamp dateTimeUpdated;
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     public long getId() {
         return id;
@@ -29,7 +30,7 @@ public class SubIndustry {
     }
 
     @Basic
-    @Column(name = "gics_id")
+    @Column(name = "gics_id", unique = true)
     @NotNull
     public String getGicsId() {
         return gicsId;
@@ -51,7 +52,7 @@ public class SubIndustry {
     }
 
     @Basic
-    @Column(name = "name")
+    @Column(name = "name", unique = true)
     @NotNull
     public String getName() {
         return name;

@@ -9,7 +9,7 @@ import java.sql.Timestamp;
  * @author Emmanouil Antonios Platanios
  */
 @Entity
-@Table(name = "DataVendors", schema = "", catalog = "trade")
+@Table(name = "DataVendors", catalog = "trade")
 public class DataVendor {
     private long id;
     private String name;
@@ -20,7 +20,7 @@ public class DataVendor {
     private Timestamp dateTimeUpdated;
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     public long getId() {
         return id;
@@ -31,7 +31,7 @@ public class DataVendor {
     }
 
     @Basic
-    @Column(name = "name")
+    @Column(name = "name", unique = true)
     @NotNull
     public String getName() {
         return name;
@@ -42,7 +42,7 @@ public class DataVendor {
     }
 
     @Basic
-    @Column(name = "abbreviation")
+    @Column(name = "abbreviation", unique = true)
     @NotNull
     public String getAbbreviation() {
         return abbreviation;

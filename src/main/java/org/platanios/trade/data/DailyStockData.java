@@ -10,7 +10,7 @@ import java.sql.Timestamp;
  * @author Emmanouil Antonios Platanios
  */
 @Entity
-@Table(name = "DailyStockData", schema = "", catalog = "trade")
+@Table(name = "DailyStockData", catalog = "trade")
 public class DailyStockData {
     private long id;
     private Stock stock;
