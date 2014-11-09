@@ -3,6 +3,8 @@ package org.platanios.learn.classification.reflection.perception;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.primitives.Ints;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.coinor.Ipopt;
 import org.platanios.learn.math.combinatorics.CombinatoricsUtilities;
 
@@ -16,6 +18,9 @@ import java.util.*;
  * @author Emmanouil Antonios Platanios
  */
 class OptimizationProblemIpOpt extends Ipopt implements OptimizationProblem {
+    /** Logger object used by this class. */
+    private static final Logger logger = LogManager.getLogger("Error Rates Estimation / IpOpt Optimization");
+
     /** The error rates structure used for this optimization (this structure contains the power set indexing
      * information used to index the error rates over all possible power sets of functions as a simple one-dimensional
      * array). */
@@ -138,9 +143,124 @@ class OptimizationProblemIpOpt extends Ipopt implements OptimizationProblem {
                Ipopt.C_STYLE);
 
         // Configure the IpOpt solver
-        System.out.println(setStringOption("linear_solver", "ma97"));
+        // Output Settings
+        if (!setIntegerOption("print_level", 5)) { // Must be between 0 and 12.
+            logger.error("Error setting parameter 'print_level'!");
+            return;
+        }
+        // Termination Settings
+        if (!setNumericOption("tol", 1e-8)) {
+            logger.error("Error setting parameter 'tol'!");
+            return;
+        }
+        if (!setIntegerOption("max_iter", 3000)) {
+            logger.error("Error setting parameter 'max_iter'!");
+            return;
+        }
+        if (!setNumericOption("max_cpu_time", 1000000)) {
+            logger.error("Error setting parameter 'max_cpu_time'!");
+            return;
+        }
+        if (!setNumericOption("dual_inf_tol", 1)) {
+            logger.error("Error setting parameter 'dual_inf_tol'!");
+            return;
+        }
+        if (!setNumericOption("constr_viol_tol", 1e-15)) {
+            logger.error("Error setting parameter 'constr_viol_tol'!");
+            return;
+        }
+        if (!setNumericOption("compl_inf_tol", 1e-4)) {
+            logger.error("Error setting parameter 'compl_inf_tol'!");
+            return;
+        }
+        // NLP Scaling Settings
+        if (!setNumericOption("obj_scaling_factor", 1)) {
+            logger.error("Error setting parameter 'obj_scaling_factor'!");
+            return;
+        }
+        if (!setStringOption("nlp_scaling_method", "equilibration-based")) {
+            logger.error("Error setting parameter 'nlp_scaling_method'!");
+            return;
+        }
+        if (!setNumericOption("nlp_scaling_max_gradient", 100)) {
+            logger.error("Error setting parameter 'nlp_scaling_max_gradient'!");
+            return;
+        }
+        if (!setNumericOption("nlp_scaling_min_value", 1e-8)) {
+            logger.error("Error setting parameter 'nlp_scaling_min_value'!");
+            return;
+        }
+        // NLP Settings
+        if (!setNumericOption("bound_relax_factor", 0)) {
+            logger.error("Error setting parameter 'bound_relax_factor'!");
+            return;
+        }
+        if (!setStringOption("honor_original_bounds", "yes")) {
+            logger.error("Error setting parameter 'honor_original_bounds'!");
+            return;
+        }
+        if (!setStringOption("jac_c_constant", "yes")) {
+            logger.error("Error setting parameter 'jac_c_constant'!");
+            return;
+        }
+        if (!setStringOption("jac_d_constant", "yes")) {
+            logger.error("Error setting parameter 'jac_d_constant'!");
+            return;
+        }
+        if (!setStringOption("hessian_constant", "no")) {
+            logger.error("Error setting parameter 'hessian_constant'!");
+            return;
+        }
+        // Barrier Parameter Settings
+        if (!setStringOption("mehrotra_algorithm", "no")) {
+            logger.error("Error setting parameter 'mehrotra_algorithm'!");
+            return;
+        }
+        if (!setStringOption("mu_strategy", "adaptive")) {
+            logger.error("Error setting parameter 'mu_strategy'!");
+            return;
+        }
+        if (!setStringOption("mu_oracle", "quality-function")) {
+            logger.error("Error setting parameter 'mu_oracle'!");
+            return;
+        }
+        if (!setStringOption("fixed_mu_oracle", "average_compl")) {
+            logger.error("Error setting parameter 'fixed_mu_oracle'!");
+            return;
+        }
+        // Restoration Phase Settings
+        if (!setStringOption("expect_infeasible_problem", "no")) {
+            logger.error("Error setting parameter 'expect_infeasible_problem'!");
+            return;
+        }
+        // Linear Solver Settings
+        if (!setStringOption("linear_solver", "ma27")) {
+            logger.error("Error setting parameter 'linear_solver'!");
+            return;
+        }
+        if (!setStringOption("linear_system_scaling", "mc19")) {
+            logger.error("Error setting parameter 'linear_system_scaling'!");
+            return;
+        }
+        if (!setStringOption("linear_scaling_on_demand", "yes")) {
+            logger.error("Error setting parameter 'linear_scaling_on_demand'!");
+            return;
+        }
     }
 
+    /**
+     * Sets the variables bounds and the constraints bounds for the optimization problem. The bounds are stored in
+     * arrays passed as arguments to this method.
+     *
+     * @param   numberOfVariables       The number of variables in the optimization problem.
+     * @param   variableLowerBounds     The array holding the variables lower bounds values to modify.
+     * @param   variableUpperBounds     The array holding the variables upper bounds values to modify.
+     * @param   numberOfConstraints     The number of constraints in the optimization problem.
+     * @param   constraintsLowerBounds  The array holding the constraints lower bounds values to modify.
+     * @param   constraintsUpperBounds  The array holding the constraints upper bounds values to modify.
+     * @return                          A boolean value indicating whether the method execution was successful or not.
+     */
+    @Override
     protected boolean get_bounds_info(int numberOfVariables,
                                       double[] variableLowerBounds,
                                       double[] variableUpperBounds,
@@ -167,12 +287,32 @@ class OptimizationProblemIpOpt extends Ipopt implements OptimizationProblem {
         return true;
     }
 
+    /**
+     * Sets the starting point used by the IpOpt nonlinear solver. The starting point is stored in an array passed as an
+     * argument to this method.
+     *
+     * @param   numberOfVariables           The number of variables in the optimization problem.
+     * @param   initializePoint             Boolean value indicating whether this method must provide values for the
+     *                                      optimization starting point.
+     * @param   point                       The array holding the starting point value to modify.
+     * @param   initializeBoundsMultipliers Boolean value indicating whether this method must provide initial values for
+     *                                      the bounds multipliers.
+     * @param   lowerBoundsMultipliers      The array holding the lower bounds multipliers values to modify.
+     * @param   upperBoundsMultipliers      The array holding the upper bounds multipliers values to modify.
+     * @param   numberOfConstraints         The number of constraints in the optimization problem.
+     * @param   initializeLambda            Boolean value indicating whether this method must provide initial values for
+     *                                      the Lagrange multipliers.
+     * @param   lambda                      The array holding the Lagrange multipliers values to modify.
+     * @return                              A boolean value indicating whether the method execution was successful or
+     *                                      not.
+     */
+    @Override
     protected boolean get_starting_point(int numberOfVariables,
                                          boolean initializePoint,
                                          double[] point,
-                                         boolean init_z,
-                                         double[] z_L,
-                                         double[] z_U,
+                                         boolean initializeBoundsMultipliers,
+                                         double[] lowerBoundsMultipliers,
+                                         double[] upperBoundsMultipliers,
                                          int numberOfConstraints,
                                          boolean initializeLambda,
                                          double[] lambda)
@@ -183,8 +323,17 @@ class OptimizationProblemIpOpt extends Ipopt implements OptimizationProblem {
     }
 
     /**
-     * Computes the value of the objective function at a particular point.
+     * Computes the objective value at a particular point. The result is stored in an array passed as an argument to
+     * this method.
+     *
+     * @param   numberOfVariables   The number of variables in the optimization problem.
+     * @param   point               The point in which to evaluate the objective function.
+     * @param   newPoint            Boolean value that is equal to false if any evaluation method was previously called
+     *                              with the same point, and true otherwise.
+     * @param   objectiveValue      The array holding objective value to modify.
+     * @return                      A boolean value indicating whether the method execution was successful or not.
      */
+    @Override
     protected boolean eval_f(int numberOfVariables,
                              double[] point,
                              boolean newPoint,
@@ -194,8 +343,17 @@ class OptimizationProblemIpOpt extends Ipopt implements OptimizationProblem {
     }
 
     /**
-     * Computes the gradient of the objective function at a particular point.
+     * Computes the first derivatives of the objective function at a particular point. The result is stored in an array
+     * passed as an argument to this method.
+     *
+     * @param   numberOfVariables   The number of variables in the optimization problem.
+     * @param   point               The point in which to evaluate the objective function.
+     * @param   newPoint            Boolean value that is equal to false if any evaluation method was previously called
+     *                              with the same point, and true otherwise.
+     * @param   objectiveGradient   The array holding the objective function gradients values to modify.
+     * @return                      A boolean value indicating whether the method execution was successful or not.
      */
+    @Override
     protected boolean eval_grad_f(int numberOfVariables,
                                   double[] point,
                                   boolean newPoint,
@@ -205,8 +363,28 @@ class OptimizationProblemIpOpt extends Ipopt implements OptimizationProblem {
     }
 
     /**
-     * Computes the Hessian of the objective function at a particular point.
+     * Computes the Hessian matrix of the Lagrange function at a particular point. The result is stored in an array
+     * passed as an argument to this method. If that array, which is passed as a parameter, is null, then the structure
+     * of the Hessian matrix (i.e., the indexes of the non-zero entries in the matrix) is returned instead.
+     *
+     * @param   numberOfVariables           The number of variables in the optimization problem.
+     * @param   point                       The point in which to evaluate the objective function.
+     * @param   newPoint                    Boolean value that is equal to false if any evaluation method was previously
+     *                                      called with the same point, and true otherwise.
+     * @param   objectiveScalingFactor      Scaling factor multiplying the objective function within the Lagrange
+     *                                      function.
+     * @param   numberOfConstraints         The number of constraints in the optimization problem.
+     * @param   lambda                      The values of the Lagrange multipliers.
+     * @param   newLambda                   Boolean value that is equal to false if any evaluation method was previously
+     *                                      called with the same Lagrange multipliers, and true otherwise.
+     * @param   numberOfNonZerosInHessian   The number of nonzero elements in the Hessian matrix.
+     * @param   rowIndexes                  The row indexes of the nonzero elements in the Hessian matrix.
+     * @param   columnIndexes               The column indexes of the nonzero elements in the Hessian matrix.
+     * @param   objectiveHessian            The array holding the Hessian matrix values (in sparse form) to modify.
+     * @return                              A boolean value indicating whether the method execution was successful or
+     *                                      not.
      */
+    @Override
     protected boolean eval_h(int numberOfVariables,
                              double[] point,
                              boolean newPoint,
@@ -215,15 +393,15 @@ class OptimizationProblemIpOpt extends Ipopt implements OptimizationProblem {
                              double[] lambda,
                              boolean newLambda,
                              int numberOfNonZerosInHessian,
-                             int[] iRow,
-                             int[] jCol,
+                             int[] rowIndexes,
+                             int[] columnIndexes,
                              double[] objectiveHessian) {
         if (objectiveHessian == null) {
             int hessianEntryIndex = 0;
             for (int i = 0; i < numberOfVariables; i++) {
                 for (int j = i; j < numberOfVariables; j++) {
-                    iRow[hessianEntryIndex] = i;
-                    jCol[hessianEntryIndex] = j;
+                    rowIndexes[hessianEntryIndex] = i;
+                    columnIndexes[hessianEntryIndex] = j;
                 }
             }
         } else {
@@ -233,8 +411,18 @@ class OptimizationProblemIpOpt extends Ipopt implements OptimizationProblem {
     }
 
     /**
-     * Computes the constraints values at a particular point.
+     * Computes the constraints values at a particular point. The result is stored in an array passed as an argument to
+     * this method.
+     *
+     * @param   numberOfVariables   The number of variables in the optimization problem.
+     * @param   point               The point in which to evaluate the objective function.
+     * @param   newPoint            Boolean value that is equal to false if any evaluation method was previously called
+     *                              with the same point, and true otherwise.
+     * @param   numberOfConstraints The number of constraints in the optimization problem.
+     * @param   constraints         The array holding the constraints values to modify.
+     * @return                      A boolean value indicating whether the method execution was successful or not.
      */
+    @Override
     protected boolean eval_g(int numberOfVariables,
                              double[] point,
                              boolean newPoint,
@@ -266,23 +454,37 @@ class OptimizationProblemIpOpt extends Ipopt implements OptimizationProblem {
 
     /**
      * Computes the first derivatives of the constraints at a particular point (the constraints are actually linear in
-     * this case and so their derivatives values are constant). If the values array which is passed as a parameter is
-     * null, then the structure of the Jacobian matrix (i.e., the indexes of the non-zero entries in the matrix) is
-     * returned instead.
+     * this case and so their derivatives values are constant). The result is stored in an array passed as an argument
+     * to this method. If that array, which is passed as a parameter, is null, then the structure of the Jacobian matrix
+     * (i.e., the indexes of the non-zero entries in the matrix) is returned instead.
+     *
+     * @param   numberOfVariables           The number of variables in the optimization problem.
+     * @param   point                       The point in which to evaluate the objective function.
+     * @param   newPoint                    Boolean value that is equal to false if any evaluation method was previously
+     *                                      called with the same point, and true otherwise.
+     * @param   numberOfConstraints         The number of constraints in the optimization problem.
+     * @param   numberOfNonZerosInJacobian  The number of nonzero elements in the Jacobian matrix.
+     * @param   rowIndexes                  The row indexes of the nonzero elements in the Jacobian matrix.
+     * @param   columnIndexes               The column indexes of the nonzero elements in the Jacobian matrix.
+     * @param   constraintsGradients        The array holding the constraints Jacobian matrix values (in sparse form) to
+     *                                      modify.
+     * @return                              A boolean value indicating whether the method execution was successful or
+     *                                      not.
      */
+    @Override
     protected boolean eval_jac_g(int numberOfVariables,
                                  double[] point,
                                  boolean newPoint,
                                  int numberOfConstraints,
-                                 int numberOfNonZerosInConstraintsJacobian,
-                                 int[] iRow,
-                                 int[] jCol,
+                                 int numberOfNonZerosInJacobian,
+                                 int[] rowIndexes,
+                                 int[] columnIndexes,
                                  double[] constraintsGradients) {
         if (constraintsGradients == null) {
             int constraintIndex = 0;
             for (Integer[] constraintsIndex : constraintsJacobian) {
-                iRow[constraintIndex] = constraintsIndex[0];
-                jCol[constraintIndex++] = constraintsIndex[1];
+                rowIndexes[constraintIndex] = constraintsIndex[0];
+                columnIndexes[constraintIndex++] = constraintsIndex[1];
             }
         } else {
             int i = 0;
@@ -292,11 +494,8 @@ class OptimizationProblemIpOpt extends Ipopt implements OptimizationProblem {
         return true;
     }
 
-    /**
-     * Solves the numerical optimization problem and returns the error rates estimates in {@code double[]} format.
-     *
-     * @return  The error rates estimates in a {@code double[]} format.
-     */
+    /** {@inheritDoc} */
+    @Override
     public double[] solve() {
         OptimizeNLP();
         return getVariableValues();

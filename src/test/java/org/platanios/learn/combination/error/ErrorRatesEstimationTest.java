@@ -69,7 +69,7 @@ public class ErrorRatesEstimationTest {
         mad /= sampleErrorRates.length;
         mad_ind /= data.getNumberOfFunctions();
 
-        Assert.assertEquals(mad, 0.023921770444994158, 1E-5);
-        Assert.assertEquals(mad_ind, 0.041488317430976, 1E-5);
+        Assert.assertEquals(0.022264846242268578, mad, 1E-10);
+        Assert.assertEquals(0.03873716293662867, mad_ind, 1E-10);
     }
 }

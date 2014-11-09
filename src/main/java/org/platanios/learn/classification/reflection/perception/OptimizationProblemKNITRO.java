@@ -4,6 +4,8 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.primitives.Ints;
 import com.ziena.knitro.KnitroJava;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.platanios.learn.math.combinatorics.CombinatoricsUtilities;
 
 import java.util.*;
@@ -13,9 +15,14 @@ import java.util.*;
  * several approximations to a single function, by using only the agreement rates of those functions on an unlabeled set
  * of data, and that uses the KNITRO solver.
  *
+ * // TODO: The solve() method can only be called once in this case, because we currently destroy the KNITRO solver object at the end of its execution.
+ *
  * @author Emmanouil Antonios Platanios
  */
 class OptimizationProblemKNITRO implements OptimizationProblem {
+    /** Logger object used by this class. */
+    private static final Logger logger = LogManager.getLogger("Error Rates Estimation / KNITRO Optimization");
+
     /** The error rates structure used for this optimization (this structure contains the power set indexing
      * information used to index the error rates over all possible power sets of functions as a simple one-dimensional
      * array). */
@@ -197,65 +204,65 @@ class OptimizationProblemKNITRO implements OptimizationProblem {
         try {
             solver = new KnitroJava();
         } catch (java.lang.Exception  e) {
-            System.err.println(e.getMessage());
+            logger.error(e.getMessage());
             return;
         }
 
         // Configure the KNITRO solver
         if (!solver.setIntParamByName("algorithm", 3)) {
-            System.err.println ("Error setting parameter 'algorithm'!");
+            logger.error("Error setting parameter 'algorithm'!");
             return;
         }
         if (!solver.setIntParamByName("blasoption", 1)) {
-            System.err.println ("Error setting parameter 'blasoption'!");
+            logger.error("Error setting parameter 'blasoption'!");
             return;
         }
         if (!solver.setDoubleParamByName("feastol", 1.0E-20)) {
-            System.err.println ("Error setting parameter 'feastol'!");
+            logger.error("Error setting parameter 'feastol'!");
             return;
         }
         if (!solver.setIntParamByName("gradopt", 1)) {
-            System.err.println ("Error setting parameter 'gradopt'!");
+            logger.error("Error setting parameter 'gradopt'!");
             return;
         }
         if (!solver.setIntParamByName("hessian_no_f", 1)) {
-            System.err.println ("Error setting parameter 'hessian_no_f'!");
+            logger.error("Error setting parameter 'hessian_no_f'!");
             return;
         }
         if (!solver.setIntParamByName("hessopt", 1)) {
-            System.err.println ("Error setting parameter 'hessopt'!");
+            logger.error("Error setting parameter 'hessopt'!");
             return;
         }
         if (!solver.setIntParamByName("honorbnds", 1)) {
-            System.err.println ("Error setting parameter 'honorbnds'!");
+            logger.error("Error setting parameter 'honorbnds'!");
             return;
         }
         if (!solver.setIntParamByName("maxit", 10000)) {
-            System.err.println ("Error setting parameter 'maxit'!");
+            logger.error("Error setting parameter 'maxit'!");
             return;
         }
         if (!solver.setDoubleParamByName("opttol", 1E-20)) {
-            System.err.println ("Error setting parameter 'opttol'!");
+            logger.error("Error setting parameter 'opttol'!");
             return;
         }
         if (!solver.setIntParamByName("outlev", 6)) {
-            System.err.println ("Error setting parameter 'outlev'!");
+            logger.error("Error setting parameter 'outlev'!");
             return;
         }
         if (!solver.setIntParamByName("par_numthreads", 1)) {
-            System.err.println ("Error setting parameter 'par_numthreads'!");
+            logger.error("Error setting parameter 'par_numthreads'!");
             return;
         }
         if (!solver.setIntParamByName("scale", 1)) {
-            System.err.println ("Error setting parameter 'scale'!");
+            logger.error("Error setting parameter 'scale'!");
             return;
         }
         if (!solver.setIntParamByName("soc", 0)) {
-            System.err.println ("Error setting parameter 'soc'!");
+            logger.error("Error setting parameter 'soc'!");
             return;
         }
         if (!solver.setDoubleParamByName("xtol", 1.0E-20)) {
-            System.err.println ("Error setting parameter 'xtol'!");
+            logger.error("Error setting parameter 'xtol'!");
             return;
         }
 
@@ -277,7 +284,7 @@ class OptimizationProblemKNITRO implements OptimizationProblem {
                                 hessianColumnIndexes,
                                 optimizationStartingPoint,
                                 null)) {
-            System.err.println ("Error initializing the problem, KNITRO status = " + solver.getKnitroStatusCode());
+            logger.error("Error initializing the problem, KNITRO status = " + solver.getKnitroStatusCode());
             return;
         }
 
@@ -338,11 +345,8 @@ class OptimizationProblemKNITRO implements OptimizationProblem {
             constraintsJacobian[i++] = constraintsIndex[2];
     }
 
-    /**
-     * Solves the numerical optimization problem and returns the error rates estimates in {@code double[]} format.
-     *
-     * @return  The error rates estimates in a {@code double[]} format.
-     */
+    /** {@inheritDoc} */
+    @Override
     public double[] solve() {
         // Solve the optimization problem using KNITRO and record its status code
         int knitroStatusCode;
@@ -380,25 +384,25 @@ class OptimizationProblemKNITRO implements OptimizationProblem {
         while (knitroStatusCode > 0);
 
         // Display the KNITRO status after completing the optimization procedure
-        System.out.print ("KNITRO optimization finished! Status " + knitroStatusCode + ": ");
+        logger.info("KNITRO optimization finished! Status " + knitroStatusCode + ": ");
         switch (knitroStatusCode) {
             case KnitroJava.KTR_RC_OPTIMAL:
-                System.out.println ("Converged to optimality!");
+                logger.info("Converged to optimality!");
                 break;
             case KnitroJava.KTR_RC_ITER_LIMIT:
-                System.out.println ("Reached the maximum number of allowed iterations!");
+                logger.info("Reached the maximum number of allowed iterations!");
                 break;
             case KnitroJava.KTR_RC_NEAR_OPT:
             case KnitroJava.KTR_RC_FEAS_XTOL:
             case KnitroJava.KTR_RC_FEAS_FTOL:
             case KnitroJava.KTR_RC_FEAS_NO_IMPROVE:
-                System.out.println ("Could not improve upon the current iterate!");
+                logger.info("Could not improve upon the current iterate!");
                 break;
             case KnitroJava.KTR_RC_TIME_LIMIT:
-                System.out.println ("Reached the maximum CPU time allowed!");
+                logger.info("Reached the maximum CPU time allowed!");
                 break;
             default:
-                System.out.println ("Failed!");
+                logger.info("Failed!");
         }
 
         // Destroy the KNITRO native object
