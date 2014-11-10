@@ -1,4 +1,4 @@
-package org.platanios.learn.classification.reflection.perception;
+package org.platanios.learn.classification.reflection;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
@@ -19,7 +19,7 @@ import java.util.*;
  *
  * @author Emmanouil Antonios Platanios
  */
-class OptimizationProblemKNITRO implements OptimizationProblem {
+class ErrorEstimationOptimizationKNITRO implements ErrorEstimationOptimization {
     /** Logger object used by this class. */
     private static final Logger logger = LogManager.getLogger("Error Rates Estimation / KNITRO Optimization");
 
@@ -43,7 +43,7 @@ class OptimizationProblemKNITRO implements OptimizationProblem {
     /** An instance of the class containing methods that compute the objective function that we wish to minimize, its
      * gradients with respect to the optimization variables and its Hessian with respect to the optimization
      * variables. */
-    private ObjectiveFunction objectiveFunction;
+    private ErrorEstimationObjective.Function objectiveFunction;
     /** Array with the variables with respect to which the optimization is performed. That is, the array with the error
      * rates. */
     private double[] point;
@@ -76,11 +76,11 @@ class OptimizationProblemKNITRO implements OptimizationProblem {
      * @param   objectiveFunctionType   The type of objective function to minimize (e.g. minimize dependency, scaled
      *                                  dependency, etc.).
      */
-    OptimizationProblemKNITRO(int numberOfFunctions,
-                              int highestOrder,
-                              ErrorRatesPowerSetVector errorRates,
-                              AgreementRatesPowerSetVector agreementRates,
-                              ObjectiveFunctionType objectiveFunctionType) {
+    ErrorEstimationOptimizationKNITRO(int numberOfFunctions,
+                                      int highestOrder,
+                                      ErrorRatesPowerSetVector errorRates,
+                                      AgreementRatesPowerSetVector agreementRates,
+                                      ErrorEstimationObjective objectiveFunctionType) {
         this.errorRates = errorRates;
         this.agreementRates = agreementRates;
 
@@ -361,7 +361,7 @@ class OptimizationProblemKNITRO implements OptimizationProblem {
             switch (knitroStatusCode) {
                 case KnitroJava.KTR_RC_EVALFC:
                     point = solver.getCurrentX();
-                    objectiveFunction.computeObjective(point, objectiveValue);
+                    objectiveFunction.computeValue(point, objectiveValue);
                     computeConstraints(point, constraints);
                     break;
                 case KnitroJava.KTR_RC_EVALGA:

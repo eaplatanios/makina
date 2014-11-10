@@ -1,4 +1,4 @@
-package org.platanios.learn.classification.reflection.perception;
+package org.platanios.learn.classification.reflection;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;

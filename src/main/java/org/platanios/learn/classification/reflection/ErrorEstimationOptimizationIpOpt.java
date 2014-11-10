@@ -1,4 +1,4 @@
-package org.platanios.learn.classification.reflection.perception;
+package org.platanios.learn.classification.reflection;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
@@ -17,7 +17,7 @@ import java.util.*;
  *
  * @author Emmanouil Antonios Platanios
  */
-class OptimizationProblemIpOpt extends Ipopt implements OptimizationProblem {
+class ErrorEstimationOptimizationIpOpt extends Ipopt implements ErrorEstimationOptimization {
     /** Logger object used by this class. */
     private static final Logger logger = LogManager.getLogger("Error Rates Estimation / IpOpt Optimization");
 
@@ -38,7 +38,7 @@ class OptimizationProblemIpOpt extends Ipopt implements OptimizationProblem {
     /** An instance of the class containing methods that compute the objective function that we wish to minimize, its
      * gradients with respect to the optimization variables and its Hessian with respect to the optimization
      * variables. */
-    private final ObjectiveFunction objectiveFunction;
+    private final ErrorEstimationObjective.Function objectiveFunction;
     /** The starting point of the numerical optimization procedure. */
     private final double[] startingPoint;
 
@@ -59,11 +59,11 @@ class OptimizationProblemIpOpt extends Ipopt implements OptimizationProblem {
      * @param   objectiveFunctionType   The type of objective function to minimize (e.g. minimize dependency, scaled
      *                                  dependency, etc.).
      */
-    OptimizationProblemIpOpt(int numberOfFunctions,
-                             int highestOrder,
-                             ErrorRatesPowerSetVector errorRates,
-                             AgreementRatesPowerSetVector agreementRates,
-                             ObjectiveFunctionType objectiveFunctionType) {
+    ErrorEstimationOptimizationIpOpt(int numberOfFunctions,
+                                     int highestOrder,
+                                     ErrorRatesPowerSetVector errorRates,
+                                     AgreementRatesPowerSetVector agreementRates,
+                                     ErrorEstimationObjective objectiveFunctionType) {
         this.errorRates = errorRates;
         this.agreementRates = agreementRates;
         startingPoint = errorRates.array;
@@ -338,7 +338,7 @@ class OptimizationProblemIpOpt extends Ipopt implements OptimizationProblem {
                              double[] point,
                              boolean newPoint,
                              double[] objectiveValue) {
-        objectiveFunction.computeObjective(point, objectiveValue);
+        objectiveFunction.computeValue(point, objectiveValue);
         return true;
     }
 

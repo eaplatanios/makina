@@ -1,4 +1,4 @@
-package org.platanios.learn.classification.reflection.perception;
+package org.platanios.learn.classification.reflection;
 
 /**
  * An interface specifying the methods that all classes defined as possible objective problems for the numerical
@@ -7,7 +7,7 @@ package org.platanios.learn.classification.reflection.perception;
  *
  * @author Emmanouil Antonios Platanios
  */
-interface OptimizationProblem {
+interface ErrorEstimationOptimization {
     /**
      * Solves the numerical optimization problem and returns the error rates estimates in {@code double[]} format.
      *
