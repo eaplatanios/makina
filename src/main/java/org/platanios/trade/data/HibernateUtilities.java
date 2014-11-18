@@ -22,6 +22,7 @@ class HibernateUtilities {
                         .setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect")
                         .setProperty("hibernate.current_session_context_class", "thread")
                         .setProperty("hibernate.show_sql", "false")
+                        .setProperty("hibernate.id.new_generator_mappings", "true")
                         .setProperty("hibernate.hbm2ddl.auto", "update")
                         .addAnnotatedClass(DailyStockData.class)
                         .addAnnotatedClass(DataVendor.class)

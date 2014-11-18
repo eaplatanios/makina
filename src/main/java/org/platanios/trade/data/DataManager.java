@@ -9,6 +9,38 @@ import java.util.Date;
  * @author Emmanouil Antonios Platanios
  */
 public class DataManager {
+    private void createAndStoreExchange(ExchangeBuilder exchangeBuilder) {
+        Session session = HibernateUtilities.getSessionFactory().getCurrentSession();
+        session.beginTransaction();
+        session.save(exchangeBuilder.build());
+        session.getTransaction().commit();
+    }
+
+    private void createAndStoreDataVendor(DataVendorBuilder dataVendorBuilder) {
+        Session session = HibernateUtilities.getSessionFactory().getCurrentSession();
+        session.beginTransaction();
+        session.save(dataVendorBuilder.build());
+        session.getTransaction().commit();
+    }
+
+    public void initializeDatabase() {
+        createAndStoreExchange(new ExchangeBuilder("NYSE").city("New York").country("USA").currency("USD"));
+        createAndStoreExchange(new ExchangeBuilder("NYSE MKT").city("New York").country("USA").currency("USD"));
+        createAndStoreExchange(new ExchangeBuilder("NYSE Arca").city("New York").country("USA").currency("USD"));
+        createAndStoreExchange(new ExchangeBuilder("NASDAQ").city("New York").country("USA").currency("USD"));
+        createAndStoreDataVendor(
+                new DataVendorBuilder("Wharton Research Data Services / The Center for Research in Security Prices",
+                                      "WRDS/CSRP")
+                        .websiteUrl("http://wrds-web.wharton.upenn.edu/wrds/ds/crsp/index.cfm")
+        );
+    }
+
+    public static void main(String[] args) {
+        DataManager dataManager = new DataManager();
+        dataManager.initializeDatabase();
+        HibernateUtilities.getSessionFactory().close();
+    }
+
     public static class ExchangeBuilder {
         private final String name;
 
@@ -81,37 +113,5 @@ public class DataManager {
             dataVendor.setDateTimeUpdated(currentDateTime);
             return dataVendor;
         }
-    }
-
-    private void createAndStoreExchange(ExchangeBuilder exchangeBuilder) {
-        Session session = HibernateUtilities.getSessionFactory().getCurrentSession();
-        session.beginTransaction();
-        session.save(exchangeBuilder.build());
-        session.getTransaction().commit();
-    }
-
-    private void createAndStoreDataVendor(DataVendorBuilder dataVendorBuilder) {
-        Session session = HibernateUtilities.getSessionFactory().getCurrentSession();
-        session.beginTransaction();
-        session.save(dataVendorBuilder.build());
-        session.getTransaction().commit();
-    }
-
-    public void initializeDatabase() {
-        createAndStoreExchange(new ExchangeBuilder("NYSE").city("New York").country("USA").currency("USD"));
-        createAndStoreExchange(new ExchangeBuilder("NYSE MKT").city("New York").country("USA").currency("USD"));
-        createAndStoreExchange(new ExchangeBuilder("NYSE Arca").city("New York").country("USA").currency("USD"));
-        createAndStoreExchange(new ExchangeBuilder("NASDAQ").city("New York").country("USA").currency("USD"));
-        createAndStoreDataVendor(
-                new DataVendorBuilder("Wharton Research Data Services / The Center for Research in Security Prices",
-                                      "WRDS/CSRP")
-                        .websiteUrl("http://wrds-web.wharton.upenn.edu/wrds/ds/crsp/index.cfm")
-        );
-    }
-
-    public static void main(String[] args) {
-        DataManager dataManager = new DataManager();
-        dataManager.initializeDatabase();
-        HibernateUtilities.getSessionFactory().close();
     }
 }

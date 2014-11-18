@@ -26,7 +26,7 @@ public class DailyStockData {
     private Timestamp dateTimeUpdated;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     public long getId() {
         return id;
