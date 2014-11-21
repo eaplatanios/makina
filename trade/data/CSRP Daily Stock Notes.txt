@@ -1,0 +1,2 @@
+PRC: A positive amount is an actual close for the trading date while a negative amount denotes the average between BIDLO and ASKHI.
+Units: Most prices are represented in U.S. dollar values per share. Also, SHROUT -> thousands, and VOL -> units of one share (rounded to the nearest hundred).

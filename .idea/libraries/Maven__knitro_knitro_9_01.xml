@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: knitro:knitro:9.01">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/knitro/knitro/9.01/knitro-9.01.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/knitro/knitro/9.01/knitro-9.01-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/knitro/knitro/9.01/knitro-9.01-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
