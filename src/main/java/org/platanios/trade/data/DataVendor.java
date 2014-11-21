@@ -1,9 +1,13 @@
 package org.platanios.trade.data;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.NaturalId;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
-import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -16,8 +20,8 @@ public class DataVendor {
     private String abbreviation;
     private String websiteUrl;
     private String supportEmail;
-    private Timestamp dateTimeCreated;
-    private Timestamp dateTimeUpdated;
+    private Date dateTimeCreated;
+    private Date dateTimeUpdated;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,8 +34,9 @@ public class DataVendor {
         this.id = id;
     }
 
+    @NaturalId
     @Basic
-    @Column(name = "name", unique = true)
+    @Column(name = "name", unique = true, nullable = false)
     @NotNull
     public String getName() {
         return name;
@@ -41,8 +46,9 @@ public class DataVendor {
         this.name = name;
     }
 
+    @NaturalId
     @Basic
-    @Column(name = "abbreviation", unique = true)
+    @Column(name = "abbreviation", unique = true, nullable = false)
     @NotNull
     public String getAbbreviation() {
         return abbreviation;
@@ -77,25 +83,25 @@ public class DataVendor {
         this.supportEmail = supportEmail;
     }
 
-    @Basic
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "date_time_created")
-    @NotNull
-    public Timestamp getDateTimeCreated() {
+    @CreationTimestamp
+    public Date getDateTimeCreated() {
         return dateTimeCreated;
     }
 
-    public void setDateTimeCreated(Timestamp dateTimeCreated) {
+    private void setDateTimeCreated(Date dateTimeCreated) {
         this.dateTimeCreated = dateTimeCreated;
     }
 
-    @Basic
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "date_time_updated")
-    @NotNull
-    public Timestamp getDateTimeUpdated() {
+    @UpdateTimestamp
+    public Date getDateTimeUpdated() {
         return dateTimeUpdated;
     }
 
-    public void setDateTimeUpdated(Timestamp dateTimeUpdated) {
+    private void setDateTimeUpdated(Date dateTimeUpdated) {
         this.dateTimeUpdated = dateTimeUpdated;
     }
 

@@ -1,8 +1,12 @@
 package org.platanios.trade.data;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.NaturalId;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -18,8 +22,8 @@ public class Stock {
     private Exchange primaryExchange;
     private String name;
     private SubIndustry subIndustry;
-    private Timestamp dateTimeCreated;
-    private Timestamp dateTimeUpdated;
+    private Date dateTimeCreated;
+    private Date dateTimeUpdated;
     private List<DailyStockData> dailyData;
 
     @Id
@@ -33,6 +37,7 @@ public class Stock {
         this.id = id;
     }
 
+    @NaturalId
     @Basic
     @Column(name = "cusip_id", unique = true)
     public String getCusipId() {
@@ -43,6 +48,7 @@ public class Stock {
         this.cusipId = cusipId;
     }
 
+    @NaturalId
     @Basic
     @Column(name = "cik_id", unique = true)
     public String getCikId() {
@@ -53,8 +59,9 @@ public class Stock {
         this.cikId = cikId;
     }
 
+    @NaturalId
     @Basic
-    @Column(name = "ticker_symbol", unique = true)
+    @Column(name = "ticker_symbol", unique = true, nullable = false)
     @NotNull
     public String getTickerSymbol() {
         return tickerSymbol;
@@ -64,8 +71,8 @@ public class Stock {
         this.tickerSymbol = tickerSymbol;
     }
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "primary_exchange_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "primary_exchange_id", nullable = false)
     @NotNull
     public Exchange getPrimaryExchange() {
         return primaryExchange;
@@ -76,7 +83,7 @@ public class Stock {
     }
 
     @Basic
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     @NotNull
     public String getName() {
         return name;
@@ -96,25 +103,25 @@ public class Stock {
         this.subIndustry = subIndustry;
     }
 
-    @Basic
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "date_time_created")
-    @NotNull
-    public Timestamp getDateTimeCreated() {
+    @CreationTimestamp
+    public Date getDateTimeCreated() {
         return dateTimeCreated;
     }
 
-    public void setDateTimeCreated(Timestamp dateTimeCreated) {
+    private void setDateTimeCreated(Date dateTimeCreated) {
         this.dateTimeCreated = dateTimeCreated;
     }
 
-    @Basic
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "date_time_updated")
-    @NotNull
-    public Timestamp getDateTimeUpdated() {
+    @UpdateTimestamp
+    public Date getDateTimeUpdated() {
         return dateTimeUpdated;
     }
 
-    public void setDateTimeUpdated(Timestamp dateTimeUpdated) {
+    private void setDateTimeUpdated(Date dateTimeUpdated) {
         this.dateTimeUpdated = dateTimeUpdated;
     }
 

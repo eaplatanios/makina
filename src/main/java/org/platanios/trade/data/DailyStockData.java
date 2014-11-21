@@ -1,12 +1,16 @@
 package org.platanios.trade.data;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.Timestamp;
+import java.util.Date;
 
 /**
+ * TODO: Add composite key for stock ID and date (making combinations of those two unique).
+ *
  * @author Emmanouil Antonios Platanios
  */
 @Entity
@@ -22,8 +26,8 @@ public class DailyStockData {
     private BigDecimal closePrice;
     private BigDecimal adjustedClosePrice;
     private long volume;
-    private Timestamp dateTimeCreated;
-    private Timestamp dateTimeUpdated;
+    private Date dateTimeCreated;
+    private Date dateTimeUpdated;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,8 +40,8 @@ public class DailyStockData {
         this.id = id;
     }
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "stock_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "stock_id", nullable = false)
     @NotNull
     public Stock getStock() {
         return stock;
@@ -57,8 +61,8 @@ public class DailyStockData {
         this.dataVendor = dataVendor;
     }
 
-    @Basic
-    @Column(name = "date")
+    @Temporal(TemporalType.DATE)
+    @Column(name = "date", nullable = false)
     @NotNull
     public Date getDate() {
         return date;
@@ -69,7 +73,7 @@ public class DailyStockData {
     }
 
     @Basic
-    @Column(name = "open_price")
+    @Column(name = "open_price", nullable = false)
     @NotNull
     public BigDecimal getOpenPrice() {
         return openPrice;
@@ -80,7 +84,7 @@ public class DailyStockData {
     }
 
     @Basic
-    @Column(name = "high_price")
+    @Column(name = "high_price", nullable = false)
     @NotNull
     public BigDecimal getHighPrice() {
         return highPrice;
@@ -91,7 +95,7 @@ public class DailyStockData {
     }
 
     @Basic
-    @Column(name = "low_price")
+    @Column(name = "low_price", nullable = false)
     @NotNull
     public BigDecimal getLowPrice() {
         return lowPrice;
@@ -102,7 +106,7 @@ public class DailyStockData {
     }
 
     @Basic
-    @Column(name = "close_price")
+    @Column(name = "close_price", nullable = false)
     @NotNull
     public BigDecimal getClosePrice() {
         return closePrice;
@@ -113,7 +117,7 @@ public class DailyStockData {
     }
 
     @Basic
-    @Column(name = "adjusted_close_price")
+    @Column(name = "adjusted_close_price", nullable = false)
     @NotNull
     public BigDecimal getAdjustedClosePrice() {
         return adjustedClosePrice;
@@ -124,7 +128,7 @@ public class DailyStockData {
     }
 
     @Basic
-    @Column(name = "volume")
+    @Column(name = "volume", nullable = false)
     @NotNull
     public long getVolume() {
         return volume;
@@ -134,25 +138,25 @@ public class DailyStockData {
         this.volume = volume;
     }
 
-    @Basic
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "date_time_created")
-    @NotNull
-    public Timestamp getDateTimeCreated() {
+    @CreationTimestamp
+    public Date getDateTimeCreated() {
         return dateTimeCreated;
     }
 
-    public void setDateTimeCreated(Timestamp dateTimeCreated) {
+    private void setDateTimeCreated(Date dateTimeCreated) {
         this.dateTimeCreated = dateTimeCreated;
     }
 
-    @Basic
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "date_time_updated")
-    @NotNull
-    public Timestamp getDateTimeUpdated() {
+    @UpdateTimestamp
+    public Date getDateTimeUpdated() {
         return dateTimeUpdated;
     }
 
-    public void setDateTimeUpdated(Timestamp dateTimeUpdated) {
+    private void setDateTimeUpdated(Date dateTimeUpdated) {
         this.dateTimeUpdated = dateTimeUpdated;
     }
 

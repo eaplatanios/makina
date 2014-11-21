@@ -2,9 +2,6 @@ package org.platanios.trade.data;
 
 import org.hibernate.Session;
 
-import java.sql.Timestamp;
-import java.util.Date;
-
 /**
  * @author Emmanouil Antonios Platanios
  */
@@ -73,9 +70,6 @@ public class DataManager {
             exchange.setCity(city);
             exchange.setCountry(country);
             exchange.setCurrency(currency);
-            Timestamp currentDateTime = new Timestamp(new Date().getTime());
-            exchange.setDateTimeCreated(currentDateTime);
-            exchange.setDateTimeUpdated(currentDateTime);
             return exchange;
         }
     }
@@ -108,9 +102,6 @@ public class DataManager {
             dataVendor.setAbbreviation(abbreviation);
             dataVendor.setWebsiteUrl(websiteUrl);
             dataVendor.setSupportEmail(supportEmail);
-            Timestamp currentDateTime = new Timestamp(new Date().getTime());
-            dataVendor.setDateTimeCreated(currentDateTime);
-            dataVendor.setDateTimeUpdated(currentDateTime);
             return dataVendor;
         }
     }
