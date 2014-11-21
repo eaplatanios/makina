@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+        <!-- Connection Details -->
+        <property name="hibernate.connection.driver_class">org.mariadb.jdbc.Driver</property>
+        <property name="hibernate.connection.url">jdbc:mariadb://localhost</property>
+        <property name="hibernate.connection.username">root</property>
+        <property name="hibernate.connection.password"/>
+        <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
+        <!-- Other Settings -->
+        <property name="hibernate.current_session_context_class">thread</property>
+        <property name="hibernate.show_sql">false</property>
+        <property name="hibernate.id.new_generator_mappings">true</property>
+        <property name="hbm2ddl.auto">update</property>
+        <!-- Annotated Classes Mappings -->
+        <mapping class="org.platanios.trade.data.DailyStockData"/>
+        <mapping class="org.platanios.trade.data.DataVendor"/>
+        <mapping class="org.platanios.trade.data.Exchange"/>
+        <mapping class="org.platanios.trade.data.Industry"/>
+        <mapping class="org.platanios.trade.data.IndustryGroup"/>
+        <mapping class="org.platanios.trade.data.Sector"/>
+        <mapping class="org.platanios.trade.data.Stock"/>
+        <mapping class="org.platanios.trade.data.SubIndustry"/>
+    </session-factory>
+</hibernate-configuration>
