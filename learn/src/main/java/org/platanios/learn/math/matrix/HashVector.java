@@ -2,8 +2,7 @@ package org.platanios.learn.math.matrix;
 
 import cern.colt.list.IntArrayList;
 import cern.colt.map.OpenIntDoubleHashMap;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.platanios.learn.utilities.UnsafeSerializationUtilities;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.*;
@@ -16,12 +15,12 @@ import java.util.function.Function;
  * TODO: Add toDenseVector() method (or appropriate constructors).
  * TODO: Make this implementation faster by iterating over key-value pairs instead of iterating over keys and then retrieving values.
  * TODO: Add Builder class and remove constructors.
+ * TODO: Serialization can become much faster and lower memory "heavy" by storing pairs of indexes and values sequentially, instead of all indexes and then all values.
+ * TODO: Serialization is currently broken for this class.
  *
  * @author Emmanouil Antonios Platanios
  */
 public class HashVector extends Vector {
-    private static final long serialVersionUID = 7959600302555012181L;
-
     /** The size which the internal hash map uses as its initial capacity. */
     protected int initialSize = 128;
     /** The size of the vector. */
@@ -618,53 +617,181 @@ public class HashVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public void writeObject(ObjectOutputStream outputStream) throws IOException {
-        outputStream.writeObject(type());
-        outputStream.writeInt(size);
-        outputStream.writeInt(hashMap.keys().size());
-        for (int key : hashMap.keys().elements()) {
-            outputStream.writeInt(key);
-            outputStream.writeDouble(hashMap.get(key));
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected void readObject(ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
-        VectorType storedVectorType = (VectorType) inputStream.readObject();
-        if (storedVectorType != type())
-            throw new InvalidObjectException("The stored vector is of type " + storedVectorType.name() + "!");
-        size = inputStream.readInt();
-        hashMap = new OpenIntDoubleHashMap(initialSize);
-        int numberOfNonzeroEntries = inputStream.readInt();
-        for (int i = 0; i < numberOfNonzeroEntries; i++) {
-            int key = inputStream.readInt();
-            double value = inputStream.readDouble();
-            hashMap.put(key, value);
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof HashVector))
+    public boolean equals(Object object) { // TODO: Fix this! It is currently implemented in a very "hacky" way.
+        if (!(object instanceof Vector))
             return false;
         if (object == this)
             return true;
 
-        HashVector other = (HashVector) object;
-        return new EqualsBuilder()
-                .append(size, other.size)
-                .append(hashMap, other.hashMap)
-                .isEquals();
+        HashVector that = (HashVector) object;
+        SparseVector thisSparse = new SparseVector(size,
+                                                   hashMap.keys().elements(),
+                                                   hashMap.values().elements());
+        SparseVector thatSparse = new SparseVector(that.size,
+                                                   that.hashMap.keys().elements(),
+                                                   that.hashMap.values().elements());
+        return thisSparse.equals(thatSparse);
     }
 
     /** {@inheritDoc} */
     @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 31) // Two randomly chosen prime numbers.
-                .append(size)
-                .append(hashMap)
-                .toHashCode();
+    public void write(OutputStream outputStream) throws IOException { // TODO: This is currently not working.
+        UnsafeSerializationUtilities.writeInt(outputStream, size);
+        UnsafeSerializationUtilities.writeInt(outputStream, hashMap.keys().size());
+        UnsafeSerializationUtilities.writeIntArray(outputStream, hashMap.keys().elements());
+        UnsafeSerializationUtilities.writeDoubleArray(outputStream, hashMap.values().elements());
+    }
+
+    protected static HashVector read(InputStream inputStream) throws IOException {
+        int size = UnsafeSerializationUtilities.readInt(inputStream);
+        int numberOfNonzeroEntries = UnsafeSerializationUtilities.readInt(inputStream);
+        int[] indexes = UnsafeSerializationUtilities.readIntArray(inputStream,
+                                                                  numberOfNonzeroEntries,
+                                                                  Math.min(numberOfNonzeroEntries, 1024 * 1024));
+        double[] values = UnsafeSerializationUtilities.readDoubleArray(inputStream,
+                                                                       numberOfNonzeroEntries,
+                                                                       Math.min(numberOfNonzeroEntries, 1024 * 1024));
+        HashVector vector = new HashVector(size);
+        vector.hashMap = new OpenIntDoubleHashMap(Integer.highestOneBit(numberOfNonzeroEntries) << 1);
+        for (int i = 0; i < numberOfNonzeroEntries; i++)
+            vector.hashMap.put(indexes[i], values[i]);
+        return vector;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public InputStream getEncoder() {
+        return new Encoder();
+    }
+
+    protected class Encoder extends InputStream {
+        long position;
+        long endPosition;
+        EncoderState state;
+        long numberOfNonzeroEntriesOffset;
+        int numberOfNonzeroEntries;
+        int[] indexes;
+        double[] values;
+
+        public Encoder() {
+            long sizeFieldOffset;
+            try {
+                sizeFieldOffset = UNSAFE.objectFieldOffset(HashVector.class.getDeclaredField("size"));
+                numberOfNonzeroEntriesOffset =
+                        UNSAFE.objectFieldOffset(Encoder.class.getDeclaredField("numberOfNonzeroEntries"));
+            } catch (NoSuchFieldException e) {
+                throw new RuntimeException(e);
+            }
+            position = sizeFieldOffset;
+            endPosition = sizeFieldOffset + 4;
+            state = EncoderState.SIZE;
+            indexes = hashMap.keys().elements();
+            values = hashMap.values().elements();
+            numberOfNonzeroEntries = indexes.length;
+        }
+
+        @Override
+        public int read() {
+            switch(state) {
+                case SIZE:
+                    if (position == endPosition) {
+                        position = numberOfNonzeroEntriesOffset;
+                        endPosition = numberOfNonzeroEntriesOffset + 4;
+                        state = EncoderState.NUMBER_OF_NONZERO_ENTRIES;
+                    } else {
+                        return UNSAFE.getByte(size, position++);
+                    }
+                case NUMBER_OF_NONZERO_ENTRIES:
+                    if (position == endPosition) {
+                        position = INT_ARRAY_OFFSET;
+                        endPosition = INT_ARRAY_OFFSET + (numberOfNonzeroEntries << 2);
+                        state = EncoderState.INDEXES;
+                    } else {
+                        return UNSAFE.getByte(numberOfNonzeroEntries, position++);
+                    }
+                case INDEXES:
+                    if (position == endPosition) {
+                        position = DOUBLE_ARRAY_OFFSET;
+                        endPosition = DOUBLE_ARRAY_OFFSET + (numberOfNonzeroEntries << 3);
+                        state = EncoderState.VALUES;
+                    } else {
+                        return UNSAFE.getByte(indexes, position++);
+                    }
+                case VALUES:
+                    if (position == endPosition)
+                        return -1;
+                    else
+                        return UNSAFE.getByte(values, position++);
+            }
+            return -1;
+        }
+
+        @Override
+        public int read(byte[] b) {
+            return read(b, 0, b.length);
+        }
+
+        @Override
+        public int read(byte b[], int off, int len) {
+            if (b == null)
+                throw new NullPointerException();
+            if (off < 0 || len < 0 || len > b.length - off)
+                throw new IndexOutOfBoundsException();
+            int bytesRead;
+            switch(state) {
+                case SIZE:
+                    bytesRead = readBytes(HashVector.this, b, off, len);
+                    if (bytesRead == -1) {
+                        return bytesRead;
+                    } else {
+                        position = numberOfNonzeroEntriesOffset;
+                        endPosition = numberOfNonzeroEntriesOffset + 4;
+                        state = EncoderState.NUMBER_OF_NONZERO_ENTRIES;
+                    }
+                case NUMBER_OF_NONZERO_ENTRIES:
+                    bytesRead = readBytes(this, b, off, len);
+                    if (bytesRead == -1) {
+                        return bytesRead;
+                    } else {
+                        position = INT_ARRAY_OFFSET;
+                        endPosition = INT_ARRAY_OFFSET + (numberOfNonzeroEntries << 2);
+                        state = EncoderState.INDEXES;
+                    }
+                case INDEXES:
+                    bytesRead = readBytes(indexes, b, off, len);
+                    if (bytesRead == -1) {
+                        return bytesRead;
+                    } else {
+                        position = DOUBLE_ARRAY_OFFSET;
+                        endPosition = DOUBLE_ARRAY_OFFSET + (numberOfNonzeroEntries << 3);
+                        state = EncoderState.INDEXES;
+                    }
+                case VALUES:
+                    return readBytes(values, b, off, len);
+            }
+            return -1;
+        }
+
+        private int readBytes(Object source, byte[] destination, int off, int len) {
+            long numberOfBytesToRead = Math.min(endPosition - position, len);
+            if (numberOfBytesToRead > 0) {
+                UNSAFE.copyMemory(source,
+                                  position,
+                                  destination,
+                                  BYTE_ARRAY_OFFSET + off,
+                                  numberOfBytesToRead);
+                position += numberOfBytesToRead;
+                return (int) numberOfBytesToRead;
+            } else {
+                return -1;
+            }
+        }
+    }
+
+    private enum EncoderState {
+        SIZE,
+        NUMBER_OF_NONZERO_ENTRIES,
+        INDEXES,
+        VALUES
     }
 }

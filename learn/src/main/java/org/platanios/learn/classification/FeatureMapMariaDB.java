@@ -3,6 +3,7 @@ package org.platanios.learn.classification;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.platanios.learn.math.matrix.Vector;
+import org.platanios.learn.math.matrix.VectorType;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.*;
@@ -74,7 +75,7 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
                 String name = (String) inputStream.readObject();
                 List<T> features = new ArrayList<>();
                 for (int view = 0; view < numberOfViews; view++)
-                    features.add((T) inputStream.readObject());
+                    features.add((T) ((VectorType) inputStream.readObject()).buildVector(inputStream));
                 insertFeatures(name, features);
             }
             inputStream.close();
@@ -86,6 +87,71 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
 
     @Override
     public void loadFeatureMap(Connection databaseConnection) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public void addSingleViewFeatureMappings(String name, T features, int view) {
+        try {
+            insertFeature(name, features, view);
+        } catch (SQLException|IOException e) {
+            logger.error("Could not insert view features.");
+        }
+    }
+
+    @Override
+    public void addSingleViewFeatureMappings(Map<String, T> featureMappings, int view) {
+        for (String name : featureMappings.keySet())
+            addSingleViewFeatureMappings(name, featureMappings.get(name), view); // TODO: Optimize this by using a single query.
+    }
+
+    @Override
+    public void addFeatureMappings(String name, List<T> features) {
+        try {
+            insertFeatures(name, features);
+        } catch (SQLException|IOException e) {
+            logger.error("Could not insert multiple views features.");
+        }
+    }
+
+    @Override
+    public void addFeatureMappings(Map<String, List<T>> featureMappings) {
+        for (Map.Entry<String, List<T>> featureMapping : featureMappings.entrySet())
+            addFeatureMappings(featureMapping.getKey(), featureMapping.getValue()); // TODO: Optimize this by using a single query.
+    }
+
+    @Override
+    public T getSingleViewFeatureVector(String name, int view) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public Map<String, T> getSingleViewFeatureVectors(List<String> names, int view) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public Map<String, T> getSingleViewFeatureMap(int view) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public List<T> getFeatureVectors(String name) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public Map<String, List<T>> getFeatureVectors(List<String> names) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public Map<String, List<T>> getFeatureMap() {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public boolean writeFeatureMapToStream(ObjectOutputStream outputStream) {
         throw new NotImplementedException();
     }
 
@@ -125,61 +191,6 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
         preparedStatement.setBytes(2, byteOutputStream.toByteArray());
         preparedStatement.executeUpdate();
         preparedStatement.close();
-    }
-
-    @Override
-    public void addSingleViewFeatureMappings(String name, T features, int view) {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public void addSingleViewFeatureMappings(Map<String, T> featureMappings, int view) {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public void addFeatureMappings(String name, List<T> features) {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public void addFeatureMappings(Map<String, List<T>> featureMappings) {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public T getSingleViewFeatureVector(String name, int view) {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public Map<String, T> getSingleViewFeatureVectors(List<String> names, int view) {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public Map<String, T> getSingleViewFeatureMap(int view) {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public List<T> getFeatureVectors(String name) {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public Map<String, List<T>> getFeatureVectors(List<String> names) {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public Map<String, List<T>> getFeatureMap() {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public boolean writeFeatureMapToStream(ObjectOutputStream outputStream) {
-        throw new NotImplementedException();
     }
 
     public static void main(String[] args) {

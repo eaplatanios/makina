@@ -20,7 +20,7 @@ public enum VectorType {
         /** {@inheritDoc} */
         @Override
         public DenseVector buildVector(ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
-            return (DenseVector) inputStream.readObject();
+            return DenseVector.read(inputStream);
         }
     },
     SPARSE {
@@ -33,7 +33,7 @@ public enum VectorType {
         /** {@inheritDoc} */
         @Override
         public SparseVector buildVector(ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
-            return (SparseVector) inputStream.readObject();
+            return SparseVector.read(inputStream);
         }
     },
     HASH {
@@ -46,7 +46,7 @@ public enum VectorType {
         /** {@inheritDoc} */
         @Override
         public HashVector buildVector(ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
-            return (HashVector) inputStream.readObject();
+            return HashVector.read(inputStream);
         }
     };
 

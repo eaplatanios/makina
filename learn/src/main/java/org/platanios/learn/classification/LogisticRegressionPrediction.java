@@ -165,7 +165,8 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Integer>
     public void writeObject(ObjectOutputStream outputStream) throws IOException {
         outputStream.writeObject(type());
         outputStream.writeInt(numberOfFeatures);
-        outputStream.writeObject(weights);
+        outputStream.writeObject(weights.type());
+        weights.write(outputStream);
     }
 
     /** {@inheritDoc} */
@@ -175,6 +176,6 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Integer>
         if (classifierType != type() && !type().getStorageCompatibleTypes().contains(classifierType))
             throw new InvalidObjectException("The stored classifier is of type " + classifierType.name() + "!");
         numberOfFeatures = inputStream.readInt();
-        weights = (Vector) inputStream.readObject();
+        weights = ((VectorType) inputStream.readObject()).buildVector(inputStream);
     }
 }

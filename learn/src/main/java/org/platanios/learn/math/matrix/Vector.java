@@ -1,9 +1,9 @@
 package org.platanios.learn.math.matrix;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import sun.misc.Unsafe;
+
+import java.io.*;
+import java.lang.reflect.Field;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -15,8 +15,25 @@ import java.util.function.Function;
  *
  * @author Emmanouil Antonios Platanios
  */
-public abstract class Vector implements Serializable {
-    private static final long serialVersionUID = -9109937285807159314L;
+public abstract class Vector {
+    protected static final Unsafe UNSAFE;
+    static
+    {
+        try
+        {
+            Field field = Unsafe.class.getDeclaredField("theUnsafe");
+            field.setAccessible(true);
+            UNSAFE = (Unsafe)field.get(null);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+    protected static final long BYTE_ARRAY_OFFSET = UNSAFE.arrayBaseOffset(byte[].class);
+    protected static final long INT_ARRAY_OFFSET = UNSAFE.arrayBaseOffset(int[].class);
+    protected static final long DOUBLE_ARRAY_OFFSET = UNSAFE.arrayBaseOffset(double[].class);
+
     /** The threshold value for elements to be considered equal to zero when counting the number of non-zero elements of
      * this vector (i.e., in method {@link #cardinality()}) and when handling sparse vectors. */
     protected static final double epsilon = Math.sqrt(Double.MIN_VALUE);
@@ -588,10 +605,10 @@ public abstract class Vector implements Serializable {
      * @param   outputStream    The output stream to write the contents of this vector to.
      * @throws  IOException
      */
-    protected abstract void writeObject(ObjectOutputStream outputStream) throws IOException;
+    public abstract void write(OutputStream outputStream) throws IOException;
 
     // TODO: Write documentation for this method.
-    protected abstract void readObject(ObjectInputStream inputStream) throws IOException, ClassNotFoundException;
+    public abstract InputStream getEncoder();
 
     /**
      * Compares the current vector with another object for equality. Note that if the provided object is not a vector
@@ -605,8 +622,4 @@ public abstract class Vector implements Serializable {
      */
     @Override
     public abstract boolean equals(Object object);
-
-    /** {@inheritDoc} */
-    @Override
-    public abstract int hashCode();
 }

@@ -1,7 +1,7 @@
 package org.platanios.learn.math.matrix;
 
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.platanios.learn.math.MathUtilities;
+import org.platanios.learn.utilities.UnsafeSerializationUtilities;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.*;
@@ -25,8 +25,6 @@ import java.util.function.Function;
  * @author Emmanouil Antonios Platanios
  */
 public class SparseVector extends Vector {
-    private static final long serialVersionUID = -5387808766447862936L;
-
     /** The size of the vector. */
     protected int size;
 
@@ -1814,83 +1812,197 @@ public class SparseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public void writeObject(ObjectOutputStream outputStream) throws IOException {
-        outputStream.writeObject(type());
-        outputStream.writeInt(size);
-        outputStream.writeInt(numberOfNonzeroEntries);
-        for (int i = 0; i < numberOfNonzeroEntries; i++) {
-            outputStream.writeInt(indexes[i]);
-            outputStream.writeDouble(values[i]);
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected void readObject(ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
-        VectorType storedVectorType = (VectorType) inputStream.readObject();
-        if (storedVectorType != type())
-            throw new InvalidObjectException("The stored vector is of type " + storedVectorType.name() + "!");
-        size = inputStream.readInt();
-        numberOfNonzeroEntries = inputStream.readInt();
-        indexes = new int[numberOfNonzeroEntries];
-        values = new double[numberOfNonzeroEntries];
-        for (int i = 0; i < numberOfNonzeroEntries; i++) {
-            indexes[i] = inputStream.readInt();
-            values[i] = inputStream.readDouble();
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public boolean equals(Object object) {
         if (!(object instanceof Vector))
             return false;
         if (object == this)
             return true;
 
-        if (((Vector) object).type() == VectorType.SPARSE) {
-            SparseVector otherVector = (SparseVector) object;
-            int vector1Index = 0;
-            int vector2Index = 0;
-            while (vector1Index < numberOfNonzeroEntries && vector2Index < otherVector.numberOfNonzeroEntries) {
-                if (indexes[vector1Index] < otherVector.indexes[vector2Index]) {
-                    if (Math.abs(values[vector1Index]) >= epsilon)
-                        return false;
-                    vector1Index++;
-                } else if (indexes[vector1Index] > otherVector.indexes[vector2Index]) {
-                    if (Math.abs(otherVector.values[vector1Index]) >= epsilon)
-                        return false;
-                    vector2Index++;
-                } else {
-                    if (Math.abs(values[vector1Index] - otherVector.values[vector1Index]) >= epsilon)
-                        return false;
-                    vector1Index++;
-                    vector2Index++;
-                }
-            }
-            while (vector1Index < numberOfNonzeroEntries) {
+        SparseVector that = (SparseVector) object;
+
+        if (size != that.size)
+            return false;
+
+        int vector1Index = 0;
+        int vector2Index = 0;
+        while (vector1Index < numberOfNonzeroEntries && vector2Index < that.numberOfNonzeroEntries) {
+            if (indexes[vector1Index] < that.indexes[vector2Index]) {
                 if (Math.abs(values[vector1Index]) >= epsilon)
                     return false;
                 vector1Index++;
-            }
-            while (vector2Index < otherVector.numberOfNonzeroEntries) {
-                if (Math.abs(otherVector.values[vector1Index]) >= epsilon)
+            } else if (indexes[vector1Index] > that.indexes[vector2Index]) {
+                if (Math.abs(that.values[vector1Index]) >= epsilon)
                     return false;
                 vector2Index++;
+            } else {
+                if (Math.abs(values[vector1Index] - that.values[vector1Index]) >= epsilon)
+                    return false;
+                vector1Index++;
+                vector2Index++;
             }
-            return true;
-        } else {
-            throw new NotImplementedException();
         }
+        while (vector1Index < numberOfNonzeroEntries) {
+            if (Math.abs(values[vector1Index]) >= epsilon)
+                return false;
+            vector1Index++;
+        }
+        while (vector2Index < that.numberOfNonzeroEntries) {
+            if (Math.abs(that.values[vector1Index]) >= epsilon)
+                return false;
+            vector2Index++;
+        }
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 31) // Two randomly chosen prime numbers.
-                .append(size)
-                .append(indexes)
-                .append(values)
-                .toHashCode();
+    public void write(OutputStream outputStream) throws IOException {
+        UnsafeSerializationUtilities.writeInt(outputStream, size);
+        UnsafeSerializationUtilities.writeInt(outputStream, numberOfNonzeroEntries);
+        UnsafeSerializationUtilities.writeIntArray(outputStream, indexes);
+        UnsafeSerializationUtilities.writeDoubleArray(outputStream, values);
+    }
+
+    protected static SparseVector read(InputStream inputStream) throws IOException {
+        int size = UnsafeSerializationUtilities.readInt(inputStream);
+        int numberOfNonzeroEntries = UnsafeSerializationUtilities.readInt(inputStream);
+        int[] indexes = UnsafeSerializationUtilities.readIntArray(inputStream,
+                                                                  numberOfNonzeroEntries,
+                                                                  Math.min(numberOfNonzeroEntries, 1024 * 1024));
+        double[] values = UnsafeSerializationUtilities.readDoubleArray(inputStream,
+                                                                       numberOfNonzeroEntries,
+                                                                       Math.min(numberOfNonzeroEntries, 1024 * 1024));
+        return new SparseVector(size, indexes, values);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public InputStream getEncoder() {
+        return new Encoder();
+    }
+
+    protected class Encoder extends InputStream {
+        long position;
+        long endPosition;
+        EncoderState state;
+        long numberOfNonzeroEntriesOffset;
+
+        public Encoder() {
+            long sizeFieldOffset;
+            try {
+                sizeFieldOffset = UNSAFE.objectFieldOffset(SparseVector.class.getDeclaredField("size"));
+                numberOfNonzeroEntriesOffset =
+                        UNSAFE.objectFieldOffset(SparseVector.class.getDeclaredField("numberOfNonzeroEntries"));
+            } catch (NoSuchFieldException e) {
+                throw new RuntimeException(e);
+            }
+            position = sizeFieldOffset;
+            endPosition = sizeFieldOffset + 4;
+            state = EncoderState.SIZE;
+        }
+
+        @Override
+        public int read() {
+            switch(state) {
+                case SIZE:
+                    if (position == endPosition) {
+                        position = numberOfNonzeroEntriesOffset;
+                        endPosition = numberOfNonzeroEntriesOffset + 4;
+                        state = EncoderState.NUMBER_OF_NONZERO_ENTRIES;
+                    } else {
+                        return UNSAFE.getByte(size, position++);
+                    }
+                case NUMBER_OF_NONZERO_ENTRIES:
+                    if (position == endPosition) {
+                        position = INT_ARRAY_OFFSET;
+                        endPosition = INT_ARRAY_OFFSET + (numberOfNonzeroEntries << 2);
+                        state = EncoderState.INDEXES;
+                    } else {
+                        return UNSAFE.getByte(numberOfNonzeroEntries, position++);
+                    }
+                case INDEXES:
+                    if (position == endPosition) {
+                        position = DOUBLE_ARRAY_OFFSET;
+                        endPosition = DOUBLE_ARRAY_OFFSET + (numberOfNonzeroEntries << 3);
+                        state = EncoderState.VALUES;
+                    } else {
+                        return UNSAFE.getByte(indexes, position++);
+                    }
+                case VALUES:
+                    if (position == endPosition)
+                        return -1;
+                    else
+                        return UNSAFE.getByte(values, position++);
+            }
+            return -1;
+        }
+
+        @Override
+        public int read(byte[] b) {
+            return read(b, 0, b.length);
+        }
+
+        @Override
+        public int read(byte b[], int off, int len) {
+            if (b == null)
+                throw new NullPointerException();
+            if (off < 0 || len < 0 || len > b.length - off)
+                throw new IndexOutOfBoundsException();
+            int bytesRead;
+            switch(state) {
+                case SIZE:
+                    bytesRead = readBytes(SparseVector.this, b, off, len);
+                    if (bytesRead == -1) {
+                        return bytesRead;
+                    } else {
+                        position = numberOfNonzeroEntriesOffset;
+                        endPosition = numberOfNonzeroEntriesOffset + 4;
+                        state = EncoderState.NUMBER_OF_NONZERO_ENTRIES;
+                    }
+                case NUMBER_OF_NONZERO_ENTRIES:
+                    bytesRead = readBytes(SparseVector.this, b, off, len);
+                    if (bytesRead == -1) {
+                        return bytesRead;
+                    } else {
+                        position = INT_ARRAY_OFFSET;
+                        endPosition = INT_ARRAY_OFFSET + (numberOfNonzeroEntries << 2);
+                        state = EncoderState.INDEXES;
+                    }
+                case INDEXES:
+                    bytesRead = readBytes(indexes, b, off, len);
+                    if (bytesRead == -1) {
+                        return bytesRead;
+                    } else {
+                        position = DOUBLE_ARRAY_OFFSET;
+                        endPosition = DOUBLE_ARRAY_OFFSET + (numberOfNonzeroEntries << 3);
+                        state = EncoderState.INDEXES;
+                    }
+                case VALUES:
+                    return readBytes(values, b, off, len);
+            }
+            return -1;
+        }
+
+        private int readBytes(Object source, byte[] destination, int off, int len) {
+            long numberOfBytesToRead = Math.min(endPosition - position, len);
+            if (numberOfBytesToRead > 0) {
+                UNSAFE.copyMemory(source,
+                                  position,
+                                  destination,
+                                  BYTE_ARRAY_OFFSET + off,
+                                  numberOfBytesToRead);
+                position += numberOfBytesToRead;
+                return (int) numberOfBytesToRead;
+            } else {
+                return -1;
+            }
+        }
+    }
+
+    private enum EncoderState {
+        SIZE,
+        NUMBER_OF_NONZERO_ENTRIES,
+        INDEXES,
+        VALUES
     }
 }

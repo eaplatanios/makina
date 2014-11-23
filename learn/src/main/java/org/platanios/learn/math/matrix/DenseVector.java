@@ -1,8 +1,7 @@
 package org.platanios.learn.math.matrix;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.platanios.learn.math.MathUtilities;
+import org.platanios.learn.utilities.UnsafeSerializationUtilities;
 
 import java.io.*;
 import java.util.Arrays;
@@ -18,8 +17,6 @@ import java.util.function.Function;
  * @author Emmanouil Antonios Platanios
  */
 public class DenseVector extends Vector {
-    private static final long serialVersionUID = -2373140865492502489L;
-
     /** The size of the vector. */
     protected int size;
 
@@ -719,48 +716,119 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    protected void writeObject(ObjectOutputStream outputStream) throws IOException {
-        outputStream.writeObject(type());
-        outputStream.writeInt(size);
-        for (int i = 0; i < size; i++) {
-            outputStream.writeDouble(array[i]);
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected void readObject(ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
-        VectorType storedVectorType = (VectorType) inputStream.readObject();
-        if (storedVectorType != type())
-            throw new InvalidObjectException("The stored vector is of type " + storedVectorType.name() + "!");
-        size = inputStream.readInt();
-        array = new double[size];
-        for (int i = 0; i < size; i++) {
-            array[i] = inputStream.readDouble();
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public boolean equals(Object object) {
         if (!(object instanceof DenseVector))
             return false;
         if (object == this)
             return true;
 
-        DenseVector other = (DenseVector) object;
-        return new EqualsBuilder()
-                .append(size, other.size)
-                .append(array, other.array)
-                .isEquals();
+        DenseVector that = (DenseVector) object;
+
+        return size == that.size && Arrays.equals(array, that.array);
     }
 
     /** {@inheritDoc} */
     @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 31) // Two randomly chosen prime numbers.
-                .append(size)
-                .append(array)
-                .toHashCode();
+    public void write(OutputStream outputStream) throws IOException {
+        UnsafeSerializationUtilities.writeInt(outputStream, size);
+        UnsafeSerializationUtilities.writeDoubleArray(outputStream, array);
+    }
+
+    protected static DenseVector read(InputStream inputStream) throws IOException {
+        int size = UnsafeSerializationUtilities.readInt(inputStream);
+        DenseVector vector = new DenseVector(size);
+        vector.array = UnsafeSerializationUtilities.readDoubleArray(inputStream, size, 4096);
+        return vector;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public InputStream getEncoder() {
+        return new Encoder();
+    }
+
+    protected class Encoder extends InputStream {
+        long position;
+        long endPosition;
+        EncoderState state;
+
+        public Encoder() {
+            long sizeFieldOffset;
+            try {
+                sizeFieldOffset = UNSAFE.objectFieldOffset(DenseVector.class.getDeclaredField("size"));
+            } catch (NoSuchFieldException e) {
+                throw new RuntimeException(e);
+            }
+            position = sizeFieldOffset;
+            endPosition = sizeFieldOffset + 4;
+            state = EncoderState.SIZE;
+        }
+
+        @Override
+        public int read() {
+            switch(state) {
+                case SIZE:
+                    if (position == endPosition) {
+                        position = DOUBLE_ARRAY_OFFSET;
+                        endPosition = DOUBLE_ARRAY_OFFSET + (size << 3);
+                        state = EncoderState.ARRAY;
+                    } else {
+                        return UNSAFE.getByte(DenseVector.this, position++);
+                    }
+                case ARRAY:
+                    if (position == endPosition)
+                        return -1;
+                    else
+                        return UNSAFE.getByte(array, position++);
+            }
+            return -1;
+        }
+
+        @Override
+        public int read(byte[] b) {
+            return read(b, 0, b.length);
+        }
+
+        @Override
+        public int read(byte b[], int off, int len) {
+            if (b == null)
+                throw new NullPointerException();
+            if (off < 0 || len < 0 || len > b.length - off)
+                throw new IndexOutOfBoundsException();
+            switch(state) {
+                case SIZE:
+                    int bytesRead = readBytes(DenseVector.this, b, off, len);
+                    if (bytesRead == -1) {
+                        return bytesRead;
+                    } else {
+                        position = DOUBLE_ARRAY_OFFSET;
+                        endPosition = DOUBLE_ARRAY_OFFSET + (size << 3);
+                        state = EncoderState.ARRAY;
+                    }
+                case ARRAY:
+                    return readBytes(array, b, off, len);
+            }
+            return -1;
+        }
+
+        private int readBytes(Object source, byte[] destination, int off, int len) {
+            long numberOfBytesToRead = Math.min(endPosition - position, len);
+            if (numberOfBytesToRead > 0) {
+                UNSAFE.copyMemory(source,
+                                  position,
+                                  destination,
+                                  BYTE_ARRAY_OFFSET + off,
+                                  numberOfBytesToRead);
+                position += numberOfBytesToRead;
+                return (int) numberOfBytesToRead;
+            } else {
+                return -1;
+            }
+        }
+    }
+
+    private enum EncoderState {
+        SIZE,
+        ARRAY
     }
 }
