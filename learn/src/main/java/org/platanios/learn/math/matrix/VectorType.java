@@ -1,7 +1,7 @@
 package org.platanios.learn.math.matrix;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.InputStream;
 
 /**
  * This enumeration contains the different types of vectors that are supported. Each type also contains methods that can
@@ -19,7 +19,7 @@ public enum VectorType {
 
         /** {@inheritDoc} */
         @Override
-        public DenseVector buildVector(ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
+        public DenseVector buildVector(InputStream inputStream) throws IOException, ClassNotFoundException {
             return DenseVector.read(inputStream);
         }
     },
@@ -32,7 +32,7 @@ public enum VectorType {
 
         /** {@inheritDoc} */
         @Override
-        public SparseVector buildVector(ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
+        public SparseVector buildVector(InputStream inputStream) throws IOException, ClassNotFoundException {
             return SparseVector.read(inputStream);
         }
     },
@@ -45,7 +45,7 @@ public enum VectorType {
 
         /** {@inheritDoc} */
         @Override
-        public HashVector buildVector(ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
+        public HashVector buildVector(InputStream inputStream) throws IOException, ClassNotFoundException {
             return HashVector.read(inputStream);
         }
     };
@@ -68,5 +68,5 @@ public enum VectorType {
      * @return              The new vector.
      * @throws  IOException
      */
-    public abstract Vector buildVector(ObjectInputStream inputStream) throws IOException, ClassNotFoundException;
+    public abstract Vector buildVector(InputStream inputStream) throws IOException, ClassNotFoundException;
 }
