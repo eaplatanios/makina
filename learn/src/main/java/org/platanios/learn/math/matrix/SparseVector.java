@@ -1857,7 +1857,9 @@ public class SparseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public void write(OutputStream outputStream) throws IOException {
+    public void write(OutputStream outputStream, boolean includeType) throws IOException {
+        if (includeType)
+            UnsafeSerializationUtilities.writeInt(outputStream, type().ordinal());
         UnsafeSerializationUtilities.writeInt(outputStream, size);
         UnsafeSerializationUtilities.writeInt(outputStream, numberOfNonzeroEntries);
         UnsafeSerializationUtilities.writeIntArray(outputStream, indexes);
@@ -1868,10 +1870,17 @@ public class SparseVector extends Vector {
      * Deserializes the sparse vector stored in the provided input stream and returns it.
      *
      * @param   inputStream Input stream from which the dense vector will be "read".
+     * @param   includeType Boolean value indicating whether the type of the vector is to also be read from the input
+     *                      stream.
      * @return              The sparse vector obtained from the provided input stream.
      * @throws  IOException
      */
-    public static SparseVector read(InputStream inputStream) throws IOException {
+    public static SparseVector read(InputStream inputStream, boolean includeType) throws IOException {
+        if (includeType) {
+            VectorType storedVectorType = VectorType.values()[UnsafeSerializationUtilities.readInt(inputStream)];
+            if (storedVectorType != VectorType.SPARSE)
+                throw new InvalidObjectException("The stored vector is of type " + storedVectorType.name() + "!");
+        }
         int size = UnsafeSerializationUtilities.readInt(inputStream);
         int numberOfNonzeroEntries = UnsafeSerializationUtilities.readInt(inputStream);
         int[] indexes = UnsafeSerializationUtilities.readIntArray(inputStream,
@@ -1885,8 +1894,8 @@ public class SparseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public InputStream getEncoder() {
-        return new Encoder();
+    public InputStream getEncoder(boolean includeType) {
+        return new Encoder(includeType);
     }
 
     /**
@@ -1910,36 +1919,63 @@ public class SparseVector extends Vector {
         /** The current state of the encoder, representing which field of the object is currently being serialized. */
         EncoderState state;
 
+        /** The memory address offset of {@link #size} from the base address of the sparse vector instance that is being
+         * encoded. */
+        final long sizeFieldOffset;
         /** The memory address offset of {@link #numberOfNonzeroEntries} from the base address of the sparse vector
          * instance that is being encoded. */
-        final long numberOfNonzeroEntriesOffset;
+        final long numberOfNonzeroEntriesFieldOffset;
+        /** The {@link VectorType} ordinal number of the type of the vector being encoded
+         * (i.e., {@link VectorType#SPARSE}). */
+        final int type;
+        /** Boolean value indicating whether or not to also encode the type of the current vector
+         * (i.e., {@link VectorType#SPARSE}). */
+        final boolean includeType;
 
         /** Constructs an encoder object from the current vector. */
-        public Encoder() {
-            long sizeFieldOffset;
+        public Encoder(boolean includeType) {
+            long typeFieldOffset;
             try {
                 sizeFieldOffset = UNSAFE.objectFieldOffset(SparseVector.class.getDeclaredField("size"));
-                numberOfNonzeroEntriesOffset =
+                numberOfNonzeroEntriesFieldOffset =
                         UNSAFE.objectFieldOffset(SparseVector.class.getDeclaredField("numberOfNonzeroEntries"));
+                typeFieldOffset = UNSAFE.objectFieldOffset(Encoder.class.getDeclaredField("type"));
+
             } catch (NoSuchFieldException e) {
                 throw new RuntimeException(e);
             }
-            position = sizeFieldOffset;
-            endPosition = sizeFieldOffset + 4;
-            state = EncoderState.SIZE;
+            if (!includeType) {
+                position = sizeFieldOffset;
+                endPosition = sizeFieldOffset + 4;
+                state = EncoderState.SIZE;
+            } else {
+                position = typeFieldOffset;
+                endPosition = typeFieldOffset + 4;
+                state = EncoderState.TYPE;
+            }
+            type = VectorType.SPARSE.ordinal();
+            this.includeType = includeType;
         }
 
         /** {@inheritDoc} */
         @Override
         public int read() {
             switch(state) {
+                case TYPE:
+                    if (position == endPosition) {
+                        position = sizeFieldOffset;
+                        endPosition = sizeFieldOffset + 4;
+                        state = EncoderState.SIZE;
+                    } else {
+                        return UNSAFE.getByte(this, position++);
+                    }
                 case SIZE:
                     if (position == endPosition) {
-                        position = numberOfNonzeroEntriesOffset;
-                        endPosition = numberOfNonzeroEntriesOffset + 4;
+                        position = numberOfNonzeroEntriesFieldOffset;
+                        endPosition = numberOfNonzeroEntriesFieldOffset + 4;
                         state = EncoderState.NUMBER_OF_NONZERO_ENTRIES;
                     } else {
-                        return UNSAFE.getByte(size, position++);
+                        return UNSAFE.getByte(SparseVector.this, position++);
                     }
                 case NUMBER_OF_NONZERO_ENTRIES:
                     if (position == endPosition) {
@@ -1947,7 +1983,7 @@ public class SparseVector extends Vector {
                         endPosition = INT_ARRAY_OFFSET + (numberOfNonzeroEntries << 2);
                         state = EncoderState.INDEXES;
                     } else {
-                        return UNSAFE.getByte(numberOfNonzeroEntries, position++);
+                        return UNSAFE.getByte(SparseVector.this, position++);
                     }
                 case INDEXES:
                     if (position == endPosition) {
@@ -1968,30 +2004,39 @@ public class SparseVector extends Vector {
 
         /** {@inheritDoc} */
         @Override
-        public int read(byte[] b) {
-            return read(b, 0, b.length);
+        public int read(byte[] destination) {
+            return read(destination, 0, destination.length);
         }
 
         /** {@inheritDoc} */
         @Override
-        public int read(byte b[], int off, int len) {
-            if (b == null)
+        public int read(byte destination[], int offset, int length) {
+            if (destination == null)
                 throw new NullPointerException();
-            if (off < 0 || len < 0 || len > b.length - off)
+            if (offset < 0 || length < 0 || length > destination.length - offset)
                 throw new IndexOutOfBoundsException();
             int bytesRead;
             switch(state) {
-                case SIZE:
-                    bytesRead = readBytes(SparseVector.this, b, off, len);
+                case TYPE:
+                    bytesRead = readBytes(this, destination, offset, length);
                     if (bytesRead != -1) {
                         return bytesRead;
                     } else {
-                        position = numberOfNonzeroEntriesOffset;
-                        endPosition = numberOfNonzeroEntriesOffset + 4;
+                        position = sizeFieldOffset;
+                        endPosition = sizeFieldOffset + 4;
+                        state = EncoderState.SIZE;
+                    }
+                case SIZE:
+                    bytesRead = readBytes(SparseVector.this, destination, offset, length);
+                    if (bytesRead != -1) {
+                        return bytesRead;
+                    } else {
+                        position = numberOfNonzeroEntriesFieldOffset;
+                        endPosition = numberOfNonzeroEntriesFieldOffset + 4;
                         state = EncoderState.NUMBER_OF_NONZERO_ENTRIES;
                     }
                 case NUMBER_OF_NONZERO_ENTRIES:
-                    bytesRead = readBytes(SparseVector.this, b, off, len);
+                    bytesRead = readBytes(SparseVector.this, destination, offset, length);
                     if (bytesRead != -1) {
                         return bytesRead;
                     } else {
@@ -2000,7 +2045,7 @@ public class SparseVector extends Vector {
                         state = EncoderState.INDEXES;
                     }
                 case INDEXES:
-                    bytesRead = readBytes(indexes, b, off, len);
+                    bytesRead = readBytes(indexes, destination, offset, length);
                     if (bytesRead != -1) {
                         return bytesRead;
                     } else {
@@ -2009,7 +2054,7 @@ public class SparseVector extends Vector {
                         state = EncoderState.VALUES;
                     }
                 case VALUES:
-                    return readBytes(values, b, off, len);
+                    return readBytes(values, destination, offset, length);
             }
             return -1;
         }
@@ -2043,6 +2088,8 @@ public class SparseVector extends Vector {
 
     /** Enumeration containing the possible encoder states used within the {@link Encoder} class. */
     private enum EncoderState {
+        /** Represents the state the encoder is in, while encoding the type of the sparse vector. */
+        TYPE,
         /** Represents the state the encoder is in, while encoding the size of the sparse vector. */
         SIZE,
         /** Represents the state the encoder is in, while encoding the number of nonzero entries of the sparse

@@ -19,8 +19,8 @@ public enum VectorType {
 
         /** {@inheritDoc} */
         @Override
-        public DenseVector buildVector(InputStream inputStream) throws IOException, ClassNotFoundException {
-            return DenseVector.read(inputStream);
+        public DenseVector buildVector(InputStream inputStream, boolean includeType) throws IOException {
+            return DenseVector.read(inputStream, includeType);
         }
     },
     SPARSE {
@@ -32,8 +32,8 @@ public enum VectorType {
 
         /** {@inheritDoc} */
         @Override
-        public SparseVector buildVector(InputStream inputStream) throws IOException, ClassNotFoundException {
-            return SparseVector.read(inputStream);
+        public SparseVector buildVector(InputStream inputStream, boolean includeType) throws IOException {
+            return SparseVector.read(inputStream, includeType);
         }
     },
     HASH {
@@ -45,8 +45,8 @@ public enum VectorType {
 
         /** {@inheritDoc} */
         @Override
-        public HashVector buildVector(InputStream inputStream) throws IOException, ClassNotFoundException {
-            return HashVector.read(inputStream);
+        public HashVector buildVector(InputStream inputStream, boolean includeType) throws IOException {
+            return HashVector.read(inputStream, includeType);
         }
     };
 
@@ -60,13 +60,15 @@ public enum VectorType {
 
     /**
      * Builds a vector of the corresponding type from the contents of the provided input stream. Note that the contents
-     * of the stream must have been written using the writeObject(java.io.ObjectOutputStream) function of the
-     * corresponding vector class in order to be compatible with this constructor. If the contents are not compatible,
-     * then an {@link java.io.IOException} might be thrown, or the constructed vector might be corrupted in some way.
+     * of the stream must have been written using the write(InputStream, boolean) function of the corresponding vector
+     * class in order to be compatible with this constructor. If the contents are not compatible, then an
+     * {@link IOException} might be thrown, or the constructed vector might be corrupted in some way.
      *
      * @param   inputStream The input stream to read the contents of this vector from.
+     * @param   includeType Boolean value indicating whether the type of the vector is to also be read from the input
+     *                      stream.
      * @return              The new vector.
      * @throws  IOException
      */
-    public abstract Vector buildVector(InputStream inputStream) throws IOException, ClassNotFoundException;
+    public abstract Vector buildVector(InputStream inputStream, boolean includeType) throws IOException;
 }

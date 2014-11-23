@@ -608,9 +608,11 @@ public abstract class Vector {
      * Writes the contents of this vector to the provided output stream.
      *
      * @param   outputStream    The output stream to write the contents of this vector to.
+     * @param   includeType     Boolean value indicating whether the type of the vector is to also be written to the
+     *                          output stream.
      * @throws  IOException
      */
-    public abstract void write(OutputStream outputStream) throws IOException;
+    public abstract void write(OutputStream outputStream, boolean includeType) throws IOException;
 
     /**
      * Returns an encoder (a Java {@link java.io.InputStream} basically). This encoder can be used to copy the current
@@ -620,9 +622,10 @@ public abstract class Vector {
      * for the vector read by some other process, if the vector was modified while that process was reading it by using
      * an encoder returned by this method).
      *
-     * @return  The encoder for the current instance.
+     * @param   includeType     Boolean value indicating whether the type of the vector is to also be encoded.
+     * @return                  The encoder for the current instance.
      */
-    public abstract InputStream getEncoder();
+    public abstract InputStream getEncoder(boolean includeType);
 
     /**
      * Compares the current vector with another object for equality. Note that if the provided object is not a vector

@@ -1,7 +1,10 @@
 package org.platanios.learn.math.matrix;
 
 import cern.colt.map.OpenIntDoubleHashMap;
+import org.platanios.learn.serialization.UnsafeSerializationUtilities;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 
 /**
@@ -19,6 +22,22 @@ public class Vectors {
      */
     public static Vector build(int size, VectorType type) {
         return type.buildVector(size);
+    }
+
+    /**
+     * Builds a vector from the contents of the provided input stream. Note that the contents of the stream must have
+     * been written using the write(InputStream, boolean) function of the corresponding vector class, with the second
+     * parameter being equal to True, in order to be compatible with this constructor. If the contents are not
+     * compatible, then an {@link java.io.IOException} might be thrown, or the constructed vector might be corrupted in
+     * some way.
+     *
+     * @param   inputStream The input stream to read the contents of this vector from.
+     * @return              The new vector.
+     * @throws java.io.IOException
+     */
+    public static Vector build(InputStream inputStream) throws IOException {
+        VectorType storedVectorType = VectorType.values()[UnsafeSerializationUtilities.readInt(inputStream)];
+        return storedVectorType.buildVector(inputStream, false);
     }
 
     /**

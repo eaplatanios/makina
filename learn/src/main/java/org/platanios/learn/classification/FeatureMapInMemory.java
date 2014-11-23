@@ -3,7 +3,7 @@ package org.platanios.learn.classification;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.matrix.VectorType;
+import org.platanios.learn.math.matrix.Vectors;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
@@ -43,7 +43,7 @@ public class FeatureMapInMemory<T extends Vector> extends FeatureMap<T> {
                 String name = (String) inputStream.readObject();
                 List<T> features = new ArrayList<>(numberOfViews);
                 for (int view = 0; view < numberOfViews; view++)
-                    features.add((T) ((VectorType) inputStream.readObject()).buildVector(inputStream));
+                    features.add((T) Vectors.build(inputStream));
                 featureMap.put(name, features);
             }
             inputStream.close();
@@ -127,10 +127,8 @@ public class FeatureMapInMemory<T extends Vector> extends FeatureMap<T> {
             outputStream.writeInt(featureMap.keySet().size());
             for (String name : featureMap.keySet()) {
                 outputStream.writeObject(name);
-                for (int view = 0; view < numberOfViews; view++) {
-                    outputStream.writeObject(featureMap.get(name).get(view).type());
-                    featureMap.get(name).get(view).write(outputStream);
-                }
+                for (int view = 0; view < numberOfViews; view++)
+                    featureMap.get(name).get(view).write(outputStream, true);
             }
             outputStream.close();
             logger.debug("Wrote the feature map to an output stream.");

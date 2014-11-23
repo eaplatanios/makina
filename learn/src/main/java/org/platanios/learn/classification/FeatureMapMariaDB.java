@@ -3,7 +3,7 @@ package org.platanios.learn.classification;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.matrix.VectorType;
+import org.platanios.learn.math.matrix.Vectors;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.*;
@@ -44,22 +44,6 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
         }
     }
 
-    public void createDatabase() {
-        try {
-            Statement statement = connection.createStatement();
-            statement.executeUpdate("DROP DATABASE IF EXISTS learn");
-            statement.executeUpdate("CREATE DATABASE learn");
-            String tableCreationQuery = "CREATE TABLE learn.features ( input VARCHAR(100)";
-            for (int view = 0; view < numberOfViews; view++)
-                tableCreationQuery += ", features_view_" + view + " MEDIUMBLOB";
-            tableCreationQuery += ", PRIMARY KEY (input) )";
-            statement.executeUpdate(tableCreationQuery);
-            statement.close();
-        } catch (SQLException e) {
-            logger.error("Could not create the database.");
-        }
-    }
-
     @Override
     @SuppressWarnings("unchecked")
     public void loadFeatureMap(ObjectInputStream inputStream) {
@@ -75,7 +59,7 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
                 String name = (String) inputStream.readObject();
                 List<T> features = new ArrayList<>();
                 for (int view = 0; view < numberOfViews; view++)
-                    features.add((T) ((VectorType) inputStream.readObject()).buildVector(inputStream));
+                    features.add((T) Vectors.build(inputStream));
                 insertFeatures(name, features);
             }
             inputStream.close();
@@ -93,8 +77,8 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
     @Override
     public void addSingleViewFeatureMappings(String name, T features, int view) {
         try {
-            insertFeature(name, features, view);
-        } catch (SQLException|IOException e) {
+            insertFeatures(name, features, view);
+        } catch (SQLException e) {
             logger.error("Could not insert view features.");
         }
     }
@@ -109,7 +93,7 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
     public void addFeatureMappings(String name, List<T> features) {
         try {
             insertFeatures(name, features);
-        } catch (SQLException|IOException e) {
+        } catch (SQLException e) {
             logger.error("Could not insert multiple views features.");
         }
     }
@@ -155,7 +139,23 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
         throw new NotImplementedException();
     }
 
-    private void insertFeatures(String name, List<T> features) throws SQLException, IOException {
+    public void createDatabase() {
+        try {
+            Statement statement = connection.createStatement();
+            statement.executeUpdate("DROP DATABASE IF EXISTS learn");
+            statement.executeUpdate("CREATE DATABASE learn");
+            String tableCreationQuery = "CREATE TABLE learn.features ( input VARCHAR(100)";
+            for (int view = 0; view < numberOfViews; view++)
+                tableCreationQuery += ", features_view_" + view + " MEDIUMBLOB";
+            tableCreationQuery += ", PRIMARY KEY (input) )";
+            statement.executeUpdate(tableCreationQuery);
+            statement.close();
+        } catch (SQLException e) {
+            logger.error("Could not create the database.");
+        }
+    }
+
+    private void insertFeatures(String name, List<T> features) throws SQLException {
         String insertionQuery = "INSERT INTO learn.features VALUES (?";
         String lastPartOfInsertionQuery = "ON DUPLICATE KEY UPDATE ";
         for (int view = 0; view < numberOfViews; view++) {
@@ -168,29 +168,32 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
         insertionQuery += ") " + lastPartOfInsertionQuery;
         PreparedStatement preparedStatement = connection.prepareStatement(insertionQuery);
         preparedStatement.setString(1, name);
-        for (int view = 0; view < numberOfViews; view++) {
-            ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
-            ObjectOutputStream outputStream = new ObjectOutputStream(byteOutputStream);
-            outputStream.writeObject(features.get(view));
-            outputStream.close();
-            preparedStatement.setBytes(view + 2, byteOutputStream.toByteArray());
-        }
+        for (int view = 0; view < numberOfViews; view++)
+            preparedStatement.setBlob(view + 2, features.get(view).getEncoder(true));
         preparedStatement.executeUpdate();
         preparedStatement.close();
     }
 
-    private void insertFeature(String name, T features, int view) throws SQLException, IOException {
+    private void insertFeatures(String name, T features, int view) throws SQLException {
         String insertionQuery = "INSERT INTO learn.features (input, features_view_" + view + ") VALUES (?, ?) " +
                 "ON DUPLICATE KEY UPDATE features_view_" + view + "=VALUES(features_view_" + view + ")";
         PreparedStatement preparedStatement = connection.prepareStatement(insertionQuery);
         preparedStatement.setString(1, name);
-        ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
-        ObjectOutputStream outputStream = new ObjectOutputStream(byteOutputStream);
-        outputStream.writeObject(features);
-        outputStream.close();
-        preparedStatement.setBytes(2, byteOutputStream.toByteArray());
+        preparedStatement.setBlob(2, features.getEncoder(true));
         preparedStatement.executeUpdate();
         preparedStatement.close();
+    }
+
+    @SuppressWarnings("unchecked")
+    private T selectFeatures(String name, int view) throws SQLException, IOException, ClassNotFoundException {
+        String selectionQuery = "SELECT features_view_" + view + " FROM learn.features WHERE name='" + name + "'";
+        ResultSet result = connection.createStatement().executeQuery(selectionQuery);
+        if (result.next()) {
+            InputStream inputStream = result.getBlob("features_view_" + view).getBinaryStream();
+            return (T) Vectors.build(inputStream);
+        } else {
+            return null;
+        }
     }
 
     public static void main(String[] args) {

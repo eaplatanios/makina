@@ -735,7 +735,9 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public void write(OutputStream outputStream) throws IOException {
+    public void write(OutputStream outputStream, boolean includeType) throws IOException {
+        if (includeType)
+            UnsafeSerializationUtilities.writeInt(outputStream, type().ordinal());
         UnsafeSerializationUtilities.writeInt(outputStream, size);
         UnsafeSerializationUtilities.writeDoubleArray(outputStream, array);
     }
@@ -747,7 +749,12 @@ public class DenseVector extends Vector {
      * @return              The dense vector obtained from the provided input stream.
      * @throws  IOException
      */
-    public static DenseVector read(InputStream inputStream) throws IOException {
+    public static DenseVector read(InputStream inputStream, boolean includeType) throws IOException {
+        if (includeType) {
+            VectorType storedVectorType = VectorType.values()[UnsafeSerializationUtilities.readInt(inputStream)];
+            if (storedVectorType != VectorType.DENSE)
+                throw new InvalidObjectException("The stored vector is of type " + storedVectorType.name() + "!");
+        }
         int size = UnsafeSerializationUtilities.readInt(inputStream);
         DenseVector vector = new DenseVector(size);
         vector.array = UnsafeSerializationUtilities.readDoubleArray(inputStream, size, 4096);
@@ -756,8 +763,8 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public InputStream getEncoder() {
-        return new Encoder();
+    public InputStream getEncoder(boolean includeType) {
+        return new Encoder(includeType);
     }
 
     /**
@@ -778,23 +785,50 @@ public class DenseVector extends Vector {
         /** The current state of the encoder, representing which field of the object is currently being serialized. */
         EncoderState state;
 
+        /** The memory address offset of {@link #size} from the base address of the dense vector instance that is being
+         * encoded. */
+        final long sizeFieldOffset;
+        /** The {@link VectorType} ordinal number of the type of the vector being encoded
+         * (i.e., {@link VectorType#DENSE}). */
+        final int type;
+        /** Boolean value indicating whether or not to also encode the type of the current vector
+         * (i.e., {@link VectorType#DENSE}). */
+        final boolean includeType;
+
         /** Constructs an encoder object from the current vector. */
-        public Encoder() {
-            long sizeFieldOffset;
+        public Encoder(boolean includeType) {
+            long typeFieldOffset;
             try {
                 sizeFieldOffset = UNSAFE.objectFieldOffset(DenseVector.class.getDeclaredField("size"));
+                typeFieldOffset = UNSAFE.objectFieldOffset(Encoder.class.getDeclaredField("type"));
             } catch (NoSuchFieldException e) {
                 throw new RuntimeException(e);
             }
-            position = sizeFieldOffset;
-            endPosition = sizeFieldOffset + 4;
-            state = EncoderState.SIZE;
+            if (!includeType) {
+                position = sizeFieldOffset;
+                endPosition = sizeFieldOffset + 4;
+                state = EncoderState.SIZE;
+            } else {
+                position = typeFieldOffset;
+                endPosition = typeFieldOffset + 4;
+                state = EncoderState.TYPE;
+            }
+            type = VectorType.DENSE.ordinal();
+            this.includeType = includeType;
         }
 
         /** {@inheritDoc} */
         @Override
         public int read() {
             switch(state) {
+                case TYPE:
+                    if (position == endPosition) {
+                        position = sizeFieldOffset;
+                        endPosition = sizeFieldOffset + 4;
+                        state = EncoderState.SIZE;
+                    } else {
+                        return UNSAFE.getByte(this, position++);
+                    }
                 case SIZE:
                     if (position == endPosition) {
                         position = DOUBLE_ARRAY_OFFSET;
@@ -814,20 +848,30 @@ public class DenseVector extends Vector {
 
         /** {@inheritDoc} */
         @Override
-        public int read(byte[] b) {
-            return read(b, 0, b.length);
+        public int read(byte[] destination) {
+            return read(destination, 0, destination.length);
         }
 
         /** {@inheritDoc} */
         @Override
-        public int read(byte b[], int off, int len) {
-            if (b == null)
+        public int read(byte destination[], int offset, int length) {
+            if (destination == null)
                 throw new NullPointerException();
-            if (off < 0 || len < 0 || len > b.length - off)
+            if (offset < 0 || length < 0 || length > destination.length - offset)
                 throw new IndexOutOfBoundsException();
+            int bytesRead;
             switch(state) {
+                case TYPE:
+                    bytesRead = readBytes(this, destination, offset, length);
+                    if (bytesRead != -1) {
+                        return bytesRead;
+                    } else {
+                        position = sizeFieldOffset;
+                        endPosition = sizeFieldOffset + 4;
+                        state = EncoderState.SIZE;
+                    }
                 case SIZE:
-                    int bytesRead = readBytes(DenseVector.this, b, off, len);
+                    bytesRead = readBytes(DenseVector.this, destination, offset, length);
                     if (bytesRead != -1) {
                         return bytesRead;
                     } else {
@@ -836,7 +880,7 @@ public class DenseVector extends Vector {
                         state = EncoderState.ARRAY;
                     }
                 case ARRAY:
-                    return readBytes(array, b, off, len);
+                    return readBytes(array, destination, offset, length);
             }
             return -1;
         }
@@ -870,6 +914,8 @@ public class DenseVector extends Vector {
 
     /** Enumeration containing the possible encoder states used within the {@link Encoder} class. */
     private enum EncoderState {
+        /** Represents the state the encoder is in, while encoding the type of the dense vector. */
+        TYPE,
         /** Represents the state the encoder is in, while encoding the size of the dense vector. */
         SIZE,
         /** Represents the state the encoder is in, while encoding the underlying array of the dense vector. */

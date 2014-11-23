@@ -39,15 +39,27 @@ public class SparseVectorTest {
     public void testSerialization() {
         int vectorSize = 1000;
         try {
+            // Test for when we do not store the vector type
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream(4 + (vectorSize << 3));
             SparseVector vector = new SparseVector(vectorSize,
                                                    new int[] { 1, 5, 8, 35 },
                                                    new double[] { 0.53, 0.32, 0.91, 0.05 });
             SparseVector expectedVector = vector.copy();
-            vector.write(outputStream);
+            vector.write(outputStream, false);
             outputStream.close();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-            SparseVector actualVector = SparseVector.read(inputStream);
+            SparseVector actualVector = SparseVector.read(inputStream, false);
+            inputStream.close();
+            Assert.assertTrue(expectedVector.equals(actualVector));
+            // Test for when we store the vector type
+            outputStream = new ByteArrayOutputStream(4 + (vectorSize << 3));
+            vector = new SparseVector(vectorSize,
+                                      new int[] { 1, 5, 8, 35 },
+                                      new double[] { 0.53, 0.32, 0.91, 0.05 });
+            vector.write(outputStream, true);
+            outputStream.close();
+            inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            actualVector = SparseVector.read(inputStream, true);
             inputStream.close();
             Assert.assertTrue(expectedVector.equals(actualVector));
         } catch (IOException e) {
@@ -59,12 +71,22 @@ public class SparseVectorTest {
     public void testEncoder() {
         int vectorSize = 1000;
         try {
+            // Test for when we do not store the vector type
             SparseVector vector = new SparseVector(vectorSize,
                                                    new int[] { 1, 5, 8, 35 },
                                                    new double[] { 0.53, 0.32, 0.91, 0.05 });
             SparseVector expectedVector = vector.copy();
-            InputStream inputStream = vector.getEncoder();
-            SparseVector actualVector = SparseVector.read(inputStream);
+            InputStream inputStream = vector.getEncoder(false);
+            SparseVector actualVector = SparseVector.read(inputStream, false);
+            inputStream.close();
+            Assert.assertTrue(expectedVector.equals(actualVector));
+            // Test for when we store the vector type
+            vector = new SparseVector(vectorSize,
+                                      new int[] { 1, 5, 8, 35 },
+                                      new double[] { 0.53, 0.32, 0.91, 0.05 });
+            expectedVector = vector.copy();
+            inputStream = vector.getEncoder(true);
+            actualVector = SparseVector.read(inputStream, true);
             inputStream.close();
             Assert.assertTrue(expectedVector.equals(actualVector));
         } catch (IOException e) {
