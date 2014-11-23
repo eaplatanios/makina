@@ -1,7 +1,7 @@
 package org.platanios.learn.math.matrix;
 
 import org.platanios.learn.math.MathUtilities;
-import org.platanios.learn.utilities.UnsafeSerializationUtilities;
+import org.platanios.learn.serialization.UnsafeSerializationUtilities;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.*;
@@ -1851,6 +1851,7 @@ public class SparseVector extends Vector {
                 return false;
             vector2Index++;
         }
+
         return true;
     }
 
@@ -1863,7 +1864,14 @@ public class SparseVector extends Vector {
         UnsafeSerializationUtilities.writeDoubleArray(outputStream, values);
     }
 
-    protected static SparseVector read(InputStream inputStream) throws IOException {
+    /**
+     * Deserializes the sparse vector stored in the provided input stream and returns it.
+     *
+     * @param   inputStream Input stream from which the dense vector will be "read".
+     * @return              The sparse vector obtained from the provided input stream.
+     * @throws  IOException
+     */
+    public static SparseVector read(InputStream inputStream) throws IOException {
         int size = UnsafeSerializationUtilities.readInt(inputStream);
         int numberOfNonzeroEntries = UnsafeSerializationUtilities.readInt(inputStream);
         int[] indexes = UnsafeSerializationUtilities.readIntArray(inputStream,
@@ -1881,12 +1889,32 @@ public class SparseVector extends Vector {
         return new Encoder();
     }
 
+    /**
+     * Encoder class for sparse vectors. This class extends the Java {@link InputStream} class and can be used to copy
+     * sparse vector instances into other locations (e.g., in a database). Note that this encoder uses the underlying
+     * vector and so, if that vector is changed, the output of this encoder might be changed and even become corrupt.
+     *
+     * The sparse vector is serialized in the following way: (i) the size of the vector is encoded first, (ii) the
+     * number of nonzero elements in the sparse vector is encoded next, (iii) the elements of the underlying array
+     * holding the indexes of the nonzero elements are encoded next, in the order in which they appear in the array, and
+     * (iv) the elements of the underlying array holding the values of the nonzero elements are encoded finally, in the
+     * order in which they appear in the array.
+     */
     protected class Encoder extends InputStream {
+        /** A pointer in memory used to represent the current position while serializing different fields of the object
+         * that is being serialized. */
         long position;
+        /** The largest value that the {@link #position} pointer can take (i.e., this pointer represents the end of the
+         * field that is currently being serialized, in memory). */
         long endPosition;
+        /** The current state of the encoder, representing which field of the object is currently being serialized. */
         EncoderState state;
-        long numberOfNonzeroEntriesOffset;
 
+        /** The memory address offset of {@link #numberOfNonzeroEntries} from the base address of the sparse vector
+         * instance that is being encoded. */
+        final long numberOfNonzeroEntriesOffset;
+
+        /** Constructs an encoder object from the current vector. */
         public Encoder() {
             long sizeFieldOffset;
             try {
@@ -1901,6 +1929,7 @@ public class SparseVector extends Vector {
             state = EncoderState.SIZE;
         }
 
+        /** {@inheritDoc} */
         @Override
         public int read() {
             switch(state) {
@@ -1937,11 +1966,13 @@ public class SparseVector extends Vector {
             return -1;
         }
 
+        /** {@inheritDoc} */
         @Override
         public int read(byte[] b) {
             return read(b, 0, b.length);
         }
 
+        /** {@inheritDoc} */
         @Override
         public int read(byte b[], int off, int len) {
             if (b == null)
@@ -1952,7 +1983,7 @@ public class SparseVector extends Vector {
             switch(state) {
                 case SIZE:
                     bytesRead = readBytes(SparseVector.this, b, off, len);
-                    if (bytesRead == -1) {
+                    if (bytesRead != -1) {
                         return bytesRead;
                     } else {
                         position = numberOfNonzeroEntriesOffset;
@@ -1961,7 +1992,7 @@ public class SparseVector extends Vector {
                     }
                 case NUMBER_OF_NONZERO_ENTRIES:
                     bytesRead = readBytes(SparseVector.this, b, off, len);
-                    if (bytesRead == -1) {
+                    if (bytesRead != -1) {
                         return bytesRead;
                     } else {
                         position = INT_ARRAY_OFFSET;
@@ -1970,12 +2001,12 @@ public class SparseVector extends Vector {
                     }
                 case INDEXES:
                     bytesRead = readBytes(indexes, b, off, len);
-                    if (bytesRead == -1) {
+                    if (bytesRead != -1) {
                         return bytesRead;
                     } else {
                         position = DOUBLE_ARRAY_OFFSET;
                         endPosition = DOUBLE_ARRAY_OFFSET + (numberOfNonzeroEntries << 3);
-                        state = EncoderState.INDEXES;
+                        state = EncoderState.VALUES;
                     }
                 case VALUES:
                     return readBytes(values, b, off, len);
@@ -1983,13 +2014,24 @@ public class SparseVector extends Vector {
             return -1;
         }
 
-        private int readBytes(Object source, byte[] destination, int off, int len) {
-            long numberOfBytesToRead = Math.min(endPosition - position, len);
+        /**
+         * Reads up to {@code length} bytes of data from the input stream into an array of bytes and returns the number
+         * of bytes read.
+         *
+         * @param   source      The source object to read data from.
+         * @param   destination The byte array to write data into.
+         * @param   offset      The memory address offset into the destination byte array, to start writing data from.
+         * @param   length      The maximum number of bytes to read from {@code source} and write to
+         *                      {@code destination}.
+         * @return              The number of bytes read from {@code source} and written to {@code destination}.
+         */
+        private int readBytes(Object source, byte[] destination, int offset, int length) {
+            long numberOfBytesToRead = Math.min(endPosition - position, length);
             if (numberOfBytesToRead > 0) {
                 UNSAFE.copyMemory(source,
                                   position,
                                   destination,
-                                  BYTE_ARRAY_OFFSET + off,
+                                  BYTE_ARRAY_OFFSET + offset,
                                   numberOfBytesToRead);
                 position += numberOfBytesToRead;
                 return (int) numberOfBytesToRead;
@@ -1999,10 +2041,16 @@ public class SparseVector extends Vector {
         }
     }
 
+    /** Enumeration containing the possible encoder states used within the {@link Encoder} class. */
     private enum EncoderState {
+        /** Represents the state the encoder is in, while encoding the size of the sparse vector. */
         SIZE,
+        /** Represents the state the encoder is in, while encoding the number of nonzero entries of the sparse
+         * vector. */
         NUMBER_OF_NONZERO_ENTRIES,
+        /** Represents the state the encoder is in, while encoding the underlying indexes array of the sparse vector. */
         INDEXES,
+        /** Represents the state the encoder is in, while encoding the underlying values array of the sparse vector. */
         VALUES
     }
 }

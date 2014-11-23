@@ -1,7 +1,7 @@
 package org.platanios.learn.math.matrix;
 
 import org.platanios.learn.math.MathUtilities;
-import org.platanios.learn.utilities.UnsafeSerializationUtilities;
+import org.platanios.learn.serialization.UnsafeSerializationUtilities;
 
 import java.io.*;
 import java.util.Arrays;
@@ -724,7 +724,13 @@ public class DenseVector extends Vector {
 
         DenseVector that = (DenseVector) object;
 
-        return size == that.size && Arrays.equals(array, that.array);
+        if (size != that.size)
+            return false;
+        for (int index = 0; index < size; index++)
+            if ((Math.abs(array[index] - that.array[index]) >= epsilon))
+                return false;
+
+        return true;
     }
 
     /** {@inheritDoc} */
@@ -734,7 +740,14 @@ public class DenseVector extends Vector {
         UnsafeSerializationUtilities.writeDoubleArray(outputStream, array);
     }
 
-    protected static DenseVector read(InputStream inputStream) throws IOException {
+    /**
+     * Deserializes the dense vector stored in the provided input stream and returns it.
+     *
+     * @param   inputStream Input stream from which the dense vector will be "read".
+     * @return              The dense vector obtained from the provided input stream.
+     * @throws  IOException
+     */
+    public static DenseVector read(InputStream inputStream) throws IOException {
         int size = UnsafeSerializationUtilities.readInt(inputStream);
         DenseVector vector = new DenseVector(size);
         vector.array = UnsafeSerializationUtilities.readDoubleArray(inputStream, size, 4096);
@@ -747,11 +760,25 @@ public class DenseVector extends Vector {
         return new Encoder();
     }
 
+    /**
+     * Encoder class for dense vectors. This class extends the Java {@link InputStream} class and can be used to copy
+     * dense vector instances into other locations (e.g., in a database). Note that this encoder uses the underlying
+     * vector and so, if that vector is changed, the output of this encoder might be changed and even become corrupt.
+     *
+     * The dense vector is serialized in the following way: (i) the size of the vector is encoded first, and (ii) the
+     * elements of the underlying array are encoded next, in the order in which they appear in the array.
+     */
     protected class Encoder extends InputStream {
+        /** A pointer in memory used to represent the current position while serializing different fields of the object
+         * that is being serialized. */
         long position;
+        /** The largest value that the {@link #position} pointer can take (i.e., this pointer represents the end of the
+         * field that is currently being serialized, in memory). */
         long endPosition;
+        /** The current state of the encoder, representing which field of the object is currently being serialized. */
         EncoderState state;
 
+        /** Constructs an encoder object from the current vector. */
         public Encoder() {
             long sizeFieldOffset;
             try {
@@ -764,6 +791,7 @@ public class DenseVector extends Vector {
             state = EncoderState.SIZE;
         }
 
+        /** {@inheritDoc} */
         @Override
         public int read() {
             switch(state) {
@@ -784,11 +812,13 @@ public class DenseVector extends Vector {
             return -1;
         }
 
+        /** {@inheritDoc} */
         @Override
         public int read(byte[] b) {
             return read(b, 0, b.length);
         }
 
+        /** {@inheritDoc} */
         @Override
         public int read(byte b[], int off, int len) {
             if (b == null)
@@ -798,7 +828,7 @@ public class DenseVector extends Vector {
             switch(state) {
                 case SIZE:
                     int bytesRead = readBytes(DenseVector.this, b, off, len);
-                    if (bytesRead == -1) {
+                    if (bytesRead != -1) {
                         return bytesRead;
                     } else {
                         position = DOUBLE_ARRAY_OFFSET;
@@ -811,13 +841,24 @@ public class DenseVector extends Vector {
             return -1;
         }
 
-        private int readBytes(Object source, byte[] destination, int off, int len) {
-            long numberOfBytesToRead = Math.min(endPosition - position, len);
+        /**
+         * Reads up to {@code length} bytes of data from the input stream into an array of bytes and returns the number
+         * of bytes read.
+         *
+         * @param   source      The source object to read data from.
+         * @param   destination The byte array to write data into.
+         * @param   offset      The memory address offset into the destination byte array, to start writing data from.
+         * @param   length      The maximum number of bytes to read from {@code source} and write to
+         *                      {@code destination}.
+         * @return              The number of bytes read from {@code source} and written to {@code destination}.
+         */
+        private int readBytes(Object source, byte[] destination, int offset, int length) {
+            long numberOfBytesToRead = Math.min(endPosition - position, length);
             if (numberOfBytesToRead > 0) {
                 UNSAFE.copyMemory(source,
                                   position,
                                   destination,
-                                  BYTE_ARRAY_OFFSET + off,
+                                  BYTE_ARRAY_OFFSET + offset,
                                   numberOfBytesToRead);
                 position += numberOfBytesToRead;
                 return (int) numberOfBytesToRead;
@@ -827,8 +868,11 @@ public class DenseVector extends Vector {
         }
     }
 
+    /** Enumeration containing the possible encoder states used within the {@link Encoder} class. */
     private enum EncoderState {
+        /** Represents the state the encoder is in, while encoding the size of the dense vector. */
         SIZE,
+        /** Represents the state the encoder is in, while encoding the underlying array of the dense vector. */
         ARRAY
     }
 }

@@ -16,6 +16,8 @@ import java.util.function.Function;
  * @author Emmanouil Antonios Platanios
  */
 public abstract class Vector {
+    /** Obtain a singleton instance of the {@link sun.misc.Unsafe} class for use within the unsafe serialization
+     * mechanism used for all the {@link Vector} subclasses. */
     protected static final Unsafe UNSAFE;
     static
     {
@@ -30,8 +32,11 @@ public abstract class Vector {
             throw new RuntimeException(e);
         }
     }
+    /** The offset, in bytes, between the base memory address of a byte array and its first element. */
     protected static final long BYTE_ARRAY_OFFSET = UNSAFE.arrayBaseOffset(byte[].class);
+    /** The offset, in bytes, between the base memory address of a integer array and its first element. */
     protected static final long INT_ARRAY_OFFSET = UNSAFE.arrayBaseOffset(int[].class);
+    /** The offset, in bytes, between the base memory address of a double array and its first element. */
     protected static final long DOUBLE_ARRAY_OFFSET = UNSAFE.arrayBaseOffset(double[].class);
 
     /** The threshold value for elements to be considered equal to zero when counting the number of non-zero elements of
@@ -607,15 +612,27 @@ public abstract class Vector {
      */
     public abstract void write(OutputStream outputStream) throws IOException;
 
-    // TODO: Write documentation for this method.
+    /**
+     * Returns an encoder (a Java {@link java.io.InputStream} basically). This encoder can be used to copy the current
+     * vector somewhere else (e.g., in a database, as a BLOB). Note that if the underlying vector object is modified
+     * while some process is reading from the returned stream, then the full object received from the stream might be
+     * corrupted (e.g., if it is known that the sum of the current vector elements is one, then that might not be true
+     * for the vector read by some other process, if the vector was modified while that process was reading it by using
+     * an encoder returned by this method).
+     *
+     * @return  The encoder for the current instance.
+     */
     public abstract InputStream getEncoder();
 
     /**
      * Compares the current vector with another object for equality. Note that if the provided object is not a vector
      * object, then this method returns false. Otherwise, it checks for equality of the element values of the two
      * vectors, with some tolerance that is equal to the square root of the smallest possible value that can be
-     * represented by a double precision floating point number. That tolerance is used because double precision floating
-     * point number values are compared.
+     * represented by a double precision floating point number. A tolerance value is used because double precision
+     * floating point number values are compared.
+     *
+     * Note that the vector objects being compared must also be of the same type (i.e., dense, sparse, etc.). In the
+     * case that they are not of the same type a value of false is returned by this method.
      *
      * @param   object  The object with which to compare this vector.
      * @return          True if this vector is equal to the provided object and false if it is not.

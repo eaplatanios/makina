@@ -6,6 +6,7 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -35,6 +36,21 @@ public class DenseVectorTest {
             vector.write(outputStream);
             outputStream.close();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            DenseVector actualVector = DenseVector.read(inputStream);
+            inputStream.close();
+            Assert.assertTrue(expectedVector.equals(actualVector));
+        } catch (IOException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void testEncoder() {
+        int vectorSize = 1000;
+        try {
+            DenseVector vector = DenseVector.generateRandomVector(vectorSize);
+            DenseVector expectedVector = vector.copy();
+            InputStream inputStream = vector.getEncoder();
             DenseVector actualVector = DenseVector.read(inputStream);
             inputStream.close();
             Assert.assertTrue(expectedVector.equals(actualVector));
