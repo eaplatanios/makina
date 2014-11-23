@@ -25,6 +25,46 @@ public class Exchange {
     private Date dateTimeUpdated;
     private List<Stock> stocksTraded;
 
+    public static class Builder {
+        private final String name;
+
+        private String city = null;
+        private String country = null;
+        private String currency = null;
+
+        public Builder(String name) {
+            this.name = name;
+        }
+
+        public Builder city(String city) {
+            this.city = city;
+            return this;
+        }
+
+        public Builder country(String country) {
+            this.country = country;
+            return this;
+        }
+
+        public Builder currency(String currency) {
+            this.currency = currency;
+            return this;
+        }
+
+        protected Exchange build() {
+            Exchange exchange = new Exchange();
+            exchange.setName(name);
+            exchange.setCity(city);
+            exchange.setCountry(country);
+            exchange.setCurrency(currency);
+            return exchange;
+        }
+    }
+
+    protected Exchange() {
+
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

@@ -26,6 +26,27 @@ public class Sector {
     private Date dateTimeUpdated;
     private List<IndustryGroup> industryGroups;
 
+    public static class Builder {
+        private final String gicsId;
+        private final String name;
+
+        public Builder(String gicsId, String name) {
+            this.gicsId = gicsId;
+            this.name = name;
+        }
+
+        public Sector build() {
+            Sector sector = new Sector();
+            sector.setGicsId(gicsId);
+            sector.setName(name);
+            return sector;
+        }
+    }
+
+    protected Sector() {
+
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

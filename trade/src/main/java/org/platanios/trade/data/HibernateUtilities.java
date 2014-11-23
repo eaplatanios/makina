@@ -24,6 +24,7 @@ class HibernateUtilities {
 //                        .setProperty("hibernate.current_session_context_class", "thread")
 //                        .setProperty("hibernate.show_sql", "false")
 //                        .setProperty("hibernate.id.new_generator_mappings", "true")
+//                        .setProperty("hibernate.jdbc.batch_size", "20")
 //                        .setProperty("hibernate.hbm2ddl.auto", "update")
 //                        .addAnnotatedClass(DailyStockData.class)
 //                        .addAnnotatedClass(DataVendor.class)

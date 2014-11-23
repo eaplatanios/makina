@@ -27,6 +27,42 @@ public class DataVendor {
     private Date dateTimeCreated;
     private Date dateTimeUpdated;
 
+    public static class Builder {
+        private final String name;
+        private final String abbreviation;
+
+        private String websiteUrl = null;
+        private String supportEmail = null;
+
+        public Builder(String name, String abbreviation) {
+            this.name = name;
+            this.abbreviation = abbreviation;
+        }
+
+        public Builder websiteUrl(String websiteUrl) {
+            this.websiteUrl = websiteUrl;
+            return this;
+        }
+
+        public Builder supportEmail(String supportEmail) {
+            this.supportEmail = supportEmail;
+            return this;
+        }
+
+        public DataVendor build() {
+            DataVendor dataVendor = new DataVendor();
+            dataVendor.setName(name);
+            dataVendor.setAbbreviation(abbreviation);
+            dataVendor.setWebsiteUrl(websiteUrl);
+            dataVendor.setSupportEmail(supportEmail);
+            return dataVendor;
+        }
+    }
+
+    protected DataVendor() {
+
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

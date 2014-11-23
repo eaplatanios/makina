@@ -27,6 +27,30 @@ public class Industry {
     private Date dateTimeUpdated;
     private List<SubIndustry> subIndustries;
 
+    public static class Builder {
+        private final String gicsId;
+        private final IndustryGroup industryGroup;
+        private final String name;
+
+        public Builder(String gicsId, IndustryGroup industryGroup, String name) {
+            this.gicsId = gicsId;
+            this.industryGroup = industryGroup;
+            this.name = name;
+        }
+
+        public Industry build() {
+            Industry industry = new Industry();
+            industry.setGicsId(gicsId);
+            industry.setIndustryGroup(industryGroup);
+            industry.setName(name);
+            return industry;
+        }
+    }
+
+    protected Industry() {
+
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

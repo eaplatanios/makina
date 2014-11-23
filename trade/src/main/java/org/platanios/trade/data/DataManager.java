@@ -1,108 +1,134 @@
 package org.platanios.trade.data;
 
+import org.hibernate.Criteria;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.hibernate.criterion.Property;
+import org.hibernate.criterion.Restrictions;
+import org.hibernate.sql.JoinType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
 public class DataManager {
-    private void createAndStoreExchange(ExchangeBuilder exchangeBuilder) {
-        Session session = HibernateUtilities.getSessionFactory().getCurrentSession();
-        session.beginTransaction();
-        session.save(exchangeBuilder.build());
-        session.getTransaction().commit();
+    public void addExchange(Exchange exchange) {
+        insertObject(exchange);
     }
 
-    private void createAndStoreDataVendor(DataVendorBuilder dataVendorBuilder) {
+    public void addExchanges(List<Exchange> exchanges) {
+        insertObjects(exchanges);
+    }
+
+    public void addDataVendor(DataVendor dataVendor) {
+        insertObject(dataVendor);
+    }
+
+    public void addDataVendors(List<DataVendor> dataVendors) {
+        insertObjects(dataVendors);
+    }
+
+    public void addSector(Sector sector) {
+        insertObject(sector);
+    }
+
+    public void addSectors(List<Sector> sectors) {
+        insertObjects(sectors);
+    }
+
+    public void addIndustryGroup(IndustryGroup industryGroup) {
+        insertObject(industryGroup);
+    }
+
+    public void addIndustryGroups(List<IndustryGroup> industryGroups) {
+        insertObjects(industryGroups);
+    }
+
+    public void addIndustry(Industry industry) {
+        insertObject(industry);
+    }
+
+    public void addIndustries(List<Industry> industries) {
+        insertObjects(industries);
+    }
+
+    public void addSubIndustry(SubIndustry subIndustry) {
+        insertObject(subIndustry);
+    }
+
+    public void addSubIndustries(List<SubIndustry> subIndustries) {
+        insertObjects(subIndustries);
+    }
+
+    public void addStock(Stock stock) {
+        insertObject(stock);
+    }
+
+    public void addStocks(List<Stock> stocks) {
+        insertObjects(stocks);
+    }
+
+    public void addDailyStockData(DailyStockData dailyStockData) {
+        insertObject(dailyStockData);
+    }
+
+    public void addDailyStockData(List<DailyStockData> dailyStockData) {
+        insertObjects(dailyStockData);
+    }
+
+    public List getDailyStockData() {
         Session session = HibernateUtilities.getSessionFactory().getCurrentSession();
-        session.beginTransaction();
-        session.save(dataVendorBuilder.build());
-        session.getTransaction().commit();
+        Criteria criteria = session.createCriteria(DailyStockData.class);
+        criteria.add(Restrictions.between("date", "", ""));
+        criteria.createAlias("stock", "s", JoinType.INNER_JOIN, Restrictions.eq("s.tickerSymbol", "GOOG"));
+        criteria.addOrder(Property.forName("date").asc());
+        List results = criteria.list();
+        return results;
     }
 
     public void initializeDatabase() {
-        createAndStoreExchange(new ExchangeBuilder("NYSE").city("New York").country("USA").currency("USD"));
-        createAndStoreExchange(new ExchangeBuilder("NYSE MKT").city("New York").country("USA").currency("USD"));
-        createAndStoreExchange(new ExchangeBuilder("NYSE Arca").city("New York").country("USA").currency("USD"));
-        createAndStoreExchange(new ExchangeBuilder("NASDAQ").city("New York").country("USA").currency("USD"));
-        createAndStoreDataVendor(
-                new DataVendorBuilder("Wharton Research Data Services / The Center for Research in Security Prices",
-                                      "WRDS/CSRP")
+        List<Exchange> exchanges = new ArrayList<>();
+        exchanges.add(new Exchange.Builder("NYSE").city("New York").country("USA").currency("USD").build());
+        exchanges.add(new Exchange.Builder("NYSE MKT").city("New York").country("USA").currency("USD").build());
+        exchanges.add(new Exchange.Builder("NYSE Arca").city("New York").country("USA").currency("USD").build());
+        exchanges.add(new Exchange.Builder("NASDAQ").city("New York").country("USA").currency("USD").build());
+        addExchanges(exchanges);
+        addDataVendor(
+                new DataVendor.Builder("Wharton Research Data Services / The Center for Research in Security Prices",
+                                       "WRDS/CSRP")
                         .websiteUrl("http://wrds-web.wharton.upenn.edu/wrds/ds/crsp/index.cfm")
+                        .build()
         );
+    }
+
+    private void insertObject(Object object) {
+        Session session = HibernateUtilities.getSessionFactory().openSession();
+        Transaction transaction = session.beginTransaction();
+        session.save(object);
+        transaction.commit();
+        session.close();
+    }
+
+    private void insertObjects(List<?> objects) {
+        Session session = HibernateUtilities.getSessionFactory().openSession();
+        Transaction transaction = session.beginTransaction();
+        int numberOfObjectsSaved = 0;
+        for (Object object : objects) {
+            session.save(object);
+            if (++numberOfObjectsSaved % 20 == 0) { // 20: JDBC batch size used in the current configuration
+                session.flush();
+                session.clear();
+            }
+        }
+        transaction.commit();
+        session.close();
     }
 
     public static void main(String[] args) {
         DataManager dataManager = new DataManager();
         dataManager.initializeDatabase();
         HibernateUtilities.getSessionFactory().close();
-    }
-
-    public static class ExchangeBuilder {
-        private final String name;
-
-        private String city = null;
-        private String country = null;
-        private String currency = null;
-
-        public ExchangeBuilder(String name) {
-            this.name = name;
-        }
-
-        public ExchangeBuilder city(String city) {
-            this.city = city;
-            return this;
-        }
-
-        public ExchangeBuilder country(String country) {
-            this.country = country;
-            return this;
-        }
-
-        public ExchangeBuilder currency(String currency) {
-            this.currency = currency;
-            return this;
-        }
-
-        protected Exchange build() {
-            Exchange exchange = new Exchange();
-            exchange.setName(name);
-            exchange.setCity(city);
-            exchange.setCountry(country);
-            exchange.setCurrency(currency);
-            return exchange;
-        }
-    }
-
-    public static class DataVendorBuilder {
-        private final String name;
-        private final String abbreviation;
-
-        private String websiteUrl = null;
-        private String supportEmail = null;
-
-        public DataVendorBuilder(String name, String abbreviation) {
-            this.name = name;
-            this.abbreviation = abbreviation;
-        }
-
-        public DataVendorBuilder websiteUrl(String websiteUrl) {
-            this.websiteUrl = websiteUrl;
-            return this;
-        }
-
-        public DataVendorBuilder supportEmail(String supportEmail) {
-            this.supportEmail = supportEmail;
-            return this;
-        }
-
-        public DataVendor build() {
-            DataVendor dataVendor = new DataVendor();
-            dataVendor.setName(name);
-            dataVendor.setAbbreviation(abbreviation);
-            dataVendor.setWebsiteUrl(websiteUrl);
-            dataVendor.setSupportEmail(supportEmail);
-            return dataVendor;
-        }
     }
 }

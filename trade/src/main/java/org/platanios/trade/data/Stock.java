@@ -32,6 +32,52 @@ public class Stock {
     private Date dateTimeUpdated;
     private List<DailyStockData> dailyData;
 
+    public static class Builder {
+        private final String tickerSymbol;
+        private final Exchange primaryExchange;
+        private final String name;
+
+        private String cusipId = null;
+        private String cikId = null;
+        private SubIndustry subIndustry = null;
+
+        public Builder(String tickerSymbol, Exchange primaryExchange, String name) {
+            this.tickerSymbol = tickerSymbol;
+            this.primaryExchange = primaryExchange;
+            this.name = name;
+        }
+
+        public Builder cusipId(String cusipId) {
+            this.cusipId = cusipId;
+            return this;
+        }
+
+        public Builder cikId(String cikId) {
+            this.cikId = cikId;
+            return this;
+        }
+
+        public Builder subIndustry(SubIndustry subIndustry) {
+            this.subIndustry = subIndustry;
+            return this;
+        }
+
+        protected Stock build() {
+            Stock stock = new Stock();
+            stock.setTickerSymbol(tickerSymbol);
+            stock.setPrimaryExchange(primaryExchange);
+            stock.setName(name);
+            stock.setCusipId(cusipId);
+            stock.setCikId(cikId);
+            stock.setSubIndustry(subIndustry);
+            return stock;
+        }
+    }
+
+    protected Stock() {
+
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

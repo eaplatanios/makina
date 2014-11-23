@@ -25,9 +25,69 @@ public class DailyStockData {
     private BigDecimal lowPrice;
     private BigDecimal closePrice;
     private BigDecimal adjustedClosePrice;
-    private long volume;
+    private Long volume;
     private Date dateTimeCreated;
     private Date dateTimeUpdated;
+
+    public static class Builder {
+        private final Stock stock;
+        private final Date date;
+        private final BigDecimal openPrice;
+        private final BigDecimal highPrice;
+        private final BigDecimal lowPrice;
+        private final BigDecimal closePrice;
+
+        private DataVendor dataVendor = null;
+        private BigDecimal adjustedClosePrice = null;
+        private Long volume = null;
+
+        public Builder(Stock stock,
+                       Date date,
+                       BigDecimal openPrice,
+                       BigDecimal highPrice,
+                       BigDecimal lowPrice,
+                       BigDecimal closePrice) {
+            this.stock = stock;
+            this.date = date;
+            this.openPrice = openPrice;
+            this.highPrice = highPrice;
+            this.lowPrice = lowPrice;
+            this.closePrice = closePrice;
+        }
+
+        public Builder dataVendor(DataVendor dataVendor) {
+            this.dataVendor = dataVendor;
+            return this;
+        }
+
+        public Builder adjustedClosePrice(BigDecimal adjustedClosePrice) {
+            this.adjustedClosePrice = adjustedClosePrice;
+            return this;
+        }
+
+        public Builder volume(Long volume) {
+            this.volume = volume;
+            return this;
+        }
+
+        public DailyStockData build() {
+            DailyStockData dailyStockData = new DailyStockData();
+            dailyStockData.setStock(stock);
+            dailyStockData.setDate(date);
+            dailyStockData.setOpenPrice(openPrice);
+            dailyStockData.setHighPrice(highPrice);
+            dailyStockData.setLowPrice(lowPrice);
+            dailyStockData.setClosePrice(closePrice);
+            dailyStockData.setDataVendor(dataVendor);
+            dailyStockData.setAdjustedClosePrice(adjustedClosePrice);
+            dailyStockData.setVolume(volume);
+            return dailyStockData;
+        }
+    }
+
+    protected DailyStockData() {
+
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -117,8 +177,7 @@ public class DailyStockData {
     }
 
     @Basic
-    @Column(name = "adjusted_close_price", nullable = false)
-    @NotNull
+    @Column(name = "adjusted_close_price")
     public BigDecimal getAdjustedClosePrice() {
         return adjustedClosePrice;
     }
@@ -128,13 +187,12 @@ public class DailyStockData {
     }
 
     @Basic
-    @Column(name = "volume", nullable = false)
-    @NotNull
-    public long getVolume() {
+    @Column(name = "volume")
+    public Long getVolume() {
         return volume;
     }
 
-    public void setVolume(long volume) {
+    public void setVolume(Long volume) {
         this.volume = volume;
     }
 
