@@ -14,71 +14,71 @@ import java.util.List;
  * @author Emmanouil Antonios Platanios
  */
 public class DataManager {
-    public void addExchange(Exchange exchange) {
+    public static void addExchange(Exchange exchange) {
         insertObject(exchange);
     }
 
-    public void addExchanges(List<Exchange> exchanges) {
+    public static void addExchanges(List<Exchange> exchanges) {
         insertObjects(exchanges);
     }
 
-    public void addDataVendor(DataVendor dataVendor) {
+    public static void addDataVendor(DataVendor dataVendor) {
         insertObject(dataVendor);
     }
 
-    public void addDataVendors(List<DataVendor> dataVendors) {
+    public static void addDataVendors(List<DataVendor> dataVendors) {
         insertObjects(dataVendors);
     }
 
-    public void addSector(Sector sector) {
+    public static void addSector(Sector sector) {
         insertObject(sector);
     }
 
-    public void addSectors(List<Sector> sectors) {
+    public static void addSectors(List<Sector> sectors) {
         insertObjects(sectors);
     }
 
-    public void addIndustryGroup(IndustryGroup industryGroup) {
+    public static void addIndustryGroup(IndustryGroup industryGroup) {
         insertObject(industryGroup);
     }
 
-    public void addIndustryGroups(List<IndustryGroup> industryGroups) {
+    public static void addIndustryGroups(List<IndustryGroup> industryGroups) {
         insertObjects(industryGroups);
     }
 
-    public void addIndustry(Industry industry) {
+    public static void addIndustry(Industry industry) {
         insertObject(industry);
     }
 
-    public void addIndustries(List<Industry> industries) {
+    public static void addIndustries(List<Industry> industries) {
         insertObjects(industries);
     }
 
-    public void addSubIndustry(SubIndustry subIndustry) {
+    public static void addSubIndustry(SubIndustry subIndustry) {
         insertObject(subIndustry);
     }
 
-    public void addSubIndustries(List<SubIndustry> subIndustries) {
+    public static void addSubIndustries(List<SubIndustry> subIndustries) {
         insertObjects(subIndustries);
     }
 
-    public void addStock(Stock stock) {
+    public static void addStock(Stock stock) {
         insertObject(stock);
     }
 
-    public void addStocks(List<Stock> stocks) {
+    public static void addStocks(List<Stock> stocks) {
         insertObjects(stocks);
     }
 
-    public void addDailyStockData(DailyStockData dailyStockData) {
+    public static void addDailyStockData(DailyStockData dailyStockData) {
         insertObject(dailyStockData);
     }
 
-    public void addDailyStockData(List<DailyStockData> dailyStockData) {
+    public static void addDailyStockData(List<DailyStockData> dailyStockData) {
         insertObjects(dailyStockData);
     }
 
-    public List getDailyStockData() {
+    public static List getDailyStockData() {
         Session session = HibernateUtilities.getSessionFactory().getCurrentSession();
         Criteria criteria = session.createCriteria(DailyStockData.class);
         criteria.add(Restrictions.between("date", "", ""));
@@ -88,7 +88,7 @@ public class DataManager {
         return results;
     }
 
-    public void initializeDatabase() {
+    public static void initializeDatabase() {
         List<Exchange> exchanges = new ArrayList<>();
         exchanges.add(new Exchange.Builder("NYSE").city("New York").country("USA").currency("USD").build());
         exchanges.add(new Exchange.Builder("NYSE MKT").city("New York").country("USA").currency("USD").build());
@@ -103,7 +103,7 @@ public class DataManager {
         );
     }
 
-    private void insertObject(Object object) {
+    private static void insertObject(Object object) {
         Session session = HibernateUtilities.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
         session.save(object);
@@ -111,7 +111,7 @@ public class DataManager {
         session.close();
     }
 
-    private void insertObjects(List<?> objects) {
+    private static void insertObjects(List<?> objects) {
         Session session = HibernateUtilities.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
         int numberOfObjectsSaved = 0;
@@ -127,8 +127,8 @@ public class DataManager {
     }
 
     public static void main(String[] args) {
-        DataManager dataManager = new DataManager();
-        dataManager.initializeDatabase();
+        initializeDatabase();
+        DataImporter.importGICSData();
         HibernateUtilities.getSessionFactory().close();
     }
 }

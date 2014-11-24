@@ -13,10 +13,7 @@ import java.util.Date;
 @Entity
 @Table(name = "SubIndustries",
         catalog = "trade",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uk_gics_id", columnNames = "gics_id"),
-                @UniqueConstraint(name = "uk_name", columnNames = "name")
-        })
+        uniqueConstraints = @UniqueConstraint(name = "uk_name", columnNames = "name"))
 public class SubIndustry {
     private int gicsId;
     private Industry industry;
@@ -30,10 +27,17 @@ public class SubIndustry {
         private final Industry industry;
         private final String name;
 
+        private String description;
+
         public Builder(int gicsId, Industry industry, String name) {
             this.gicsId = gicsId;
             this.industry = industry;
             this.name = name;
+        }
+
+        public Builder description(String description) {
+            this.description = description;
+            return this;
         }
 
         public SubIndustry build() {
@@ -41,6 +45,7 @@ public class SubIndustry {
             subIndustry.setGicsId(gicsId);
             subIndustry.setIndustry(industry);
             subIndustry.setName(name);
+            subIndustry.setDescription(description);
             return subIndustry;
         }
     }
