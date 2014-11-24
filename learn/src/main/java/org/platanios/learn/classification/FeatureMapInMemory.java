@@ -4,11 +4,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
+import org.platanios.learn.serialization.UnsafeSerializationUtilities;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,22 +26,18 @@ public class FeatureMapInMemory<T extends Vector> extends FeatureMap<T> {
 
     protected FeatureMapInMemory(int numberOfViews) {
         super(numberOfViews);
+        featureMap = new HashMap<>();
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public void loadFeatureMap(ObjectInputStream inputStream) {
+    public void loadFeatureMap(InputStream inputStream) {
         try {
-            if (numberOfViews != inputStream.readInt()) {
-                logger.error("This feature map was initialized for a number of views that is different than the " +
-                                     "number of feature views stored in the input stream.");
-                throw new RuntimeException("This feature map was initialized for a number of views that is different " +
-                                                   "than the number of feature views stored in the input stream.");
-            }
-            int numberOfKeys = inputStream.readInt();
+            numberOfViews = UnsafeSerializationUtilities.readInt(inputStream);
+            int numberOfKeys = UnsafeSerializationUtilities.readInt(inputStream);
             featureMap = new HashMap<>(numberOfKeys);
             for (int i = 0; i < numberOfKeys; i++) {
-                String name = (String) inputStream.readObject();
+                String name = UnsafeSerializationUtilities.readString(inputStream, 1024);
                 List<T> features = new ArrayList<>(numberOfViews);
                 for (int view = 0; view < numberOfViews; view++)
                     features.add((T) Vectors.build(inputStream));
@@ -60,8 +57,11 @@ public class FeatureMapInMemory<T extends Vector> extends FeatureMap<T> {
 
     @Override
     public void addSingleViewFeatureMappings(String name, T features, int view) {
-        if (!featureMap.containsKey(name))
+        if (!featureMap.containsKey(name)) {
             featureMap.put(name, new ArrayList<>(numberOfViews));
+            for (int viewCount = 0; viewCount < numberOfViews; viewCount++)
+                featureMap.get(name).add(null);
+        }
         featureMap.get(name).set(view, features);
     }
 
@@ -73,6 +73,7 @@ public class FeatureMapInMemory<T extends Vector> extends FeatureMap<T> {
 
     @Override
     public void addFeatureMappings(String name, List<T> features) {
+        // TODO: Throw exception if the features list is not of length numberOfViews.
         featureMap.put(name, features);
     }
 
@@ -121,12 +122,12 @@ public class FeatureMapInMemory<T extends Vector> extends FeatureMap<T> {
     }
 
     @Override
-    public boolean writeFeatureMapToStream(ObjectOutputStream outputStream) {
+    public boolean writeFeatureMapToStream(OutputStream outputStream) {
         try {
-            outputStream.writeInt(numberOfViews);
-            outputStream.writeInt(featureMap.keySet().size());
+            UnsafeSerializationUtilities.writeInt(outputStream, numberOfViews);
+            UnsafeSerializationUtilities.writeInt(outputStream, featureMap.keySet().size());
             for (String name : featureMap.keySet()) {
-                outputStream.writeObject(name);
+                UnsafeSerializationUtilities.writeString(outputStream, name);
                 for (int view = 0; view < numberOfViews; view++)
                     featureMap.get(name).get(view).write(outputStream, true);
             }

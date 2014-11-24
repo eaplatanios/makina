@@ -3,8 +3,8 @@ package org.platanios.learn.classification;
 import org.platanios.learn.math.matrix.Vector;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +16,7 @@ import java.util.Map;
  * @author Emmanouil Antonios Platanios
  */
 public abstract class FeatureMap<T extends Vector> {
-    protected final int numberOfViews;
+    protected int numberOfViews;
 
     protected FeatureMap(int numberOfViews) {
         this.numberOfViews = numberOfViews;
@@ -33,7 +33,7 @@ public abstract class FeatureMap<T extends Vector> {
         return new FeatureMapMariaDB<>(numberOfViews, host, username, password);
     }
 
-    public abstract void loadFeatureMap(ObjectInputStream inputStream);
+    public abstract void loadFeatureMap(InputStream inputStream);
     public abstract void loadFeatureMap(Connection databaseConnection);
     public abstract void addSingleViewFeatureMappings(String name, T features, int view);
     public abstract void addSingleViewFeatureMappings(Map<String, T> featureMappings, int view);
@@ -45,7 +45,7 @@ public abstract class FeatureMap<T extends Vector> {
     public abstract List<T> getFeatureVectors(String name);
     public abstract Map<String, List<T>> getFeatureVectors(List<String> names);
     public abstract Map<String, List<T>> getFeatureMap();
-    public abstract boolean writeFeatureMapToStream(ObjectOutputStream outputStream);
+    public abstract boolean writeFeatureMapToStream(OutputStream outputStream);
 
     public enum Type {
         IN_MEMORY {
