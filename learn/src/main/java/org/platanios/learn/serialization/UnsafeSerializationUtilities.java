@@ -32,6 +32,8 @@ public class UnsafeSerializationUtilities {
     }
     /** The offset, in bytes, between the base memory address of a byte array and its first element. */
     protected static final long BYTE_ARRAY_OFFSET = UNSAFE.arrayBaseOffset(byte[].class);
+    /** The offset, in bytes, between the base memory address of a character array and its first element. */
+    protected static final long CHAR_ARRAY_OFFSET = UNSAFE.arrayBaseOffset(char[].class);
     /** The offset, in bytes, between the base memory address of a integer array and its first element. */
     protected static final long INT_ARRAY_OFFSET = UNSAFE.arrayBaseOffset(int[].class);
     /** The offset, in bytes, between the base memory address of a double array and its first element. */
@@ -70,7 +72,41 @@ public class UnsafeSerializationUtilities {
     }
 
     /**
-     * Writes the provided integer array to the provided output stream byte by byte.
+     * Writes the provided double to the provided output stream byte by byte.
+     *
+     * @param   outputStream    The output stream to write the provided integer to.
+     * @param   value           The double to write to the provided output stream.
+     * @throws  IOException
+     */
+    public static void writeDouble(OutputStream outputStream, double value) throws IOException {
+        byte[] buffer = new byte[8];
+        UNSAFE.putDouble(buffer, BYTE_ARRAY_OFFSET, value);
+        outputStream.write(buffer);
+    }
+
+    /**
+     * Reads an double from the provided input stream byte by byte and returns it.
+     *
+     * @param   inputStream     The input stream to read the integer from.
+     * @return                  The double read from the provided input stream.
+     * @throws  IOException
+     */
+    public static double readDouble(InputStream inputStream) throws IOException {
+        long bytesToRead = 8;
+        byte[] buffer = new byte[8];
+        while (bytesToRead > 0) {
+            int bytesRead = inputStream.read(buffer, 0, 8);
+            if (bytesRead == -1 && bytesToRead > 0)
+                throw new RuntimeException();
+            bytesToRead -= bytesRead;
+        }
+        return UNSAFE.getDouble(buffer, BYTE_ARRAY_OFFSET);
+    }
+
+    /**
+     * Writes the provided integer array to the provided output stream byte by byte. Note that the size of the array is
+     * not stored and so the user of this method must make sure to store that as well somewhere, so that the array can
+     * be serialized later on.
      *
      * @param   outputStream    The output stream to write the provided integer array to.
      * @param   array           The integer array to write to the provided output stream.
@@ -108,7 +144,9 @@ public class UnsafeSerializationUtilities {
     }
 
     /**
-     * Writes the provided double array to the provided output stream byte by byte.
+     * Writes the provided double array to the provided output stream byte by byte. Note that the size of the array is
+     * not stored and so the user of this method must make sure to store that as well somewhere, so that the array can
+     * be serialized later on.
      *
      * @param   outputStream    The output stream to write the provided double array to.
      * @param   array           The double array to write to the provided output stream.
@@ -143,5 +181,45 @@ public class UnsafeSerializationUtilities {
             bytesToRead -= bytesRead;
         }
         return array;
+    }
+
+    /**
+     * Writes the provided string to the provided output stream byte by byte.
+     *
+     * // TODO: This method can probably be made faster by using unsafe code. I just wasn't sure how to do that yet.
+     *
+     * @param   outputStream    The output stream to write the provided double array to.
+     * @param   string          The string to write to the provided output stream.
+     * @throws  IOException
+     */
+    public static void writeString(OutputStream outputStream, String string) throws IOException {
+        byte[] array = string.getBytes();
+        writeInt(outputStream, array.length);
+        outputStream.write(array);
+    }
+
+    /**
+     * Reads a string from the provided input stream byte by byte and returns it.
+     *
+     * @param   inputStream     The input stream to read the string from.
+     * @param   bufferSize      The buffer size to use for the buffer used during the data reading.
+     * @return                  The string read from the provided input stream.
+     * @throws  IOException
+     */
+    public static String readString(InputStream inputStream, int bufferSize) throws IOException {
+        int size = readInt(inputStream);
+        byte[] array = new byte[size];
+        long position = BYTE_ARRAY_OFFSET;
+        long bytesToRead = size;
+        byte[] buffer = new byte[bufferSize];
+        while (bytesToRead > 0) {
+            int bytesRead = inputStream.read(buffer, 0, (int) Math.min(bufferSize, bytesToRead));
+            if (bytesRead == -1 && bytesToRead > 0)
+                throw new RuntimeException();
+            UNSAFE.copyMemory(buffer, BYTE_ARRAY_OFFSET, array, position, bytesRead);
+            position += bytesRead;
+            bytesToRead -= bytesRead;
+        }
+        return new String(array);
     }
 }
