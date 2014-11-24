@@ -14,23 +14,19 @@ import java.util.List;
 @Entity
 @Table(name = "Sectors",
         catalog = "trade",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uk_gics_id", columnNames = "gics_id"),
-                @UniqueConstraint(name = "uk_name", columnNames = "name")
-        })
+        uniqueConstraints = @UniqueConstraint(name = "uk_name", columnNames = "name"))
 public class Sector {
-    private long id;
-    private String gicsId;
+    private int gicsId;
     private String name;
     private Date dateTimeCreated;
     private Date dateTimeUpdated;
     private List<IndustryGroup> industryGroups;
 
     public static class Builder {
-        private final String gicsId;
+        private final int gicsId;
         private final String name;
 
-        public Builder(String gicsId, String name) {
+        public Builder(int gicsId, String name) {
             this.gicsId = gicsId;
             this.name = name;
         }
@@ -48,24 +44,12 @@ public class Sector {
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    public long getId() {
-        return id;
-    }
-
-    private void setId(long id) {
-        this.id = id;
-    }
-
-    @Basic
     @Column(name = "gics_id", nullable = false)
-    @NotNull
-    public String getGicsId() {
+    public int getGicsId() {
         return gicsId;
     }
 
-    public void setGicsId(String gicsId) {
+    public void setGicsId(int gicsId) {
         this.gicsId = gicsId;
     }
 
@@ -120,9 +104,7 @@ public class Sector {
 
         Sector that = (Sector) o;
 
-        if (id != that.id)
-            return false;
-        if (!gicsId.equals(that.gicsId))
+        if (gicsId != that.gicsId)
             return false;
         if (!name.equals(that.name))
             return false;
@@ -132,8 +114,7 @@ public class Sector {
 
     @Override
     public int hashCode() {
-        int result = (int) (id ^ (id >>> 32));
-        result = 31 * result + gicsId.hashCode();
+        int result = gicsId;
         result = 31 * result + name.hashCode();
         return result;
     }

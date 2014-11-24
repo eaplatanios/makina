@@ -14,13 +14,9 @@ import java.util.List;
 @Entity
 @Table(name = "IndustryGroups",
         catalog = "trade",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uk_gics_id", columnNames = "gics_id"),
-                @UniqueConstraint(name = "uk_name", columnNames = "name")
-        })
+        uniqueConstraints = @UniqueConstraint(name = "uk_name", columnNames = "name"))
 public class IndustryGroup {
-    private long id;
-    private String gicsId;
+    private int gicsId;
     private Sector sector;
     private String name;
     private Date dateTimeCreated;
@@ -28,11 +24,11 @@ public class IndustryGroup {
     private List<Industry> industries;
 
     public static class Builder {
-        private final String gicsId;
+        private final int gicsId;
         private final Sector sector;
         private final String name;
 
-        public Builder(String gicsId, Sector sector, String name) {
+        public Builder(int gicsId, Sector sector, String name) {
             this.gicsId = gicsId;
             this.sector = sector;
             this.name = name;
@@ -52,29 +48,17 @@ public class IndustryGroup {
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    public long getId() {
-        return id;
-    }
-
-    private void setId(long id) {
-        this.id = id;
-    }
-
-    @Basic
     @Column(name = "gics_id", nullable = false)
-    @NotNull
-    public String getGicsId() {
+    public int getGicsId() {
         return gicsId;
     }
 
-    public void setGicsId(String gicsId) {
+    public void setGicsId(int gicsId) {
         this.gicsId = gicsId;
     }
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "sector_id", nullable = false, foreignKey = @ForeignKey(name = "fk_sector"))
+    @JoinColumn(name = "sector_gics_id", nullable = false, foreignKey = @ForeignKey(name = "fk_sector"))
     @NotNull
     public Sector getSector() {
         return sector;
@@ -135,9 +119,7 @@ public class IndustryGroup {
 
         IndustryGroup that = (IndustryGroup) o;
 
-        if (id != that.id)
-            return false;
-        if (!gicsId.equals(that.gicsId))
+        if (gicsId != that.gicsId)
             return false;
         if (!sector.equals(that.sector))
             return false;
@@ -149,8 +131,7 @@ public class IndustryGroup {
 
     @Override
     public int hashCode() {
-        int result = (int) (id ^ (id >>> 32));
-        result = 31 * result + gicsId.hashCode();
+        int result = gicsId;
         result = 31 * result + sector.hashCode();
         result = 31 * result + name.hashCode();
         return result;

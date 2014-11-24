@@ -18,8 +18,7 @@ import java.util.Date;
                 @UniqueConstraint(name = "uk_name", columnNames = "name")
         })
 public class SubIndustry {
-    private long id;
-    private String gicsId;
+    private int gicsId;
     private Industry industry;
     private String name;
     private String description;
@@ -27,11 +26,11 @@ public class SubIndustry {
     private Date dateTimeUpdated;
 
     public static class Builder {
-        private final String gicsId;
+        private final int gicsId;
         private final Industry industry;
         private final String name;
 
-        public Builder(String gicsId, Industry industry, String name) {
+        public Builder(int gicsId, Industry industry, String name) {
             this.gicsId = gicsId;
             this.industry = industry;
             this.name = name;
@@ -51,29 +50,17 @@ public class SubIndustry {
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    public long getId() {
-        return id;
-    }
-
-    private void setId(long id) {
-        this.id = id;
-    }
-
-    @Basic
     @Column(name = "gics_id", nullable = false)
-    @NotNull
-    public String getGicsId() {
+    public int getGicsId() {
         return gicsId;
     }
 
-    public void setGicsId(String gicsId) {
+    public void setGicsId(int gicsId) {
         this.gicsId = gicsId;
     }
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "industry_id", foreignKey = @ForeignKey(name = "fk_industry"))
+    @JoinColumn(name = "industry_gics_id", foreignKey = @ForeignKey(name = "fk_industry"))
     @NotNull
     public Industry getIndustry() {
         return industry;
@@ -135,9 +122,7 @@ public class SubIndustry {
 
         SubIndustry that = (SubIndustry) o;
 
-        if (id != that.id)
-            return false;
-        if (!gicsId.equals(that.gicsId))
+        if (gicsId != that.gicsId)
             return false;
         if (!industry.equals(that.industry))
             return false;
@@ -151,8 +136,7 @@ public class SubIndustry {
 
     @Override
     public int hashCode() {
-        int result = (int) (id ^ (id >>> 32));
-        result = 31 * result + gicsId.hashCode();
+        int result = gicsId;
         result = 31 * result + industry.hashCode();
         result = 31 * result + name.hashCode();
         result = 31 * result + (description != null ? description.hashCode() : 0);

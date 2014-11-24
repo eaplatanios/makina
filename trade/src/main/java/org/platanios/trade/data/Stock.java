@@ -143,7 +143,7 @@ public class Stock {
     }
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sub_industry_id", foreignKey = @ForeignKey(name = "fk_sub_industry"))
+    @JoinColumn(name = "sub_industry_gics_id", foreignKey = @ForeignKey(name = "fk_sub_industry"))
     public SubIndustry getSubIndustry() {
         return subIndustry;
     }

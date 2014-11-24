@@ -14,13 +14,9 @@ import java.util.List;
 @Entity
 @Table(name = "Industries",
         catalog = "trade",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uk_gics_id", columnNames = "gics_id"),
-                @UniqueConstraint(name = "uk_name", columnNames = "name")
-        })
+        uniqueConstraints = @UniqueConstraint(name = "uk_name", columnNames = "name"))
 public class Industry {
-    private long id;
-    private String gicsId;
+    private int gicsId;
     private IndustryGroup industryGroup;
     private String name;
     private Date dateTimeCreated;
@@ -28,11 +24,11 @@ public class Industry {
     private List<SubIndustry> subIndustries;
 
     public static class Builder {
-        private final String gicsId;
+        private final int gicsId;
         private final IndustryGroup industryGroup;
         private final String name;
 
-        public Builder(String gicsId, IndustryGroup industryGroup, String name) {
+        public Builder(int gicsId, IndustryGroup industryGroup, String name) {
             this.gicsId = gicsId;
             this.industryGroup = industryGroup;
             this.name = name;
@@ -52,29 +48,17 @@ public class Industry {
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    public long getId() {
-        return id;
-    }
-
-    private void setId(long id) {
-        this.id = id;
-    }
-
-    @Basic
     @Column(name = "gics_id", nullable = false)
-    @NotNull
-    public String getGicsId() {
+    public int getGicsId() {
         return gicsId;
     }
 
-    public void setGicsId(String gicsId) {
+    public void setGicsId(int gicsId) {
         this.gicsId = gicsId;
     }
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "industry_group_id", nullable = false, foreignKey = @ForeignKey(name = "fk_industry_group"))
+    @JoinColumn(name = "industry_group_gics_id", nullable = false, foreignKey = @ForeignKey(name = "fk_industry_group"))
     @NotNull
     public IndustryGroup getIndustryGroup() {
         return industryGroup;
@@ -135,9 +119,7 @@ public class Industry {
 
         Industry that = (Industry) o;
 
-        if (id != that.id)
-            return false;
-        if (!gicsId.equals(that.gicsId))
+        if (gicsId != that.gicsId)
             return false;
         if (!industryGroup.equals(that.industryGroup))
             return false;
@@ -149,8 +131,7 @@ public class Industry {
 
     @Override
     public int hashCode() {
-        int result = (int) (id ^ (id >>> 32));
-        result = 31 * result + gicsId.hashCode();
+        int result = gicsId;
         result = 31 * result + industryGroup.hashCode();
         result = 31 * result + name.hashCode();
         return result;
