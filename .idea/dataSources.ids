@@ -850,8 +850,10 @@
       <column name="curr_size" sqlType="BIGINT UNSIGNED" precision="20" scale="0" nullable="false" jdbcType="-5" def="MA=="/>
     </table>
     <table name="features" schema="" catalog="learn" type="BASE TABLE">
-      <column name="input" sqlType="VARCHAR" precision="100" scale="0" nullable="false" jdbcType="12" def="Jyc="/>
+      <column name="name" sqlType="VARCHAR" precision="100" scale="0" nullable="false" jdbcType="12" def="Jyc="/>
       <column name="features_view_0" sqlType="MEDIUMBLOB" precision="16777215" scale="0" nullable="true" jdbcType="-4"/>
+      <column name="features_view_1" sqlType="MEDIUMBLOB" precision="16777215" scale="0" nullable="true" jdbcType="-4"/>
+      <column name="features_view_2" sqlType="MEDIUMBLOB" precision="16777215" scale="0" nullable="true" jdbcType="-4"/>
     </table>
     <table name="column_stats" schema="" catalog="mysql" type="BASE TABLE" remarks="U3RhdGlzdGljcyBvbiBDb2x1bW5z">
       <column name="db_name" sqlType="VARCHAR" precision="64" scale="0" nullable="false" jdbcType="12"/>
@@ -2105,7 +2107,7 @@
     </table>
     <table name="DailyStockData" schema="" catalog="trade" type="BASE TABLE">
       <column name="id" sqlType="BIGINT" precision="19" scale="0" nullable="false" jdbcType="-5" autoIncrement="true"/>
-      <column name="adjusted_close_price" sqlType="DECIMAL" precision="19" scale="2" nullable="false" jdbcType="3"/>
+      <column name="adjusted_close_price" sqlType="DECIMAL" precision="19" scale="2" nullable="true" jdbcType="3"/>
       <column name="close_price" sqlType="DECIMAL" precision="19" scale="2" nullable="false" jdbcType="3"/>
       <column name="date" sqlType="DATE" precision="10" scale="0" nullable="false" jdbcType="91"/>
       <column name="date_time_created" sqlType="DATETIME" precision="19" scale="0" nullable="true" jdbcType="93"/>
@@ -2113,7 +2115,7 @@
       <column name="high_price" sqlType="DECIMAL" precision="19" scale="2" nullable="false" jdbcType="3"/>
       <column name="low_price" sqlType="DECIMAL" precision="19" scale="2" nullable="false" jdbcType="3"/>
       <column name="open_price" sqlType="DECIMAL" precision="19" scale="2" nullable="false" jdbcType="3"/>
-      <column name="volume" sqlType="BIGINT" precision="19" scale="0" nullable="false" jdbcType="-5"/>
+      <column name="volume" sqlType="BIGINT" precision="19" scale="0" nullable="true" jdbcType="-5"/>
       <column name="data_vendor_id" sqlType="BIGINT" precision="19" scale="0" nullable="true" jdbcType="-5"/>
       <column name="stock_id" sqlType="BIGINT" precision="19" scale="0" nullable="false" jdbcType="-5"/>
     </table>

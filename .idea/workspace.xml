@@ -11,148 +11,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="06096c01-39a4-421b-bbfc-512d98f31451" name="Default" comment="Switched to using Log4j 2">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/libjipopt.dylib" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/trade/conf/log4j2.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/trade/pom.xml" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/conf/log4j2.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/classification/FishersIris.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/brain/input/region_1.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/brain/input/region_10.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/brain/input/region_11.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/brain/input/region_2.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/brain/input/region_3.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/brain/input/region_4.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/brain/input/region_5.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/brain/input/region_6.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/brain/input/region_7.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/brain/input/region_8.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/brain/input/region_9.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/nell/input/animal.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/nell/input/beverage.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/nell/input/bird.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/nell/input/bodypart.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/nell/input/city.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/nell/input/disease.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/nell/input/drug.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/nell/input/fish.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/nell/input/food.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/nell/input/fruit.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/nell/input/muscle.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/nell/input/person.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/nell/input/protein.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/nell/input/river.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/combination/error/nell/input/vegetable.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn.iml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/AbstractTrainableLogisticRegression.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/Classifier.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/ClassifierType.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/Classifiers.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/DataInstance.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/DataInstances.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/DataPreprocessing.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/InMemoryStorage.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/LogisticRegressionAdaGrad.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/LogisticRegressionPrediction.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/LogisticRegressionSGD.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/MultiClassLogisticRegression.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/MultiViewDataInstance.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/Storage.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/StorageType.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/TrainableClassifier.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/TrainingData.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/reflection/AgreementRatesPowerSetVector.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/reflection/ErrorEstimation.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/reflection/ErrorEstimationData.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/reflection/ErrorEstimationInternalSolver.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/reflection/ErrorEstimationObjective.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/reflection/ErrorEstimationOptimization.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/reflection/ErrorEstimationOptimizationIpOpt.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/reflection/ErrorEstimationOptimizationKNITRO.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/reflection/ErrorRatesPowerSetVector.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/reflection/Integrator.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/classification/reflection/PowerSetVector.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/combination/error/ErrorRatesEstimation.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/combination/error/ObjectiveFunction.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/combination/error/ObjectiveFunctionType.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/math/MathUtilities.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/math/combinatorics/CombinatoricsUtilities.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/math/matrix/CholeskyDecomposition.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/math/matrix/DenseVector.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/math/matrix/HashVector.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/math/matrix/LUDecomposition.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/math/matrix/Matrix.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/math/matrix/MatrixUtilities.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/math/matrix/NonPositiveDefiniteMatrixException.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/math/matrix/NonSymmetricMatrixException.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/math/matrix/QRDecomposition.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/math/matrix/SingularMatrixException.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/math/matrix/SingularValueDecomposition.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/math/matrix/SparseVector.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/math/matrix/Vector.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/math/matrix/VectorNorm.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/math/matrix/VectorType.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/math/matrix/Vectors.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/math/statistics/StatisticsUtilities.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/AbstractIterativeSolver.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/AbstractLineSearchSolver.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/AbstractStochasticIterativeSolver.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/AdaptiveGradientSolver.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/ConjugateGradientSolver.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/CoordinateDescentSolver.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/GaussNewtonSolver.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/GradientDescentSolver.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/LinearLeastSquaresSolver.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/NewtonSolver.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/NonlinearConjugateGradientSolver.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/QuasiNewtonSolver.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/Solver.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/StochasticGradientDescentSolver.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/StochasticSolverStepSize.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/function/AbstractFunction.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/function/AbstractLeastSquaresFunction.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/function/AbstractStochasticFunction.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/function/DerivativesApproximation.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/function/LinearLeastSquaresFunction.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/function/QuadraticFunction.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/linesearch/ArmijoInterpolationLineSearch.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/linesearch/BacktrackingLineSearch.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/linesearch/ExactLineSearch.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/linesearch/IterativeLineSearch.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/linesearch/LineSearch.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/linesearch/LineSearchConditions.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/linesearch/StepSizeInitializationMethod.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/learn/optimization/linesearch/StrongWolfeInterpolationLineSearch.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/trade/data/DailyStockData.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/trade/data/DataManager.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/trade/data/DataVendor.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/trade/data/Exchange.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/trade/data/HibernateUtilities.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/trade/data/Industry.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/trade/data/IndustryGroup.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/trade/data/Sector.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/trade/data/Stock.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/org/platanios/trade/data/SubIndustry.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/test/java/org/platanios/learn/classification/BinaryLogisticRegressionTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/test/java/org/platanios/learn/classification/MultiClassLogisticRegressionTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/test/java/org/platanios/learn/classification/reflection/ErrorEstimationTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/test/java/org/platanios/learn/combination/error/ErrorRatesEstimationTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/test/java/org/platanios/learn/math/combinatorics/CombinatoricsUtilitiesTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/test/java/org/platanios/learn/math/matrix/CholeskyDecompositionTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/test/java/org/platanios/learn/math/matrix/LUDecompositionTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/test/java/org/platanios/learn/math/matrix/QRDecompositionTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/test/java/org/platanios/learn/math/matrix/SingularValueDecompositionTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/test/java/org/platanios/learn/optimization/ConjugateGradientSolverTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/test/java/org/platanios/learn/optimization/CoordinateDescentSolverTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/test/java/org/platanios/learn/optimization/GaussNewtonSolverTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/test/java/org/platanios/learn/optimization/GradientDescentSolverTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/test/java/org/platanios/learn/optimization/LinearLeastSquaresSolverTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/test/java/org/platanios/learn/optimization/NewtonSolverTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/test/java/org/platanios/learn/optimization/NonlinearConjugateGradientSolverTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/test/java/org/platanios/learn/optimization/QuasiNewtonSolverTest.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/test/java/org/platanios/learn/optimization/RosenbrockFunction.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/test/java/org/platanios/learn/optimization/function/DerivativesApproximationTest.java" afterPath="" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/pom.xml" afterPath="$PROJECT_DIR$/learn/pom.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/dataSources.ids" afterPath="$PROJECT_DIR$/.idea/dataSources.ids" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/artifacts/learn_jar/learn.jar" afterPath="$PROJECT_DIR$/target/classes/artifacts/learn_jar/learn.jar" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/.name" afterPath="$PROJECT_DIR$/.idea/.name" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/dictionaries/Anthony.xml" afterPath="$PROJECT_DIR$/.idea/dictionaries/Anthony.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/dataSources.xml" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="learn.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -201,6 +66,20 @@
       </PATH_ELEMENT>
       <PATH_ELEMENT>
         <option name="myItemId" value="MariaDB - Local" />
+        <option name="myItemType" value="com.intellij.database.view.DbNodeDescriptor" />
+      </PATH_ELEMENT>
+    </PATH>
+    <PATH>
+      <PATH_ELEMENT>
+        <option name="myItemId" />
+        <option name="myItemType" value="com.intellij.database.view.DbRootNodeDescriptor" />
+      </PATH_ELEMENT>
+      <PATH_ELEMENT>
+        <option name="myItemId" value="MariaDB - Local" />
+        <option name="myItemType" value="com.intellij.database.view.DbNodeDescriptor" />
+      </PATH_ELEMENT>
+      <PATH_ELEMENT>
+        <option name="myItemId" value="learn" />
         <option name="myItemType" value="com.intellij.database.view.DbNodeDescriptor" />
       </PATH_ELEMENT>
     </PATH>
@@ -259,8 +138,8 @@
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
     </breakpoint_any>
-    <ui_properties converted="true" />
     <breakpoint_rules converted="true" />
+    <ui_properties converted="true" />
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FavoritesManager">
@@ -268,11 +147,85 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="DailyStockData.java" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/DailyStockData.java">
+      <file leaf-file-name="FeatureMap.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/FeatureMap.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.4131054" vertical-offset="0" max-vertical-offset="2610">
-              <caret line="29" column="33" selection-start-line="29" selection-start-column="33" selection-end-line="29" selection-end-column="33" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="345" max-vertical-offset="1590">
+              <caret line="49" column="0" selection-start-line="49" selection-start-column="0" selection-end-line="49" selection-end-column="0" />
+              <folding>
+                <element signature="imports" expanded="true" />
+                <element signature="e#989#990#0" expanded="true" />
+                <element signature="e#1039#1040#0" expanded="true" />
+                <element signature="e#1629#1630#0" expanded="true" />
+                <element signature="e#1665#1666#0" expanded="true" />
+                <element signature="e#2561#2591#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="FeatureMapInMemory.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/FeatureMapInMemory.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="1032" max-vertical-offset="2085">
+              <caret line="113" column="24" selection-start-line="113" selection-start-column="24" selection-end-line="113" selection-end-column="24" />
+              <folding>
+                <element signature="imports" expanded="true" />
+                <element signature="e#692#693#0" expanded="true" />
+                <element signature="e#751#752#0" expanded="true" />
+                <element signature="e#2517#2518#0" expanded="true" />
+                <element signature="e#2570#2571#0" expanded="true" />
+                <element signature="e#3383#3384#0" expanded="true" />
+                <element signature="e#3426#3427#0" expanded="true" />
+                <element signature="e#3849#3850#0" expanded="true" />
+                <element signature="e#3897#3898#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="FeatureMapMariaDB.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/FeatureMapMariaDB.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="6105">
+              <caret line="171" column="24" selection-start-line="171" selection-start-column="24" selection-end-line="171" selection-end-column="24" />
+              <folding>
+                <element signature="imports" expanded="true" />
+                <element signature="e#6096#6097#0" expanded="true" />
+                <element signature="e#6147#6148#0" expanded="true" />
+                <element signature="e#12026#12056#0" expanded="true" />
+                <element signature="e#12662#12692#0" expanded="true" />
+                <element signature="e#13590#13620#0" expanded="true" />
+                <element signature="e#14309#14339#0" expanded="true" />
+                <element signature="e#15247#15277#0" expanded="true" />
+                <element signature="e#16324#16354#0" expanded="true" />
+                <marker date="1416812887000" expanded="true" signature="6303:6332" placeholder="DROP DATABAS..." />
+                <marker date="1416812887000" expanded="true" signature="6373:6394" placeholder="CREATE DATAB..learn..." />
+                <marker date="1416812887000" expanded="true" signature="6439:6485" placeholder="CREATE TABLE..features..." />
+                <marker date="1416812887000" expanded="true" signature="7012:7194" placeholder="INSERT INTO ..." />
+                <marker date="1416812887000" expanded="true" signature="7722:7790" placeholder="INSERT INTO ..." />
+                <marker date="1416812887000" expanded="true" signature="7722:8080" placeholder="INSERT INTO ..." />
+                <marker date="1416812887000" expanded="true" signature="8012:8080" placeholder="UPDATE featu..." />
+                <marker date="1416812887000" expanded="true" signature="8856:8892" placeholder="INSERT INTO ..." />
+                <marker date="1416812887000" expanded="true" signature="10076:10109" placeholder="INSERT INTO ..." />
+                <marker date="1416812887000" expanded="true" signature="10076:10110" placeholder="INSERT INTO ..." />
+                <marker date="1416812887000" expanded="true" signature="11794:11825" placeholder="SELECT name ..features..." />
+                <marker date="1416812887000" expanded="true" signature="12177:12256" placeholder="SELECT featu..features..." />
+                <marker date="1416812887000" expanded="true" signature="12833:12908" placeholder="SELECT name,..features..." />
+                <marker date="1416812887000" expanded="true" signature="13741:13768" placeholder="SELECT featu..." />
+                <marker date="1416812887000" expanded="true" signature="13741:13800" placeholder="SELECT featu..features..." />
+                <marker date="1416812887000" expanded="true" signature="15414:15458" placeholder="SELECT name,..features..." />
+                <marker date="1416812887000" expanded="true" signature="16476:16504" placeholder="SELECT * FRO..features..." />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="FeatureMapInMemoryTest.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/classification/FeatureMapInMemoryTest.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1755">
+              <caret line="33" column="0" selection-start-line="33" selection-start-column="0" selection-end-line="33" selection-end-column="0" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -280,44 +233,14 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Exchange.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/Exchange.java">
+      <file leaf-file-name="FeatureMapMariaDBTest.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/classification/FeatureMapMariaDBTest.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="4" max-vertical-offset="1845">
-              <caret line="0" column="8" selection-start-line="0" selection-start-column="8" selection-end-line="0" selection-end-column="8" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1815">
+              <caret line="14" column="22" selection-start-line="14" selection-start-column="22" selection-end-line="14" selection-end-column="22" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Industry.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/Industry.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1590">
-              <caret line="0" column="8" selection-start-line="0" selection-start-column="8" selection-end-line="0" selection-end-column="8" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="IndustryGroup.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/IndustryGroup.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1590">
-              <caret line="0" column="8" selection-start-line="0" selection-start-column="8" selection-end-line="0" selection-end-column="8" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Sector.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/Sector.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1425">
-              <caret line="0" column="8" selection-start-line="0" selection-start-column="8" selection-end-line="0" selection-end-column="8" />
-              <folding />
             </state>
           </provider>
         </entry>
@@ -325,18 +248,30 @@
       <file leaf-file-name="Stock.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/Stock.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2160">
-              <caret line="0" column="8" selection-start-line="0" selection-start-column="8" selection-end-line="0" selection-end-column="8" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="330" max-vertical-offset="2940">
+              <caret line="57" column="9" selection-start-line="57" selection-start-column="9" selection-end-line="57" selection-end-column="9" />
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name=".gitignore" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/.gitignore">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.014245015" vertical-offset="0" max-vertical-offset="1053">
+              <caret line="1" column="0" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="SubIndustry.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/SubIndustry.java">
+      <file leaf-file-name="DataManager.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/DataManager.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1725">
-              <caret line="11" column="3" selection-start-line="11" selection-start-column="3" selection-end-line="11" selection-end-column="3" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1605">
+              <caret line="120" column="32" selection-start-line="120" selection-start-column="32" selection-end-line="120" selection-end-column="32" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -362,31 +297,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/main/java/org/platanios/learn/learn/classification/reflection/perception/OptimizationProblem.java" />
-        <option value="$PROJECT_DIR$/src/main/java/org/platanios/learn/learn/classification/reflection/perception/OptimizationProblems.java" />
-        <option value="$PROJECT_DIR$/src/main/java/org/platanios/learn/learn/classification/reflection/perception/OptimizationSolverType.java" />
-        <option value="$PROJECT_DIR$/src/main/java/org/platanios/learn/learn/classification/reflection/perception/ErrorEstimationOptimizationProblem.java" />
-        <option value="$PROJECT_DIR$/src/main/java/org/platanios/learn/learn/classification/reflection/perception/ErrorEstimationOptimization.java" />
-        <option value="$PROJECT_DIR$/src/main/java/org/platanios/learn/learn/classification/reflection/perception/ErrorEstimationOptimizationProblems.java" />
-        <option value="$PROJECT_DIR$/src/main/java/org/platanios/learn/learn/classification/reflection/perception/ErrorEstimationObjectiveFunction.java" />
-        <option value="$PROJECT_DIR$/src/main/java/org/platanios/learn/learn/classification/reflection/perception/ErrorEstimationObjectiveFunctionType.java" />
-        <option value="$PROJECT_DIR$/src/main/java/org/platanios/learn/learn/classification/reflection/perception/ErrorEstimationObjectiveType.java" />
-        <option value="$PROJECT_DIR$/src/main/java/org/platanios/learn/learn/classification/reflection/perception/ErrorEstimationOptimizationKNITRO.java" />
-        <option value="$PROJECT_DIR$/src/main/java/org/platanios/learn/learn/classification/reflection/perception/ErrorEstimationOptimizationIpOpt.java" />
-        <option value="$PROJECT_DIR$/src/main/java/org/platanios/learn/learn/classification/reflection/perception/ErrorEstimationOptimizationSolverType.java" />
-        <option value="$PROJECT_DIR$/src/main/java/org/platanios/learn/learn/classification/reflection/perception/ErrorEstimation.java" />
-        <option value="$PROJECT_DIR$/src/main/java/org/platanios/learn/learn/classification/reflection/perception/ErrorEstimationInternalSolver.java" />
-        <option value="$PROJECT_DIR$/src/main/java/org/platanios/learn/learn/classification/reflection/perception/ErrorEstimationObjective.java" />
-        <option value="$PROJECT_DIR$/src/main/java/org/platanios/learn/learn/classification/reflection/ErrorEstimation.java" />
-        <option value="$PROJECT_DIR$/src/main/java/org/platanios/learn/learn/classification/reflection/ErrorEstimationData.java" />
-        <option value="$PROJECT_DIR$/src/main/java/org/platanios/learn/learn/classification/reflection/DataPreprocessing.java" />
-        <option value="$PROJECT_DIR$/src/test/java/org/platanios/learn/learn/combination/error/ErrorEstimationTest.java" />
-        <option value="$PROJECT_DIR$/src/test/java/org/platanios/learn/learn/classification/reflection/ErrorEstimationTest.java" />
-        <option value="$PROJECT_DIR$/src/main/java/org/platanios/trade/data/HibernateUtilities.java" />
-        <option value="$PROJECT_DIR$/src/main/java/org/platanios/learn/learn/classification/FeatureMapInMemory.java" />
-        <option value="$PROJECT_DIR$/src/main/java/org/platanios/learn/learn/classification/FeatureMapMariaDB.java" />
-        <option value="$PROJECT_DIR$/src/main/java/org/platanios/trade/data/DataManager.java" />
-        <option value="$PROJECT_DIR$/src/main/java/org/platanios/trade/data/DataVendor.java" />
         <option value="$PROJECT_DIR$/src/main/java/org/platanios/trade/data/Exchange.java" />
         <option value="$PROJECT_DIR$/src/main/java/org/platanios/trade/data/Industry.java" />
         <option value="$PROJECT_DIR$/src/main/java/org/platanios/trade/data/IndustryGroup.java" />
@@ -397,21 +307,46 @@
         <option value="$PROJECT_DIR$/.idea/workspace.xml" />
         <option value="$PROJECT_DIR$/.idea/modules.xml" />
         <option value="db-console:/effe93b8/4e7dbfa6-8474-442c-b88b-883bf535e151/" />
-        <option value="$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/DataManager.java" />
-        <option value="$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/DataVendor.java" />
-        <option value="$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/Exchange.java" />
-        <option value="$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/HibernateUtilities.java" />
-        <option value="$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/Industry.java" />
-        <option value="$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/IndustryGroup.java" />
-        <option value="$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/Sector.java" />
-        <option value="$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/Stock.java" />
-        <option value="$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/SubIndustry.java" />
         <option value="$PROJECT_DIR$/pom.xml" />
-        <option value="$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/DailyStockData.java" />
         <option value="$PROJECT_DIR$/trade/trade.iml" />
         <option value="$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/classification/reflection/ErrorEstimationTest.java" />
         <option value="$PROJECT_DIR$/trade/pom.xml" />
         <option value="$PROJECT_DIR$/learn/pom.xml" />
+        <option value="$PROJECT_DIR$/trade/src/main/java/hibernate.cfg.xml" />
+        <option value="$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/Test.java" />
+        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/utilities/UnsafeBuffer.java" />
+        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/utilities/SerializationUtilities.java" />
+        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/utilities/UnsafeSerializationUtilities.java" />
+        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/math/matrix/Vector.java" />
+        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/math/matrix/VectorType.java" />
+        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/LogisticRegressionPrediction.java" />
+        <option value="$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/math/matrix/SparseVectorTest.java" />
+        <option value="$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/math/matrix/DenseVectorTest.java" />
+        <option value="$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/math/matrix/HashVectorTest.java" />
+        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/math/matrix/DenseVector.java" />
+        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/math/matrix/SparseVector.java" />
+        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/math/matrix/HashVector.java" />
+        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/math/matrix/Vectors.java" />
+        <option value="$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/math/matrix/VectorsTest.java" />
+        <option value="$PROJECT_DIR$/trade/conf/hibernate.cfg.xml" />
+        <option value="$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/HibernateUtilities.java" />
+        <option value="$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/DataVendor.java" />
+        <option value="$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/Exchange.java" />
+        <option value="$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/DailyStockData.java" />
+        <option value="$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/Industry.java" />
+        <option value="$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/IndustryGroup.java" />
+        <option value="$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/Sector.java" />
+        <option value="$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/SubIndustry.java" />
+        <option value="$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/Stock.java" />
+        <option value="$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/DataManager.java" />
+        <option value="db-console:/8a94e1db/4e7dbfa6-8474-442c-b88b-883bf535e151/" />
+        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/serialization/UnsafeSerializationUtilities.java" />
+        <option value="$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/serialization/UnsafeSerializationUtilitiesTest.java" />
+        <option value="$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/classification/FeatureMapInMemoryTest.java" />
+        <option value="$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/classification/FeatureMapMariaDBTest.java" />
+        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/FeatureMap.java" />
+        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/FeatureMapMariaDB.java" />
+        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/FeatureMapInMemory.java" />
         <option value="$PROJECT_DIR$/.gitignore" />
       </list>
     </option>
@@ -501,17 +436,27 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="ProjectPane">
+      <pane id="PackagesPane">
         <subPane>
           <PATH>
             <PATH_ELEMENT>
               <option name="myItemId" value="learn" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
+      <pane id="ProjectPane">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="org.platanios" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
           </PATH>
           <PATH>
             <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
+              <option name="myItemId" value="org.platanios" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
@@ -521,7 +466,7 @@
           </PATH>
           <PATH>
             <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
+              <option name="myItemId" value="org.platanios" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
@@ -539,7 +484,7 @@
           </PATH>
           <PATH>
             <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
+              <option name="myItemId" value="org.platanios" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
@@ -554,10 +499,14 @@
               <option name="myItemId" value="main" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="resources" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
           </PATH>
           <PATH>
             <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
+              <option name="myItemId" value="org.platanios" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
@@ -583,21 +532,7 @@
           </PATH>
           <PATH>
             <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="trade" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="conf" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
+              <option name="myItemId" value="org.platanios" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
@@ -607,7 +542,7 @@
           </PATH>
           <PATH>
             <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
+              <option name="myItemId" value="org.platanios" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
@@ -625,7 +560,7 @@
           </PATH>
           <PATH>
             <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
+              <option name="myItemId" value="org.platanios" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
@@ -649,47 +584,13 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="optimization" />
+              <option name="myItemId" value="serialization" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
           <PATH>
             <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="test" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="java" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="optimization" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="function" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
+              <option name="myItemId" value="org.platanios" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
@@ -715,7 +616,71 @@
           </PATH>
           <PATH>
             <PATH_ELEMENT>
+              <option name="myItemId" value="org.platanios" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
               <option name="myItemId" value="learn" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="test" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="learn" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="math" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="matrix" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="org.platanios" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="learn" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="test" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="learn" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="math" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="org.platanios" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
@@ -745,7 +710,7 @@
           </PATH>
           <PATH>
             <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
+              <option name="myItemId" value="org.platanios" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
@@ -757,7 +722,209 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="test" />
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="resources" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="org.platanios" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="learn" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="learn" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="serialization" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="org.platanios" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="learn" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="learn" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="org.platanios" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="learn" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="learn" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="math" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="org.platanios" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="learn" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="learn" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="math" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="matrix" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="org.platanios" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="learn" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="learn" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="experiments" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="org.platanios" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="learn" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="learn" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="classification" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="org.platanios" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="learn" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
@@ -777,104 +944,6 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="main" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="main" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="java" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="main" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="java" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="classification" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="data" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
-      <pane id="PackagesPane">
-        <subPane>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
-            </PATH_ELEMENT>
-          </PATH>
         </subPane>
       </pane>
       <pane id="Scope" />
@@ -887,7 +956,7 @@
     <property name="MemberChooser.sorted" value="false" />
     <property name="MemberChooser.showClasses" value="true" />
     <property name="MemberChooser.copyJavadoc" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../learn copy" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/trade/conf" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.15" />
@@ -928,11 +997,14 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/learn/src/test/resources" />
       <recent name="$PROJECT_DIR$/trade/conf" />
       <recent name="$PROJECT_DIR$/trade" />
       <recent name="$PROJECT_DIR$/lib" />
       <recent name="$PROJECT_DIR$/src/test/resources" />
-      <recent name="$PROJECT_DIR$/test/org/platanios/learn/learn/classification/resources" />
+    </key>
+    <key name="CreateClassDialog.RecentsKey">
+      <recent name="org.platanios.trade.data" />
     </key>
     <key name="ImportMappingsDialog.RecentPackages">
       <recent name="org.platanios.trade.data" />
@@ -945,26 +1017,26 @@
       <recent name="org.platanios.learn.combination.error" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/learn/src/main/resources" />
+      <recent name="$PROJECT_DIR$/trade/src/main/resources" />
+      <recent name="$PROJECT_DIR$/trade/conf" />
       <recent name="$PROJECT_DIR$/trade/data" />
       <recent name="$PROJECT_DIR$/learn" />
-      <recent name="$PROJECT_DIR$/conf" />
-      <recent name="$PROJECT_DIR$/src/main/java/org/platanios/trade/data" />
-      <recent name="$PROJECT_DIR$/lib" />
     </key>
   </component>
-  <component name="RunManager" selected="JUnit.ConjugateGradientSolverTest and 7 more">
-    <configuration default="false" name="ErrorEstimationTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Application.DataManager">
+    <configuration default="false" name="FeatureMapInMemoryTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
         <pattern>
-          <option name="PATTERN" value="org.platanios.learn.classification.reflection.*" />
+          <option name="PATTERN" value="org.platanios.learn.classification.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
       <module name="learn" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="PACKAGE_NAME" value="org.platanios.learn.classification.reflection" />
-      <option name="MAIN_CLASS_NAME" value="org.platanios.learn.classification.reflection.ErrorEstimationTest" />
+      <option name="PACKAGE_NAME" value="org.platanios.learn.classification" />
+      <option name="MAIN_CLASS_NAME" value="org.platanios.learn.classification.FeatureMapInMemoryTest" />
       <option name="METHOD_NAME" />
       <option name="TEST_OBJECT" value="class" />
       <option name="VM_PARAMETERS" value="-ea" />
@@ -981,7 +1053,7 @@
       <ConfigurationWrapper RunnerId="Run" />
       <method />
     </configuration>
-    <configuration default="false" name="BinaryLogisticRegressionTest.testDenseBinaryLogisticRegressionUsingSGD" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration default="false" name="FeatureMapInMemoryTest.testAddingAndGettingMultipleNameAllViewDenseFeatureVectors" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
         <pattern>
           <option name="PATTERN" value="org.platanios.learn.classification.*" />
@@ -992,8 +1064,8 @@
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
       <option name="PACKAGE_NAME" value="org.platanios.learn.classification" />
-      <option name="MAIN_CLASS_NAME" value="org.platanios.learn.classification.BinaryLogisticRegressionTest" />
-      <option name="METHOD_NAME" value="testDenseBinaryLogisticRegressionUsingSGD" />
+      <option name="MAIN_CLASS_NAME" value="org.platanios.learn.classification.FeatureMapInMemoryTest" />
+      <option name="METHOD_NAME" value="testAddingAndGettingMultipleNameAllViewDenseFeatureVectors" />
       <option name="TEST_OBJECT" value="method" />
       <option name="VM_PARAMETERS" value="-ea" />
       <option name="PARAMETERS" />
@@ -1009,18 +1081,52 @@
       <ConfigurationWrapper RunnerId="Run" />
       <method />
     </configuration>
-    <configuration default="false" name="CombinatoricsUtilitiesTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration default="false" name="FeatureMapMariaDBTest.testAddingAndGettingSingleNameSingleViewFeatureVectors" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
         <pattern>
-          <option name="PATTERN" value="org.platanios.learn.math.combinatorics.*" />
+          <option name="PATTERN" value="org.platanios.learn.classification.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
       <module name="learn" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="PACKAGE_NAME" value="org.platanios.learn.math.combinatorics" />
-      <option name="MAIN_CLASS_NAME" value="org.platanios.learn.math.combinatorics.CombinatoricsUtilitiesTest" />
+      <option name="PACKAGE_NAME" value="org.platanios.learn.classification" />
+      <option name="MAIN_CLASS_NAME" value="org.platanios.learn.classification.FeatureMapMariaDBTest" />
+      <option name="METHOD_NAME" value="testAddingAndGettingSingleNameSingleViewFeatureVectors" />
+      <option name="TEST_OBJECT" value="method" />
+      <option name="VM_PARAMETERS" value="-ea" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="moduleWithDependencies" />
+      </option>
+      <envs />
+      <patterns />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Debug" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method />
+    </configuration>
+    <configuration default="false" name="FeatureMapMariaDBTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
+        <pattern>
+          <option name="PATTERN" value="org.platanios.learn.classification.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <module name="learn" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PACKAGE_NAME" value="org.platanios.learn.classification" />
+      <option name="MAIN_CLASS_NAME" value="org.platanios.learn.classification.FeatureMapMariaDBTest" />
       <option name="METHOD_NAME" />
       <option name="TEST_OBJECT" value="class" />
       <option name="VM_PARAMETERS" value="-ea" />
@@ -1037,62 +1143,24 @@
       <ConfigurationWrapper RunnerId="Run" />
       <method />
     </configuration>
-    <configuration default="false" name="DerivativesApproximationTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration default="false" name="DataManager" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
         <pattern>
-          <option name="PATTERN" value="org.platanios.learn.optimization.function.*" />
+          <option name="PATTERN" value="org.platanios.trade.data.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
-      <module name="learn" />
+      <option name="MAIN_CLASS_NAME" value="org.platanios.trade.data.DataManager" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="PACKAGE_NAME" value="org.platanios.learn.optimization.function" />
-      <option name="MAIN_CLASS_NAME" value="org.platanios.learn.optimization.function.DerivativesApproximationTest" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" value="-ea" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
       <option name="ENV_VARIABLES" />
       <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="TEST_SEARCH_SCOPE">
-        <value defaultName="moduleWithDependencies" />
-      </option>
+      <module name="trade" />
       <envs />
-      <patterns />
-      <RunnerSettings RunnerId="Run" />
-      <ConfigurationWrapper RunnerId="Run" />
-      <method />
-    </configuration>
-    <configuration default="false" name="ConjugateGradientSolverTest and 7 more" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
-      <module name="learn" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="pattern" />
-      <option name="VM_PARAMETERS" value="-ea" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="TEST_SEARCH_SCOPE">
-        <value defaultName="moduleWithDependencies" />
-      </option>
-      <envs />
-      <patterns>
-        <pattern testClass="org.platanios.learn.optimization.ConjugateGradientSolverTest" />
-        <pattern testClass="org.platanios.learn.optimization.CoordinateDescentSolverTest" />
-        <pattern testClass="org.platanios.learn.optimization.GaussNewtonSolverTest" />
-        <pattern testClass="org.platanios.learn.optimization.GradientDescentSolverTest" />
-        <pattern testClass="org.platanios.learn.optimization.LinearLeastSquaresSolverTest" />
-        <pattern testClass="org.platanios.learn.optimization.NewtonSolverTest" />
-        <pattern testClass="org.platanios.learn.optimization.NonlinearConjugateGradientSolverTest" />
-        <pattern testClass="org.platanios.learn.optimization.QuasiNewtonSolverTest" />
-      </patterns>
       <RunnerSettings RunnerId="Run" />
       <ConfigurationWrapper RunnerId="Run" />
       <method />
@@ -1369,19 +1437,19 @@
       <method />
     </configuration>
     <list size="5">
-      <item index="0" class="java.lang.String" itemvalue="JUnit.ErrorEstimationTest" />
-      <item index="1" class="java.lang.String" itemvalue="JUnit.BinaryLogisticRegressionTest.testDenseBinaryLogisticRegressionUsingSGD" />
-      <item index="2" class="java.lang.String" itemvalue="JUnit.CombinatoricsUtilitiesTest" />
-      <item index="3" class="java.lang.String" itemvalue="JUnit.DerivativesApproximationTest" />
-      <item index="4" class="java.lang.String" itemvalue="JUnit.ConjugateGradientSolverTest and 7 more" />
+      <item index="0" class="java.lang.String" itemvalue="JUnit.FeatureMapInMemoryTest" />
+      <item index="1" class="java.lang.String" itemvalue="JUnit.FeatureMapInMemoryTest.testAddingAndGettingMultipleNameAllViewDenseFeatureVectors" />
+      <item index="2" class="java.lang.String" itemvalue="JUnit.FeatureMapMariaDBTest.testAddingAndGettingSingleNameSingleViewFeatureVectors" />
+      <item index="3" class="java.lang.String" itemvalue="JUnit.FeatureMapMariaDBTest" />
+      <item index="4" class="java.lang.String" itemvalue="Application.DataManager" />
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="JUnit.ConjugateGradientSolverTest and 7 more" />
-        <item index="1" class="java.lang.String" itemvalue="JUnit.DerivativesApproximationTest" />
-        <item index="2" class="java.lang.String" itemvalue="JUnit.CombinatoricsUtilitiesTest" />
-        <item index="3" class="java.lang.String" itemvalue="JUnit.BinaryLogisticRegressionTest.testDenseBinaryLogisticRegressionUsingSGD" />
-        <item index="4" class="java.lang.String" itemvalue="JUnit.ErrorEstimationTest" />
+        <item index="0" class="java.lang.String" itemvalue="Application.DataManager" />
+        <item index="1" class="java.lang.String" itemvalue="JUnit.FeatureMapInMemoryTest" />
+        <item index="2" class="java.lang.String" itemvalue="JUnit.FeatureMapMariaDBTest" />
+        <item index="3" class="java.lang.String" itemvalue="JUnit.FeatureMapMariaDBTest.testAddingAndGettingSingleNameSingleViewFeatureVectors" />
+        <item index="4" class="java.lang.String" itemvalue="JUnit.FeatureMapInMemoryTest.testAddingAndGettingMultipleNameAllViewDenseFeatureVectors" />
       </list>
     </recent_temporary>
     <configuration name="&lt;template&gt;" type="WebApp" default="true" selected="false">
@@ -1494,6 +1562,9 @@
       <workItem from="1416560463348" duration="285000" />
       <workItem from="1416560834844" duration="54000" />
       <workItem from="1416560909147" duration="1375000" />
+      <workItem from="1416562335595" duration="211000" />
+      <workItem from="1416562589919" duration="16300000" />
+      <workItem from="1416703278730" duration="50462000" />
     </task>
     <task id="LOCAL-00001" summary="Added the .idea directory.">
       <created>1403284754016</created>
@@ -2875,11 +2946,77 @@
       <option name="project" value="LOCAL" />
       <updated>1416553075245</updated>
     </task>
-    <option name="localTasksCounter" value="231" />
+    <task id="LOCAL-00231" summary="Fixed the Hibernate configuration.">
+      <created>1416564375852</created>
+      <option name="number" value="00231" />
+      <option name="project" value="LOCAL" />
+      <updated>1416564375852</updated>
+    </task>
+    <task id="LOCAL-00232" summary="Changed the serialization method for the Vector classes and added some unit tests for those classes.">
+      <created>1416728194937</created>
+      <option name="number" value="00232" />
+      <option name="project" value="LOCAL" />
+      <updated>1416728194937</updated>
+    </task>
+    <task id="LOCAL-00233" summary="Added some documentation to the Vector subclasses serialization methods and fixed a few minor bugs.">
+      <created>1416740084215</created>
+      <option name="number" value="00233" />
+      <option name="project" value="LOCAL" />
+      <updated>1416740084215</updated>
+    </task>
+    <task id="LOCAL-00234" summary="Fixed a minor bug in the VectorType enumeration.">
+      <created>1416741736016</created>
+      <option name="number" value="00234" />
+      <option name="project" value="LOCAL" />
+      <updated>1416741736016</updated>
+    </task>
+    <task id="LOCAL-00235" summary="Added support for serializing the vector type along with each vector.">
+      <created>1416745115284</created>
+      <option name="number" value="00235" />
+      <option name="project" value="LOCAL" />
+      <updated>1416745115284</updated>
+    </task>
+    <task id="LOCAL-00236" summary="Added builder classes to all the entity classes and added support for adding entities of all types in the database.">
+      <created>1416786770690</created>
+      <option name="number" value="00236" />
+      <option name="project" value="LOCAL" />
+      <updated>1416786770690</updated>
+    </task>
+    <task id="LOCAL-00237" summary="Minor change to the Hibernate configuration file to allow batch inserts and updates in the database.">
+      <created>1416786834942</created>
+      <option name="number" value="00237" />
+      <option name="project" value="LOCAL" />
+      <updated>1416786834942</updated>
+    </task>
+    <task id="LOCAL-00238" summary="Added unit tests for the unsafe serialization code and also added support for serializing strings.">
+      <created>1416802623270</created>
+      <option name="number" value="00238" />
+      <option name="project" value="LOCAL" />
+      <updated>1416802623270</updated>
+    </task>
+    <task id="LOCAL-00239" summary="Added some functionality to the feature maps implementations and also added some unit tests for them.">
+      <created>1416808072285</created>
+      <option name="number" value="00239" />
+      <option name="project" value="LOCAL" />
+      <updated>1416808072285</updated>
+    </task>
+    <task id="LOCAL-00240" summary="Improved the feature maps implementations.">
+      <created>1416812984971</created>
+      <option name="number" value="00240" />
+      <option name="project" value="LOCAL" />
+      <updated>1416812984971</updated>
+    </task>
+    <task id="LOCAL-00241" summary="Moved the configuration files of each module to their corresponding resources directories.">
+      <created>1416813921965</created>
+      <option name="number" value="00241" />
+      <option name="project" value="LOCAL" />
+      <updated>1416813921965</updated>
+    </task>
+    <option name="localTasksCounter" value="242" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="714980000" />
+    <option name="totallyTimeSpent" value="781953000" />
   </component>
   <component name="TodoView" selected-index="0">
     <todo-panel id="selected-file">
@@ -2903,11 +3040,11 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1920" height="1173" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Statistic" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32377428" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Statistic" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3228492" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32994455" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
       <window_info id="Persistence" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.21671991" sideWeight="0.50046253" order="4" side_tool="true" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -2921,13 +3058,14 @@
       <window_info id="CDI" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3293247" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21671991" sideWeight="0.49953747" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21671991" sideWeight="0.49953747" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32839963" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Database Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3265495" sideWeight="0.5" order="15" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3293247" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Bean Validation" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32747456" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39777982" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32839963" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
@@ -2937,26 +3075,25 @@
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32747456" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Run with VisualVM" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="15" side_tool="false" content_ui="tabs" />
-      <window_info id="JProfiler" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3293247" sideWeight="0.5" order="15" side_tool="false" content_ui="tabs" />
       <window_info id="Debug with VisualVM" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32839963" sideWeight="0.5" order="15" side_tool="false" content_ui="tabs" />
+      <window_info id="JProfiler" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3293247" sideWeight="0.5" order="15" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
     </layout>
     <layout-to-restore>
-      <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32994455" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
+      <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Statistic" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32377428" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32994455" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
       <window_info id="Persistence" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.21671991" sideWeight="0.50046253" order="5" side_tool="true" content_ui="tabs" />
-      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22523962" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22523962" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Java Enterprise" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3293247" sideWeight="0.5" order="15" side_tool="false" content_ui="tabs" />
-      <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39777982" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
+      <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="IDEtalk" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="JSF" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32839963" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="JSF" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="CDI" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3293247" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
@@ -2966,20 +3103,20 @@
       <window_info id="Database Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32747456" sideWeight="0.5" order="16" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3293247" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Bean Validation" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32747456" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39777982" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="true" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32839963" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
       <window_info id="Run with VisualVM" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="17" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.18157615" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.21458998" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug with VisualVM" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32839963" sideWeight="0.5" order="18" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="JProfiler" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3293247" sideWeight="0.5" order="19" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug with VisualVM" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32839963" sideWeight="0.5" order="18" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
     </layout-to-restore>
   </component>
@@ -2998,17 +3135,6 @@
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
-    <MESSAGE value="Improved the performance of sparse vectors and of sampling for stochastic optimization methods." />
-    <MESSAGE value="Fixed a bug related to the AdaGrad update direction equation." />
-    <MESSAGE value="Added a new sparse vector implementation using two parallel arrays for internally storing the indexes and the values of the nonzero vector elements." />
-    <MESSAGE value="Made the AdaGrad algorithm faster." />
-    <MESSAGE value="Made the binary logistic regression implementations faster and did some refactoring." />
-    <MESSAGE value="Made the sparse vector implementation much faster." />
-    <MESSAGE value="Made some minor improvements for speed in the AdaGrad solver." />
-    <MESSAGE value="Made the data batches sampling for stochastic functions to optimize faster." />
-    <MESSAGE value="Made several improvements to the vector classes, mainly related to efficiency." />
-    <MESSAGE value="Minor division by zero bug fix." />
-    <MESSAGE value="Implemented part of the classifier integrator (part of the new self-reflection framework) and made some small changes to the structure of the classification library." />
     <MESSAGE value="Added calls to close the input and the output streams used in the Integrator class." />
     <MESSAGE value="Switched to using the Log4j 2 logging library for the optimization library." />
     <MESSAGE value="Switched to using Log4j 2 for logging for the classification library." />
@@ -3023,7 +3149,18 @@
     <MESSAGE value="Refactored the reflection library and added some constructors that allow for easier initialization of the error rates estimation procedure." />
     <MESSAGE value="Switched to using the new generator mappings for the IDs in Hibernate." />
     <MESSAGE value="Made several changes to the trading database schema." />
-    <option name="LAST_COMMIT_MESSAGE" value="Made several changes to the trading database schema." />
+    <MESSAGE value="Fixed the Hibernate configuration." />
+    <MESSAGE value="Changed the serialization method for the Vector classes and added some unit tests for those classes." />
+    <MESSAGE value="Added some documentation to the Vector subclasses serialization methods and fixed a few minor bugs." />
+    <MESSAGE value="Fixed a minor bug in the VectorType enumeration." />
+    <MESSAGE value="Added support for serializing the vector type along with each vector." />
+    <MESSAGE value="Added builder classes to all the entity classes and added support for adding entities of all types in the database." />
+    <MESSAGE value="Minor change to the Hibernate configuration file to allow batch inserts and updates in the database." />
+    <MESSAGE value="Added unit tests for the unsafe serialization code and also added support for serializing strings." />
+    <MESSAGE value="Added some functionality to the feature maps implementations and also added some unit tests for them." />
+    <MESSAGE value="Improved the feature maps implementations." />
+    <MESSAGE value="Moved the configuration files of each module to their corresponding resources directories." />
+    <option name="LAST_COMMIT_MESSAGE" value="Moved the configuration files of each module to their corresponding resources directories." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -3035,7 +3172,7 @@
           <option name="timeStamp" value="584" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="644" />
+      <option name="time" value="713" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -3056,288 +3193,286 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/learn/learn.iml">
+    <entry file="file://$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/classification/BinaryLogisticRegressionTest.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="100">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="1992" max-vertical-offset="4155">
+          <caret line="180" column="12" selection-start-line="180" selection-start-column="12" selection-end-line="180" selection-end-column="77" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/ClassifierType.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.11396012" vertical-offset="0" max-vertical-offset="1053">
+          <caret line="8" column="12" selection-start-line="8" selection-start-column="12" selection-end-line="8" selection-end-column="12" />
+          <folding>
+            <element signature="imports" expanded="false" />
+            <element signature="e#683#684#0" expanded="false" />
+            <element signature="e#729#730#0" expanded="false" />
+            <element signature="e#853#854#0" expanded="false" />
+            <element signature="e#899#900#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/DataInstance.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0997151" vertical-offset="0" max-vertical-offset="1185">
+          <caret line="7" column="13" selection-start-line="7" selection-start-column="13" selection-end-line="7" selection-end-column="13" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/.idea/modules.xml">
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/DataInstances.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="135" max-vertical-offset="225">
-          <caret line="9" column="10" selection-start-line="9" selection-start-column="10" selection-end-line="9" selection-end-column="10" />
+        <state vertical-scroll-proportion="0.14245014" vertical-offset="0" max-vertical-offset="1053">
+          <caret line="10" column="13" selection-start-line="10" selection-start-column="13" selection-end-line="10" selection-end-column="13" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/MultiViewDataInstance.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-0.18233618" vertical-offset="222" max-vertical-offset="1275">
+          <caret line="2" column="0" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/TrainableClassifier.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.12820514" vertical-offset="0" max-vertical-offset="1053">
+          <caret line="9" column="17" selection-start-line="9" selection-start-column="17" selection-end-line="9" selection-end-column="17" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/TrainingData.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.12820514" vertical-offset="0" max-vertical-offset="1053">
+          <caret line="9" column="13" selection-start-line="9" selection-start-column="13" selection-end-line="9" selection-end-column="13" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/reflection/ErrorEstimationData.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.18423551" vertical-offset="1" max-vertical-offset="3885">
+          <caret line="13" column="13" selection-start-line="13" selection-start-column="13" selection-end-line="13" selection-end-column="13" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/reflection/Integrator.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.03133903" vertical-offset="3207" max-vertical-offset="4260">
+          <caret line="218" column="5" selection-start-line="218" selection-start-column="5" selection-end-line="218" selection-end-column="5" />
+          <folding>
+            <element signature="imports" expanded="false" />
+            <element signature="e#9641#9671#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/experiments/FeaturesPreprocessing.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-0.22507122" vertical-offset="492" max-vertical-offset="1545">
+          <caret line="17" column="13" selection-start-line="17" selection-start-column="13" selection-end-line="17" selection-end-column="13" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/reflection/ErrorEstimationOptimizationKNITRO.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.2991453" vertical-offset="0" max-vertical-offset="6270">
+          <caret line="21" column="6" selection-start-line="21" selection-start-column="6" selection-end-line="21" selection-end-column="6" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/math/MathUtilities.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.07122507" vertical-offset="0" max-vertical-offset="1080">
+          <caret line="5" column="13" selection-start-line="5" selection-start-column="13" selection-end-line="5" selection-end-column="13" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/.idea/vcs.xml">
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/AbstractTrainableLogisticRegression.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="105" max-vertical-offset="195">
-          <caret line="7" column="0" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.idea/workspace.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="45690">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        <state vertical-scroll-proportion="-2.7321937" vertical-offset="3027" max-vertical-offset="4080">
+          <caret line="18" column="15" selection-start-line="18" selection-start-column="15" selection-end-line="18" selection-end-column="15" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/learn/learn.iml">
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/LogisticRegressionAdaGrad.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="105" max-vertical-offset="855">
-          <caret line="7" column="44" selection-start-line="7" selection-start-column="44" selection-end-line="7" selection-end-column="44" />
+        <state vertical-scroll-proportion="-1.5498575" vertical-offset="1767" max-vertical-offset="2820">
+          <caret line="15" column="13" selection-start-line="15" selection-start-column="13" selection-end-line="15" selection-end-column="13" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/.idea/modules.xml">
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/LogisticRegressionSGD.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="225">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        <state vertical-scroll-proportion="-1.5498575" vertical-offset="1782" max-vertical-offset="2835">
+          <caret line="16" column="13" selection-start-line="16" selection-start-column="13" selection-end-line="16" selection-end-column="13" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="dbDummy://dbtable:/effe93b8/4e7dbfa6-8474-442c-b88b-883bf535e151/trade..Exchange">
-      <provider selected="true" editor-type-id="com.intellij.database.editor.DatabaseTableFileEditorProvider">
-        <state />
-      </provider>
-      <provider editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="100">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="dbDummy://dbtable:/effe93b8/4e7dbfa6-8474-442c-b88b-883bf535e151/trade..DataVendor">
-      <provider selected="true" editor-type-id="com.intellij.database.editor.DatabaseTableFileEditorProvider">
-        <state />
-      </provider>
-      <provider editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="100">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$MAVEN_REPOSITORY$/org/apache/logging/log4j/log4j-core/2.1/log4j-core-2.1.jar!/org/apache/logging/log4j/core/appender/db/jpa/AbstractLogEventWrapperEntity.class">
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/MultiClassLogisticRegression.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.3616072" vertical-offset="0" max-vertical-offset="1305">
-          <caret line="78" column="25" selection-start-line="78" selection-start-column="25" selection-end-line="78" selection-end-column="25" />
+        <state vertical-scroll-proportion="-3.102564" vertical-offset="3372" max-vertical-offset="4425">
+          <caret line="16" column="13" selection-start-line="16" selection-start-column="13" selection-end-line="16" selection-end-column="13" />
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="uml://Persistence/JavaeeElement:/effe93b8/conf:hibernate.trade.cfg.xml/learn/hibernate/Hibernate/PersistenceModel">
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/math/matrix/VectorType.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.23638968" vertical-offset="0" max-vertical-offset="1110">
+          <caret line="11" column="12" selection-start-line="11" selection-start-column="12" selection-end-line="11" selection-end-column="12" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/LogisticRegressionPrediction.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.29083094" vertical-offset="1957" max-vertical-offset="2655">
+          <caret line="152" column="36" selection-start-line="152" selection-start-column="36" selection-end-line="152" selection-end-column="36" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/math/matrix/HashVectorTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.7863248" vertical-offset="222" max-vertical-offset="1275">
+          <caret line="72" column="48" selection-start-line="72" selection-start-column="48" selection-end-line="72" selection-end-column="48" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/math/matrix/DenseVectorTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="237" max-vertical-offset="1290">
+          <caret line="67" column="67" selection-start-line="62" selection-start-column="12" selection-end-line="67" selection-end-column="67" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/math/matrix/Vectors.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="308" max-vertical-offset="2610">
+          <caret line="38" column="0" selection-start-line="38" selection-start-column="0" selection-end-line="38" selection-end-column="0" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/math/matrix/SparseVectorTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.5156695" vertical-offset="477" max-vertical-offset="1530">
+          <caret line="68" column="0" selection-start-line="68" selection-start-column="0" selection-end-line="68" selection-end-column="0" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="uml://Persistence/JavaeeElement:/8a94e1db/conf:hibernate.cfg.xml/trade/hibernate/Hibernate/PersistenceModel">
       <provider selected="true" editor-type-id="UmlEditorProvider">
         <state>
           <ID>Persistence</ID>
-          <OriginalElement>JavaeeElement:/effe93b8/conf:hibernate.trade.cfg.xml/learn/hibernate/Hibernate/PersistenceModel</OriginalElement>
+          <OriginalElement>JavaeeElement:/8a94e1db/conf:hibernate.cfg.xml/trade/hibernate/Hibernate/PersistenceModel</OriginalElement>
           <nodes>
-            <node x="" y="">Exchange#file:///Users/Anthony/Development/GitHub/learn/src/main/java/org/platanios/trade/data/Exchange.java</node>
-            <node x="" y="">IndustryGroup#file:///Users/Anthony/Development/GitHub/learn/src/main/java/org/platanios/trade/data/IndustryGroup.java</node>
-            <node x="" y="">Sector#file:///Users/Anthony/Development/GitHub/learn/src/main/java/org/platanios/trade/data/Sector.java</node>
-            <node x="" y="">SubIndustry#file:///Users/Anthony/Development/GitHub/learn/src/main/java/org/platanios/trade/data/SubIndustry.java</node>
-            <node x="" y="">DataVendor#file:///Users/Anthony/Development/GitHub/learn/src/main/java/org/platanios/trade/data/DataVendor.java</node>
-            <node x="" y="">DailyStockData#file:///Users/Anthony/Development/GitHub/learn/src/main/java/org/platanios/trade/data/DailyStockData.java</node>
-            <node x="" y="">Stock#file:///Users/Anthony/Development/GitHub/learn/src/main/java/org/platanios/trade/data/Stock.java</node>
-            <node x="" y="">Industry#file:///Users/Anthony/Development/GitHub/learn/src/main/java/org/platanios/trade/data/Industry.java</node>
+            <node x="" y="">IndustryGroup#file:///Users/Anthony/Development/GitHub/org.platanios/trade/src/main/java/org/platanios/trade/data/IndustryGroup.java</node>
+            <node x="" y="">DataVendor#file:///Users/Anthony/Development/GitHub/org.platanios/trade/src/main/java/org/platanios/trade/data/DataVendor.java</node>
+            <node x="" y="">Industry#file:///Users/Anthony/Development/GitHub/org.platanios/trade/src/main/java/org/platanios/trade/data/Industry.java</node>
+            <node x="" y="">DailyStockData#file:///Users/Anthony/Development/GitHub/org.platanios/trade/src/main/java/org/platanios/trade/data/DailyStockData.java</node>
+            <node x="" y="">Stock#file:///Users/Anthony/Development/GitHub/org.platanios/trade/src/main/java/org/platanios/trade/data/Stock.java</node>
+            <node x="" y="">Exchange#file:///Users/Anthony/Development/GitHub/org.platanios/trade/src/main/java/org/platanios/trade/data/Exchange.java</node>
+            <node x="" y="">SubIndustry#file:///Users/Anthony/Development/GitHub/org.platanios/trade/src/main/java/org/platanios/trade/data/SubIndustry.java</node>
+            <node x="" y="">Sector#file:///Users/Anthony/Development/GitHub/org.platanios/trade/src/main/java/org/platanios/trade/data/Sector.java</node>
           </nodes>
           <notes />
           <edges />
-          <settings layout="Hierarchic Group" zoom="0.825445952817976" x="646.0" y="221.0" />
+          <settings layout="Hierarchic Group" zoom="1.0" x="468.5" y="346.5" />
           <SelectedNodes />
           <Categories>
             <Category>Properties</Category>
+            <Category>Embeddables</Category>
+            <Category>Superclasses</Category>
           </Categories>
-          <SCOPE>All</SCOPE>
         </state>
       </provider>
     </entry>
-    <entry file="jar://$MAVEN_REPOSITORY$/com/google/guava/guava/18.0/guava-18.0.jar!/com/google/common/primitives/Booleans.class">
+    <entry file="file://$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/DailyStockData.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.10214008" vertical-offset="0" max-vertical-offset="4665">
-          <caret line="19" column="19" selection-start-line="19" selection-start-column="19" selection-end-line="19" selection-end-column="19" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="uml://JAVA/org.platanios.trade.data">
-      <provider selected="true" editor-type-id="UmlEditorProvider">
-        <state>
-          <ID>JAVA</ID>
-          <OriginalElement>org.platanios.trade.data</OriginalElement>
-          <nodes>
-            <node x="" y="">org.platanios.trade.data.Industry</node>
-            <node x="" y="">org.platanios.trade.data.DailyStockData</node>
-            <node x="" y="">org.platanios.trade.data.DataVendor</node>
-            <node x="" y="">org.platanios.trade.data.HibernateUtilities</node>
-            <node x="" y="">org.platanios.trade.data.DataManager</node>
-            <node x="" y="">org.platanios.trade.data.SubIndustry</node>
-            <node x="" y="">org.platanios.trade.data.Sector</node>
-            <node x="" y="">org.platanios.trade.data.IndustryGroup</node>
-            <node x="" y="">org.platanios.trade.data.Stock</node>
-            <node x="" y="">org.platanios.trade.data.Exchange</node>
-          </nodes>
-          <notes />
-          <edges />
-          <settings layout="Hierarchic Group" zoom="1.0" x="158.0" y="163.0" />
-          <SelectedNodes />
-          <Categories />
-          <SCOPE>All</SCOPE>
-          <VISIBILITY>private</VISIBILITY>
-        </state>
-      </provider>
-    </entry>
-    <entry file="dbDummy://dbtable:/effe93b8/4e7dbfa6-8474-442c-b88b-883bf535e151/trade..DataVendors">
-      <provider selected="true" editor-type-id="com.intellij.database.editor.DatabaseTableFileEditorProvider">
-        <state />
-      </provider>
-      <provider editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="90">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="uml://DATABASE/4e7dbfa6-8474-442c-b88b-883bf535e151.table:trade.DailyStockData">
-      <provider selected="true" editor-type-id="UmlEditorProvider">
-        <state>
-          <ID>DATABASE</ID>
-          <OriginalElement>4e7dbfa6-8474-442c-b88b-883bf535e151.table:trade.DailyStockData</OriginalElement>
-          <nodes>
-            <node x="" y="">4e7dbfa6-8474-442c-b88b-883bf535e151.table:trade.DailyStockData</node>
-          </nodes>
-          <notes />
-          <edges />
-          <settings layout="Hierarchic Group" zoom="1.0" x="163.0" y="147.0" />
-          <SelectedNodes />
-          <Categories>
-            <Category>Columns</Category>
-            <Category>Key columns</Category>
-          </Categories>
-          <SCOPE>All</SCOPE>
-        </state>
-      </provider>
-    </entry>
-    <entry file="uml://DATABASE/4e7dbfa6-8474-442c-b88b-883bf535e151.schema:trade">
-      <provider selected="true" editor-type-id="UmlEditorProvider">
-        <state>
-          <ID>DATABASE</ID>
-          <OriginalElement>4e7dbfa6-8474-442c-b88b-883bf535e151.schema:trade</OriginalElement>
-          <nodes>
-            <node x="" y="">4e7dbfa6-8474-442c-b88b-883bf535e151.table:trade.DailyStockData</node>
-            <node x="" y="">4e7dbfa6-8474-442c-b88b-883bf535e151.table:trade.Sectors</node>
-            <node x="" y="">4e7dbfa6-8474-442c-b88b-883bf535e151.table:trade.DataVendors</node>
-            <node x="" y="">4e7dbfa6-8474-442c-b88b-883bf535e151.table:trade.IndustryGroups</node>
-            <node x="" y="">4e7dbfa6-8474-442c-b88b-883bf535e151.table:trade.Stocks</node>
-            <node x="" y="">4e7dbfa6-8474-442c-b88b-883bf535e151.table:trade.SubIndustries</node>
-            <node x="" y="">4e7dbfa6-8474-442c-b88b-883bf535e151.table:trade.Industries</node>
-            <node x="" y="">4e7dbfa6-8474-442c-b88b-883bf535e151.table:trade.Exchanges</node>
-          </nodes>
-          <notes />
-          <edges />
-          <settings layout="Hierarchic Group" zoom="1.0" x="384.0" y="364.0" />
-          <SelectedNodes />
-          <Categories>
-            <Category>Columns</Category>
-            <Category>Key columns</Category>
-          </Categories>
-          <SCOPE>All</SCOPE>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.idea/misc.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1053">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.idea/workspace.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.29724595" vertical-offset="4517" max-vertical-offset="45690">
-          <caret line="322" column="71" selection-start-line="322" selection-start-column="71" selection-end-line="322" selection-end-column="71" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.idea/vcs.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0997151" vertical-offset="0" max-vertical-offset="1053">
-          <caret line="7" column="0" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.idea/scopes/scope_settings.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1053">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.idea/modules.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.12820514" vertical-offset="0" max-vertical-offset="1053">
-          <caret line="9" column="10" selection-start-line="9" selection-start-column="10" selection-end-line="9" selection-end-column="10" />
+        <state vertical-scroll-proportion="0.4159544" vertical-offset="267" max-vertical-offset="3390">
+          <caret line="53" column="37" selection-start-line="53" selection-start-column="37" selection-end-line="53" selection-end-column="37" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/DataVendor.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1800">
-          <caret line="0" column="8" selection-start-line="0" selection-start-column="8" selection-end-line="0" selection-end-column="8" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/DataManager.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1665">
-          <caret line="7" column="13" selection-start-line="7" selection-start-column="13" selection-end-line="7" selection-end-column="13" />
-          <folding />
+        <state vertical-scroll-proportion="0.7407407" vertical-offset="105" max-vertical-offset="2430">
+          <caret line="59" column="5" selection-start-line="29" selection-start-column="4" selection-end-line="59" selection-end-column="5" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/Industry.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1590">
-          <caret line="0" column="8" selection-start-line="0" selection-start-column="8" selection-end-line="0" selection-end-column="8" />
-          <folding />
+        <state vertical-scroll-proportion="0.24216524" vertical-offset="0" max-vertical-offset="2040">
+          <caret line="17" column="42" selection-start-line="17" selection-start-column="42" selection-end-line="17" selection-end-column="42" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/IndustryGroup.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1590">
-          <caret line="0" column="8" selection-start-line="0" selection-start-column="8" selection-end-line="0" selection-end-column="8" />
+        <state vertical-scroll-proportion="0.48433048" vertical-offset="105" max-vertical-offset="1950">
+          <caret line="47" column="5" selection-start-line="29" selection-start-column="4" selection-end-line="47" selection-end-column="5" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/Sector.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1425">
-          <caret line="0" column="8" selection-start-line="0" selection-start-column="8" selection-end-line="0" selection-end-column="8" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/Stock.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2160">
-          <caret line="0" column="8" selection-start-line="0" selection-start-column="8" selection-end-line="0" selection-end-column="8" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/Exchange.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1755">
-          <caret line="0" column="8" selection-start-line="0" selection-start-column="8" selection-end-line="0" selection-end-column="8" />
+        <state vertical-scroll-proportion="0.62393165" vertical-offset="3" max-vertical-offset="1830">
+          <caret line="44" column="0" selection-start-line="44" selection-start-column="0" selection-end-line="44" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
@@ -3346,62 +3481,86 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/SubIndustry.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1725">
-          <caret line="11" column="3" selection-start-line="11" selection-start-column="3" selection-end-line="11" selection-end-column="3" />
+        <state vertical-scroll-proportion="0.5270655" vertical-offset="75" max-vertical-offset="2010">
+          <caret line="47" column="0" selection-start-line="47" selection-start-column="0" selection-end-line="47" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/Exchange.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.75498575" vertical-offset="90" max-vertical-offset="2415">
+          <caret line="61" column="5" selection-start-line="27" selection-start-column="4" selection-end-line="61" selection-end-column="5" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/HibernateUtilities.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.37037036" vertical-offset="0" max-vertical-offset="1053">
+          <caret line="26" column="73" selection-start-line="26" selection-start-column="73" selection-end-line="26" selection-end-column="73" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/trade/src/main/resources/hibernate.cfg.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.22792023" vertical-offset="0" max-vertical-offset="1053">
+          <caret line="16" column="36" selection-start-line="16" selection-start-column="36" selection-end-line="16" selection-end-column="36" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/math/matrix/HashVector.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.34947768" vertical-offset="9142" max-vertical-offset="12960">
+          <caret line="664" column="55" selection-start-line="664" selection-start-column="55" selection-end-line="664" selection-end-column="55" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/learn/learn.iml">
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/math/matrix/Vector.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="855">
-          <caret line="10" column="0" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
-          <folding />
+        <state vertical-scroll-proportion="8.831909" vertical-offset="0" max-vertical-offset="9705">
+          <caret line="624" column="110" selection-start-line="624" selection-start-column="110" selection-end-line="624" selection-end-column="110" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/trade/trade.iml">
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/math/matrix/SparseVector.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.27065527" vertical-offset="0" max-vertical-offset="1053">
-          <caret line="19" column="3" selection-start-line="19" selection-start-column="3" selection-end-line="19" selection-end-column="3" />
-          <folding />
+        <state vertical-scroll-proportion="-0.09686609" vertical-offset="30102" max-vertical-offset="31170">
+          <caret line="2031" column="41" selection-start-line="2031" selection-start-column="41" selection-end-line="2031" selection-end-column="41" />
+          <folding>
+            <element signature="e#94833#94834#0" expanded="false" />
+            <element signature="e#94904#94905#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/learn/conf/log4j2.xml">
+    <entry file="file://$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/serialization/UnsafeSerializationUtilitiesTest.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1053">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+        <state vertical-scroll-proportion="0.52991456" vertical-offset="522" max-vertical-offset="1575">
+          <caret line="72" column="73" selection-start-line="72" selection-start-column="73" selection-end-line="72" selection-end-column="73" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="dbDummy://db-console:/effe93b8/4e7dbfa6-8474-442c-b88b-883bf535e151/">
+    <entry file="file://$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/math/matrix/VectorsTest.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0146484375" vertical-offset="0" max-vertical-offset="1024">
-          <caret line="1" column="22" selection-start-line="1" selection-start-column="22" selection-end-line="1" selection-end-column="22" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="dbDummy://dbtable:/effe93b8/4e7dbfa6-8474-442c-b88b-883bf535e151/trade..Exchanges">
-      <provider selected="true" editor-type-id="com.intellij.database.editor.DatabaseTableFileEditorProvider">
-        <state />
-      </provider>
-      <provider editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="90">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/trade/conf/log4j2.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1053">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+        <state vertical-scroll-proportion="0.027540362" vertical-offset="1" max-vertical-offset="1125">
+          <caret line="2" column="0" selection-start-line="2" selection-start-column="0" selection-end-line="3" selection-end-column="22" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -3413,71 +3572,169 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/classification/reflection/ErrorEstimationTest.java">
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/serialization/UnsafeSerializationUtilities.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.21082622" vertical-offset="183" max-vertical-offset="2505">
-          <caret line="35" column="34" selection-start-line="35" selection-start-column="34" selection-end-line="35" selection-end-column="34" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/classification/BinaryLogisticRegressionTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-1.2934473" vertical-offset="1992" max-vertical-offset="4155">
-          <caret line="52" column="9" selection-start-line="52" selection-start-column="9" selection-end-line="52" selection-end-column="9" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/Classifier.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0997151" vertical-offset="0" max-vertical-offset="1053">
-          <caret line="13" column="17" selection-start-line="13" selection-start-column="17" selection-end-line="13" selection-end-column="17" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/HibernateUtilities.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.14245014" vertical-offset="0" max-vertical-offset="1053">
-          <caret line="10" column="6" selection-start-line="10" selection-start-column="6" selection-end-line="10" selection-end-column="6" />
+        <state vertical-scroll-proportion="0.33226323" vertical-offset="768" max-vertical-offset="3465">
+          <caret line="65" column="0" selection-start-line="65" selection-start-column="0" selection-end-line="65" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/trade/pom.xml">
+    <entry file="file://$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/classification/FeatureMapMariaDBTest.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.8689459" vertical-offset="0" max-vertical-offset="1053">
-          <caret line="61" column="21" selection-start-line="61" selection-start-column="21" selection-end-line="61" selection-end-column="21" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1815">
+          <caret line="14" column="22" selection-start-line="14" selection-start-column="22" selection-end-line="14" selection-end-column="22" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="dbDummy://dbtable:/8a94e1db/4e7dbfa6-8474-442c-b88b-883bf535e151/learn..features">
+      <provider editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="100">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+      <provider selected="true" editor-type-id="com.intellij.database.editor.DatabaseTableFileEditorProvider">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/math/matrix/DenseVector.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.64387465" vertical-offset="10617" max-vertical-offset="13740">
+          <caret line="763" column="4" selection-start-line="763" selection-start-column="4" selection-end-line="763" selection-end-column="24" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/FeatureMapMariaDB.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="6105">
+          <caret line="171" column="24" selection-start-line="171" selection-start-column="24" selection-end-line="171" selection-end-column="24" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#6096#6097#0" expanded="true" />
+            <element signature="e#6147#6148#0" expanded="true" />
+            <element signature="e#12026#12056#0" expanded="true" />
+            <element signature="e#12662#12692#0" expanded="true" />
+            <element signature="e#13590#13620#0" expanded="true" />
+            <element signature="e#14309#14339#0" expanded="true" />
+            <element signature="e#15247#15277#0" expanded="true" />
+            <element signature="e#16324#16354#0" expanded="true" />
+            <marker date="1416812887000" expanded="true" signature="6303:6332" placeholder="DROP DATABAS..." />
+            <marker date="1416812887000" expanded="true" signature="6373:6394" placeholder="CREATE DATAB..learn..." />
+            <marker date="1416812887000" expanded="true" signature="6439:6485" placeholder="CREATE TABLE..features..." />
+            <marker date="1416812887000" expanded="true" signature="7012:7194" placeholder="INSERT INTO ..." />
+            <marker date="1416812887000" expanded="true" signature="7722:7790" placeholder="INSERT INTO ..." />
+            <marker date="1416812887000" expanded="true" signature="7722:8080" placeholder="INSERT INTO ..." />
+            <marker date="1416812887000" expanded="true" signature="8012:8080" placeholder="UPDATE featu..." />
+            <marker date="1416812887000" expanded="true" signature="8856:8892" placeholder="INSERT INTO ..." />
+            <marker date="1416812887000" expanded="true" signature="10076:10109" placeholder="INSERT INTO ..." />
+            <marker date="1416812887000" expanded="true" signature="10076:10110" placeholder="INSERT INTO ..." />
+            <marker date="1416812887000" expanded="true" signature="11794:11825" placeholder="SELECT name ..features..." />
+            <marker date="1416812887000" expanded="true" signature="12177:12256" placeholder="SELECT featu..features..." />
+            <marker date="1416812887000" expanded="true" signature="12833:12908" placeholder="SELECT name,..features..." />
+            <marker date="1416812887000" expanded="true" signature="13741:13768" placeholder="SELECT featu..." />
+            <marker date="1416812887000" expanded="true" signature="13741:13800" placeholder="SELECT featu..features..." />
+            <marker date="1416812887000" expanded="true" signature="15414:15458" placeholder="SELECT name,..features..." />
+            <marker date="1416812887000" expanded="true" signature="16476:16504" placeholder="SELECT * FRO..features..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/FeatureMapInMemory.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="1032" max-vertical-offset="2085">
+          <caret line="113" column="24" selection-start-line="113" selection-start-column="24" selection-end-line="113" selection-end-column="24" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#692#693#0" expanded="true" />
+            <element signature="e#751#752#0" expanded="true" />
+            <element signature="e#2517#2518#0" expanded="true" />
+            <element signature="e#2570#2571#0" expanded="true" />
+            <element signature="e#3383#3384#0" expanded="true" />
+            <element signature="e#3426#3427#0" expanded="true" />
+            <element signature="e#3849#3850#0" expanded="true" />
+            <element signature="e#3897#3898#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/FeatureMap.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="345" max-vertical-offset="1590">
+          <caret line="49" column="0" selection-start-line="49" selection-start-column="0" selection-end-line="49" selection-end-column="0" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#989#990#0" expanded="true" />
+            <element signature="e#1039#1040#0" expanded="true" />
+            <element signature="e#1629#1630#0" expanded="true" />
+            <element signature="e#1665#1666#0" expanded="true" />
+            <element signature="e#2561#2591#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/classification/FeatureMapInMemoryTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1755">
+          <caret line="33" column="0" selection-start-line="33" selection-start-column="0" selection-end-line="33" selection-end-column="0" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="dbDummy://db-console:/8a94e1db/4e7dbfa6-8474-442c-b88b-883bf535e151/">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0146484375" vertical-offset="0" max-vertical-offset="1024">
+          <caret line="1" column="22" selection-start-line="1" selection-start-column="22" selection-end-line="1" selection-end-column="22" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/learn/pom.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.52991456" vertical-offset="207" max-vertical-offset="1260">
-          <caret line="51" column="21" selection-start-line="51" selection-start-column="21" selection-end-line="51" selection-end-column="21" />
+    <entry file="dbDummy://dbtable:/8a94e1db/4e7dbfa6-8474-442c-b88b-883bf535e151/trade..Exchanges">
+      <provider editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="100">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding />
+        </state>
+      </provider>
+      <provider selected="true" editor-type-id="com.intellij.database.editor.DatabaseTableFileEditorProvider">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/DataManager.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1605">
+          <caret line="120" column="32" selection-start-line="120" selection-start-column="32" selection-end-line="120" selection-end-column="32" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/Stock.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="330" max-vertical-offset="2940">
+          <caret line="57" column="9" selection-start-line="57" selection-start-column="9" selection-end-line="57" selection-end-column="9" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1053">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.014245015" vertical-offset="0" max-vertical-offset="1053">
+          <caret line="1" column="0" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/trade/src/main/java/org/platanios/trade/data/DailyStockData.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.4131054" vertical-offset="0" max-vertical-offset="2610">
-          <caret line="29" column="33" selection-start-line="29" selection-start-column="33" selection-end-line="29" selection-end-column="33" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -3500,7 +3757,7 @@
       </state>
       <state key="FacetStructureConfigurable.UI">
         <settings>
-          <last-edited>No facets are configured</last-edited>
+          <last-edited>Hibernate (trade)|Hibernate</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>
@@ -3536,7 +3793,7 @@
       </state>
       <state key="ModuleStructureConfigurable.UI">
         <settings>
-          <last-edited>Hibernate|trade</last-edited>
+          <last-edited>learn</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>
