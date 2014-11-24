@@ -1,13 +1,12 @@
 package org.platanios.learn.classification;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
-import org.platanios.learn.serialization.UnsafeSerializationUtilities;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,8 +17,6 @@ import java.util.Map;
  * @author Emmanouil Antonios Platanios
  */
 public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
-    private static final Logger logger = LogManager.getLogger("Classification / MariaDB Storage");
-
     private final Connection connection;
 
     protected FeatureMapMariaDB(int numberOfViews) {
@@ -42,32 +39,18 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
-    @SuppressWarnings("unchecked")
-    public void loadFeatureMap(InputStream inputStream) {
+    public List<String> getNames() {
         try {
-            numberOfViews = UnsafeSerializationUtilities.readInt(inputStream);
-            int numberOfKeys = UnsafeSerializationUtilities.readInt(inputStream);
-            for (int i = 0; i < numberOfKeys; i++) {
-                String name = UnsafeSerializationUtilities.readString(inputStream, 1024);
-                List<T> features = new ArrayList<>();
-                for (int view = 0; view < numberOfViews; view++)
-                    features.add((T) Vectors.build(inputStream));
-                insertFeatures(name, features);
-            }
-            inputStream.close();
-            logger.debug("Loaded the feature map from the provided input stream.");
-        } catch (Exception e) {
-            logger.error("An exception was thrown while loading the feature map from the provided input stream.", e);
+            return selectNames();
+        } catch (SQLException e) {
+            logger.error("Could not get the names from the database.", e);
             throw new RuntimeException(e);
         }
     }
 
-    @Override
-    public void loadFeatureMap(Connection databaseConnection) {
-        throw new NotImplementedException();
-    }
-
+    /** {@inheritDoc} */
     @Override
     public void addSingleViewFeatureMappings(String name, T features, int view) {
         try {
@@ -78,6 +61,7 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void addSingleViewFeatureMappings(Map<String, T> featureMappings, int view) {
         try {
@@ -88,8 +72,13 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void addFeatureMappings(String name, List<T> features) {
+        if (features.size() != numberOfViews) {
+            logger.error("The size of the provided list must be equal to number of views.");
+            throw new RuntimeException("The size of the provided list must be equal to number of views.");
+        }
         try {
             insertFeatures(name, features);
         } catch (SQLException e) {
@@ -98,8 +87,14 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void addFeatureMappings(Map<String, List<T>> featureMappings) {
+        for (Map.Entry<String, List<T>> featureMapEntry : featureMappings.entrySet())
+            if (featureMapEntry.getValue().size() != numberOfViews) {
+                logger.error("All lists in the provided map must have size equal to number of views.");
+                throw new RuntimeException("All lists in the provided map must have size equal to number of views.");
+            }
         try {
             insertFeatures(featureMappings);
         } catch (SQLException e) {
@@ -108,6 +103,7 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public T getSingleViewFeatureVector(String name, int view) {
         try {
@@ -118,6 +114,7 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Map<String, T> getSingleViewFeatureVectors(List<String> names, int view) {
         try {
@@ -128,6 +125,7 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Map<String, T> getSingleViewFeatureMap(int view) {
         try {
@@ -138,6 +136,7 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<T> getFeatureVectors(String name) {
         try {
@@ -148,6 +147,7 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Map<String, List<T>> getFeatureVectors(List<String> names) {
         try {
@@ -158,6 +158,7 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Map<String, List<T>> getFeatureMap() {
         try {
@@ -168,8 +169,9 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
-    public boolean writeFeatureMapToStream(OutputStream outputStream) {
+    public boolean write(OutputStream outputStream) {
         throw new NotImplementedException();
     }
 
@@ -275,6 +277,15 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
         }
         preparedStatement.executeUpdate();
         preparedStatement.close();
+    }
+
+    private List<String> selectNames() throws SQLException {
+        List<String> names = new ArrayList<>();
+        String selectionQuery = "SELECT name FROM learn.features";
+        ResultSet result = connection.createStatement().executeQuery(selectionQuery);
+        while (result.next())
+            names.add(result.getString("name"));
+        return names;
     }
 
     @SuppressWarnings("unchecked")
@@ -386,26 +397,5 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
             features.put(result.getString("name"), featuresForName);
         }
         return features;
-    }
-
-    public static void main(String[] args) {
-        FeatureMapMariaDB storage = new FeatureMapMariaDB(1, "jdbc:mariadb://localhost/", "root", null);
-        storage.createDatabase();
-        File inputFile = new File("/Volumes/Macintosh HD/Users/Anthony/Development/NELL/data/features/adjectives1.features");
-        try {
-            storage.loadFeatureMap(new FileInputStream(inputFile));
-            storage.connection.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-//        try {
-//            Connection connection = DriverManager.getConnection("jdbc:mariadb://localhost/test", "org.platanios", null);
-//            Statement stmt = connection.createStatement();
-//            stmt.executeUpdate("CREATE TABLE d (id int not null primary key, value varchar(20))");
-//            stmt.close();
-//            connection.close();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
     }
 }
