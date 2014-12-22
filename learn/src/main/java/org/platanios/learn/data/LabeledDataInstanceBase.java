@@ -6,8 +6,8 @@ import org.platanios.learn.math.matrix.Vector;
  * @author Emmanouil Antonios Platanios
  */
 public class LabeledDataInstanceBase<T extends Vector, S> extends DataInstanceBase<T> {
-    protected final S label;
-    protected final Object source;
+    protected S label;
+    protected Object source;
 
     protected static abstract class AbstractBuilder<T extends Vector, S, B extends AbstractBuilder<T, S, B>>
             extends DataInstanceBase.AbstractBuilder<T, B> {
@@ -60,7 +60,7 @@ public class LabeledDataInstanceBase<T extends Vector, S> extends DataInstanceBa
         this.source = builder.source;
     }
 
-    protected LabeledDataInstanceBase(String name, S label, Object source) {
+    public LabeledDataInstanceBase(String name, S label, Object source) {
         super(name);
         this.label = label;
         this.source = source;
@@ -71,9 +71,19 @@ public class LabeledDataInstanceBase<T extends Vector, S> extends DataInstanceBa
         return label;
     }
 
+    public LabeledDataInstanceBase<T, S> label(S label) {
+        this.label = label;
+        return this;
+    }
+
     @Override
     public Object source() {
         return source;
+    }
+
+    public LabeledDataInstanceBase<T, S> source(Object source) {
+        this.source = source;
+        return this;
     }
 
     @Override

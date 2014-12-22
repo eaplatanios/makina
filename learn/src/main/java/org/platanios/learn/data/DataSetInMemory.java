@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class DataSetInMemory<D extends DataInstance> implements DataSet<D> {
+public class DataSetInMemory<D extends DataInstanceBase> implements DataSet<D> {
     List<D> dataInstances;
 
     public DataSetInMemory() {
@@ -21,8 +21,23 @@ public class DataSetInMemory<D extends DataInstance> implements DataSet<D> {
     }
 
     @Override
+    public int size() {
+        return dataInstances.size();
+    }
+
+    @Override
     public void add(D dataInstance) {
         dataInstances.add(dataInstance);
+    }
+
+    @Override
+    public D get(int index) {
+        return dataInstances.get(index);
+    }
+
+    @Override
+    public DataSetInMemory<D> subSet(int fromIndex, int toIndex) {
+        return new DataSetInMemory<>(dataInstances.subList(fromIndex, toIndex));
     }
 
     @Override
@@ -59,10 +74,11 @@ public class DataSetInMemory<D extends DataInstance> implements DataSet<D> {
 
             @Override
             public List<D> next() {
+                int fromIndex = currentIndex;
                 currentIndex += batchSize;
                 if (currentIndex >= dataInstances.size())
                     currentIndex = dataInstances.size();
-                return dataInstances.subList(currentIndex - batchSize, currentIndex);
+                return dataInstances.subList(fromIndex, currentIndex);
             }
 
             @Override
@@ -91,8 +107,11 @@ public class DataSetInMemory<D extends DataInstance> implements DataSet<D> {
                     StatisticsUtilities.shuffle(dataInstances);
                     currentIndex = 0;
                 }
+                int fromIndex = currentIndex;
                 currentIndex += batchSize;
-                return dataInstances.subList(currentIndex - batchSize, currentIndex);
+                if (currentIndex >= dataInstances.size())
+                    currentIndex = dataInstances.size();
+                return dataInstances.subList(fromIndex, currentIndex);
             }
 
             @Override

@@ -7,7 +7,10 @@ import java.util.List;
  * @author Emmanouil Antonios Platanios
  */
 public interface DataSet<D extends DataInstanceBase> extends Iterable<D> {
+    public int size();
     public void add(D dataInstance);
+    public D get(int index);
+    public DataSet<D> subSet(int fromIndex, int toIndex);
     @Override
     public Iterator<D> iterator();
     public Iterator<List<D>> batchIterator(int batchSize);

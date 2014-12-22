@@ -52,7 +52,7 @@ public class DataInstance<T extends Vector> extends DataInstanceBase<T> {
         this.features = builder.features;
     }
 
-    protected DataInstance(String name, T features) {
+    public DataInstance(String name, T features) {
         super(name);
         this.features = features;
     }

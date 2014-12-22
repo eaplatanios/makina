@@ -6,7 +6,7 @@ import org.platanios.learn.math.matrix.Vector;
  * @author Emmanouil Antonios Platanios
  */
 public class PredictedDataInstanceBase<T extends Vector, S> extends LabeledDataInstanceBase<T, S> {
-    protected final double probability;
+    protected double probability;
 
     protected static abstract class AbstractBuilder<T extends Vector, S, B extends AbstractBuilder<T, S, B>>
             extends LabeledDataInstanceBase.AbstractBuilder<T, S, B> {
@@ -51,7 +51,7 @@ public class PredictedDataInstanceBase<T extends Vector, S> extends LabeledDataI
         this.probability = builder.probability;
     }
 
-    protected PredictedDataInstanceBase(String name, S label, Object source, double probability) {
+    public PredictedDataInstanceBase(String name, S label, Object source, double probability) {
         super(name, label, source);
         this.probability = probability;
     }
@@ -59,6 +59,11 @@ public class PredictedDataInstanceBase<T extends Vector, S> extends LabeledDataI
     @Override
     public double probability() {
         return probability;
+    }
+
+    public PredictedDataInstanceBase<T, S> probability(double probability) {
+        this.probability = probability;
+        return this;
     }
 
     @Override

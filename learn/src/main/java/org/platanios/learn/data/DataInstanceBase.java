@@ -50,11 +50,11 @@ public class DataInstanceBase<T extends Vector> {
         this.name = builder.name;
     }
 
-    protected DataInstanceBase(String name) {
+    public DataInstanceBase(String name) {
         this.name = name;
     }
 
-    protected DataInstanceBase(DataInstanceBase dataInstance) {
+    public DataInstanceBase(DataInstanceBase dataInstance) {
         this.name = dataInstance.name;
     }
 

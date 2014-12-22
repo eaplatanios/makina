@@ -1,4 +1,4 @@
-package org.platanios.learn.classification;
+package org.platanios.learn.data;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -21,16 +21,16 @@ public class FeatureMapMariaDBTest {
         DenseVector orangeView1Vector = DenseVector.generateRandomVector(5);
         FeatureMapMariaDB<DenseVector> featureMap = new FeatureMapMariaDB<>(3);
         featureMap.createDatabase();
-        featureMap.addSingleViewFeatureMappings("apple", appleView1Vector, 1);
-        featureMap.addSingleViewFeatureMappings("apple", appleView2Vector, 2);
-        featureMap.addSingleViewFeatureMappings("orange", orangeView0Vector, 0);
-        featureMap.addSingleViewFeatureMappings("orange", orangeView1Vector, 1);
-        Assert.assertTrue(featureMap.getSingleViewFeatureVector("apple", 0) == null);
-        Assert.assertTrue(featureMap.getSingleViewFeatureVector("apple", 1).equals(appleView1Vector));
-        Assert.assertTrue(featureMap.getSingleViewFeatureVector("apple", 2).equals(appleView2Vector));
-        Assert.assertTrue(featureMap.getSingleViewFeatureVector("orange", 0).equals(orangeView0Vector));
-        Assert.assertTrue(featureMap.getSingleViewFeatureVector("orange", 1).equals(orangeView1Vector));
-        Assert.assertTrue(featureMap.getSingleViewFeatureVector("orange", 2) == null);
+        featureMap.addFeatureMappings("apple", appleView1Vector, 1);
+        featureMap.addFeatureMappings("apple", appleView2Vector, 2);
+        featureMap.addFeatureMappings("orange", orangeView0Vector, 0);
+        featureMap.addFeatureMappings("orange", orangeView1Vector, 1);
+        Assert.assertTrue(featureMap.getFeatureVector("apple", 0) == null);
+        Assert.assertTrue(featureMap.getFeatureVector("apple", 1).equals(appleView1Vector));
+        Assert.assertTrue(featureMap.getFeatureVector("apple", 2).equals(appleView2Vector));
+        Assert.assertTrue(featureMap.getFeatureVector("orange", 0).equals(orangeView0Vector));
+        Assert.assertTrue(featureMap.getFeatureVector("orange", 1).equals(orangeView1Vector));
+        Assert.assertTrue(featureMap.getFeatureVector("orange", 2) == null);
     }
 
     @Test
@@ -48,15 +48,15 @@ public class FeatureMapMariaDBTest {
         view2FeatureMappings.put("apple", appleView2Vector);
         FeatureMapMariaDB<DenseVector> featureMap = new FeatureMapMariaDB<>(3);
         featureMap.createDatabase();
-        featureMap.addSingleViewFeatureMappings(view1FeatureMappings, 1);
-        featureMap.addSingleViewFeatureMappings(view2FeatureMappings, 2);
-        featureMap.addSingleViewFeatureMappings(view0FeatureMappings, 0);
-        Assert.assertTrue(featureMap.getSingleViewFeatureVector("apple", 0) == null);
-        Assert.assertTrue(featureMap.getSingleViewFeatureVector("apple", 1).equals(appleView1Vector));
-        Assert.assertTrue(featureMap.getSingleViewFeatureVector("apple", 2).equals(appleView2Vector));
-        Assert.assertTrue(featureMap.getSingleViewFeatureVector("orange", 0).equals(orangeView0Vector));
-        Assert.assertTrue(featureMap.getSingleViewFeatureVector("orange", 1).equals(orangeView1Vector));
-        Assert.assertTrue(featureMap.getSingleViewFeatureVector("orange", 2) == null);
+        featureMap.addFeatureMappings(view1FeatureMappings, 1);
+        featureMap.addFeatureMappings(view2FeatureMappings, 2);
+        featureMap.addFeatureMappings(view0FeatureMappings, 0);
+        Assert.assertTrue(featureMap.getFeatureVector("apple", 0) == null);
+        Assert.assertTrue(featureMap.getFeatureVector("apple", 1).equals(appleView1Vector));
+        Assert.assertTrue(featureMap.getFeatureVector("apple", 2).equals(appleView2Vector));
+        Assert.assertTrue(featureMap.getFeatureVector("orange", 0).equals(orangeView0Vector));
+        Assert.assertTrue(featureMap.getFeatureVector("orange", 1).equals(orangeView1Vector));
+        Assert.assertTrue(featureMap.getFeatureVector("orange", 2) == null);
     }
 
     @Test
@@ -77,12 +77,12 @@ public class FeatureMapMariaDBTest {
         featureMap.createDatabase();
         featureMap.addFeatureMappings("apple", appleFeatures);
         featureMap.addFeatureMappings("orange", orangeFeatures);
-        Assert.assertTrue(featureMap.getSingleViewFeatureVector("apple", 0) == null);
-        Assert.assertTrue(featureMap.getSingleViewFeatureVector("apple", 1).equals(appleView1Vector));
-        Assert.assertTrue(featureMap.getSingleViewFeatureVector("apple", 2).equals(appleView2Vector));
-        Assert.assertTrue(featureMap.getSingleViewFeatureVector("orange", 0).equals(orangeView0Vector));
-        Assert.assertTrue(featureMap.getSingleViewFeatureVector("orange", 1).equals(orangeView1Vector));
-        Assert.assertTrue(featureMap.getSingleViewFeatureVector("orange", 2) == null);
+        Assert.assertTrue(featureMap.getFeatureVector("apple", 0) == null);
+        Assert.assertTrue(featureMap.getFeatureVector("apple", 1).equals(appleView1Vector));
+        Assert.assertTrue(featureMap.getFeatureVector("apple", 2).equals(appleView2Vector));
+        Assert.assertTrue(featureMap.getFeatureVector("orange", 0).equals(orangeView0Vector));
+        Assert.assertTrue(featureMap.getFeatureVector("orange", 1).equals(orangeView1Vector));
+        Assert.assertTrue(featureMap.getFeatureVector("orange", 2) == null);
     }
 
     @Test
@@ -105,11 +105,11 @@ public class FeatureMapMariaDBTest {
         FeatureMapMariaDB<DenseVector> featureMap = new FeatureMapMariaDB<>(3);
         featureMap.createDatabase();
         featureMap.addFeatureMappings(featureMappings);
-        Assert.assertTrue(featureMap.getSingleViewFeatureVector("apple", 0) == null);
-        Assert.assertTrue(featureMap.getSingleViewFeatureVector("apple", 1).equals(appleView1Vector));
-        Assert.assertTrue(featureMap.getSingleViewFeatureVector("apple", 2).equals(appleView2Vector));
-        Assert.assertTrue(featureMap.getSingleViewFeatureVector("orange", 0).equals(orangeView0Vector));
-        Assert.assertTrue(featureMap.getSingleViewFeatureVector("orange", 1).equals(orangeView1Vector));
-        Assert.assertTrue(featureMap.getSingleViewFeatureVector("orange", 2) == null);
+        Assert.assertTrue(featureMap.getFeatureVector("apple", 0) == null);
+        Assert.assertTrue(featureMap.getFeatureVector("apple", 1).equals(appleView1Vector));
+        Assert.assertTrue(featureMap.getFeatureVector("apple", 2).equals(appleView2Vector));
+        Assert.assertTrue(featureMap.getFeatureVector("orange", 0).equals(orangeView0Vector));
+        Assert.assertTrue(featureMap.getFeatureVector("orange", 1).equals(orangeView1Vector));
+        Assert.assertTrue(featureMap.getFeatureVector("orange", 2) == null);
     }
 }

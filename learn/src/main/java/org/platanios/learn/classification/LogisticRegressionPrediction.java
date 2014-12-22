@@ -1,14 +1,15 @@
 package org.platanios.learn.classification;
 
+import org.platanios.learn.data.DataSet;
+import org.platanios.learn.data.PredictedDataInstance;
 import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.matrix.Vectors;
 import org.platanios.learn.math.matrix.VectorType;
+import org.platanios.learn.math.matrix.Vectors;
 
 import java.io.IOException;
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.List;
 
 /**
  * This abstract class provides some functionality that is common to all binary logistic regression classes. All those
@@ -118,46 +119,33 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Integer>
      * @param   dataInstance    The data instance for which the probability is computed.
      * @return                  The probability of the class label being 1 for the given data instance.
      */
-    public double predict(DataInstance<Vector, Integer> dataInstance) {
-        return 1 / (1 + Math.exp(-weights.dot(dataInstance.features())));
+    public PredictedDataInstance<Vector, Integer> predict(PredictedDataInstance<Vector, Integer> dataInstance) {
+        double probability = 1 / (1 + Math.exp(-weights.dot(dataInstance.features())));
+        if (probability >= 0.5)
+            dataInstance.probability(probability).label(1);
+        else
+            dataInstance.probability(1 - probability).label(0);
+        return dataInstance;
     }
 
     /**
      * Predict the probabilities of the class labels being equal to 1 for a set of data instances. One probability value
      * is provided for each data instance in the set.
      *
-     * @param   dataInstances   The set of data instances for which the probabilities are computed in the form of an
-     *                          array.
-     * @return                  The probabilities of the class labels being equal to 1 for the given set of data
-     *                          instances.
+     * @param   dataSet The set of data instances for which the probabilities are computed in the form of an array.
+     * @return          The probabilities of the class labels being equal to 1 for the given set of data instances.
      */
-    public double[] predict(List<DataInstance<Vector, Integer>> dataInstances) {
-        double[] probabilities = new double[dataInstances.size()];
-        for (int i = 0; i < dataInstances.size(); i++) {
-            probabilities[i] = 1 / (1 + Math.exp(-weights.dot(dataInstances.get(i).features())));
+    public DataSet<PredictedDataInstance<Vector, Integer>> predict(
+            DataSet<PredictedDataInstance<Vector, Integer>> dataSet
+    ) {
+        for (PredictedDataInstance<Vector, Integer> dataInstance : dataSet) {
+            double probability = 1 / (1 + Math.exp(-weights.dot(dataInstance.features())));
+            if (probability >= 0.5)
+                dataInstance.probability(probability).label(1);
+            else
+                dataInstance.probability(1 - probability).label(0);
         }
-        return probabilities;
-    }
-
-    public List<DataInstance<Vector, Integer>> predictInPlace(List<DataInstance<Vector, Integer>> dataInstances) {
-        for (int i = 0; i < dataInstances.size(); i++) {
-            DataInstance<Vector, Integer> currentDataInstance = dataInstances.get(i);
-            double probability = 1 / (1 + Math.exp(-weights.dot(currentDataInstance.features())));
-            if (probability >= 0.5) {
-                dataInstances.set(i,
-                                  new DataInstance.Builder<>(currentDataInstance)
-                                          .label(1)
-                                          .probability(probability)
-                                          .build());
-            } else {
-                dataInstances.set(i,
-                                  new DataInstance.Builder<>(currentDataInstance)
-                                          .label(0)
-                                          .probability(1 - probability)
-                                          .build());
-            }
-        }
-        return dataInstances;
+        return dataSet;
     }
 
     /** {@inheritDoc} */

@@ -52,7 +52,7 @@ public class PredictedDataInstance<T extends Vector, S> extends PredictedDataIns
         this.features = builder.features;
     }
 
-    protected PredictedDataInstance(String name, T features, S label, Object source, double probability) {
+    public PredictedDataInstance(String name, T features, S label, Object source, double probability) {
         super(name, label, source, probability);
         this.features = features;
     }

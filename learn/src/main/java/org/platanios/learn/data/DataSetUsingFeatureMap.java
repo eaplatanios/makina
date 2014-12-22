@@ -33,9 +33,26 @@ public class DataSetUsingFeatureMap<T extends Vector, D extends F, F extends Dat
     }
 
     @Override
+    public int size() {
+        return dataInstances.size();
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public void add(D dataInstance) {
         dataInstances.add((F) dataInstance.toDataInstanceBase());
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public D get(int index) {
+        F dataInstance = dataInstances.get(index);
+        return (D) dataInstance.toDataInstance(featureMap.getFeatureVector(dataInstance.name(), featureMapView));
+    }
+
+    @Override
+    public DataSetUsingFeatureMap<T, D, F> subSet(int fromIndex, int toIndex) {
+        return new DataSetUsingFeatureMap<>(featureMap, featureMapView, dataInstances.subList(fromIndex, toIndex));
     }
 
     @Override
@@ -52,7 +69,8 @@ public class DataSetUsingFeatureMap<T extends Vector, D extends F, F extends Dat
             @SuppressWarnings("unchecked")
             public D next() {
                 F dataInstance = dataInstances.get(currentIndex++);
-                return (D) dataInstance.toDataInstance(featureMap.getFeatureVector(dataInstance.name(), 0));
+                return (D) dataInstance.toDataInstance(featureMap.getFeatureVector(dataInstance.name(),
+                                                                                   featureMapView));
             }
 
             @Override
@@ -75,14 +93,15 @@ public class DataSetUsingFeatureMap<T extends Vector, D extends F, F extends Dat
             @Override
             @SuppressWarnings("unchecked")
             public List<D> next() {
+                int fromIndex = currentIndex;
                 currentIndex += batchSize;
                 if (currentIndex >= dataInstances.size())
                     currentIndex = dataInstances.size();
-                List<F> dataInstancesSubList = dataInstances.subList(currentIndex - batchSize, currentIndex);
+                List<F> dataInstancesSubList = dataInstances.subList(fromIndex, currentIndex);
                 return dataInstancesSubList.stream()
                         .map(dataInstance ->
                                      (D) dataInstance.toDataInstance(
-                                             featureMap.getFeatureVector(dataInstance.name(), 0)
+                                             featureMap.getFeatureVector(dataInstance.name(), featureMapView)
                                      ))
                         .collect(Collectors.toList());
             }
@@ -114,12 +133,15 @@ public class DataSetUsingFeatureMap<T extends Vector, D extends F, F extends Dat
                     StatisticsUtilities.shuffle(dataInstances);
                     currentIndex = 0;
                 }
+                int fromIndex = currentIndex;
                 currentIndex += batchSize;
-                List<F> dataInstancesSubList = dataInstances.subList(currentIndex - batchSize, currentIndex);
+                if (currentIndex >= dataInstances.size())
+                    currentIndex = dataInstances.size();
+                List<F> dataInstancesSubList = dataInstances.subList(fromIndex, currentIndex);
                 return dataInstancesSubList.stream()
                         .map(dataInstance ->
                                      (D) dataInstance.toDataInstance(
-                                             featureMap.getFeatureVector(dataInstance.name(), 0)
+                                             featureMap.getFeatureVector(dataInstance.name(), featureMapView)
                                      ))
                         .collect(Collectors.toList());
             }

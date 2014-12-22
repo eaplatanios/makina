@@ -1,8 +1,8 @@
 package org.platanios.learn.optimization;
 
+import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
 import org.platanios.learn.optimization.function.AbstractStochasticFunction;
-import org.platanios.learn.math.matrix.Vector;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -25,8 +25,7 @@ public final class AdaptiveGradientSolver extends AbstractStochasticIterativeSol
     }
 
     public static class Builder extends AbstractBuilder<Builder> {
-        public Builder(AbstractStochasticFunction objective,
-                       Vector initialPoint) {
+        public Builder(AbstractStochasticFunction objective, Vector initialPoint) {
             super(objective, initialPoint);
         }
 

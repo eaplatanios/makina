@@ -52,7 +52,7 @@ public class LabeledDataInstance<T extends Vector, S> extends LabeledDataInstanc
         this.features = builder.features;
     }
 
-    protected LabeledDataInstance(String name, T features, S label, Object source) {
+    public LabeledDataInstance(String name, T features, S label, Object source) {
         super(name, label, source);
         this.features = features;
     }

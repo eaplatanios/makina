@@ -1,13 +1,16 @@
 package org.platanios.learn.classification;
 
+import org.platanios.learn.data.DataSet;
+import org.platanios.learn.data.LabeledDataInstance;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
 import org.platanios.learn.optimization.function.AbstractFunction;
-import org.platanios.learn.optimization.function.AbstractStochasticFunction;
+import org.platanios.learn.optimization.function.AbstractStochasticFunctionUsingDataSet;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -21,7 +24,7 @@ abstract class AbstractTrainableLogisticRegression
     private static final long serialVersionUID = -7044993880573223035L;
 
     /** The data used to train this model. */
-    private List<DataInstance<Vector, Integer>> trainingData;
+    private DataSet<LabeledDataInstance<Vector, Integer>> trainingDataSet;
     /** Indicates whether /(L_1/) regularization is used. */
     protected boolean useL1Regularization;
     /** The /(L_1/) regularization weight used. This variable is only used when {@link #useL1Regularization} is set to
@@ -171,8 +174,9 @@ abstract class AbstractTrainableLogisticRegression
         loggingLevel = builder.loggingLevel;
     }
 
-    public boolean train(List<DataInstance<Vector, Integer>> trainingData) {
-        this.trainingData = trainingData;
+    @Override
+    public boolean train(DataSet<LabeledDataInstance<Vector, Integer>> trainingDataSet) {
+        this.trainingDataSet = trainingDataSet;
         try {
             train();
             return true;
@@ -191,6 +195,12 @@ abstract class AbstractTrainableLogisticRegression
      * compute the hessian matrix because no binary logistic regression class has to use it.
      */
     protected class LikelihoodFunction extends AbstractFunction {
+        private Iterator<LabeledDataInstance<Vector, Integer>> trainingDataIterator;
+
+        public LikelihoodFunction() {
+            trainingDataIterator = trainingDataSet.iterator();
+        }
+
         /**
          * Computes the value of the likelihood function for the binary logistic regression model.
          *
@@ -200,7 +210,8 @@ abstract class AbstractTrainableLogisticRegression
         @Override
         public double computeValue(Vector weights) {
             double likelihood = 0;
-            for (DataInstance<Vector, Integer> dataInstance : trainingData) {
+            while (trainingDataIterator.hasNext()) {
+                LabeledDataInstance<Vector, Integer> dataInstance = trainingDataIterator.next();
                 double probability = weights.dot(dataInstance.features());
                 likelihood += probability * (dataInstance.label() - 1) - Math.log(1 + Math.exp(-probability));
             }
@@ -216,7 +227,8 @@ abstract class AbstractTrainableLogisticRegression
         @Override
         public Vector computeGradient(Vector weights) {
             Vector gradient = Vectors.build(weights.size(), weights.type());
-            for (DataInstance<Vector, Integer> dataInstance : trainingData) {
+            while (trainingDataIterator.hasNext()) {
+                LabeledDataInstance<Vector, Integer> dataInstance = trainingDataIterator.next();
                 gradient.saxpyInPlace(
                         (1 / (1 + Math.exp(-weights.dot(dataInstance.features())))) - dataInstance.label(),
                         dataInstance.features()
@@ -230,28 +242,25 @@ abstract class AbstractTrainableLogisticRegression
      * Class implementing the likelihood function for the binary logistic regression model for use with stochastic
      * solvers.
      */
-    protected class StochasticLikelihoodFunction extends AbstractStochasticFunction<DataInstance<Vector, Integer>> {
+    protected class StochasticLikelihoodFunction extends AbstractStochasticFunctionUsingDataSet<LabeledDataInstance<Vector, Integer>> {
         public StochasticLikelihoodFunction() {
-            // Using the method Arrays.asList so that the training data array is not duplicated. The newly created list
-            // is backed by the existing array and any changes made to the list also "write through" to the array.
-            this.data = trainingData;
+            this.dataSet = trainingDataSet;
         }
 
         /**
          * Computes the gradient of the likelihood function for the multi-class logistic regression model.
          *
-         * @param weights       The current weights vector.
-         * @param startIndex
-         * @param endIndex
-         * @return The gradient vector of the logistic regression likelihood function.
+         * @param   weights     The current weights vector.
+         * @param   dataBatch
+         * @return              The gradient vector of the logistic regression likelihood function.
          */
         @Override
-        public Vector estimateGradient(Vector weights, int startIndex, int endIndex) {
+        public Vector estimateGradient(Vector weights, List<LabeledDataInstance<Vector, Integer>> dataBatch) {
             Vector gradient = Vectors.build(weights.size(), weights.type());
-            for (int i = startIndex; i < endIndex; i++) {
+            for (LabeledDataInstance<Vector, Integer> dataInstance : dataBatch) {
                 gradient.saxpyInPlace(
-                        (1 / (1 + Math.exp(-weights.dot(data.get(i).features())))) - data.get(i).label(),
-                        data.get(i).features()
+                        (1 / (1 + Math.exp(-weights.dot(dataInstance.features())))) - dataInstance.label(),
+                        dataInstance.features()
                 );
             }
             return gradient;

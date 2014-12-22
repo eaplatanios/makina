@@ -146,7 +146,7 @@ public class Integrator<T extends Vector, S> {
         for (int i = 0; i < classifiers.size(); i++) {
             TrainableClassifier<T, S> classifier = classifiers.get(i);
             List<DataInstance<T, S>> trainingData = DataInstances.getSingleViewDataInstances(labeledDataInstances, i);
-            classifierTrainingTasks.add(() -> classifier.train(trainingData));
+//            classifierTrainingTasks.add(() -> classifier.train(trainingData));
         }
         try {
             taskExecutor.invokeAll(classifierTrainingTasks);
@@ -160,7 +160,7 @@ public class Integrator<T extends Vector, S> {
         for (int i = 0; i < classifiers.size(); i++) {
             TrainableClassifier<T, S> classifier = classifiers.get(i);
             List<DataInstance<T, S>> testingData = DataInstances.getSingleViewDataInstances(unlabeledDataInstances, i);
-            classifierPredictionTasks.add(() -> classifier.predictInPlace(testingData));
+//            classifierPredictionTasks.add(() -> classifier.predict(testingData));
         }
         try {
             List<Future<List<DataInstance<T, S>>>> predictionResults =

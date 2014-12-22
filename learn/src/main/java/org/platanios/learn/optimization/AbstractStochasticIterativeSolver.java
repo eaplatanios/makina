@@ -73,8 +73,7 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
         private double l2RegularizationWeight = 1;
         private int loggingLevel = 0;
 
-        protected AbstractBuilder(AbstractStochasticFunction objective,
-                                  Vector initialPoint) {
+        protected AbstractBuilder(AbstractStochasticFunction objective, Vector initialPoint) {
             this.objective = objective;
             this.initialPoint = initialPoint;
         }
@@ -176,8 +175,7 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
     }
 
     public static class Builder extends AbstractBuilder<Builder> {
-        public Builder(AbstractStochasticFunction objective,
-                       Vector initialPoint) {
+        public Builder(AbstractStochasticFunction objective, Vector initialPoint) {
             super(objective, initialPoint);
         }
 

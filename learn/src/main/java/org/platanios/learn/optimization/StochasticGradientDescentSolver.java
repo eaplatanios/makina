@@ -21,8 +21,7 @@ public final class StochasticGradientDescentSolver extends AbstractStochasticIte
     }
 
     public static class Builder extends AbstractBuilder<Builder> {
-        public Builder(AbstractStochasticFunction objective,
-                       Vector initialPoint) {
+        public Builder(AbstractStochasticFunction objective, Vector initialPoint) {
             super(objective, initialPoint);
         }
 

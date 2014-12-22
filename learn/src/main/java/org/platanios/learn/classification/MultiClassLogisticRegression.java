@@ -6,7 +6,7 @@ import org.platanios.learn.optimization.Solver;
 import org.platanios.learn.optimization.StochasticGradientDescentSolver;
 import org.platanios.learn.optimization.StochasticSolverStepSize;
 import org.platanios.learn.optimization.function.AbstractFunction;
-import org.platanios.learn.optimization.function.AbstractStochasticFunction;
+import org.platanios.learn.optimization.function.AbstractStochasticFunctionUsingList;
 
 import java.util.Arrays;
 import java.util.List;
@@ -261,7 +261,7 @@ public class MultiClassLogisticRegression {
     /**
      * Class implementing the likelihood function for the multi-class logistic regression model.
      */
-    private class StochasticLikelihoodFunction extends AbstractStochasticFunction<TrainingData.Entry> {
+    private class StochasticLikelihoodFunction extends AbstractStochasticFunctionUsingList<TrainingData.Entry> {
         public StochasticLikelihoodFunction() {
             // Using the method Arrays.asList so that the training data array is not duplicated. The newly created list
             // is backed by the existing array and any changes made to the list also "write through" to the array.
