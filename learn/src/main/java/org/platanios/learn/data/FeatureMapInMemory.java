@@ -1,4 +1,4 @@
-package org.platanios.learn.classification;
+package org.platanios.learn.data;
 
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.serialization.UnsafeSerializationUtilities;
@@ -29,7 +29,7 @@ public class FeatureMapInMemory<T extends Vector> extends FeatureMap<T> {
 
     /** {@inheritDoc} */
     @Override
-    public void addSingleViewFeatureMappings(String name, T features, int view) {
+    public void addFeatureMappings(String name, T features, int view) {
         if (!featureMap.containsKey(name)) {
             featureMap.put(name, new ArrayList<>(numberOfViews));
             for (int viewCount = 0; viewCount < numberOfViews; viewCount++)
@@ -40,9 +40,9 @@ public class FeatureMapInMemory<T extends Vector> extends FeatureMap<T> {
 
     /** {@inheritDoc} */
     @Override
-    public void addSingleViewFeatureMappings(Map<String, T> featureMappings, int view) {
+    public void addFeatureMappings(Map<String, T> featureMappings, int view) {
         for (String name : featureMappings.keySet())
-            addSingleViewFeatureMappings(name, featureMappings.get(name), view);
+            addFeatureMappings(name, featureMappings.get(name), view);
     }
 
     /** {@inheritDoc} */
@@ -68,13 +68,13 @@ public class FeatureMapInMemory<T extends Vector> extends FeatureMap<T> {
 
     /** {@inheritDoc} */
     @Override
-    public T getSingleViewFeatureVector(String name, int view) {
+    public T getFeatureVector(String name, int view) {
         return featureMap.get(name).get(view);
     }
 
     /** {@inheritDoc} */
     @Override
-    public Map<String, T> getSingleViewFeatureVectors(List<String> names, int view) {
+    public Map<String, T> getFeatureVectors(List<String> names, int view) {
         Map<String, T> resultingFeatureVectors = new HashMap<>();
         for (String name : names)
             resultingFeatureVectors.put(name, featureMap.get(name).get(view));
@@ -83,7 +83,7 @@ public class FeatureMapInMemory<T extends Vector> extends FeatureMap<T> {
 
     /** {@inheritDoc} */
     @Override
-    public Map<String, T> getSingleViewFeatureMap(int view) {
+    public Map<String, T> getFeatureMap(int view) {
         Map<String, T> resultingFeatureVectors = new HashMap<>();
         for (Map.Entry<String, List<T>> entry : featureMap.entrySet())
             resultingFeatureVectors.put(entry.getKey(), entry.getValue().get(view));

@@ -1,4 +1,4 @@
-package org.platanios.learn.classification;
+package org.platanios.learn.data;
 
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
@@ -52,7 +52,7 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
 
     /** {@inheritDoc} */
     @Override
-    public void addSingleViewFeatureMappings(String name, T features, int view) {
+    public void addFeatureMappings(String name, T features, int view) {
         try {
             insertFeatures(name, features, view);
         } catch (SQLException e) {
@@ -63,7 +63,7 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
 
     /** {@inheritDoc} */
     @Override
-    public void addSingleViewFeatureMappings(Map<String, T> featureMappings, int view) {
+    public void addFeatureMappings(Map<String, T> featureMappings, int view) {
         try {
             insertFeatures(featureMappings, view);
         } catch (SQLException e) {
@@ -105,7 +105,7 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
 
     /** {@inheritDoc} */
     @Override
-    public T getSingleViewFeatureVector(String name, int view) {
+    public T getFeatureVector(String name, int view) {
         try {
             return selectFeatures(name, view);
         } catch (SQLException|IOException e) {
@@ -116,7 +116,7 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
 
     /** {@inheritDoc} */
     @Override
-    public Map<String, T> getSingleViewFeatureVectors(List<String> names, int view) {
+    public Map<String, T> getFeatureVectors(List<String> names, int view) {
         try {
             return selectFeatures(names, view);
         } catch (SQLException|IOException e) {
@@ -127,7 +127,7 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
 
     /** {@inheritDoc} */
     @Override
-    public Map<String, T> getSingleViewFeatureMap(int view) {
+    public Map<String, T> getFeatureMap(int view) {
         try {
             return selectFeatures(view);
         } catch (SQLException|IOException e) {

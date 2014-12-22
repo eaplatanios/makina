@@ -1,4 +1,4 @@
-package org.platanios.learn.classification;
+package org.platanios.learn.data;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,7 +9,6 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -49,13 +48,13 @@ public abstract class FeatureMap<T extends Vector> {
     }
 
     public abstract List<String> getNames();
-    public abstract void addSingleViewFeatureMappings(String name, T features, int view);
-    public abstract void addSingleViewFeatureMappings(Map<String, T> featureMappings, int view);
+    public abstract void addFeatureMappings(String name, T features, int view);
+    public abstract void addFeatureMappings(Map<String, T> featureMappings, int view);
     public abstract void addFeatureMappings(String name, List<T> features);
     public abstract void addFeatureMappings(Map<String, List<T>> featureMappings);
-    public abstract T getSingleViewFeatureVector(String name, int view);
-    public abstract Map<String, T> getSingleViewFeatureVectors(List<String> names, int view);
-    public abstract Map<String, T> getSingleViewFeatureMap(int view);
+    public abstract T getFeatureVector(String name, int view);
+    public abstract Map<String, T> getFeatureVectors(List<String> names, int view);
+    public abstract Map<String, T> getFeatureMap(int view);
     public abstract List<T> getFeatureVectors(String name);
     public abstract Map<String, List<T>> getFeatureVectors(List<String> names);
     public abstract Map<String, List<T>> getFeatureMap();
