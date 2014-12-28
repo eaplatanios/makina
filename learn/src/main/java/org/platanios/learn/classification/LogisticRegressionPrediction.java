@@ -121,10 +121,13 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Integer>
      */
     public PredictedDataInstance<Vector, Integer> predict(PredictedDataInstance<Vector, Integer> dataInstance) {
         double probability = 1 / (1 + Math.exp(-weights.dot(dataInstance.features())));
-        if (probability >= 0.5)
-            dataInstance.probability(probability).label(1);
-        else
-            dataInstance.probability(1 - probability).label(0);
+        if (probability >= 0.5) {
+            dataInstance.probability(probability);
+            dataInstance.label(1);
+        } else {
+            dataInstance.probability(1 - probability);
+            dataInstance.label(0);
+        }
         return dataInstance;
     }
 
@@ -140,10 +143,13 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Integer>
     ) {
         for (PredictedDataInstance<Vector, Integer> dataInstance : dataSet) {
             double probability = 1 / (1 + Math.exp(-weights.dot(dataInstance.features())));
-            if (probability >= 0.5)
-                dataInstance.probability(probability).label(1);
-            else
-                dataInstance.probability(1 - probability).label(0);
+            if (probability >= 0.5) {
+                dataInstance.probability(probability);
+                dataInstance.label(1);
+            } else {
+                dataInstance.probability(1 - probability);
+                dataInstance.label(0);
+            }
         }
         return dataSet;
     }

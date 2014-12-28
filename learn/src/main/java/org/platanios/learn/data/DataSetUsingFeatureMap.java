@@ -11,14 +11,15 @@ import java.util.stream.Collectors;
 /**
  * @param   <T>
  * @param   <D>
- * @param   <F>
  *
  * @author Emmanouil Antonios Platanios
  */
-public class DataSetUsingFeatureMap<T extends Vector, D extends F, F extends DataInstanceBase<T>> implements DataSet<D> {
-    final FeatureMap<T> featureMap;
-    final int featureMapView;
-    List<F> dataInstances;
+public class DataSetUsingFeatureMap<T extends Vector, D extends DataInstanceWithFeatures<T>>
+        implements DataSet<D> {
+    private final FeatureMap<T> featureMap;
+    private final int featureMapView;
+
+    private List dataInstances;
 
     public DataSetUsingFeatureMap(FeatureMap<T> featureMap, int featureMapView) {
         this.featureMap = featureMap;
@@ -26,10 +27,12 @@ public class DataSetUsingFeatureMap<T extends Vector, D extends F, F extends Dat
         this.dataInstances = new ArrayList<>();
     }
 
-    public DataSetUsingFeatureMap(FeatureMap<T> featureMap, int featureMapView, List<F> dataInstances) {
+    public DataSetUsingFeatureMap(FeatureMap<T> featureMap, int featureMapView, List<D> dataInstances) {
         this.featureMap = featureMap;
         this.featureMapView = featureMapView;
-        this.dataInstances = new ArrayList<>(dataInstances);
+        this.dataInstances = dataInstances.stream()
+                .map(DataInstanceWithFeatures::toDataInstanceBase)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -40,19 +43,21 @@ public class DataSetUsingFeatureMap<T extends Vector, D extends F, F extends Dat
     @Override
     @SuppressWarnings("unchecked")
     public void add(D dataInstance) {
-        dataInstances.add((F) dataInstance.toDataInstanceBase());
+        dataInstances.add(dataInstance.toDataInstanceBase());
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public D get(int index) {
-        F dataInstance = dataInstances.get(index);
+        DataInstanceBase<T> dataInstance = (DataInstanceBase<T>) dataInstances.get(index);
         return (D) dataInstance.toDataInstance(featureMap.getFeatureVector(dataInstance.name(), featureMapView));
     }
 
     @Override
-    public DataSetUsingFeatureMap<T, D, F> subSet(int fromIndex, int toIndex) {
-        return new DataSetUsingFeatureMap<>(featureMap, featureMapView, dataInstances.subList(fromIndex, toIndex));
+    public DataSetUsingFeatureMap<T, D> subSet(int fromIndex, int toIndex) {
+        DataSetUsingFeatureMap<T, D> subSet = new DataSetUsingFeatureMap<>(featureMap, featureMapView);
+        subSet.dataInstances = dataInstances.subList(fromIndex, toIndex);
+        return subSet;
     }
 
     @Override
@@ -68,7 +73,7 @@ public class DataSetUsingFeatureMap<T extends Vector, D extends F, F extends Dat
             @Override
             @SuppressWarnings("unchecked")
             public D next() {
-                F dataInstance = dataInstances.get(currentIndex++);
+                DataInstanceBase<T> dataInstance = (DataInstanceBase<T>) dataInstances.get(currentIndex++);
                 return (D) dataInstance.toDataInstance(featureMap.getFeatureVector(dataInstance.name(),
                                                                                    featureMapView));
             }
@@ -97,7 +102,7 @@ public class DataSetUsingFeatureMap<T extends Vector, D extends F, F extends Dat
                 currentIndex += batchSize;
                 if (currentIndex >= dataInstances.size())
                     currentIndex = dataInstances.size();
-                List<F> dataInstancesSubList = dataInstances.subList(fromIndex, currentIndex);
+                List<DataInstanceBase<T>> dataInstancesSubList = dataInstances.subList(fromIndex, currentIndex);
                 return dataInstancesSubList.stream()
                         .map(dataInstance ->
                                      (D) dataInstance.toDataInstance(
@@ -137,7 +142,7 @@ public class DataSetUsingFeatureMap<T extends Vector, D extends F, F extends Dat
                 currentIndex += batchSize;
                 if (currentIndex >= dataInstances.size())
                     currentIndex = dataInstances.size();
-                List<F> dataInstancesSubList = dataInstances.subList(fromIndex, currentIndex);
+                List<DataInstanceBase<T>> dataInstancesSubList = dataInstances.subList(fromIndex, currentIndex);
                 return dataInstancesSubList.stream()
                         .map(dataInstance ->
                                      (D) dataInstance.toDataInstance(
