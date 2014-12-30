@@ -151,6 +151,23 @@ public class UnsafeSerializationUtilities {
     }
 
     /**
+     * Writes a subarray of the provided integer array to the provided output stream byte by byte. The subarray starts
+     * from the beginning of the provided integer array and has {@code length} elements. Note that the size of the array
+     * is not stored and so the user of this method must make sure to store that as well somewhere, so that the array
+     * can be serialized later on.
+     *
+     * @param   outputStream    The output stream to write the provided integer array to.
+     * @param   array           The integer array whose subarray to write to the provided output stream.
+     * @param   length          The length of the integer array to write to the provided output stream.
+     * @throws  IOException
+     */
+    public static void writeIntArray(OutputStream outputStream, int[] array, int length) throws IOException {
+        byte[] buffer = new byte[length << 2];
+        UNSAFE.copyMemory(array, INT_ARRAY_OFFSET, buffer, BYTE_ARRAY_OFFSET, length << 2);
+        outputStream.write(buffer);
+    }
+
+    /**
      * Reads an integer array of a given size from the provided input stream byte by byte and returns it.
      *
      * @param   inputStream     The input stream to read the integer array from.
@@ -187,6 +204,23 @@ public class UnsafeSerializationUtilities {
     public static void writeDoubleArray(OutputStream outputStream, double[] array) throws IOException {
         byte[] buffer = new byte[array.length << 3];
         UNSAFE.copyMemory(array, DOUBLE_ARRAY_OFFSET, buffer, BYTE_ARRAY_OFFSET, array.length << 3);
+        outputStream.write(buffer);
+    }
+
+    /**
+     * Writes a subarray of the provided double array to the provided output stream byte by byte. The subarray starts
+     * from the beginning of the provided double array and has {@code length} elements. Note that the size of the array
+     * is not stored and so the user of this method must make sure to store that as well somewhere, so that the array
+     * can be serialized later on.
+     *
+     * @param   outputStream    The output stream to write the provided double array to.
+     * @param   array           The double array whose subarray to write to the provided output stream.
+     * @param   length          The length of the double array to write to the provided output stream.
+     * @throws  IOException
+     */
+    public static void writeDoubleArray(OutputStream outputStream, double[] array, int length) throws IOException {
+        byte[] buffer = new byte[length << 3];
+        UNSAFE.copyMemory(array, DOUBLE_ARRAY_OFFSET, buffer, BYTE_ARRAY_OFFSET, length << 3);
         outputStream.write(buffer);
     }
 

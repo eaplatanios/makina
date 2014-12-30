@@ -353,9 +353,8 @@ public class SparseVector extends Vector {
     @Override
     public double min() {
         double minValue = values[0];
-        for (int i = 1; i < numberOfNonzeroEntries; i++) {
+        for (int i = 1; i < numberOfNonzeroEntries; i++)
             minValue = Math.min(minValue, values[i]);
-        }
         return minValue;
     }
 
@@ -363,34 +362,31 @@ public class SparseVector extends Vector {
     @Override
     public double sum() {
         double sum = values[0];
-        for (int i = 1; i < numberOfNonzeroEntries; i++) {
+        for (int i = 1; i < numberOfNonzeroEntries; i++)
             sum += values[i];
-        }
         return sum;
     }
 
     /** {@inheritDoc} */
     @Override
     public double norm(VectorNorm normType) {
-        return normType.compute(values);
+        return normType.compute(Arrays.copyOf(values, numberOfNonzeroEntries));
     }
 
     /** {@inheritDoc} */
     @Override
     public SparseVector add(double scalar) {
         SparseVector resultVector = new SparseVector(size, indexes, values);
-        for (int i = 0; i < numberOfNonzeroEntries; i++) {
+        for (int i = 0; i < numberOfNonzeroEntries; i++)
             resultVector.values[i] += scalar;
-        }
         return resultVector;
     }
 
     /** {@inheritDoc} */
     @Override
     public SparseVector addInPlace(double scalar) {
-        for (int i = 0; i < numberOfNonzeroEntries; i++) {
+        for (int i = 0; i < numberOfNonzeroEntries; i++)
             values[i] += scalar;
-        }
         return this;
     }
 
@@ -500,19 +496,17 @@ public class SparseVector extends Vector {
     /** {@inheritDoc} */
     @Override
     public SparseVector sub(double scalar) {
-        SparseVector resultVector = new SparseVector(size, indexes, values);
-        for (int i = 0; i < numberOfNonzeroEntries; i++) {
+        SparseVector resultVector = new SparseVector(size, numberOfNonzeroEntries, indexes, values);
+        for (int i = 0; i < numberOfNonzeroEntries; i++)
             resultVector.values[i] -= scalar;
-        }
         return resultVector;
     }
 
     /** {@inheritDoc} */
     @Override
     public SparseVector subInPlace(double scalar) {
-        for (int i = 0; i < numberOfNonzeroEntries; i++) {
+        for (int i = 0; i < numberOfNonzeroEntries; i++)
             values[i] -= scalar;
-        }
         return this;
     }
 
@@ -750,38 +744,34 @@ public class SparseVector extends Vector {
     /** {@inheritDoc} */
     @Override
     public SparseVector mult(double scalar) {
-        SparseVector resultVector = new SparseVector(size, indexes, values);
-        for (int i = 0; i < numberOfNonzeroEntries; i++) {
+        SparseVector resultVector = new SparseVector(size, numberOfNonzeroEntries, indexes, values);
+        for (int i = 0; i < numberOfNonzeroEntries; i++)
             resultVector.values[i] *= scalar;
-        }
         return resultVector;
     }
 
     /** {@inheritDoc} */
     @Override
     public SparseVector multInPlace(double scalar) {
-        for (int i = 0; i < numberOfNonzeroEntries; i++) {
+        for (int i = 0; i < numberOfNonzeroEntries; i++)
             values[i] *= scalar;
-        }
         return this;
     }
 
     /** {@inheritDoc} */
     @Override
     public SparseVector div(double scalar) {
-        SparseVector resultVector = new SparseVector(size, indexes, values);
-        for (int i = 0; i < numberOfNonzeroEntries; i++) {
+        SparseVector resultVector = new SparseVector(size, numberOfNonzeroEntries, indexes, values);
+        for (int i = 0; i < numberOfNonzeroEntries; i++)
             resultVector.values[i] /= scalar;
-        }
         return resultVector;
     }
 
     /** {@inheritDoc} */
     @Override
     public SparseVector divInPlace(double scalar) {
-        for (int i = 0; i < numberOfNonzeroEntries; i++) {
+        for (int i = 0; i < numberOfNonzeroEntries; i++)
             values[i] /= scalar;
-        }
         return this;
     }
 
@@ -1862,8 +1852,8 @@ public class SparseVector extends Vector {
             UnsafeSerializationUtilities.writeInt(outputStream, type().ordinal());
         UnsafeSerializationUtilities.writeInt(outputStream, size);
         UnsafeSerializationUtilities.writeInt(outputStream, numberOfNonzeroEntries);
-        UnsafeSerializationUtilities.writeIntArray(outputStream, indexes);
-        UnsafeSerializationUtilities.writeDoubleArray(outputStream, values);
+        UnsafeSerializationUtilities.writeIntArray(outputStream, indexes, numberOfNonzeroEntries);
+        UnsafeSerializationUtilities.writeDoubleArray(outputStream, values, numberOfNonzeroEntries);
     }
 
     /**
