@@ -62,6 +62,18 @@ public class SparseVectorTest {
             actualVector = SparseVector.read(inputStream, true);
             inputStream.close();
             Assert.assertTrue(expectedVector.equals(actualVector));
+            // Test for when the indexes and the values arrays have a bigger length than the number of non-zero elements
+            outputStream = new ByteArrayOutputStream(4 + (vectorSize << 3));
+            vector = new SparseVector(vectorSize,
+                                      new int[] { 1, 5, 8, 35, 0, 0, 0, 0 },
+                                      new double[] { 0.53, 0.32, 0.91, 0.05, 0, 0, 0, 0 });
+            vector.numberOfNonzeroEntries = 4;
+            vector.write(outputStream, true);
+            outputStream.close();
+            inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            actualVector = SparseVector.read(inputStream, true);
+            inputStream.close();
+            Assert.assertTrue(expectedVector.equals(actualVector));
         } catch (IOException e) {
             Assert.fail(e.getMessage());
         }
@@ -84,6 +96,16 @@ public class SparseVectorTest {
             vector = new SparseVector(vectorSize,
                                       new int[] { 1, 5, 8, 35 },
                                       new double[] { 0.53, 0.32, 0.91, 0.05 });
+            expectedVector = vector.copy();
+            inputStream = vector.getEncoder(true);
+            actualVector = SparseVector.read(inputStream, true);
+            inputStream.close();
+            Assert.assertTrue(expectedVector.equals(actualVector));
+            // Test for when the indexes and the values arrays have a bigger length than the number of non-zero elements
+            vector = new SparseVector(vectorSize,
+                                      new int[] { 1, 5, 8, 35, 0, 0, 0, 0 },
+                                      new double[] { 0.53, 0.32, 0.91, 0.05, 0, 0, 0, 0 });
+            vector.numberOfNonzeroEntries = 4;
             expectedVector = vector.copy();
             inputStream = vector.getEncoder(true);
             actualVector = SparseVector.read(inputStream, true);
