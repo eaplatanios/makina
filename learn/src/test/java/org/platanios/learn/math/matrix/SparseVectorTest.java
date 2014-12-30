@@ -115,4 +115,40 @@ public class SparseVectorTest {
             Assert.fail(e.getMessage());
         }
     }
+
+    @Test
+    public void testPrepend() {
+        int vectorSize = 1000;
+        SparseVector actualVector = new SparseVector(vectorSize,
+                                                     new int[] { 1, 5, 8, 35, 56 },
+                                                     new double[] { 0.53, 0.32, 0.91, 0.05, 0 });
+        SparseVector expectedVector = new SparseVector(vectorSize + 1,
+                                                       new int[] { 0, 2, 6, 9, 36, 57 },
+                                                       new double[] { 5.4, 0.53, 0.32, 0.91, 0.05, 0 });
+        actualVector.prepend(5.4);
+        Assert.assertTrue(expectedVector.equals(actualVector));
+        expectedVector = new SparseVector(vectorSize + 2,
+                                          new int[] { 0, 1, 3, 7, 10, 37, 58 },
+                                          new double[] { 3.2, 5.4, 0.53, 0.32, 0.91, 0.05, 0 });
+        actualVector.prepend(3.2);
+        Assert.assertTrue(expectedVector.equals(actualVector));
+    }
+
+    @Test
+    public void testAppend() {
+        int vectorSize = 1000;
+        SparseVector actualVector = new SparseVector(vectorSize,
+                                                     new int[] { 1, 5, 8, 35, 56 },
+                                                     new double[] { 0.53, 0.32, 0.91, 0.05, 0 });
+        SparseVector expectedVector = new SparseVector(vectorSize + 1,
+                                                       new int[] { 1, 5, 8, 35, 56, 1000 },
+                                                       new double[] { 0.53, 0.32, 0.91, 0.05, 0, 5.4 });
+        actualVector.append(5.4);
+        Assert.assertTrue(expectedVector.equals(actualVector));
+        expectedVector = new SparseVector(vectorSize + 2,
+                                          new int[] { 1, 5, 8, 35, 56, 1000, 1001 },
+                                          new double[] { 0.53, 0.32, 0.91, 0.05, 0, 5.4, 3.2 });
+        actualVector.append(3.2);
+        Assert.assertTrue(expectedVector.equals(actualVector));
+    }
 }

@@ -5,7 +5,10 @@ import cern.colt.map.OpenIntDoubleHashMap;
 import org.platanios.learn.serialization.UnsafeSerializationUtilities;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InvalidObjectException;
+import java.io.OutputStream;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -599,20 +602,32 @@ public class HashVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector gaxpy(Matrix matrix, Vector vector) {
+    public HashVector gaxpy(Matrix matrix, Vector vector) {
         return null;
     }
 
     /** {@inheritDoc} */
     @Override
-    public Vector gaxpyInPlace(Matrix matrix, Vector vector) {
+    public HashVector gaxpyInPlace(Matrix matrix, Vector vector) {
         return null;
     }
 
     /** {@inheritDoc} */
     @Override
-    public Vector transMult(Matrix matrix) {
+    public HashVector transMult(Matrix matrix) {
         return null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public HashVector prepend(double value) {
+        throw new NotImplementedException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public HashVector append(double value) {
+        throw new NotImplementedException();
     }
 
     /** {@inheritDoc} */

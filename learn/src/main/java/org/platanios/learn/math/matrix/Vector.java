@@ -591,6 +591,22 @@ public abstract class Vector {
     public abstract Vector transMult(Matrix matrix);
 
     /**
+     * Adds a value to the beginning of this vector, increasing its size by 1.
+     *
+     * @param   value   The value to prepend to this vector.
+     * @return          The current vector after prepending to it the provided value.
+     */
+    public abstract Vector prepend(double value);
+
+    /**
+     * Adds a value to the end of this vector, increasing its size by 1.
+     *
+     * @param   value   The value to append to this vector.
+     * @return          The current vector after appending to it the provided value.
+     */
+    public abstract Vector append(double value);
+
+    /**
      * Checks whether the provided vector has the same size as this vector. If the sizes of the two vectors do not agree
      * an exception is thrown.
      *

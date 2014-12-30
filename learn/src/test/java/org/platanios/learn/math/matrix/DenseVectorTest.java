@@ -77,4 +77,26 @@ public class DenseVectorTest {
             Assert.fail(e.getMessage());
         }
     }
+
+    @Test
+    public void testPrepend() {
+        DenseVector actualVector = new DenseVector(new double[] { 0.54593, 0.32234, 0.94671, 0.05686, 0.33245 });
+        DenseVector expectedVector = new DenseVector(new double[] { 5.4, 0.54593, 0.32234, 0.94671, 0.05686, 0.33245 });
+        actualVector.prepend(5.4);
+        Assert.assertTrue(expectedVector.equals(actualVector));
+        expectedVector = new DenseVector(new double[] { 3.2, 5.4, 0.54593, 0.32234, 0.94671, 0.05686, 0.33245 });
+        actualVector.prepend(3.2);
+        Assert.assertTrue(expectedVector.equals(actualVector));
+    }
+
+    @Test
+    public void testAppend() {
+        DenseVector actualVector = new DenseVector(new double[] { 0.54593, 0.32234, 0.94671, 0.05686, 0.33245 });
+        DenseVector expectedVector = new DenseVector(new double[] { 0.54593, 0.32234, 0.94671, 0.05686, 0.33245, 5.4 });
+        actualVector.append(5.4);
+        Assert.assertTrue(expectedVector.equals(actualVector));
+        expectedVector = new DenseVector(new double[] { 0.54593, 0.32234, 0.94671, 0.05686, 0.33245, 5.4, 3.2 });
+        actualVector.append(3.2);
+        Assert.assertTrue(expectedVector.equals(actualVector));
+    }
 }

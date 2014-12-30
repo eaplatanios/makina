@@ -1758,20 +1758,56 @@ public class SparseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public Vector gaxpy(Matrix matrix, Vector vector) {
+    public SparseVector gaxpy(Matrix matrix, Vector vector) {
         return null;
     }
 
     /** {@inheritDoc} */
     @Override
-    public Vector gaxpyInPlace(Matrix matrix, Vector vector) {
+    public SparseVector gaxpyInPlace(Matrix matrix, Vector vector) {
         return null;
     }
 
     /** {@inheritDoc} */
     @Override
-    public Vector transMult(Matrix matrix) {
+    public SparseVector transMult(Matrix matrix) {
         return null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public SparseVector prepend(double value) {
+        size += 1;
+        numberOfNonzeroEntries += 1;
+        int[] temporaryIndexes = indexes;
+        double[] temporaryValues = values;
+        indexes = new int[numberOfNonzeroEntries];
+        values = new double[numberOfNonzeroEntries];
+        indexes[0] = 0;
+        values[0] = value;
+        for (int i = 1; i < numberOfNonzeroEntries; i++) {
+            indexes[i] = temporaryIndexes[i - 1] + 1;
+            values[i] = temporaryValues[i - 1];
+        }
+        return this;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public SparseVector append(double value) {
+        size += 1;
+        numberOfNonzeroEntries += 1;
+        int[] temporaryIndexes = indexes;
+        double[] temporaryValues = values;
+        indexes = new int[numberOfNonzeroEntries];
+        values = new double[numberOfNonzeroEntries];
+        for (int i = 0; i < numberOfNonzeroEntries - 1; i++) {
+            indexes[i] = temporaryIndexes[i];
+            values[i] = temporaryValues[i];
+        }
+        indexes[numberOfNonzeroEntries - 1] = size - 1;
+        values[numberOfNonzeroEntries - 1] = value;
+        return this;
     }
 
     /**

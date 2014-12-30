@@ -673,6 +673,26 @@ public class DenseVector extends Vector {
         return resultVector;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public DenseVector prepend(double value) {
+        size += 1;
+        double[] temporaryArray = array;
+        array = new double[size];
+        System.arraycopy(temporaryArray, 0, array, 1, size - 1);
+        array[0] = value;
+        return this;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DenseVector append(double value) {
+        size += 1;
+        array = Arrays.copyOf(array, size);
+        array[size - 1] = value;
+        return this;
+    }
+
     /**
      * Constructs and returns a vector with the provided size, filled with ones.
      *
