@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class DataSetInMemory<D extends DataInstanceWithFeatures> implements DataSet<D> {
+public class DataSetInMemory<D extends DataInstance> implements DataSet<D> {
     List<D> dataInstances;
 
     public DataSetInMemory() {

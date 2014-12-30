@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public interface DataSet<D extends DataInstanceWithFeatures> extends Iterable<D> {
+public interface DataSet<D extends DataInstance> extends Iterable<D> {
     public int size();
     public void add(D dataInstance);
     public D get(int index);

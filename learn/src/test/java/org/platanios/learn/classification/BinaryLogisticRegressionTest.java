@@ -78,21 +78,17 @@ public class BinaryLogisticRegressionTest {
     }
 
     @Test
-    public void testSmallDenseBinaryLogisticRegressionUsingSGD() {
+    public void testSmallDenseBinaryLogisticRegressionUsingSGDAndDataSetWithPredictedDataInstances() {
         String filename = "/Users/Anthony/Development/Data Sets/Classification/fisher.binary.txt";
-        DataSet<LabeledDataInstance<Vector, Integer>> trainingDataSet = parseFisherDataFromFile(filename);
+        DataSet<PredictedDataInstance<Vector, Integer>> trainingDataSet = parseFisherDataFromFile(filename);
         LogisticRegressionSGD classifier =
                 new LogisticRegressionSGD.Builder(trainingDataSet.get(0).features().size())
                         .sparse(false)
                         .build();
         classifier.train(trainingDataSet.subSet(0, 80));
         DataSet<PredictedDataInstance<Vector, Integer>> testingDataSet = new DataSetInMemory<>();
-        for (LabeledDataInstance<Vector, Integer> dataInstance : trainingDataSet.subSet(80, trainingDataSet.size()))
-            testingDataSet.add(new PredictedDataInstance<>(dataInstance.name(),
-                                                           dataInstance.features(),
-                                                           dataInstance.label(),
-                                                           dataInstance.source(),
-                                                           1));
+        for (PredictedDataInstance<Vector, Integer> dataInstance : trainingDataSet.subSet(80, trainingDataSet.size()))
+            testingDataSet.add(dataInstance);
         int[] expectedPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < expectedPredictions.length; i++)
             expectedPredictions[i] = testingDataSet.get(i).label();
@@ -159,9 +155,9 @@ public class BinaryLogisticRegressionTest {
     }
 
     @Test
-    public void testSmallDenseBinaryLogisticRegressionUsingAdaGrad() {
+    public void testSmallDenseBinaryLogisticRegressionUsingAdaGradAndDataSetWithPredictedDataInstances() {
         String filename = "/Users/Anthony/Development/Data Sets/Classification/fisher.binary.txt";
-        DataSet<LabeledDataInstance<Vector, Integer>> trainingDataSet = parseFisherDataFromFile(filename);
+        DataSet<PredictedDataInstance<Vector, Integer>> trainingDataSet = parseFisherDataFromFile(filename);
         LogisticRegressionAdaGrad classifier =
                 new LogisticRegressionAdaGrad.Builder(trainingDataSet.get(0).features().size())
                         .sparse(false)
@@ -169,12 +165,8 @@ public class BinaryLogisticRegressionTest {
                         .build();
         classifier.train(trainingDataSet.subSet(0, 80));
         DataSet<PredictedDataInstance<Vector, Integer>> testingDataSet = new DataSetInMemory<>();
-        for (LabeledDataInstance<Vector, Integer> dataInstance : trainingDataSet.subSet(80, trainingDataSet.size()))
-            testingDataSet.add(new PredictedDataInstance<>(dataInstance.name(),
-                                                           dataInstance.features(),
-                                                           dataInstance.label(),
-                                                           dataInstance.source(),
-                                                           1));
+        for (PredictedDataInstance<Vector, Integer> dataInstance : trainingDataSet.subSet(80, trainingDataSet.size()))
+            testingDataSet.add(dataInstance);
         int[] expectedPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < expectedPredictions.length; i++)
             expectedPredictions[i] = testingDataSet.get(i).label();
@@ -306,9 +298,9 @@ public class BinaryLogisticRegressionTest {
         return new DataSetInMemory<>(data);
     }
 
-    public static DataSet<LabeledDataInstance<Vector, Integer>> parseFisherDataFromFile(String filename) {
+    public static DataSet<PredictedDataInstance<Vector, Integer>> parseFisherDataFromFile(String filename) {
         String separator = ",";
-        List<LabeledDataInstance<Vector, Integer>> data = new ArrayList<>();
+        List<PredictedDataInstance<Vector, Integer>> data = new ArrayList<>();
         try (Stream<String> lines = Files.lines(Paths.get(filename), Charset.defaultCharset())) {
             lines.forEachOrdered(line -> {
                 int numberOfFeatures = line.split(separator).length - 1;
@@ -317,7 +309,7 @@ public class BinaryLogisticRegressionTest {
                 int label = Integer.parseInt(outputs[0]);
                 for (int i = 0; i < numberOfFeatures; i++)
                     features.set(i, Double.parseDouble(outputs[i + 1]));
-                data.add(new LabeledDataInstance<>(null, features, label, null));
+                data.add(new PredictedDataInstance<>(null, features, label, null, 1));
             });
         } catch (IOException e) {
             e.printStackTrace();

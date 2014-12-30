@@ -175,8 +175,9 @@ abstract class AbstractTrainableLogisticRegression
     }
 
     @Override
-    public boolean train(DataSet<LabeledDataInstance<Vector, Integer>> trainingDataSet) {
-        this.trainingDataSet = trainingDataSet;
+    @SuppressWarnings("unchecked")
+    public boolean train(DataSet<? extends LabeledDataInstance<Vector, Integer>> trainingDataSet) {
+        this.trainingDataSet = (DataSet<LabeledDataInstance<Vector, Integer>>) trainingDataSet;
         try {
             train();
             return true;
@@ -242,7 +243,8 @@ abstract class AbstractTrainableLogisticRegression
      * Class implementing the likelihood function for the binary logistic regression model for use with stochastic
      * solvers.
      */
-    protected class StochasticLikelihoodFunction extends AbstractStochasticFunctionUsingDataSet<LabeledDataInstance<Vector, Integer>> {
+    protected class StochasticLikelihoodFunction
+            extends AbstractStochasticFunctionUsingDataSet<LabeledDataInstance<Vector, Integer>> {
         public StochasticLikelihoodFunction() {
             this.dataSet = trainingDataSet;
         }

@@ -32,7 +32,7 @@ class LabeledDataInstanceBase<T extends Vector, S> extends DataInstanceBase<T> {
     }
 
     @Override
-    public LabeledDataInstanceWithFeatures<T, S> toDataInstance(T features) {
+    public LabeledDataInstance<T, S> toDataInstance(T features) {
         return new LabeledDataInstance<>(name, features, label, source);
     }
 }

@@ -22,7 +22,7 @@ class PredictedDataInstanceBase<T extends Vector, S> extends LabeledDataInstance
     }
 
     @Override
-    public PredictedDataInstanceWithFeatures<T, S> toDataInstance(T features) {
+    public PredictedDataInstance<T, S> toDataInstance(T features) {
         return new PredictedDataInstance<>(name, features, label, source, probability);
     }
 }

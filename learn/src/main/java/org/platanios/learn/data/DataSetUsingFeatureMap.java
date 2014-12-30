@@ -14,8 +14,7 @@ import java.util.stream.Collectors;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class DataSetUsingFeatureMap<T extends Vector, D extends DataInstanceWithFeatures<T>>
-        implements DataSet<D> {
+public class DataSetUsingFeatureMap<T extends Vector, D extends DataInstance<T>> implements DataSet<D> {
     private final FeatureMap<T> featureMap;
     private final int featureMapView;
 
@@ -31,7 +30,7 @@ public class DataSetUsingFeatureMap<T extends Vector, D extends DataInstanceWith
         this.featureMap = featureMap;
         this.featureMapView = featureMapView;
         this.dataInstances = dataInstances.stream()
-                .map(DataInstanceWithFeatures::toDataInstanceBase)
+                .map(DataInstance::toDataInstanceBase)
                 .collect(Collectors.toList());
     }
 

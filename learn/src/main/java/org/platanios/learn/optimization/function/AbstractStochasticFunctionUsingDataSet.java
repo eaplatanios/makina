@@ -1,6 +1,6 @@
 package org.platanios.learn.optimization.function;
 
-import org.platanios.learn.data.DataInstanceWithFeatures;
+import org.platanios.learn.data.DataInstance;
 import org.platanios.learn.data.DataSet;
 import org.platanios.learn.math.matrix.Vector;
 
@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public abstract class AbstractStochasticFunctionUsingDataSet<D extends DataInstanceWithFeatures>
+public abstract class AbstractStochasticFunctionUsingDataSet<D extends DataInstance>
         extends AbstractStochasticFunction {
     protected DataSet<D> dataSet;
 

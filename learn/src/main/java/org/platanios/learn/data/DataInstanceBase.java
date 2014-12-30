@@ -20,7 +20,7 @@ class DataInstanceBase<T extends Vector> {
         return name;
     }
 
-    public DataInstanceWithFeatures<T> toDataInstance(T features) {
+    public DataInstance<T> toDataInstance(T features) {
         return new DataInstance<>(name, features);
     }
 }
