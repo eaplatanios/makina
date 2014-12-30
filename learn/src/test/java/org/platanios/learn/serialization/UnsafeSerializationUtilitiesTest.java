@@ -13,6 +13,25 @@ import java.util.Random;
  */
 public class UnsafeSerializationUtilitiesTest {
     @Test
+    public void testBooleanSerialization() {
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream(4);
+            UnsafeSerializationUtilities.writeBoolean(outputStream, false);
+            UnsafeSerializationUtilities.writeBoolean(outputStream, true);
+            UnsafeSerializationUtilities.writeBoolean(outputStream, true);
+            UnsafeSerializationUtilities.writeBoolean(outputStream, true);
+            outputStream.close();
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            Assert.assertEquals(false, UnsafeSerializationUtilities.readBoolean(inputStream));
+            Assert.assertEquals(true, UnsafeSerializationUtilities.readBoolean(inputStream));
+            Assert.assertEquals(true, UnsafeSerializationUtilities.readBoolean(inputStream));
+            Assert.assertEquals(true, UnsafeSerializationUtilities.readBoolean(inputStream));
+        } catch (IOException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
     public void testIntSerialization() {
         try {
             Random random = new Random();

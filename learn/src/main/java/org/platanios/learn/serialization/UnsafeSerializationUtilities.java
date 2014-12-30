@@ -40,6 +40,38 @@ public class UnsafeSerializationUtilities {
     protected static final long DOUBLE_ARRAY_OFFSET = UNSAFE.arrayBaseOffset(double[].class);
 
     /**
+     * Writes the provided boolean value to the provided output stream byte by byte.
+     *
+     * @param   outputStream    The output stream to write the provided boolean value to.
+     * @param   value           The boolean value to write to the provided output stream.
+     * @throws  IOException
+     */
+    public static void writeBoolean(OutputStream outputStream, boolean value) throws IOException {
+        byte[] buffer = new byte[1];
+        UNSAFE.putBoolean(buffer, BYTE_ARRAY_OFFSET, value);
+        outputStream.write(buffer);
+    }
+
+    /**
+     * Reads an boolean value from the provided input stream and returns it.
+     *
+     * @param   inputStream     The input stream to read the boolean value from.
+     * @return                  The boolean value read from the provided input stream.
+     * @throws  IOException
+     */
+    public static boolean readBoolean(InputStream inputStream) throws IOException {
+        long bytesToRead = 1;
+        byte[] buffer = new byte[1];
+        while (bytesToRead > 0) {
+            int bytesRead = inputStream.read(buffer, 0, 1);
+            if (bytesRead == -1 && bytesToRead > 0)
+                throw new RuntimeException();
+            bytesToRead -= bytesRead;
+        }
+        return UNSAFE.getBoolean(buffer, BYTE_ARRAY_OFFSET);
+    }
+
+    /**
      * Writes the provided integer to the provided output stream byte by byte.
      *
      * @param   outputStream    The output stream to write the provided integer to.
