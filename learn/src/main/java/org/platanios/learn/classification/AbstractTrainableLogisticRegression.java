@@ -6,10 +6,10 @@ import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.AbstractStochasticFunctionUsingDataSet;
+import org.platanios.learn.serialization.UnsafeSerializationUtilities;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.List;
 
@@ -21,8 +21,6 @@ import java.util.List;
  */
 abstract class AbstractTrainableLogisticRegression
         extends LogisticRegressionPrediction implements TrainableClassifier<Vector, Integer> {
-    private static final long serialVersionUID = -7044993880573223035L;
-
     /** The data used to train this model. */
     private DataSet<LabeledDataInstance<Vector, Integer>> trainingDataSet;
     /** Indicates whether /(L_1/) regularization is used. */
@@ -271,25 +269,13 @@ abstract class AbstractTrainableLogisticRegression
 
     /** {@inheritDoc} */
     @Override
-    public void writeObject(ObjectOutputStream outputStream) throws IOException {
-        super.writeObject(outputStream);
+    public void write(OutputStream outputStream) throws IOException {
+        super.write(outputStream);
 
-        outputStream.writeBoolean(useL1Regularization);
-        outputStream.writeDouble(l1RegularizationWeight);
-        outputStream.writeBoolean(useL2Regularization);
-        outputStream.writeDouble(l2RegularizationWeight);
-        outputStream.writeInt(loggingLevel);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void readObject(ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
-        super.readObject(inputStream);
-
-        useL1Regularization = inputStream.readBoolean();
-        l1RegularizationWeight = inputStream.readDouble();
-        useL2Regularization = inputStream.readBoolean();
-        l2RegularizationWeight = inputStream.readDouble();
-        loggingLevel = inputStream.readInt();
+        UnsafeSerializationUtilities.writeBoolean(outputStream, useL1Regularization);
+        UnsafeSerializationUtilities.writeDouble(outputStream, l1RegularizationWeight);
+        UnsafeSerializationUtilities.writeBoolean(outputStream, useL2Regularization);
+        UnsafeSerializationUtilities.writeDouble(outputStream, l2RegularizationWeight);
+        UnsafeSerializationUtilities.writeInt(outputStream, loggingLevel);
     }
 }

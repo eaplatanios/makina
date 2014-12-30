@@ -5,11 +5,9 @@ import org.platanios.learn.data.PredictedDataInstance;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.VectorType;
 import org.platanios.learn.math.matrix.Vectors;
+import org.platanios.learn.serialization.UnsafeSerializationUtilities;
 
-import java.io.IOException;
-import java.io.InvalidObjectException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 
 /**
  * This abstract class provides some functionality that is common to all binary logistic regression classes. All those
@@ -19,8 +17,6 @@ import java.io.ObjectOutputStream;
  * @author Emmanouil Antonios Platanios
  */
 public class LogisticRegressionPrediction implements Classifier<Vector, Integer> {
-    private static final long serialVersionUID = -255277773096341913L;
-
     /** The number of features used. */
     protected int numberOfFeatures;
     /** Indicates whether sparse vectors are being used or not. */
@@ -97,6 +93,7 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Integer>
      */
     protected LogisticRegressionPrediction(AbstractBuilder<?> builder) {
         numberOfFeatures = builder.numberOfFeatures;
+        sparse = builder.sparse;
         if (builder.weights != null) {
             weights = builder.weights;
         } else {
@@ -156,18 +153,21 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Integer>
 
     /** {@inheritDoc} */
     @Override
-    public void writeObject(ObjectOutputStream outputStream) throws IOException {
-        outputStream.writeObject(type());
-        outputStream.writeInt(numberOfFeatures);
+    public void write(OutputStream outputStream) throws IOException {
+        UnsafeSerializationUtilities.writeInt(outputStream, type().ordinal());
+        UnsafeSerializationUtilities.writeInt(outputStream, numberOfFeatures);
+        UnsafeSerializationUtilities.writeBoolean(outputStream, sparse);
         weights.write(outputStream, true);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void readObject(ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
-        ClassifierType classifierType = (ClassifierType) inputStream.readObject();
-        if (classifierType != type() && !type().getStorageCompatibleTypes().contains(classifierType))
-            throw new InvalidObjectException("The stored classifier is of type " + classifierType.name() + "!");
-        weights = Vectors.build(inputStream);
+    public static LogisticRegressionPrediction read(InputStream inputStream) throws IOException {
+        ClassifierType storedClassifierType =
+                ClassifierType.values()[UnsafeSerializationUtilities.readInt(inputStream)];
+        if (!ClassifierType.LOGISTIC_REGRESSION_PREDICTION.getStorageCompatibleTypes().contains(storedClassifierType))
+            throw new InvalidObjectException("The stored classifier is of type " + storedClassifierType.name() + "!");
+        int numberOfFeatures = UnsafeSerializationUtilities.readInt(inputStream);
+        boolean sparse = UnsafeSerializationUtilities.readBoolean(inputStream);
+        Vector weights = Vectors.build(inputStream);
+        return new Builder(numberOfFeatures, weights).sparse(sparse).build();
     }
 }

@@ -12,8 +12,8 @@ import org.platanios.learn.math.matrix.VectorType;
 import org.platanios.learn.math.matrix.Vectors;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -216,12 +216,19 @@ public class BinaryLogisticRegressionTest {
     public void testDenseBinaryLogisticRegressionPrediction() {
         String filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.txt";
         DataSet<LabeledDataInstance<Vector, Integer>> trainingDataSet = parseCovTypeDataFromFile(filename, false);
+        LogisticRegressionSGD classifier =
+                new LogisticRegressionSGD.Builder(trainingDataSet.get(0).features().size())
+                        .sparse(false)
+                        .build();
+        classifier.train(trainingDataSet.subSet(0, 500000));
         try {
             filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.dense.model";
+            FileOutputStream fout = new FileOutputStream(filename);
+            classifier.write(fout);
+            fout.close();
             FileInputStream fin = new FileInputStream(filename);
-            ObjectInputStream ois = new ObjectInputStream(fin);
-            LogisticRegressionPrediction classifier = (LogisticRegressionPrediction) ois.readObject();
-            ois.close();
+            LogisticRegressionPrediction loadedClassifier = LogisticRegressionPrediction.read(fin);
+            fin.close();
             DataSet<PredictedDataInstance<Vector, Integer>> testingDataSet = new DataSetInMemory<>();
             for (LabeledDataInstance<Vector, Integer> dataInstance : trainingDataSet.subSet(500000, trainingDataSet.size()))
                 testingDataSet.add(new PredictedDataInstance<>(dataInstance.name(),
@@ -232,12 +239,12 @@ public class BinaryLogisticRegressionTest {
             int[] expectedPredictions = new int[testingDataSet.size()];
             for (int i = 0; i < expectedPredictions.length; i++)
                 expectedPredictions[i] = testingDataSet.get(i).label();
-            DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = classifier.predict(testingDataSet);
+            DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = loadedClassifier.predict(testingDataSet);
             int[] actualPredictions = new int[testingDataSet.size()];
             for (int i = 0; i < actualPredictions.length; i++)
                 actualPredictions[i] = predictedDataSet.get(i).label();
             Assert.assertArrayEquals(expectedPredictions, actualPredictions);
-        } catch (IOException|ClassNotFoundException e) {
+        } catch (IOException e) {
             Assert.fail(e.getMessage());
         }
     }
@@ -245,13 +252,20 @@ public class BinaryLogisticRegressionTest {
     @Test
     public void testSparseBinaryLogisticRegressionPrediction() {
         String filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.txt";
-        DataSet<LabeledDataInstance<Vector, Integer>> trainingDataSet = parseCovTypeDataFromFile(filename, false);
+        DataSet<LabeledDataInstance<Vector, Integer>> trainingDataSet = parseCovTypeDataFromFile(filename, true);
+        LogisticRegressionSGD classifier =
+                new LogisticRegressionSGD.Builder(trainingDataSet.get(0).features().size())
+                        .sparse(true)
+                        .build();
+        classifier.train(trainingDataSet.subSet(0, 500000));
         try {
             filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.sparse.model";
+            FileOutputStream fout = new FileOutputStream(filename);
+            classifier.write(fout);
+            fout.close();
             FileInputStream fin = new FileInputStream(filename);
-            ObjectInputStream ois = new ObjectInputStream(fin);
-            LogisticRegressionPrediction classifier = (LogisticRegressionPrediction) ois.readObject();
-            ois.close();
+            LogisticRegressionPrediction loadedClassifier = LogisticRegressionPrediction.read(fin);
+            fin.close();
             DataSet<PredictedDataInstance<Vector, Integer>> testingDataSet = new DataSetInMemory<>();
             for (LabeledDataInstance<Vector, Integer> dataInstance : trainingDataSet.subSet(500000, trainingDataSet.size()))
                 testingDataSet.add(new PredictedDataInstance<>(dataInstance.name(),
@@ -262,12 +276,12 @@ public class BinaryLogisticRegressionTest {
             int[] expectedPredictions = new int[testingDataSet.size()];
             for (int i = 0; i < expectedPredictions.length; i++)
                 expectedPredictions[i] = testingDataSet.get(i).label();
-            DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = classifier.predict(testingDataSet);
+            DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = loadedClassifier.predict(testingDataSet);
             int[] actualPredictions = new int[testingDataSet.size()];
             for (int i = 0; i < actualPredictions.length; i++)
                 actualPredictions[i] = predictedDataSet.get(i).label();
             Assert.assertArrayEquals(expectedPredictions, actualPredictions);
-        } catch (IOException|ClassNotFoundException e) {
+        } catch (IOException e) {
             Assert.fail(e.getMessage());
         }
     }

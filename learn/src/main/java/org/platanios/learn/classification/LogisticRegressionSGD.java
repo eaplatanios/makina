@@ -1,12 +1,15 @@
 package org.platanios.learn.classification;
 
 import org.platanios.learn.math.matrix.Vector;
+import org.platanios.learn.math.matrix.Vectors;
 import org.platanios.learn.optimization.StochasticGradientDescentSolver;
 import org.platanios.learn.optimization.StochasticSolverStepSize;
+import org.platanios.learn.serialization.UnsafeSerializationUtilities;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.InputStream;
+import java.io.InvalidObjectException;
+import java.io.OutputStream;
 
 /**
  * This class implements a binary logistic regression model that is trained using the stochastic gradient descent
@@ -15,8 +18,6 @@ import java.io.ObjectOutputStream;
  * @author Emmanouil Antonios Platanios
  */
 public class LogisticRegressionSGD extends AbstractTrainableLogisticRegression {
-    private static final long serialVersionUID = -6803380467546567631L;
-
     private boolean sampleWithReplacement;
     private int maximumNumberOfIterations;
     private int maximumNumberOfIterationsWithNoPointChange;
@@ -173,31 +174,59 @@ public class LogisticRegressionSGD extends AbstractTrainableLogisticRegression {
 
     /** {@inheritDoc} */
     @Override
-    public void writeObject(ObjectOutputStream outputStream) throws IOException {
-        super.writeObject(outputStream);
+    public void write(OutputStream outputStream) throws IOException {
+        super.write(outputStream);
 
-        outputStream.writeBoolean(sampleWithReplacement);
-        outputStream.writeInt(maximumNumberOfIterations);
-        outputStream.writeInt(maximumNumberOfIterationsWithNoPointChange);
-        outputStream.writeDouble(pointChangeTolerance);
-        outputStream.writeBoolean(checkForPointConvergence);
-        outputStream.writeInt(batchSize);
-        outputStream.writeObject(stepSize);
-        outputStream.writeObject(stepSizeParameters);
+        UnsafeSerializationUtilities.writeBoolean(outputStream, sampleWithReplacement);
+        UnsafeSerializationUtilities.writeInt(outputStream, maximumNumberOfIterations);
+        UnsafeSerializationUtilities.writeInt(outputStream, maximumNumberOfIterationsWithNoPointChange);
+        UnsafeSerializationUtilities.writeDouble(outputStream, pointChangeTolerance);
+        UnsafeSerializationUtilities.writeBoolean(outputStream, checkForPointConvergence);
+        UnsafeSerializationUtilities.writeInt(outputStream, batchSize);
+        UnsafeSerializationUtilities.writeInt(outputStream, stepSize.ordinal());
+        UnsafeSerializationUtilities.writeInt(outputStream, stepSizeParameters.length);
+        UnsafeSerializationUtilities.writeDoubleArray(outputStream, stepSizeParameters);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void readObject(ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
-        super.readObject(inputStream);
-
-        sampleWithReplacement = inputStream.readBoolean();
-        maximumNumberOfIterations = inputStream.readInt();
-        maximumNumberOfIterationsWithNoPointChange = inputStream.readInt();
-        pointChangeTolerance = inputStream.readDouble();
-        checkForPointConvergence = inputStream.readBoolean();
-        batchSize = inputStream.readInt();
-        stepSize = (StochasticSolverStepSize) inputStream.readObject();
-        stepSizeParameters = (double[]) inputStream.readObject();
+    public static LogisticRegressionSGD read(InputStream inputStream) throws IOException {
+        ClassifierType storedClassifierType =
+                ClassifierType.values()[UnsafeSerializationUtilities.readInt(inputStream)];
+        if (!ClassifierType.LOGISTIC_REGRESSION_SGD.getStorageCompatibleTypes().contains(storedClassifierType))
+            throw new InvalidObjectException("The stored classifier is of type " + storedClassifierType.name() + "!");
+        int numberOfFeatures = UnsafeSerializationUtilities.readInt(inputStream);
+        boolean sparse = UnsafeSerializationUtilities.readBoolean(inputStream);
+        Vector weights = Vectors.build(inputStream);
+        boolean usel1Regularization = UnsafeSerializationUtilities.readBoolean(inputStream);
+        double l1RegularizationWeight = UnsafeSerializationUtilities.readDouble(inputStream);
+        boolean usel2Regularization = UnsafeSerializationUtilities.readBoolean(inputStream);
+        double l2RegularizationWeight = UnsafeSerializationUtilities.readDouble(inputStream);
+        int loggingLevel = UnsafeSerializationUtilities.readInt(inputStream);
+        boolean sampleWithReplacement = UnsafeSerializationUtilities.readBoolean(inputStream);
+        int maximumNumberOfIterations = UnsafeSerializationUtilities.readInt(inputStream);
+        int maximumNumberOfIterationsWithNoPointChange = UnsafeSerializationUtilities.readInt(inputStream);
+        double pointChangeTolerance = UnsafeSerializationUtilities.readDouble(inputStream);
+        boolean checkForPointConvergence = UnsafeSerializationUtilities.readBoolean(inputStream);
+        int batchSize = UnsafeSerializationUtilities.readInt(inputStream);
+        StochasticSolverStepSize stepSize =
+                StochasticSolverStepSize.values()[UnsafeSerializationUtilities.readInt(inputStream)];
+        int numberOfStepSizeParameters = UnsafeSerializationUtilities.readInt(inputStream);
+        double[] stepSizeParameters =
+                UnsafeSerializationUtilities.readDoubleArray(inputStream, numberOfStepSizeParameters, 4);
+        return new Builder(numberOfFeatures, weights)
+                .sparse(sparse)
+                .useL1Regularization(usel1Regularization)
+                .l1RegularizationWeight(l1RegularizationWeight)
+                .useL2Regularization(usel2Regularization)
+                .l2RegularizationWeight(l2RegularizationWeight)
+                .loggingLevel(loggingLevel)
+                .sampleWithReplacement(sampleWithReplacement)
+                .maximumNumberOfIterations(maximumNumberOfIterations)
+                .maximumNumberOfIterationsWithNoPointChange(maximumNumberOfIterationsWithNoPointChange)
+                .pointChangeTolerance(pointChangeTolerance)
+                .checkForPointConvergence(checkForPointConvergence)
+                .batchSize(batchSize)
+                .stepSize(stepSize)
+                .stepSizeParameters(stepSizeParameters)
+                .build();
     }
 }
