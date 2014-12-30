@@ -1,4 +1,4 @@
-package org.platanios.learn.classification;
+package org.platanios.learn.data;
 
 import org.platanios.learn.math.matrix.Vector;
 
@@ -9,8 +9,8 @@ import java.util.stream.Collectors;
  * @author Emmanouil Antonios Platanios
  */
 public class DataInstances {
-    public static <T extends Vector, S> List<DataInstance<T, S>> getSingleViewDataInstances(
-            List<MultiViewDataInstance<T, S>> multiViewDataInstances,
+    public static <T extends Vector> List<? extends DataInstance<T>> getSingleViewDataInstances(
+            List<? extends MultiViewDataInstance<T>> multiViewDataInstances,
             int view
     ) {
         return multiViewDataInstances

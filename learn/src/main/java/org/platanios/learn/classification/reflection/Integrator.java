@@ -2,13 +2,18 @@ package org.platanios.learn.classification.reflection;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.platanios.learn.classification.*;
+import org.platanios.learn.classification.TrainableClassifier;
+import org.platanios.learn.data.MultiViewPredictedDataInstance;
+import org.platanios.learn.data.PredictedDataInstance;
 import org.platanios.learn.math.matrix.Vector;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -24,13 +29,13 @@ public class Integrator<T extends Vector, S> {
     private boolean saveModelsOnEveryIteration;
     private boolean useDifferentFilePerIteration;
 
-    private List<MultiViewDataInstance<T, S>> labeledDataInstances;
-    private List<MultiViewDataInstance<T, S>> unlabeledDataInstances;
+    private List<MultiViewPredictedDataInstance<T, S>> labeledDataInstances;
+    private List<MultiViewPredictedDataInstance<T, S>> unlabeledDataInstances;
     private int iterationNumber = 1;
 
     public static class Builder<T extends Vector, S> {
         private List<TrainableClassifier<T, S>> classifiers;
-        private List<MultiViewDataInstance<T, S>> dataInstances;
+        private List<MultiViewPredictedDataInstance<T, S>> dataInstances;
 
         private DataSelectionMethod dataSelectionMethod = DataSelectionMethod.FIXED_PROPORTION;
         private double dataSelectionParameter = 0.1;
@@ -69,12 +74,12 @@ public class Integrator<T extends Vector, S> {
             return this;
         }
 
-        public Builder addDataInstance(MultiViewDataInstance<T, S> dataInstance) {
+        public Builder addDataInstance(MultiViewPredictedDataInstance<T, S> dataInstance) {
             dataInstances.add(dataInstance);
             return this;
         }
 
-        public Builder addDataInstances(List<MultiViewDataInstance<T, S>> dataInstances) {
+        public Builder addDataInstances(List<MultiViewPredictedDataInstance<T, S>> dataInstances) {
             this.dataInstances.addAll(dataInstances);
             return this;
         }
@@ -125,7 +130,7 @@ public class Integrator<T extends Vector, S> {
         initializeWorkingDirectory();
         labeledDataInstances = new ArrayList<>();
         unlabeledDataInstances = new ArrayList<>();
-        for (MultiViewDataInstance<T, S> dataInstance : builder.dataInstances) {
+        for (MultiViewPredictedDataInstance<T, S> dataInstance : builder.dataInstances) {
             if (dataInstance.label() != null) {
                 labeledDataInstances.add(dataInstance);
             } else {
@@ -145,7 +150,8 @@ public class Integrator<T extends Vector, S> {
         List<Callable<Boolean>> classifierTrainingTasks = new ArrayList<>();
         for (int i = 0; i < classifiers.size(); i++) {
             TrainableClassifier<T, S> classifier = classifiers.get(i);
-            List<DataInstance<T, S>> trainingData = DataInstances.getSingleViewDataInstances(labeledDataInstances, i);
+//            List<PredictedDataInstance<T, S>> trainingData =
+//                    DataInstances.getSingleViewDataInstances(labeledDataInstances, i);
 //            classifierTrainingTasks.add(() -> classifier.train(trainingData));
         }
         try {
@@ -156,31 +162,36 @@ public class Integrator<T extends Vector, S> {
     }
 
     public void makePredictions() {
-        List<Callable<List<DataInstance<T, S>>>> classifierPredictionTasks = new ArrayList<>();
+        List<Callable<List<PredictedDataInstance<T, S>>>> classifierPredictionTasks = new ArrayList<>();
         for (int i = 0; i < classifiers.size(); i++) {
             TrainableClassifier<T, S> classifier = classifiers.get(i);
-            List<DataInstance<T, S>> testingData = DataInstances.getSingleViewDataInstances(unlabeledDataInstances, i);
+//            List<PredictedDataInstance<T, S>> testingData =
+//                    DataInstances.getSingleViewDataInstances(unlabeledDataInstances, i);
 //            classifierPredictionTasks.add(() -> classifier.predict(testingData));
         }
         try {
-            List<Future<List<DataInstance<T, S>>>> predictionResults =
+            List<Future<List<PredictedDataInstance<T, S>>>> predictionResults =
                     taskExecutor.invokeAll(classifierPredictionTasks);
-            for (int i = 0; i < classifiers.size(); i++) {
-                List<DataInstance<T, S>> dataInstances = predictionResults.get(i).get();
-                for (int j = 0; j < dataInstances.size(); j++) {
-                    if (dataInstances.get(j).probability() > unlabeledDataInstances.get(j).probability()) {
-                        unlabeledDataInstances.set(i,
-                                                   new MultiViewDataInstance.Builder<>(unlabeledDataInstances.get(j))
-                                                           .label(dataInstances.get(j).label())
-                                                           .probability(dataInstances.get(j).probability()).build());
-                    }
-                }
-            }
+//            for (int i = 0; i < classifiers.size(); i++) {
+//                List<PredictedDataInstance<T, S>> dataInstances = predictionResults.get(i).get();
+//                for (int j = 0; j < dataInstances.size(); j++) {
+//                    if (dataInstances.get(j).probability() > unlabeledDataInstances.get(j).probability()) {
+//                        unlabeledDataInstances.set(i, new MultiViewPredictedDataInstance<>(
+//                                null,
+//                                unlabeledDataInstances.get(j),
+//                                dataInstances.get(j).label(),
+//                                null,
+//                                dataInstances.get(j).probability())
+//                        );
+//                    }
+//                }
+//            }
         } catch (InterruptedException e) {
             logger.error("Execution was interrupted while making predictions with the classifiers.");
-        } catch (ExecutionException e) {
-            logger.error("Something went wrong while making predictions with the classifiers.");
         }
+//        } catch (ExecutionException e) {
+//            logger.error("Something went wrong while making predictions with the classifiers.");
+//        }
     }
 
     public void transferData() {
@@ -238,9 +249,11 @@ public class Integrator<T extends Vector, S> {
     public enum DataSelectionMethod {
         FIXED_PROPORTION {
             @Override
-            public <T extends Vector, S> void transferData(List<MultiViewDataInstance<T, S>> labeledDataInstances,
-                                                           List<MultiViewDataInstance<T, S>> unlabeledDataInstances,
-                                                           double proportionToTransfer) {
+            public <T extends Vector, S> void transferData(
+                    List<MultiViewPredictedDataInstance<T, S>> labeledDataInstances,
+                    List<MultiViewPredictedDataInstance<T, S>> unlabeledDataInstances,
+                    double proportionToTransfer
+            ) {
                 unlabeledDataInstances
                         .parallelStream()
                         .sorted((i1, i2) -> -Double.compare(i1.probability(), i2.probability()));
@@ -254,9 +267,11 @@ public class Integrator<T extends Vector, S> {
         },
         PROBABILITY_THRESHOLD {
             @Override
-            public <T extends Vector, S> void transferData(List<MultiViewDataInstance<T, S>> labeledDataInstances,
-                                                           List<MultiViewDataInstance<T, S>> unlabeledDataInstances,
-                                                           double probabilityThreshold) {
+            public <T extends Vector, S> void transferData(
+                    List<MultiViewPredictedDataInstance<T, S>> labeledDataInstances,
+                    List<MultiViewPredictedDataInstance<T, S>> unlabeledDataInstances,
+                    double probabilityThreshold
+            ) {
                 unlabeledDataInstances
                         .parallelStream()
                         .sorted((i1, i2) -> -Double.compare(i1.probability(), i2.probability()));
@@ -272,8 +287,8 @@ public class Integrator<T extends Vector, S> {
         };
 
         public abstract <T extends Vector, S> void transferData(
-                List<MultiViewDataInstance<T, S>> labeledDataInstances,
-                List<MultiViewDataInstance<T, S>> unlabeledDataInstances,
+                List<MultiViewPredictedDataInstance<T, S>> labeledDataInstances,
+                List<MultiViewPredictedDataInstance<T, S>> unlabeledDataInstances,
                 double parameter
         );
     }
