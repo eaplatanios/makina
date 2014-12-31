@@ -355,12 +355,34 @@ public abstract class Vector {
     }
 
     /**
+     * Computes the inner product (also known as the dot product) between the current vector without its last element
+     * and another vector, adds to that result the last element of the current vector, and returns the result.
+     *
+     * @param   vector  The vector used to compute the inner product with the current vector without its last element.
+     *                  Note that this vector must have size 1 less than the size of the current vector.
+     * @return          The resulting value.
+     */
+    public final double dotPlusConstant(Vector vector) {
+        return innerPlusConstant(vector);
+    }
+
+    /**
      * Computes the inner product (also known as the dot product) between the current vector and another vector.
      *
      * @param   vector  The vector used to compute the inner product with the current vector.
      * @return          The resulting inner product value.
      */
     public abstract double inner(Vector vector);
+
+    /**
+     * Computes the inner product (also known as the dot product) between the current vector without its last element
+     * and another vector, adds to that result the last element of the current vector, and returns the result.
+     *
+     * @param   vector  The vector used to compute the inner product with the current vector without its last element.
+     *                  Note that this vector must have size 1 less than the size of the current vector.
+     * @return          The resulting value.
+     */
+    public abstract double innerPlusConstant(Vector vector);
 
     /**
      * Computes the square root of the sum of the squares of each pair of vector elements (that is equivalent to

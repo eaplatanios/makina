@@ -3,7 +3,10 @@ package org.platanios.learn.math.matrix;
 import org.platanios.learn.math.MathUtilities;
 import org.platanios.learn.serialization.UnsafeSerializationUtilities;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InvalidObjectException;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -416,10 +419,20 @@ public class DenseVector extends Vector {
     public double inner(Vector vector) {
         checkVectorSize(vector);
         double dotProduct = 0;
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < size; i++)
             dotProduct += array[i] * vector.get(i);
-        }
         return dotProduct;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double innerPlusConstant(Vector vector) {
+        if (vector.size() + 1 != this.size())
+            throw new IllegalArgumentException("The provided vector size must be 1 less than the current vector size.");
+        double dotProduct = 0;
+        for (int i = 0; i < size - 1; i++)
+            dotProduct += array[i] * vector.get(i);
+        return dotProduct + array[size - 1];
     }
 
     /** {@inheritDoc} */

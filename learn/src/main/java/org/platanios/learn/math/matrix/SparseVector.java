@@ -906,6 +906,37 @@ public class SparseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
+    public double innerPlusConstant(Vector vector) {
+        if (vector.size() + 1 != this.size())
+            throw new IllegalArgumentException("The provided vector size must be 1 less than the current vector size.");
+        double result = 0;
+        if (vector.type() == VectorType.SPARSE) {
+            int vector1Index = 0;
+            int vector2Index = 0;
+            boolean constantAdded = false;
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] == size - 1) {
+                    result += values[vector1Index++];
+                    constantAdded = true;
+                } else if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
+                    vector1Index++;
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
+                    vector2Index++;
+                } else {
+                    result += values[vector1Index++] * ((SparseVector) vector).values[vector2Index++];
+                }
+            }
+            if (!constantAdded && indexes[numberOfNonzeroEntries - 1] == size - 1)
+                result += values[numberOfNonzeroEntries - 1];
+        } else {
+            throw new NotImplementedException();
+        }
+        return result;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public SparseVector hypotenuse(Vector vector) {
         checkVectorSize(vector);
         SparseVector resultVector;

@@ -13,6 +13,37 @@ import java.io.InputStream;
  */
 public class DenseVectorTest {
     @Test
+    public void testDotPlusConstant() {
+        DenseVector vector1 = new DenseVector(new double[] { 0.53, 0.32, 0.91, 0.05, 0.01, 5.63 });
+        DenseVector vector2 = new DenseVector(new double[] { 0.33, 0.64, 1.97, 0.56, 0.04 });
+        double actualResult = vector1.dotPlusConstant(vector2);
+        double expectedResult = 0.53 * 0.33 + 0.32 * 0.64 + 0.91 * 1.97 + 0.05 * 0.56 + 0.01 * 0.04 + 5.63;
+        Assert.assertEquals(expectedResult, actualResult, 0);
+    }
+
+    @Test
+    public void testPrepend() {
+        DenseVector actualVector = new DenseVector(new double[] { 0.54593, 0.32234, 0.94671, 0.05686, 0.33245 });
+        DenseVector expectedVector = new DenseVector(new double[] { 5.4, 0.54593, 0.32234, 0.94671, 0.05686, 0.33245 });
+        actualVector.prepend(5.4);
+        Assert.assertTrue(expectedVector.equals(actualVector));
+        expectedVector = new DenseVector(new double[] { 3.2, 5.4, 0.54593, 0.32234, 0.94671, 0.05686, 0.33245 });
+        actualVector.prepend(3.2);
+        Assert.assertTrue(expectedVector.equals(actualVector));
+    }
+
+    @Test
+    public void testAppend() {
+        DenseVector actualVector = new DenseVector(new double[] { 0.54593, 0.32234, 0.94671, 0.05686, 0.33245 });
+        DenseVector expectedVector = new DenseVector(new double[] { 0.54593, 0.32234, 0.94671, 0.05686, 0.33245, 5.4 });
+        actualVector.append(5.4);
+        Assert.assertTrue(expectedVector.equals(actualVector));
+        expectedVector = new DenseVector(new double[] { 0.54593, 0.32234, 0.94671, 0.05686, 0.33245, 5.4, 3.2 });
+        actualVector.append(3.2);
+        Assert.assertTrue(expectedVector.equals(actualVector));
+    }
+
+    @Test
     public void testEquals() {
         DenseVector vector1 = new DenseVector(new double[] { 0.54593, 0.32234, 0.94671, 0.05686, 0.33245, 0.45634 });
         DenseVector vector2 = new DenseVector(new double[] { 0.54593, 0.32234, 0.94671, 0.05686, 0.33245, 0.45634 });
@@ -76,27 +107,5 @@ public class DenseVectorTest {
         } catch (IOException e) {
             Assert.fail(e.getMessage());
         }
-    }
-
-    @Test
-    public void testPrepend() {
-        DenseVector actualVector = new DenseVector(new double[] { 0.54593, 0.32234, 0.94671, 0.05686, 0.33245 });
-        DenseVector expectedVector = new DenseVector(new double[] { 5.4, 0.54593, 0.32234, 0.94671, 0.05686, 0.33245 });
-        actualVector.prepend(5.4);
-        Assert.assertTrue(expectedVector.equals(actualVector));
-        expectedVector = new DenseVector(new double[] { 3.2, 5.4, 0.54593, 0.32234, 0.94671, 0.05686, 0.33245 });
-        actualVector.prepend(3.2);
-        Assert.assertTrue(expectedVector.equals(actualVector));
-    }
-
-    @Test
-    public void testAppend() {
-        DenseVector actualVector = new DenseVector(new double[] { 0.54593, 0.32234, 0.94671, 0.05686, 0.33245 });
-        DenseVector expectedVector = new DenseVector(new double[] { 0.54593, 0.32234, 0.94671, 0.05686, 0.33245, 5.4 });
-        actualVector.append(5.4);
-        Assert.assertTrue(expectedVector.equals(actualVector));
-        expectedVector = new DenseVector(new double[] { 0.54593, 0.32234, 0.94671, 0.05686, 0.33245, 5.4, 3.2 });
-        actualVector.append(3.2);
-        Assert.assertTrue(expectedVector.equals(actualVector));
     }
 }

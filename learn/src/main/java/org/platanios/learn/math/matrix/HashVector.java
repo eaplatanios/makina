@@ -497,6 +497,12 @@ public class HashVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
+    public double innerPlusConstant(Vector vector) {
+        throw new NotImplementedException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public HashVector hypotenuse(Vector vector) {
         throw new NotImplementedException();
     }
