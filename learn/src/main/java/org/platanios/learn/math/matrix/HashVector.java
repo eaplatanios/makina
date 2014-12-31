@@ -474,6 +474,18 @@ public class HashVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
+    public DenseVector saxpyPlusConstant(double scalar, Vector vector) {
+        throw new NotImplementedException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DenseVector saxpyPlusConstantInPlace(double scalar, Vector vector) {
+        throw new NotImplementedException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public double inner(Vector vector) {
         checkVectorSize(vector);
         double result = 0;

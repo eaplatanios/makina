@@ -13,6 +13,32 @@ import java.io.InputStream;
  */
 public class SparseVectorTest {
     @Test
+    public void testSaxpyPlusConstant() {
+        int vectorSize = 1000;
+        SparseVector vector1 = new SparseVector(vectorSize + 1,
+                                                new int[] { 1, 5, 8, 35, 56, 1000 },
+                                                new double[] { 0.53, 0.32, 0.91, 0.05, 0, 5.63 });
+        SparseVector vector2 = new SparseVector(vectorSize,
+                                                new int[] { 2, 5, 6, 8 },
+                                                new double[] { 0.33, 0.64, 1.97, 0.56 });
+        double alpha = 2.5;
+        SparseVector expectedVector = new SparseVector(vectorSize + 1,
+                                                       new int[] { 1, 2, 5, 6, 8, 35, 56, 1000 },
+                                                       new double[] {
+                                                               0.53,
+                                                               alpha * 0.33,
+                                                               0.32 + alpha * 0.64,
+                                                               alpha * 1.97,
+                                                               0.91 + alpha * 0.56,
+                                                               0.05,
+                                                               0,
+                                                               5.63
+                                                       });
+        SparseVector actualVector = vector1.saxpyPlusConstant(alpha, vector2);
+        Assert.assertTrue(expectedVector.equals(actualVector));
+    }
+
+    @Test
     public void testDotPlusConstant() {
         int vectorSize = 1000;
         SparseVector vector1 = new SparseVector(vectorSize + 1,

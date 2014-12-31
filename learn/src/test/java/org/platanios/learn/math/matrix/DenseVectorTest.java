@@ -13,6 +13,23 @@ import java.io.InputStream;
  */
 public class DenseVectorTest {
     @Test
+    public void testSaxpyPlusConstant() {
+        DenseVector vector1 = new DenseVector(new double[] { 0.53, 0.32, 0.91, 0.05, 0.01, 5.63 });
+        DenseVector vector2 = new DenseVector(new double[] { 0.33, 0.64, 1.97, 0.56, 0.04 });
+        double alpha = 2.5;
+        DenseVector expectedVector = new DenseVector(new double[] {
+                0.53 + alpha * 0.33,
+                0.32 + alpha * 0.64,
+                0.91 + alpha * 1.97,
+                0.05 + alpha * 0.56,
+                0.01 + alpha * 0.04,
+                5.63
+        });
+        DenseVector actualVector = vector1.saxpyPlusConstant(alpha, vector2);
+        Assert.assertTrue(expectedVector.equals(actualVector));
+    }
+
+    @Test
     public void testDotPlusConstant() {
         DenseVector vector1 = new DenseVector(new double[] { 0.53, 0.32, 0.91, 0.05, 0.01, 5.63 });
         DenseVector vector2 = new DenseVector(new double[] { 0.33, 0.64, 1.97, 0.56, 0.04 });

@@ -880,6 +880,111 @@ public class SparseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
+    public SparseVector saxpyPlusConstant(double scalar, Vector vector) {
+        if (vector.size() + 1 != this.size())
+            throw new IllegalArgumentException("The provided vector size must be 1 less than the current vector size.");
+        SparseVector resultVector;
+        if (vector.type() == VectorType.SPARSE) {
+            int[] newIndexes = new int[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            double[] newValues = new double[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            int currentIndex = 0;
+            int vector1Index = 0;
+            int vector2Index = 0;
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] = values[vector1Index];
+                    currentIndex++;
+                    vector1Index++;
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
+                    newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                    newValues[currentIndex] = scalar * ((SparseVector) vector).values[vector2Index];
+                    currentIndex++;
+                    vector2Index++;
+                } else {
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] =
+                            values[vector1Index] + scalar * ((SparseVector) vector).values[vector2Index];
+                    currentIndex++;
+                    vector1Index++;
+                    vector2Index++;
+                }
+            }
+            while (vector1Index < numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = indexes[vector1Index];
+                newValues[currentIndex] = values[vector1Index];
+                currentIndex++;
+                vector1Index++;
+            }
+            while (vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                newValues[currentIndex] = scalar * ((SparseVector) vector).values[vector2Index];
+                currentIndex++;
+                vector2Index++;
+            }
+            resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
+        } else {
+            throw new NotImplementedException();
+        }
+        return resultVector;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public SparseVector saxpyPlusConstantInPlace(double scalar, Vector vector) {
+        if (vector.size() + 1 != this.size())
+            throw new IllegalArgumentException("The provided vector size must be 1 less than the current vector size.");
+        if (vector.type() == VectorType.SPARSE) {
+            int[] newIndexes = new int[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            double[] newValues = new double[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            int currentIndex = 0;
+            int vector1Index = 0;
+            int vector2Index = 0;
+            while (vector1Index < numberOfNonzeroEntries
+                    && vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                if (indexes[vector1Index] < ((SparseVector) vector).indexes[vector2Index]) {
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] = values[vector1Index];
+                    currentIndex++;
+                    vector1Index++;
+                } else if (indexes[vector1Index] > ((SparseVector) vector).indexes[vector2Index]) {
+                    newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                    newValues[currentIndex] = scalar * ((SparseVector) vector).values[vector2Index];
+                    currentIndex++;
+                    vector2Index++;
+                } else {
+                    newIndexes[currentIndex] = indexes[vector1Index];
+                    newValues[currentIndex] =
+                            values[vector1Index] + scalar * ((SparseVector) vector).values[vector2Index];
+                    currentIndex++;
+                    vector1Index++;
+                    vector2Index++;
+                }
+            }
+            while (vector1Index < numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = indexes[vector1Index];
+                newValues[currentIndex] = values[vector1Index];
+                currentIndex++;
+                vector1Index++;
+            }
+            while (vector2Index < ((SparseVector) vector).numberOfNonzeroEntries) {
+                newIndexes[currentIndex] = ((SparseVector) vector).indexes[vector2Index];
+                newValues[currentIndex] = scalar * ((SparseVector) vector).values[vector2Index];
+                currentIndex++;
+                vector2Index++;
+            }
+            indexes = newIndexes;
+            values = newValues;
+            numberOfNonzeroEntries = currentIndex;
+        } else {
+            throw new NotImplementedException();
+        }
+        return this;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public double inner(Vector vector) {
         checkVectorSize(vector);
         double result = 0;
@@ -927,7 +1032,7 @@ public class SparseVector extends Vector {
                     result += values[vector1Index++] * ((SparseVector) vector).values[vector2Index++];
                 }
             }
-            if (!constantAdded && indexes[numberOfNonzeroEntries - 1] == size - 1)
+            if (!constantAdded && numberOfNonzeroEntries > 0 && indexes[numberOfNonzeroEntries - 1] == size - 1)
                 result += values[numberOfNonzeroEntries - 1];
         } else {
             throw new NotImplementedException();

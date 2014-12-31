@@ -416,6 +416,29 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
+    public DenseVector saxpyPlusConstant(double scalar, Vector vector) {
+        if (vector.size() + 1 != this.size())
+            throw new IllegalArgumentException("The provided vector size must be 1 less than the current vector size.");
+        DenseVector resultVector = new DenseVector(size);
+        double[] resultVectorArray = resultVector.getArray();
+        for (int i = 0; i < size - 1; i++)
+            resultVectorArray[i] = array[i] + scalar * vector.get(i);
+        resultVectorArray[size - 1] = array[size - 1];
+        return resultVector;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DenseVector saxpyPlusConstantInPlace(double scalar, Vector vector) {
+        if (vector.size() + 1 != this.size())
+            throw new IllegalArgumentException("The provided vector size must be 1 less than the current vector size.");
+        for (int i = 0; i < size - 1; i++)
+            array[i] += scalar * vector.get(i);
+        return this;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public double inner(Vector vector) {
         checkVectorSize(vector);
         double dotProduct = 0;

@@ -345,6 +345,30 @@ public abstract class Vector {
     public abstract Vector saxpyInPlace(double scalar, Vector vector);
 
     /**
+     * Performs a modified saxpy operation, as it is named in LAPACK. Let us denote the current vector by
+     * \(\boldsymbol{y}\). Given a scalar \(\alpha\) and another vector \(\boldsymbol{x}\) with size 1 less than the
+     * current vector, this function returns the value of \(\boldsymbol{y}+\alpha\boldsymbol{x}\), where the last
+     * element of the current vector, /(\boldsymbol{y}/) is left as it is (i.e., nothing is added to it).
+     *
+     * @param   scalar  The scalar \(\alpha\).
+     * @param   vector  The vector \(\boldsymbol{x}\).
+     * @return          The result of this operation.
+     */
+    public abstract Vector saxpyPlusConstant(double scalar, Vector vector);
+
+    /**
+     * Performs a modified saxpy operation, as it is named in LAPACK. Let us denote the current vector by
+     * \(\boldsymbol{y}\). Given a scalar \(\alpha\) and another vector \(\boldsymbol{x}\) with size 1 less than the
+     * current vector, this function replaces this vector with the value of \(\boldsymbol{y}+\alpha\boldsymbol{x}+y'\),
+     * where the last element of the current vector, /(\boldsymbol{y}/) is left as it is (i.e., nothing is added to it).
+     *
+     * @param   scalar  The scalar \(\alpha\).
+     * @param   vector  The vector \(\boldsymbol{x}\).
+     * @return          The result of this operation (i.e., the current vector).
+     */
+    public abstract Vector saxpyPlusConstantInPlace(double scalar, Vector vector);
+
+    /**
      * Computes the inner product (also known as the dot product) between the current vector and another vector.
      *
      * @param   vector  The vector used to compute the inner product with the current vector.
