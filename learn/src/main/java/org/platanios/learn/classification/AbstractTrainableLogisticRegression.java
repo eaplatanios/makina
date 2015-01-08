@@ -180,6 +180,7 @@ abstract class AbstractTrainableLogisticRegression
             train();
             return true;
         } catch(Exception e) {
+            e.printStackTrace();
             return false;
         }
     }
@@ -211,7 +212,9 @@ abstract class AbstractTrainableLogisticRegression
             double likelihood = 0;
             while (trainingDataIterator.hasNext()) {
                 LabeledDataInstance<Vector, Integer> dataInstance = trainingDataIterator.next();
-                double probability = weights.dot(dataInstance.features());
+                double probability = useBiasTerm ?
+                        weights.dotPlusConstant(dataInstance.features()) :
+                        weights.dot(dataInstance.features());
                 likelihood += probability * (dataInstance.label() - 1) - Math.log(1 + Math.exp(-probability));
             }
             return -likelihood;
@@ -228,10 +231,16 @@ abstract class AbstractTrainableLogisticRegression
             Vector gradient = Vectors.build(weights.size(), weights.type());
             while (trainingDataIterator.hasNext()) {
                 LabeledDataInstance<Vector, Integer> dataInstance = trainingDataIterator.next();
-                gradient.saxpyInPlace(
-                        (1 / (1 + Math.exp(-weights.dot(dataInstance.features())))) - dataInstance.label(),
-                        dataInstance.features()
-                );
+                if (useBiasTerm)
+                    gradient.saxpyPlusConstantInPlace(
+                            (1 / (1 + Math.exp(-weights.dotPlusConstant(dataInstance.features())))) - dataInstance.label(),
+                            dataInstance.features()
+                    );
+                else
+                    gradient.saxpyInPlace(
+                            (1 / (1 + Math.exp(-weights.dot(dataInstance.features())))) - dataInstance.label(),
+                            dataInstance.features()
+                    );
             }
             return gradient;
         }
@@ -258,10 +267,16 @@ abstract class AbstractTrainableLogisticRegression
         public Vector estimateGradient(Vector weights, List<LabeledDataInstance<Vector, Integer>> dataBatch) {
             Vector gradient = Vectors.build(weights.size(), weights.type());
             for (LabeledDataInstance<Vector, Integer> dataInstance : dataBatch) {
-                gradient.saxpyInPlace(
-                        (1 / (1 + Math.exp(-weights.dot(dataInstance.features())))) - dataInstance.label(),
-                        dataInstance.features()
-                );
+                if (useBiasTerm)
+                    gradient.saxpyPlusConstantInPlace(
+                            (1 / (1 + Math.exp(-weights.dotPlusConstant(dataInstance.features())))) - dataInstance.label(),
+                            dataInstance.features()
+                    );
+                else
+                    gradient.saxpyInPlace(
+                            (1 / (1 + Math.exp(-weights.dot(dataInstance.features())))) - dataInstance.label(),
+                            dataInstance.features()
+                    );
             }
             return gradient;
         }

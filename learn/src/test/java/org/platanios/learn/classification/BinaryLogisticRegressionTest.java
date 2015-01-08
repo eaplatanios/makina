@@ -184,11 +184,12 @@ public class BinaryLogisticRegressionTest {
         LogisticRegressionAdaGrad classifier =
                 new LogisticRegressionAdaGrad.Builder(trainingDataSet.get(0).features().size())
                         .sparse(true)
-                        .maximumNumberOfIterations(100)
-                        .batchSize(1000)
-                        .useL1Regularization(true)
-                        .l1RegularizationWeight(0.01)
+                        .maximumNumberOfIterations(100000)
+                        .batchSize(10)
+                        .useL1Regularization(false)
+                        .l1RegularizationWeight(0.1)
                         .loggingLevel(2)
+                        .useBiasTerm(false)
                         .build();
         classifier.train(trainingDataSet.subSet(0, 20000));
         DataSet<PredictedDataInstance<Vector, Integer>> testingDataSet = new DataSetInMemory<>();
