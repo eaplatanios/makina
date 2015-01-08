@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="DataSourceManagerImpl" format="xml" hash="23618138">
+  <component name="DataSourceManagerImpl" format="xml" hash="2617087874">
     <data-source source="LOCAL" name="MariaDB - Local" uuid="4e7dbfa6-8474-442c-b88b-883bf535e151">
       <driver-ref>java.sql.Driver</driver-ref>
       <synchronize>true</synchronize>

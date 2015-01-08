@@ -23,7 +23,6 @@
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
         <module name="learn" />
-        <module name="trade" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
