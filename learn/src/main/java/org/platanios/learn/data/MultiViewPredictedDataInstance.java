@@ -2,7 +2,7 @@ package org.platanios.learn.data;
 
 import org.platanios.learn.math.matrix.Vector;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -15,7 +15,7 @@ public class MultiViewPredictedDataInstance<T extends Vector, S> extends MultiVi
         this.probability = probability;
     }
 
-    public MultiViewPredictedDataInstance(String name, Map<Integer, T> features, S label, Object source, double probability) {
+    public MultiViewPredictedDataInstance(String name, List<T> features, S label, Object source, double probability) {
         super(name, features, label, source);
         this.probability = probability;
     }

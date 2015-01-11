@@ -2,6 +2,8 @@ package org.platanios.learn.data;
 
 import org.platanios.learn.math.matrix.Vector;
 
+import java.util.List;
+
 /**
  * @author Emmanouil Antonios Platanios
  */
@@ -34,5 +36,10 @@ class LabeledDataInstanceBase<T extends Vector, S> extends DataInstanceBase<T> {
     @Override
     public LabeledDataInstance<T, S> toDataInstance(T features) {
         return new LabeledDataInstance<>(name, features, label, source);
+    }
+
+    @Override
+    public MultiViewDataInstance<T> toMultiViewDataInstance(List<T> features) {
+        return new MultiViewLabeledDataInstance<>(name, features, label, source);
     }
 }

@@ -2,7 +2,7 @@ package org.platanios.learn.data;
 
 import org.platanios.learn.math.matrix.Vector;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -17,7 +17,7 @@ public class MultiViewLabeledDataInstance<T extends Vector, S> extends MultiView
         this.source = source;
     }
 
-    public MultiViewLabeledDataInstance(String name, Map<Integer, T> features, S label, Object source) {
+    public MultiViewLabeledDataInstance(String name, List<T> features, S label, Object source) {
         super(name, features);
         this.label = label;
         this.source = source;

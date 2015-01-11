@@ -2,6 +2,8 @@ package org.platanios.learn.data;
 
 import org.platanios.learn.math.matrix.Vector;
 
+import java.util.List;
+
 /**
  * @author Emmanouil Antonios Platanios
  */
@@ -22,5 +24,9 @@ class DataInstanceBase<T extends Vector> {
 
     public DataInstance<T> toDataInstance(T features) {
         return new DataInstance<>(name, features);
+    }
+
+    public MultiViewDataInstance<T> toMultiViewDataInstance(List<T> features) {
+        return new MultiViewDataInstance<>(name, features);
     }
 }

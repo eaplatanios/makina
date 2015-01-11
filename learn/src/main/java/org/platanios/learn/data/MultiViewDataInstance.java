@@ -2,21 +2,21 @@ package org.platanios.learn.data;
 
 import org.platanios.learn.math.matrix.Vector;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
 public class MultiViewDataInstance<T extends Vector> {
     protected final String name;
-    protected final Map<Integer, T> features;
+    protected final List<T> features;
 
     public MultiViewDataInstance(String name) {
         this.name = name;
         this.features = null;
     }
 
-    public MultiViewDataInstance(String name, Map<Integer, T> features) {
+    public MultiViewDataInstance(String name, List<T> features) {
         this.name = name;
         this.features = features;
     }
@@ -25,7 +25,7 @@ public class MultiViewDataInstance<T extends Vector> {
         return name;
     }
 
-    public Map<Integer, T> features() {
+    public List<T> features() {
         return features;
     }
 
