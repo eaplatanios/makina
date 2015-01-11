@@ -2,9 +2,11 @@ package org.platanios.learn.math.matrix;
 
 import org.platanios.learn.math.MathUtilities;
 import org.platanios.learn.serialization.UnsafeSerializationUtilities;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InvalidObjectException;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
@@ -166,7 +168,7 @@ public class SparseVector extends Vector {
      * @param   vector  The hash vector from which to construct this sparse vector.
      */
     public SparseVector(HashVector vector) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     /** {@inheritDoc} */
@@ -437,7 +439,7 @@ public class SparseVector extends Vector {
             }
             resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return resultVector;
     }
@@ -488,7 +490,7 @@ public class SparseVector extends Vector {
             values = newValues;
             numberOfNonzeroEntries = currentIndex;
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return this;
     }
@@ -555,7 +557,7 @@ public class SparseVector extends Vector {
             }
             resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return resultVector;
     }
@@ -606,7 +608,7 @@ public class SparseVector extends Vector {
             values = newValues;
             numberOfNonzeroEntries = currentIndex;
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return this;
     }
@@ -638,7 +640,7 @@ public class SparseVector extends Vector {
             }
             resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return resultVector;
     }
@@ -671,7 +673,7 @@ public class SparseVector extends Vector {
             values = newValues;
             numberOfNonzeroEntries = currentIndex;
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return this;
     }
@@ -703,7 +705,7 @@ public class SparseVector extends Vector {
             }
             resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return resultVector;
     }
@@ -736,7 +738,7 @@ public class SparseVector extends Vector {
             values = newValues;
             numberOfNonzeroEntries = currentIndex;
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return this;
     }
@@ -821,7 +823,7 @@ public class SparseVector extends Vector {
             }
             resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return resultVector;
     }
@@ -873,7 +875,7 @@ public class SparseVector extends Vector {
             values = newValues;
             numberOfNonzeroEntries = currentIndex;
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return this;
     }
@@ -925,7 +927,7 @@ public class SparseVector extends Vector {
             }
             resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return resultVector;
     }
@@ -978,7 +980,7 @@ public class SparseVector extends Vector {
             values = newValues;
             numberOfNonzeroEntries = currentIndex;
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return this;
     }
@@ -1004,7 +1006,7 @@ public class SparseVector extends Vector {
                 }
             }
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return result;
     }
@@ -1035,7 +1037,7 @@ public class SparseVector extends Vector {
             if (!constantAdded && numberOfNonzeroEntries > 0 && indexes[numberOfNonzeroEntries - 1] == size - 1)
                 result += values[numberOfNonzeroEntries - 1];
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return result;
     }
@@ -1088,7 +1090,7 @@ public class SparseVector extends Vector {
             }
             resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return resultVector;
     }
@@ -1142,7 +1144,7 @@ public class SparseVector extends Vector {
             values = newValues;
             numberOfNonzeroEntries = currentIndex;
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return this;
     }
@@ -1196,7 +1198,7 @@ public class SparseVector extends Vector {
             }
             resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return resultVector;
     }
@@ -1251,7 +1253,7 @@ public class SparseVector extends Vector {
             values = newValues;
             numberOfNonzeroEntries = currentIndex;
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return this;
     }
@@ -1364,7 +1366,7 @@ public class SparseVector extends Vector {
             }
             resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return resultVector;
     }
@@ -1425,7 +1427,7 @@ public class SparseVector extends Vector {
             values = newValues;
             numberOfNonzeroEntries = currentIndex;
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return this;
     }
@@ -1493,7 +1495,7 @@ public class SparseVector extends Vector {
             }
             resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return resultVector;
     }
@@ -1562,7 +1564,7 @@ public class SparseVector extends Vector {
             values = newValues;
             numberOfNonzeroEntries = currentIndex;
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return this;
     }
@@ -1630,7 +1632,7 @@ public class SparseVector extends Vector {
             }
             resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return resultVector;
     }
@@ -1699,7 +1701,7 @@ public class SparseVector extends Vector {
             values = newValues;
             numberOfNonzeroEntries = currentIndex;
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return this;
     }
@@ -1743,7 +1745,7 @@ public class SparseVector extends Vector {
             }
             resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return resultVector;
     }
@@ -1788,7 +1790,7 @@ public class SparseVector extends Vector {
             values = newValues;
             numberOfNonzeroEntries = currentIndex;
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return this;
     }
@@ -1834,7 +1836,7 @@ public class SparseVector extends Vector {
             }
             resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return resultVector;
     }
@@ -1881,7 +1883,7 @@ public class SparseVector extends Vector {
             values = newValues;
             numberOfNonzeroEntries = currentIndex;
         } else {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
         return this;
     }

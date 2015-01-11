@@ -3,7 +3,6 @@ package org.platanios.learn.math.matrix;
 import cern.colt.list.IntArrayList;
 import cern.colt.map.OpenIntDoubleHashMap;
 import org.platanios.learn.serialization.UnsafeSerializationUtilities;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -475,13 +474,13 @@ public class HashVector extends Vector {
     /** {@inheritDoc} */
     @Override
     public DenseVector saxpyPlusConstant(double scalar, Vector vector) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     /** {@inheritDoc} */
     @Override
     public DenseVector saxpyPlusConstantInPlace(double scalar, Vector vector) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     /** {@inheritDoc} */
@@ -510,31 +509,31 @@ public class HashVector extends Vector {
     /** {@inheritDoc} */
     @Override
     public double innerPlusConstant(Vector vector) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     /** {@inheritDoc} */
     @Override
     public HashVector hypotenuse(Vector vector) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     /** {@inheritDoc} */
     @Override
     public HashVector hypotenuseInPlace(Vector vector) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     /** {@inheritDoc} */
     @Override
     public HashVector hypotenuseFast(Vector vector) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     /** {@inheritDoc} */
     @Override
     public HashVector hypotenuseFastInPlace(Vector vector) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     /** {@inheritDoc} */
@@ -555,61 +554,61 @@ public class HashVector extends Vector {
     /** {@inheritDoc} */
     @Override
     public HashVector mapBiFunction(BiFunction<Double, Double, Double> function, Vector vector) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     /** {@inheritDoc} */
     @Override
     public HashVector mapBiFunctionInPlace(BiFunction<Double, Double, Double> function, Vector vector) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     /** {@inheritDoc} */
     @Override
     public HashVector mapAdd(Function<Double, Double> function, Vector vector) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     /** {@inheritDoc} */
     @Override
     public HashVector mapAddInPlace(Function<Double, Double> function, Vector vector) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     /** {@inheritDoc} */
     @Override
     public HashVector mapSub(Function<Double, Double> function, Vector vector) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     /** {@inheritDoc} */
     @Override
     public HashVector mapSubInPlace(Function<Double, Double> function, Vector vector) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     /** {@inheritDoc} */
     @Override
     public HashVector mapMultElementwise(Function<Double, Double> function, Vector vector) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     /** {@inheritDoc} */
     @Override
     public HashVector mapMultElementwiseInPlace(Function<Double, Double> function, Vector vector) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     /** {@inheritDoc} */
     @Override
     public HashVector mapDivElementwise(Function<Double, Double> function, Vector vector) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     /** {@inheritDoc} */
     @Override
     public HashVector mapDivElementwiseInPlace(Function<Double, Double> function, Vector vector) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     /** {@inheritDoc} */
@@ -639,13 +638,13 @@ public class HashVector extends Vector {
     /** {@inheritDoc} */
     @Override
     public HashVector prepend(double value) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     /** {@inheritDoc} */
     @Override
     public HashVector append(double value) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     /** {@inheritDoc} */

@@ -2,7 +2,6 @@ package org.platanios.learn.classification.reflection;
 
 import com.google.common.collect.BiMap;
 import com.google.common.primitives.Ints;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.List;
 
@@ -123,49 +122,49 @@ public enum ErrorEstimationObjective {
     SCALED_DEPENDENCY {
         @Override
         public Function build(ErrorRatesPowerSetVector errorRates, int[][] hessianIndexKeyMapping) {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
     }, // TODO: Implement this objective function and add all relevant documentation.
     DEPENDENCY_ACROSS_DOMAINS {
         @Override
         public Function build(ErrorRatesPowerSetVector errorRates, int[][] hessianIndexKeyMapping) {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
     }, // TODO: Implement this objective function and add all relevant documentation.
     SCALED_DEPENDENCY_ACROSS_DOMAINS {
         @Override
         public Function build(ErrorRatesPowerSetVector errorRates, int[][] hessianIndexKeyMapping) {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
     }, // TODO: Implement this objective function and add all relevant documentation.
     L2_NORM {
         @Override
         public Function build(ErrorRatesPowerSetVector errorRates, int[][] hessianIndexKeyMapping) {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
     }, // TODO: Implement this objective function and add all relevant documentation.
     DEPENDENCY_AND_L2_NORM {
         @Override
         public Function build(ErrorRatesPowerSetVector errorRates, int[][] hessianIndexKeyMapping) {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
     }, // TODO: Implement this objective function and add all relevant documentation.
     SCALED_DEPENDENCY_AND_L2_NORM {
         @Override
         public Function build(ErrorRatesPowerSetVector errorRates, int[][] hessianIndexKeyMapping) {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
     }, // TODO: Implement this objective function and add all relevant documentation.
     DEPENDENCY_ACROSS_DOMAINS_AND_L2_NORM {
         @Override
         public Function build(ErrorRatesPowerSetVector errorRates, int[][] hessianIndexKeyMapping) {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
     }, // TODO: Implement this objective function and add all relevant documentation.
     SCALED_DEPENDENCY_ACROSS_DOMAINS_AND_L2_NORM {
         @Override
         public Function build(ErrorRatesPowerSetVector errorRates, int[][] hessianIndexKeyMapping) {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
         }
     }; // TODO: Implement this objective function and add all relevant documentation.
 

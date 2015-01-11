@@ -5,7 +5,6 @@ import org.apache.logging.log4j.Logger;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
 import org.platanios.learn.serialization.UnsafeSerializationUtilities;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -92,7 +91,7 @@ public abstract class FeatureMap<T extends Vector> {
         MARIA_DB {
             @Override
             protected <T extends Vector> FeatureMap<T> build(int numberOfViews) {
-                throw new NotImplementedException();
+                throw new UnsupportedOperationException();
             }
         };
 

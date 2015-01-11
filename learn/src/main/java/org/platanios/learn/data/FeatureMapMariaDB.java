@@ -2,7 +2,6 @@ package org.platanios.learn.data;
 
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -172,7 +171,7 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
     /** {@inheritDoc} */
     @Override
     public boolean write(OutputStream outputStream) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     protected void createDatabase() {

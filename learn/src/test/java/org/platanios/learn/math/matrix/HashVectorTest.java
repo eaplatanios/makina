@@ -3,7 +3,6 @@ package org.platanios.learn.math.matrix;
 import cern.colt.map.OpenIntDoubleHashMap;
 import org.junit.Assert;
 import org.junit.Test;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -16,7 +15,7 @@ import java.io.InputStream;
 public class HashVectorTest {
     @Test
     public void testEquals() {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     @Test
