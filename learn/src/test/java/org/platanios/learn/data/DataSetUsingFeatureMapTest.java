@@ -61,4 +61,34 @@ public class DataSetUsingFeatureMapTest {
         Assert.assertTrue(orangeDataInstance.label() == 2);
         Assert.assertTrue(orangeDataInstance.source() == null);
     }
+
+    @Test
+    public void testAddingGettingAndSortingPredictedDataInstances() {
+        DenseVector appleView1Vector = DenseVector.generateOnesVector(10);
+        DenseVector appleView2Vector = DenseVector.generateRandomVector(20);
+        DenseVector orangeView0Vector = DenseVector.generateRandomVector(15);
+        DenseVector orangeView1Vector = DenseVector.generateRandomVector(5);
+        FeatureMap<DenseVector> featureMap = new FeatureMapInMemory<>(3);
+        featureMap.addFeatureMappings("apple", appleView1Vector, 1);
+        featureMap.addFeatureMappings("apple", appleView2Vector, 2);
+        featureMap.addFeatureMappings("orange", orangeView0Vector, 0);
+        featureMap.addFeatureMappings("orange", orangeView1Vector, 1);
+
+        DataSetUsingFeatureMap<DenseVector, PredictedDataInstance<DenseVector, Integer>> dataSet =
+                new DataSetUsingFeatureMap<>(featureMap, 1);
+        dataSet.add(new PredictedDataInstance<>("apple", appleView1Vector, 1, null, 0.6));
+        dataSet.add(new PredictedDataInstance<>("orange", null, 2, null, 0.9));
+        dataSet.sort((i1, i2) -> -Double.compare(i1.probability(), i2.probability()));
+        PredictedDataInstance<DenseVector, Integer> orangeDataInstance = dataSet.get(0);
+        PredictedDataInstance<DenseVector, Integer> appleDataInstance = dataSet.get(1);
+
+        Assert.assertTrue(appleDataInstance.name().equals("apple"));
+        Assert.assertTrue(featureMap.getFeatureVector("apple", 1).equals(appleDataInstance.features()));
+        Assert.assertTrue(appleDataInstance.label() == 1);
+        Assert.assertTrue(appleDataInstance.source() == null);
+        Assert.assertTrue(orangeDataInstance.name().equals("orange"));
+        Assert.assertTrue(featureMap.getFeatureVector("orange", 1).equals(orangeDataInstance.features()));
+        Assert.assertTrue(orangeDataInstance.label() == 2);
+        Assert.assertTrue(orangeDataInstance.source() == null);
+    }
 }

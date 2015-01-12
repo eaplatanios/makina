@@ -225,10 +225,10 @@ public class BinaryLogisticRegressionTest {
         try {
             filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.dense.model";
             FileOutputStream fout = new FileOutputStream(filename);
-            classifier.write(fout);
+            classifier.write(fout, true);
             fout.close();
             FileInputStream fin = new FileInputStream(filename);
-            LogisticRegressionPrediction loadedClassifier = LogisticRegressionPrediction.read(fin);
+            LogisticRegressionPrediction loadedClassifier = LogisticRegressionPrediction.read(fin, true);
             fin.close();
             DataSet<PredictedDataInstance<Vector, Integer>> testingDataSet = new DataSetInMemory<>();
             for (LabeledDataInstance<Vector, Integer> dataInstance : trainingDataSet.subSet(500000, trainingDataSet.size()))
@@ -262,10 +262,10 @@ public class BinaryLogisticRegressionTest {
         try {
             filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.sparse.model";
             FileOutputStream fout = new FileOutputStream(filename);
-            classifier.write(fout);
+            classifier.write(fout, true);
             fout.close();
             FileInputStream fin = new FileInputStream(filename);
-            LogisticRegressionPrediction loadedClassifier = LogisticRegressionPrediction.read(fin);
+            LogisticRegressionPrediction loadedClassifier = LogisticRegressionPrediction.read(fin, true);
             fin.close();
             DataSet<PredictedDataInstance<Vector, Integer>> testingDataSet = new DataSetInMemory<>();
             for (LabeledDataInstance<Vector, Integer> dataInstance : trainingDataSet.subSet(500000, trainingDataSet.size()))
