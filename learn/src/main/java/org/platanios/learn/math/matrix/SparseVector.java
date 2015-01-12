@@ -2041,9 +2041,9 @@ public class SparseVector extends Vector {
      */
     public static SparseVector read(InputStream inputStream, boolean includeType) throws IOException {
         if (includeType) {
-            VectorType storedVectorType = VectorType.values()[UnsafeSerializationUtilities.readInt(inputStream)];
-            if (storedVectorType != VectorType.SPARSE)
-                throw new InvalidObjectException("The stored vector is of type " + storedVectorType.name() + "!");
+            VectorType vectorType = VectorType.values()[UnsafeSerializationUtilities.readInt(inputStream)];
+            if (vectorType != VectorType.SPARSE)
+                throw new InvalidObjectException("The stored vector is of type " + vectorType.name() + "!");
         }
         int size = UnsafeSerializationUtilities.readInt(inputStream);
         int numberOfNonzeroEntries = UnsafeSerializationUtilities.readInt(inputStream);

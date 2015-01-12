@@ -807,9 +807,9 @@ public class DenseVector extends Vector {
      */
     public static DenseVector read(InputStream inputStream, boolean includeType) throws IOException {
         if (includeType) {
-            VectorType storedVectorType = VectorType.values()[UnsafeSerializationUtilities.readInt(inputStream)];
-            if (storedVectorType != VectorType.DENSE)
-                throw new InvalidObjectException("The stored vector is of type " + storedVectorType.name() + "!");
+            VectorType vectorType = VectorType.values()[UnsafeSerializationUtilities.readInt(inputStream)];
+            if (vectorType != VectorType.DENSE)
+                throw new InvalidObjectException("The stored vector is of type " + vectorType.name() + "!");
         }
         int size = UnsafeSerializationUtilities.readInt(inputStream);
         DenseVector vector = new DenseVector(size);

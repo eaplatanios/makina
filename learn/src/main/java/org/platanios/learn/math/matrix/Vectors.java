@@ -36,8 +36,8 @@ public class Vectors {
      * @throws java.io.IOException
      */
     public static Vector build(InputStream inputStream) throws IOException {
-        VectorType storedVectorType = VectorType.values()[UnsafeSerializationUtilities.readInt(inputStream)];
-        return storedVectorType.buildVector(inputStream, false);
+        VectorType vectorType = VectorType.values()[UnsafeSerializationUtilities.readInt(inputStream)];
+        return vectorType.buildVector(inputStream, false);
     }
 
     /**
