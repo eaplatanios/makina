@@ -7,21 +7,38 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
 public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
+    private static final Properties properties = new Properties();
+    private static final String databaseServerURL;
+    private static final String databaseServerUserName;
+    private static final String databaseServerPassword;
+    private static final String databaseName;
+    private static final String tableName;
+    static {
+        try {
+            properties.load(ClassLoader.getSystemResourceAsStream("FeatureMapMariaDB.properties"));
+            databaseServerURL = properties.getProperty("databaseServerURL", "jdbc:mariadb://localhost/");
+            databaseServerUserName = properties.getProperty("databaseServerUserName", "root");
+            databaseServerPassword = properties.getProperty("databaseServerPassword", null);
+            databaseName = properties.getProperty("databaseName", "learn");
+            tableName = properties.getProperty("tableName", "features");
+        } catch (IOException e) {
+            logger.error("Could not load the MariaDB feature map properties!", e);
+            throw new RuntimeException(e);
+        }
+    }
+
     private final Connection connection;
 
     protected FeatureMapMariaDB(int numberOfViews) {
         super(numberOfViews);
         try {
-            connection = DriverManager.getConnection("jdbc:mariadb://localhost/", "root", null);
+            connection = DriverManager.getConnection(databaseServerURL, databaseServerUserName, databaseServerPassword);
         } catch (SQLException e) {
             logger.error("Could not connect to the default database server!", e);
             throw new RuntimeException(e);
@@ -177,9 +194,9 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
     protected void createDatabase() {
         try {
             Statement statement = connection.createStatement();
-            statement.executeUpdate("DROP DATABASE IF EXISTS learn");
-            statement.executeUpdate("CREATE DATABASE learn");
-            String tableCreationQuery = "CREATE TABLE learn.features (name VARCHAR(100)";
+            statement.executeUpdate("DROP DATABASE IF EXISTS " + databaseName);
+            statement.executeUpdate("CREATE DATABASE " + databaseName);
+            String tableCreationQuery = "CREATE TABLE " + databaseName + "." + tableName + " (name VARCHAR(100)";
             for (int view = 0; view < numberOfViews; view++)
                 tableCreationQuery += ", features_view_" + view + " MEDIUMBLOB";
             tableCreationQuery += ", PRIMARY KEY (name) )";
@@ -191,8 +208,9 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
     }
 
     private void insertFeatures(String name, T features, int view) throws SQLException {
-        String insertionQuery = "INSERT INTO learn.features (name, features_view_" + view + ") VALUES (?, ?) " +
-                "ON DUPLICATE KEY UPDATE features_view_" + view + "=VALUES(features_view_" + view + ")";
+        String insertionQuery = "INSERT INTO " + databaseName + "." + tableName +
+                " (name, features_view_" + view + ") VALUES (?, ?) " + "ON DUPLICATE KEY UPDATE features_view_" +
+                view + "=VALUES(features_view_" + view + ")";
         PreparedStatement preparedStatement = connection.prepareStatement(insertionQuery);
         preparedStatement.setString(1, name);
         if (features != null)
@@ -204,7 +222,8 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
     }
 
     private void insertFeatures(Map<String, T> featureMappings, int view) throws SQLException {
-        String insertionQuery = "INSERT INTO learn.features (name, features_view_" + view + ") VALUES ";
+        String insertionQuery = "INSERT INTO " + databaseName + "." + tableName + " (name, features_view_" +
+                view + ") VALUES ";
         for (int i = 0; i < featureMappings.size(); i++)
             insertionQuery += "(?, ?), ";
         insertionQuery = insertionQuery.substring(0, insertionQuery.length() - 2)
@@ -224,7 +243,7 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
     }
 
     private void insertFeatures(String name, List<T> features) throws SQLException {
-        String insertionQuery = "INSERT INTO learn.features VALUES (?";
+        String insertionQuery = "INSERT INTO " + databaseName + "." + tableName + " VALUES (?";
         String lastPartOfInsertionQuery = "ON DUPLICATE KEY UPDATE ";
         for (int view = 0; view < numberOfViews; view++) {
             insertionQuery += ", ?";
@@ -248,7 +267,7 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
     }
 
     private void insertFeatures(Map<String, List<T>> featureMappings) throws SQLException {
-        String insertionQuery = "INSERT INTO learn.features VALUES ";
+        String insertionQuery = "INSERT INTO " + databaseName + "." + tableName + " VALUES ";
         String valuesPartOfInsertionQuery = "(?";
         String lastPartOfInsertionQuery = "ON DUPLICATE KEY UPDATE ";
         for (int view = 0; view < numberOfViews; view++) {
@@ -280,7 +299,7 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
 
     private List<String> selectNames() throws SQLException {
         List<String> names = new ArrayList<>();
-        String selectionQuery = "SELECT name FROM learn.features";
+        String selectionQuery = "SELECT name FROM " + databaseName + "." + tableName;
         ResultSet result = connection.createStatement().executeQuery(selectionQuery);
         while (result.next())
             names.add(result.getString("name"));
@@ -289,7 +308,8 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
 
     @SuppressWarnings("unchecked")
     private T selectFeatures(String name, int view) throws SQLException, IOException {
-        String selectionQuery = "SELECT features_view_" + view + " FROM learn.features WHERE name='" + name + "'";
+        String selectionQuery = "SELECT features_view_" + view + " FROM " + databaseName + "." + tableName +
+                " WHERE name='" + name + "'";
         ResultSet result = connection.createStatement().executeQuery(selectionQuery);
         if (result.next()) {
             InputStream inputStream = result.getBinaryStream("features_view_" + view);
@@ -304,7 +324,8 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
 
     @SuppressWarnings("unchecked")
     private Map<String, T> selectFeatures(List<String> names, int view) throws SQLException, IOException {
-        String selectionQuery = "SELECT name, features_view_" + view + " FROM learn.features WHERE name IN (";
+        String selectionQuery = "SELECT name, features_view_" + view + " FROM " + databaseName + "." + tableName +
+                " WHERE name IN (";
         for (String name : names)
             selectionQuery += "'" + name + "', ";
         selectionQuery = selectionQuery.substring(0, selectionQuery.length() - 1) + ")";
@@ -322,7 +343,7 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
 
     @SuppressWarnings("unchecked")
     private Map<String, T> selectFeatures(int view) throws SQLException, IOException {
-        String selectionQuery = "SELECT name, features_view_" + view + " FROM learn.features";
+        String selectionQuery = "SELECT name, features_view_" + view + " FROM " + databaseName + "." + tableName;
         ResultSet result = connection.createStatement().executeQuery(selectionQuery);
         Map<String, T> features = new HashMap<>();
         while (result.next()) {
@@ -340,7 +361,7 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
         String selectionQuery = "SELECT";
         for (int view = 0; view < numberOfViews; view++)
             selectionQuery += " features_view_" + view;
-        selectionQuery += " FROM learn.features WHERE name='" + name + "'";
+        selectionQuery += " FROM " + databaseName + "." + tableName + " WHERE name='" + name + "'";
         ResultSet result = connection.createStatement().executeQuery(selectionQuery);
         if (result.next()) {
             List<T> features = new ArrayList<>();
@@ -359,7 +380,7 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
 
     @SuppressWarnings("unchecked")
     private Map<String, List<T>> selectFeatures(List<String> names) throws SQLException, IOException {
-        String selectionQuery = "SELECT * FROM learn.features WHERE name IN (";
+        String selectionQuery = "SELECT * FROM " + databaseName + "." + tableName + " WHERE name IN (";
         for (String name : names)
             selectionQuery += "'" + name + "', ";
         selectionQuery = selectionQuery.substring(0, selectionQuery.length() - 1) + ")";
@@ -381,7 +402,7 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
 
     @SuppressWarnings("unchecked")
     private Map<String, List<T>> selectAllFeatures() throws SQLException, IOException {
-        String selectionQuery = "SELECT * FROM learn.features";
+        String selectionQuery = "SELECT * FROM " + databaseName + "." + tableName;
         ResultSet result = connection.createStatement().executeQuery(selectionQuery);
         Map<String, List<T>> features = new HashMap<>();
         while (result.next()) {
