@@ -4,6 +4,7 @@ import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.statistics.StatisticsUtilities;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -47,9 +48,28 @@ public class DataSetUsingFeatureMap<T extends Vector, D extends DataInstance<T>>
 
     @Override
     @SuppressWarnings("unchecked")
+    public void add(List<D> dataInstances) {
+        dataInstances.addAll(
+                (List) dataInstances.stream().map(DataInstance::toDataInstanceBase).collect(Collectors.toList())
+        );
+    }
+
+    @Override
+    public void remove(int index) {
+        dataInstances.remove(index);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
     public D get(int index) {
         DataInstanceBase<T> dataInstance = (DataInstanceBase<T>) dataInstances.get(index);
         return (D) dataInstance.toDataInstance(featureMap.getFeatureVector(dataInstance.name(), featureMapView));
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void set(int index, D dataInstance) {
+        dataInstances.set(index, dataInstance.toDataInstanceBase());
     }
 
     @Override
@@ -57,6 +77,19 @@ public class DataSetUsingFeatureMap<T extends Vector, D extends DataInstance<T>>
         DataSetUsingFeatureMap<T, D> subSet = new DataSetUsingFeatureMap<>(featureMap, featureMapView);
         subSet.dataInstances = dataInstances.subList(fromIndex, toIndex);
         return subSet;
+    }
+
+    // TODO: Note that this method is very slow because it gets the feature vector for each data instance base.
+    @Override
+    @SuppressWarnings("unchecked")
+    public DataSetUsingFeatureMap<T, D> sort(Comparator<? super D> comparator) {
+        dataInstances.sort((i1, i2) -> comparator.compare(
+                (D) ((DataInstanceBase<T>) i1)
+                        .toDataInstance(featureMap.getFeatureVector(((DataInstanceBase<T>) i1).name(), featureMapView)),
+                (D) ((DataInstanceBase<T>) i2)
+                        .toDataInstance(featureMap.getFeatureVector(((DataInstanceBase<T>) i2).name(), featureMapView))
+        ));
+        return this;
     }
 
     @Override

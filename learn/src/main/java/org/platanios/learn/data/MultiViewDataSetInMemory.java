@@ -3,8 +3,10 @@ package org.platanios.learn.data;
 import org.platanios.learn.math.statistics.StatisticsUtilities;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -31,13 +33,42 @@ public class MultiViewDataSetInMemory<D extends MultiViewDataInstance> implement
     }
 
     @Override
+    public void add(List<D> dataInstances) {
+        dataInstances.addAll(dataInstances);
+    }
+
+    @Override
+    public void remove(int index) {
+        dataInstances.remove(index);
+    }
+
+    @Override
     public D get(int index) {
         return dataInstances.get(index);
     }
 
     @Override
+    public void set(int index, D dataInstance) {
+        dataInstances.set(index, dataInstance);
+    }
+
+    @Override
     public MultiViewDataSetInMemory<D> subSet(int fromIndex, int toIndex) {
         return new MultiViewDataSetInMemory<>(dataInstances.subList(fromIndex, toIndex));
+    }
+
+    @Override
+    public DataSetInMemory<? extends DataInstance> getSingleViewDataSet(int view) {
+        return new DataSetInMemory<>(dataInstances
+                                             .parallelStream()
+                                             .map(dataInstance -> dataInstance.getSingleViewDataInstance(view))
+                                             .collect(Collectors.toList()));
+    }
+
+    @Override
+    public MultiViewDataSetInMemory<D> sort(Comparator<? super D> comparator) {
+        dataInstances.sort(comparator);
+        return this;
     }
 
     @Override

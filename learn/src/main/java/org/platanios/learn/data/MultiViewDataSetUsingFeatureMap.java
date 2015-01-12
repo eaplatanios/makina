@@ -4,6 +4,7 @@ import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.statistics.StatisticsUtilities;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,19 +18,16 @@ import java.util.stream.Collectors;
 public class MultiViewDataSetUsingFeatureMap<T extends Vector, D extends MultiViewDataInstance<T>>
         implements MultiViewDataSet<D> {
     private final FeatureMap<T> featureMap;
-    private final int featureMapView;
 
     private List dataInstances;
 
-    public MultiViewDataSetUsingFeatureMap(FeatureMap<T> featureMap, int featureMapView) {
+    public MultiViewDataSetUsingFeatureMap(FeatureMap<T> featureMap) {
         this.featureMap = featureMap;
-        this.featureMapView = featureMapView;
         this.dataInstances = new ArrayList<>();
     }
 
-    public MultiViewDataSetUsingFeatureMap(FeatureMap<T> featureMap, int featureMapView, List<D> dataInstances) {
+    public MultiViewDataSetUsingFeatureMap(FeatureMap<T> featureMap, List<D> dataInstances) {
         this.featureMap = featureMap;
-        this.featureMapView = featureMapView;
         this.dataInstances = dataInstances.stream()
                 .map(MultiViewDataInstance::toDataInstanceBase)
                 .collect(Collectors.toList());
@@ -48,17 +46,55 @@ public class MultiViewDataSetUsingFeatureMap<T extends Vector, D extends MultiVi
 
     @Override
     @SuppressWarnings("unchecked")
+    public void add(List<D> dataInstances) {
+        dataInstances.addAll((List) dataInstances
+                .stream()
+                .map(MultiViewDataInstance::toDataInstanceBase)
+                .collect(Collectors.toList()));
+    }
+
+    @Override
+    public void remove(int index) {
+        dataInstances.remove(index);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
     public D get(int index) {
         DataInstanceBase<T> dataInstance = (DataInstanceBase<T>) dataInstances.get(index);
         return (D) dataInstance.toMultiViewDataInstance(featureMap.getFeatureVectors(dataInstance.name()));
     }
 
     @Override
+    @SuppressWarnings("unchecked")
+    public void set(int index, D dataInstance) {
+        dataInstances.set(index, dataInstance.toDataInstanceBase());
+    }
+
+    @Override
     public MultiViewDataSetUsingFeatureMap<T, D> subSet(int fromIndex, int toIndex) {
-        MultiViewDataSetUsingFeatureMap<T, D> subSet =
-                new MultiViewDataSetUsingFeatureMap<>(featureMap, featureMapView);
+        MultiViewDataSetUsingFeatureMap<T, D> subSet = new MultiViewDataSetUsingFeatureMap<>(featureMap);
         subSet.dataInstances = dataInstances.subList(fromIndex, toIndex);
         return subSet;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public DataSetUsingFeatureMap<T, ? extends DataInstance> getSingleViewDataSet(int view) {
+        return new DataSetUsingFeatureMap<>(featureMap, view, dataInstances);
+    }
+
+    // TODO: Note that this method is very slow because it gets the feature vector for each data instance base.
+    @Override
+    @SuppressWarnings("unchecked")
+    public MultiViewDataSetUsingFeatureMap<T, D> sort(Comparator<? super D> comparator) {
+        dataInstances.sort((i1, i2) -> comparator.compare(
+                (D) ((DataInstanceBase<T>) i1)
+                        .toMultiViewDataInstance(featureMap.getFeatureVectors(((DataInstanceBase<T>) i1).name())),
+                (D) ((DataInstanceBase<T>) i2)
+                        .toMultiViewDataInstance(featureMap.getFeatureVectors(((DataInstanceBase<T>) i2).name()))
+        ));
+        return this;
     }
 
     @Override
