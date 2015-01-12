@@ -11,11 +11,20 @@ import java.util.Random;
  * @author Emmanouil Antonios Platanios
  */
 public class StatisticsUtilities {
-    private static final Random random = new Random();
+    private static Random random = new Random();
 
     // Suppress default constructor for noninstantiability
     private StatisticsUtilities() {
         throw new AssertionError();
+    }
+
+    /**
+     * Sets the seed for the random number generator that is used by the static methods of this class.
+     *
+     * @param   seed    The seed value to use.
+     */
+    private static void setSeed(long seed) {
+        random = new Random(seed);
     }
 
     /**
