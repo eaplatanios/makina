@@ -284,8 +284,8 @@ abstract class AbstractTrainableLogisticRegression
 
     /** {@inheritDoc} */
     @Override
-    public void write(OutputStream outputStream) throws IOException {
-        super.write(outputStream);
+    public void write(OutputStream outputStream, boolean includeType) throws IOException {
+        super.write(outputStream, includeType);
 
         UnsafeSerializationUtilities.writeBoolean(outputStream, useL1Regularization);
         UnsafeSerializationUtilities.writeDouble(outputStream, l1RegularizationWeight);

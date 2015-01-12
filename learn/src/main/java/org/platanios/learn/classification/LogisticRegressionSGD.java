@@ -174,8 +174,8 @@ public class LogisticRegressionSGD extends AbstractTrainableLogisticRegression {
 
     /** {@inheritDoc} */
     @Override
-    public void write(OutputStream outputStream) throws IOException {
-        super.write(outputStream);
+    public void write(OutputStream outputStream, boolean includeType) throws IOException {
+        super.write(outputStream, includeType);
 
         UnsafeSerializationUtilities.writeBoolean(outputStream, sampleWithReplacement);
         UnsafeSerializationUtilities.writeInt(outputStream, maximumNumberOfIterations);
@@ -188,11 +188,15 @@ public class LogisticRegressionSGD extends AbstractTrainableLogisticRegression {
         UnsafeSerializationUtilities.writeDoubleArray(outputStream, stepSizeParameters);
     }
 
-    public static LogisticRegressionSGD read(InputStream inputStream) throws IOException {
-        ClassifierType storedClassifierType =
-                ClassifierType.values()[UnsafeSerializationUtilities.readInt(inputStream)];
-        if (!ClassifierType.LOGISTIC_REGRESSION_SGD.getStorageCompatibleTypes().contains(storedClassifierType))
-            throw new InvalidObjectException("The stored classifier is of type " + storedClassifierType.name() + "!");
+    public static LogisticRegressionSGD read(InputStream inputStream, boolean includeType) throws IOException {
+        if (includeType) {
+            ClassifierType classifierType = ClassifierType.values()[UnsafeSerializationUtilities.readInt(inputStream)];
+            if (!ClassifierType.LOGISTIC_REGRESSION_SGD
+                    .getStorageCompatibleTypes()
+                    .contains(classifierType))
+                throw new InvalidObjectException("The stored classifier is of type "
+                                                         + classifierType.name() + "!");
+        }
         int numberOfFeatures = UnsafeSerializationUtilities.readInt(inputStream);
         boolean sparse = UnsafeSerializationUtilities.readBoolean(inputStream);
         Vector weights = Vectors.build(inputStream);

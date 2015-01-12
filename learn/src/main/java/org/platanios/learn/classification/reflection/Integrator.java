@@ -2,7 +2,7 @@ package org.platanios.learn.classification.reflection;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.platanios.learn.classification.ClassifierType;
+import org.platanios.learn.classification.Classifiers;
 import org.platanios.learn.classification.TrainableClassifier;
 import org.platanios.learn.data.*;
 import org.platanios.learn.math.matrix.Vector;
@@ -218,10 +218,8 @@ public class Integrator<T extends Vector, S> {
             OutputStream outputStream = new FileOutputStream(outputFile, false);
             UnsafeSerializationUtilities.writeInt(outputStream, iterationNumber);
             UnsafeSerializationUtilities.writeInt(outputStream, classifiers.size());
-            for (TrainableClassifier<T, S> classifier : classifiers) {
-                UnsafeSerializationUtilities.writeInt(outputStream, classifier.type().ordinal());
-                classifier.write(outputStream);
-            }
+            for (TrainableClassifier<T, S> classifier : classifiers)
+                classifier.write(outputStream, true);
             outputStream.close();
         } catch (IOException e) {
             logger.error("Could not create or open the file \""
@@ -238,11 +236,8 @@ public class Integrator<T extends Vector, S> {
             InputStream inputStream = new FileInputStream(inputFile);
             iterationNumber = UnsafeSerializationUtilities.readInt(inputStream);
             int numberOfClassifiers = UnsafeSerializationUtilities.readInt(inputStream);
-            for (int i = 0; i < numberOfClassifiers; i++) {
-                ClassifierType storedClassifierType =
-                        ClassifierType.values()[UnsafeSerializationUtilities.readInt(inputStream)];
-                classifiers.add((TrainableClassifier<T, S>) storedClassifierType.read(inputStream));
-            }
+            for (int i = 0; i < numberOfClassifiers; i++)
+                classifiers.add((TrainableClassifier<T, S>) Classifiers.read(inputStream));
             inputStream.close();
         } catch (IOException e) {
             logger.error("Could load the classifier models from the file \"" + inputFile.getAbsolutePath() + "\"!");

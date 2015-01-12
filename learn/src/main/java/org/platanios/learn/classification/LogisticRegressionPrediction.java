@@ -181,18 +181,23 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Integer>
 
     /** {@inheritDoc} */
     @Override
-    public void write(OutputStream outputStream) throws IOException {
-        UnsafeSerializationUtilities.writeInt(outputStream, type().ordinal());
+    public void write(OutputStream outputStream, boolean includeType) throws IOException {
+        if (includeType)
+            UnsafeSerializationUtilities.writeInt(outputStream, type().ordinal());
         UnsafeSerializationUtilities.writeInt(outputStream, numberOfFeatures);
         UnsafeSerializationUtilities.writeBoolean(outputStream, sparse);
         weights.write(outputStream, true);
     }
 
-    public static LogisticRegressionPrediction read(InputStream inputStream) throws IOException {
-        ClassifierType storedClassifierType =
-                ClassifierType.values()[UnsafeSerializationUtilities.readInt(inputStream)];
-        if (!ClassifierType.LOGISTIC_REGRESSION_PREDICTION.getStorageCompatibleTypes().contains(storedClassifierType))
-            throw new InvalidObjectException("The stored classifier is of type " + storedClassifierType.name() + "!");
+    public static LogisticRegressionPrediction read(InputStream inputStream, boolean includeType) throws IOException {
+        if (includeType) {
+            ClassifierType classifierType = ClassifierType.values()[UnsafeSerializationUtilities.readInt(inputStream)];
+            if (!ClassifierType.LOGISTIC_REGRESSION_PREDICTION
+                    .getStorageCompatibleTypes()
+                    .contains(classifierType))
+                throw new InvalidObjectException("The stored classifier is of type "
+                                                         + classifierType.name() + "!");
+        }
         int numberOfFeatures = UnsafeSerializationUtilities.readInt(inputStream);
         boolean sparse = UnsafeSerializationUtilities.readBoolean(inputStream);
         Vector weights = Vectors.build(inputStream);

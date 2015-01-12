@@ -13,5 +13,5 @@ public interface Classifier<T extends Vector, S> {
     public ClassifierType type();
     public PredictedDataInstance<T, S> predict(PredictedDataInstance<T, S> dataInstance);
     public DataSet<PredictedDataInstance<T, S>> predict(DataSet<PredictedDataInstance<T, S>> dataInstances);
-    public void write(OutputStream outputStream) throws IOException;
+    public void write(OutputStream outputStream, boolean includeType) throws IOException;
 }

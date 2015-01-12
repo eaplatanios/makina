@@ -20,8 +20,8 @@ public enum ClassifierType {
         }
 
         @Override
-        public LogisticRegressionPrediction read(InputStream inputStream) throws IOException {
-            return LogisticRegressionPrediction.read(inputStream);
+        public LogisticRegressionPrediction read(InputStream inputStream, boolean includeType) throws IOException {
+            return LogisticRegressionPrediction.read(inputStream, includeType);
         }
     },
     LOGISTIC_REGRESSION_SGD {
@@ -33,8 +33,8 @@ public enum ClassifierType {
         }
 
         @Override
-        public LogisticRegressionSGD read(InputStream inputStream) throws IOException {
-            return LogisticRegressionSGD.read(inputStream);
+        public LogisticRegressionSGD read(InputStream inputStream, boolean includeType) throws IOException {
+            return LogisticRegressionSGD.read(inputStream, includeType);
         }
     },
     LOGISTIC_REGRESSION_ADAGRAD {
@@ -46,11 +46,11 @@ public enum ClassifierType {
         }
 
         @Override
-        public LogisticRegressionAdaGrad read(InputStream inputStream) throws IOException {
-            return LogisticRegressionAdaGrad.read(inputStream);
+        public LogisticRegressionAdaGrad read(InputStream inputStream, boolean includeType) throws IOException {
+            return LogisticRegressionAdaGrad.read(inputStream, includeType);
         }
     };
 
     public abstract Set<ClassifierType> getStorageCompatibleTypes();
-    public abstract Classifier read(InputStream inputStream) throws IOException;
+    public abstract Classifier read(InputStream inputStream, boolean includeType) throws IOException;
 }
