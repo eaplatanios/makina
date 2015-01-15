@@ -3,6 +3,7 @@ package org.platanios.learn.data;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -19,5 +20,5 @@ public interface DataSet<D extends DataInstance> extends Iterable<D> {
     @Override
     public Iterator<D> iterator();
     public Iterator<List<D>> batchIterator(int batchSize);
-    public Iterator<List<D>> continuousRandomBatchIterator(int batchSize, boolean sampleWithReplacement);
+    public Iterator<List<D>> continuousRandomBatchIterator(int batchSize, boolean sampleWithReplacement, Random random);
 }

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -114,7 +115,7 @@ public class DataSetInMemory<D extends DataInstance> implements DataSet<D> {
     }
 
     @Override
-    public Iterator<List<D>> continuousRandomBatchIterator(int batchSize, boolean sampleWithReplacement) {
+    public Iterator<List<D>> continuousRandomBatchIterator(int batchSize, boolean sampleWithReplacement, Random random) {
         return new Iterator<List<D>>() {
             private int currentIndex = 0;
 
@@ -126,7 +127,7 @@ public class DataSetInMemory<D extends DataInstance> implements DataSet<D> {
             @Override
             public List<D> next() {
                 if (sampleWithReplacement || currentIndex + batchSize >= dataInstances.size()) {
-                    StatisticsUtilities.shuffle(dataInstances);
+                    StatisticsUtilities.shuffle(dataInstances, random);
                     currentIndex = 0;
                 }
                 int fromIndex = currentIndex;

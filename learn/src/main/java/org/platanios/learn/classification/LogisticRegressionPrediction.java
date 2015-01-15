@@ -188,6 +188,10 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Integer>
         UnsafeSerializationUtilities.writeBoolean(outputStream, sparse);
         weights.write(outputStream, true);
     }
+    
+    public Vector getWeights() {
+    	return this.weights;
+    }
 
     public static LogisticRegressionPrediction read(InputStream inputStream, boolean includeType) throws IOException {
         if (includeType) {

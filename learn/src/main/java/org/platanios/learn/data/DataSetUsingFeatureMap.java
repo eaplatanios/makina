@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 /**
@@ -154,7 +155,7 @@ public class DataSetUsingFeatureMap<T extends Vector, D extends DataInstance<T>>
     }
 
     @Override
-    public Iterator<List<D>> continuousRandomBatchIterator(int batchSize, boolean sampleWithReplacement) {
+    public Iterator<List<D>> continuousRandomBatchIterator(int batchSize, boolean sampleWithReplacement, Random random) {
         return new Iterator<List<D>>() {
             private int currentIndex = 0;
 
@@ -167,7 +168,7 @@ public class DataSetUsingFeatureMap<T extends Vector, D extends DataInstance<T>>
             @SuppressWarnings("unchecked")
             public List<D> next() {
                 if (sampleWithReplacement || currentIndex + batchSize >= dataInstances.size()) {
-                    StatisticsUtilities.shuffle(dataInstances);
+                    StatisticsUtilities.shuffle(dataInstances, random);
                     currentIndex = 0;
                 }
                 int fromIndex = currentIndex;

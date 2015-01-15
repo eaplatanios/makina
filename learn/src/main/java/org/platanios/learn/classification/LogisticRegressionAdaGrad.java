@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InvalidObjectException;
 import java.io.OutputStream;
+import java.util.Random;
 
 /**
  * This class implements a binary logistic regression model that is trained using the adaptive gradient algorithm.
@@ -25,6 +26,10 @@ public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegressi
     private int batchSize;
     private StochasticSolverStepSize stepSize;
     private double[] stepSizeParameters;
+    private Random random;
+    
+    private AdaptiveGradientSolver solver;
+    private StochasticLikelihoodFunction likelihood;
 
     /**
      * This abstract class needs to be extended by the builder of its parent binary logistic regression class. It
@@ -45,7 +50,8 @@ public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegressi
         protected int batchSize = 100;
         protected StochasticSolverStepSize stepSize = StochasticSolverStepSize.SCALED;
         protected double[] stepSizeParameters = new double[] { 10, 0.75 };
-
+        protected Random random = new Random();
+        
         protected AbstractBuilder(int numberOfFeatures) {
             super(numberOfFeatures);
         }
@@ -92,6 +98,11 @@ public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegressi
         public T stepSizeParameters(double... stepSizeParameters) {
             this.stepSizeParameters = stepSizeParameters;
             return self();
+        }
+        
+        public T random(Random random) {
+        	this.random = random;
+        	return self();
         }
 
         @Override
@@ -144,6 +155,7 @@ public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegressi
         batchSize = builder.batchSize;
         stepSize = builder.stepSize;
         stepSizeParameters = builder.stepSizeParameters;
+        random = builder.random;
     }
 
     @Override
@@ -154,21 +166,31 @@ public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegressi
     /** {@inheritDoc} */
     @Override
     protected void train() {
-        weights = new AdaptiveGradientSolver.Builder(new StochasticLikelihoodFunction(), weights)
-                .sampleWithReplacement(sampleWithReplacement)
-                .maximumNumberOfIterations(maximumNumberOfIterations)
-                .maximumNumberOfIterationsWithNoPointChange(maximumNumberOfIterationsWithNoPointChange)
-                .pointChangeTolerance(pointChangeTolerance)
-                .checkForPointConvergence(checkForPointConvergence)
-                .batchSize(batchSize)
-                .stepSize(stepSize)
-                .stepSizeParameters(stepSizeParameters)
-                .useL1Regularization(useL1Regularization)
-                .l1RegularizationWeight(l1RegularizationWeight)
-                .useL2Regularization(useL2Regularization)
-                .l2RegularizationWeight(l2RegularizationWeight)
-                .loggingLevel(loggingLevel)
-                .build().solve();
+    	if (solver == null) {
+    		likelihood = new StochasticLikelihoodFunction(random);
+    		solver = new AdaptiveGradientSolver.Builder(likelihood, weights)
+		        .sampleWithReplacement(sampleWithReplacement)
+		        .maximumNumberOfIterations(maximumNumberOfIterations)
+		        .maximumNumberOfIterationsWithNoPointChange(maximumNumberOfIterationsWithNoPointChange)
+		        .pointChangeTolerance(pointChangeTolerance)
+		        .checkForPointConvergence(checkForPointConvergence)
+		        .batchSize(batchSize)
+		        .stepSize(stepSize)
+		        .stepSizeParameters(stepSizeParameters)
+		        .useL1Regularization(useL1Regularization)
+		        .l1RegularizationWeight(l1RegularizationWeight)
+		        .useL2Regularization(useL2Regularization)
+		        .l2RegularizationWeight(l2RegularizationWeight)
+		        .loggingLevel(loggingLevel)
+		        .build();
+    	} else {
+    		// Only reset dataset if necessary so that iterator
+    		// isn't unnecessarily reset
+    		if (!this.trainingDataSet.equals(likelihood.getDataSet()))
+    			likelihood.setDataSet(trainingDataSet); 
+    		solver.setMaximumNumberOfIterations(solver.getMaximumNumberOfIterations() + this.maximumNumberOfIterations);
+    	}
+        weights = solver.solve();
     }
 
     /** {@inheritDoc} */
@@ -185,6 +207,10 @@ public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegressi
         UnsafeSerializationUtilities.writeInt(outputStream, stepSize.ordinal());
         UnsafeSerializationUtilities.writeInt(outputStream, stepSizeParameters.length);
         UnsafeSerializationUtilities.writeDoubleArray(outputStream, stepSizeParameters);
+    }
+    
+    public AdaptiveGradientSolver getSolver() {
+    	return this.solver;
     }
 
     public static LogisticRegressionAdaGrad read(InputStream inputStream, boolean includeType) throws IOException {

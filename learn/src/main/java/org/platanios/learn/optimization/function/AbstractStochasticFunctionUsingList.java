@@ -19,13 +19,13 @@ public abstract class AbstractStochasticFunctionUsingList<T> extends AbstractSto
             int startIndex;
             int endIndex;
             if (sampleWithReplacement) {
-                StatisticsUtilities.shuffle(data);
+                StatisticsUtilities.shuffle(data, random);
                 startIndex = 0;
                 endIndex = batchSize;
             } else {
                 if (currentSampleIndex == 0 || currentSampleIndex + batchSize >= data.size()) {
                     currentSampleIndex = 0;
-                    StatisticsUtilities.shuffle(data);
+                    StatisticsUtilities.shuffle(data, random);
                 }
                 startIndex = currentSampleIndex;
                 endIndex = currentSampleIndex + batchSize;

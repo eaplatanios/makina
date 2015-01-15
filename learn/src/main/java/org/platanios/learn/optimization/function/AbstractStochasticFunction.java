@@ -1,5 +1,7 @@
 package org.platanios.learn.optimization.function;
 
+import java.util.Random;
+
 import org.platanios.learn.math.matrix.Vector;
 
 /**
@@ -8,6 +10,7 @@ import org.platanios.learn.math.matrix.Vector;
 public abstract class AbstractStochasticFunction {
     protected boolean sampleWithReplacement = true;
     protected int numberOfGradientEvaluations = 0;
+    protected Random random = new Random();
 
     /**
      * Wrapper method for {@link #estimateGradient(org.platanios.learn.math.matrix.Vector, int)} which counts how many

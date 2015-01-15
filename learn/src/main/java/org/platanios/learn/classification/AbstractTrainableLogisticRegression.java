@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 /**
  * This class implements a binary logistic regression model that is trained using the stochastic gradient descent
@@ -22,7 +23,7 @@ import java.util.List;
 abstract class AbstractTrainableLogisticRegression
         extends LogisticRegressionPrediction implements TrainableClassifier<Vector, Integer> {
     /** The data used to train this model. */
-    private DataSet<LabeledDataInstance<Vector, Integer>> trainingDataSet;
+    protected DataSet<LabeledDataInstance<Vector, Integer>> trainingDataSet;
     /** Indicates whether /(L_1/) regularization is used. */
     protected boolean useL1Regularization;
     /** The /(L_1/) regularization weight used. This variable is only used when {@link #useL1Regularization} is set to
@@ -253,7 +254,12 @@ abstract class AbstractTrainableLogisticRegression
     protected class StochasticLikelihoodFunction
             extends AbstractStochasticFunctionUsingDataSet<LabeledDataInstance<Vector, Integer>> {
         public StochasticLikelihoodFunction() {
-            this.dataSet = trainingDataSet;
+        	this.dataSet = trainingDataSet;
+        }
+        
+        public StochasticLikelihoodFunction(Random random) {
+        	this();
+        	this.random = random;
         }
 
         /**

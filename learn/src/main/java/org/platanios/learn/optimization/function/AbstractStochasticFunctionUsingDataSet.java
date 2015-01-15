@@ -18,11 +18,21 @@ public abstract class AbstractStochasticFunctionUsingDataSet<D extends DataInsta
     private boolean oldSampleWithReplacement = sampleWithReplacement;
     private int oldBatchSize = 0;
 
+    public boolean setDataSet(DataSet<D> dataSet) {
+    	this.dataSet = dataSet;
+    	this.dataIterator = null;
+    	return true;
+    }
+    
+    public DataSet<D> getDataSet() {
+    	return this.dataSet;
+    }
+    
     /** {@inheritDoc} */
     @Override
     public final Vector estimateGradient(Vector point, int batchSize) {
         if (dataIterator == null || oldSampleWithReplacement != sampleWithReplacement || oldBatchSize != batchSize) {
-            dataIterator = dataSet.continuousRandomBatchIterator(batchSize, sampleWithReplacement);
+            dataIterator = dataSet.continuousRandomBatchIterator(batchSize, sampleWithReplacement, random);
             oldSampleWithReplacement = sampleWithReplacement;
             oldBatchSize = batchSize;
         }
