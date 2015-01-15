@@ -18,14 +18,13 @@ public abstract class AbstractStochasticFunctionUsingDataSet<D extends DataInsta
     private boolean oldSampleWithReplacement = sampleWithReplacement;
     private int oldBatchSize = 0;
 
-    public boolean setDataSet(DataSet<D> dataSet) {
+    public void dataSet(DataSet<D> dataSet) {
     	this.dataSet = dataSet;
     	this.dataIterator = null;
-    	return true;
     }
     
-    public DataSet<D> getDataSet() {
-    	return this.dataSet;
+    public DataSet<D> dataSet() {
+    	return dataSet;
     }
     
     /** {@inheritDoc} */

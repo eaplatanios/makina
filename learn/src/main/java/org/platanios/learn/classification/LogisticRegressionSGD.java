@@ -194,8 +194,7 @@ public class LogisticRegressionSGD extends AbstractTrainableLogisticRegression {
             if (!ClassifierType.LOGISTIC_REGRESSION_SGD
                     .getStorageCompatibleTypes()
                     .contains(classifierType))
-                throw new InvalidObjectException("The stored classifier is of type "
-                                                         + classifierType.name() + "!");
+                throw new InvalidObjectException("The stored classifier is of type " + classifierType.name() + "!");
         }
         int numberOfFeatures = UnsafeSerializationUtilities.readInt(inputStream);
         boolean sparse = UnsafeSerializationUtilities.readBoolean(inputStream);

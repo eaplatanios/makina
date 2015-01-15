@@ -31,6 +31,15 @@ public class StatisticsUtilities {
      * Shuffles the order of the elements in the provided array using Knuth's shuffle algorithm.
      *
      * @param   array   The array whose elements are shuffled.
+     */
+    public static <T> void shuffle(T[] array) {
+        shuffle(array, random);
+    }
+
+    /**
+     * Shuffles the order of the elements in the provided array using Knuth's shuffle algorithm.
+     *
+     * @param   array   The array whose elements are shuffled.
      * @param   random  The random number generator to use for the shuffling.
      */
     public static <T> void shuffle(T[] array, Random random) {
@@ -41,9 +50,14 @@ public class StatisticsUtilities {
             array[i] = tempValue;
         }
     }
-    
-    public static <T> void shuffle(T[] array) {
-    	shuffle(array, random);
+
+    /**
+     * Shuffles the order of the elements in the provided list using Knuth's shuffle algorithm.
+     *
+     * @param   list    The list whose elements are shuffled.
+     */
+    public static <T> void shuffle(List<T> list) {
+        shuffle(list, random);
     }
 
     /**
@@ -60,9 +74,17 @@ public class StatisticsUtilities {
             list.set(i, tempValue);
         }
     }
-    
-    public static <T> void shuffle(List<T> list) {
-    	shuffle(list, random);
+
+    /**
+     * Randomly samples a specified number of elements from an array without replacement. Note that this method modifies
+     * the provided array (i.e., it shuffles the order of its elements).
+     *
+     * @param   array           The array from which we randomly sample elements.
+     * @param   numberOfSamples The number of elements to sample from the given list.
+     * @return                  A new array containing the sampled elements.
+     */
+    public static <T> T[] sampleWithoutReplacement(T[] array, int numberOfSamples) {
+        return sampleWithoutReplacement(array, numberOfSamples, random);
     }
     	
     /**
@@ -71,16 +93,12 @@ public class StatisticsUtilities {
      *
      * @param   array           The array from which we randomly sample elements.
      * @param   numberOfSamples The number of elements to sample from the given list.
-     * @param   random  The random number generator to use for the shuffling.
+     * @param   random          The random number generator to use for the shuffling.
      * @return                  A new array containing the sampled elements.
      */
     public static <T> T[] sampleWithoutReplacement(T[] array, int numberOfSamples, Random random) {
         shuffle(array, random);
         return Arrays.copyOfRange(array, 0, numberOfSamples);
-    }
-    
-    public static <T> T[] sampleWithoutReplacement(T[] array, int numberOfSamples) {
-    	return sampleWithoutReplacement(array, numberOfSamples, random);
     }
 
     /**
@@ -89,15 +107,23 @@ public class StatisticsUtilities {
      *
      * @param   list            The list from which we randomly sample elements.
      * @param   numberOfSamples The number of elements to sample from the given list.
-     * @param   random  The random number generator to use for the shuffling.
+     * @return                  A new {@link java.util.ArrayList} containing the sampled elements.
+     */
+    public static <T> List<T> sampleWithoutReplacement(List<T> list, int numberOfSamples) {
+        return sampleWithoutReplacement(list, numberOfSamples, random);
+    }
+
+    /**
+     * Randomly samples a specified number of elements from a list without replacement. Note that this method modifies
+     * the provided list (i.e., it shuffles the order of its elements).
+     *
+     * @param   list            The list from which we randomly sample elements.
+     * @param   numberOfSamples The number of elements to sample from the given list.
+     * @param   random          The random number generator to use for the shuffling.
      * @return                  A new {@link java.util.ArrayList} containing the sampled elements.
      */
     public static <T> List<T> sampleWithoutReplacement(List<T> list, int numberOfSamples, Random random) {
         shuffle(list, random);
         return new ArrayList<>(list.subList(0, numberOfSamples));
-    }
-    
-    public static <T> List<T> sampleWithoutReplacement(List<T> list, int numberOfSamples) {
-    	return sampleWithoutReplacement(list, numberOfSamples, random);
     }
 }

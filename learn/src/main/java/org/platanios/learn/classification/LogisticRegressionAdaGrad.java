@@ -18,6 +18,8 @@ import java.util.Random;
  * @author Emmanouil Antonios Platanios
  */
 public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegression {
+    private AdaptiveGradientSolver solver;
+    private StochasticLikelihoodFunction likelihood;
     private boolean sampleWithReplacement;
     private int maximumNumberOfIterations;
     private int maximumNumberOfIterationsWithNoPointChange;
@@ -27,9 +29,6 @@ public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegressi
     private StochasticSolverStepSize stepSize;
     private double[] stepSizeParameters;
     private Random random;
-    
-    private AdaptiveGradientSolver solver;
-    private StochasticLikelihoodFunction likelihood;
 
     /**
      * This abstract class needs to be extended by the builder of its parent binary logistic regression class. It
@@ -163,6 +162,10 @@ public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegressi
         return ClassifierType.LOGISTIC_REGRESSION_ADAGRAD;
     }
 
+    public AdaptiveGradientSolver solver() {
+        return solver;
+    }
+
     /** {@inheritDoc} */
     @Override
     protected void train() {
@@ -184,10 +187,9 @@ public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegressi
 		        .loggingLevel(loggingLevel)
 		        .build();
     	} else {
-    		// Only reset dataset if necessary so that iterator
-    		// isn't unnecessarily reset
-    		if (!this.trainingDataSet.equals(likelihood.getDataSet()))
-    			likelihood.setDataSet(trainingDataSet); 
+    		// Only reset data set if necessary so that the iterator isn't unnecessarily reset
+    		if (!this.trainingDataSet.equals(likelihood.dataSet()))
+    			likelihood.dataSet(trainingDataSet);
     		solver.setMaximumNumberOfIterations(solver.getMaximumNumberOfIterations() + this.maximumNumberOfIterations);
     	}
         weights = solver.solve();
@@ -208,10 +210,6 @@ public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegressi
         UnsafeSerializationUtilities.writeInt(outputStream, stepSizeParameters.length);
         UnsafeSerializationUtilities.writeDoubleArray(outputStream, stepSizeParameters);
     }
-    
-    public AdaptiveGradientSolver getSolver() {
-    	return this.solver;
-    }
 
     public static LogisticRegressionAdaGrad read(InputStream inputStream, boolean includeType) throws IOException {
         if (includeType) {
@@ -219,8 +217,7 @@ public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegressi
             if (!ClassifierType.LOGISTIC_REGRESSION_ADAGRAD
                     .getStorageCompatibleTypes()
                     .contains(classifierType))
-                throw new InvalidObjectException("The stored classifier is of type "
-                                                         + classifierType.name() + "!");
+                throw new InvalidObjectException("The stored classifier is of type " + classifierType.name() + "!");
         }
         int numberOfFeatures = UnsafeSerializationUtilities.readInt(inputStream);
         boolean sparse = UnsafeSerializationUtilities.readBoolean(inputStream);
