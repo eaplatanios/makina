@@ -12,6 +12,14 @@ public abstract class AbstractStochasticFunctionUsingList<T> extends AbstractSto
     protected List<T> data;
     private int currentSampleIndex = 0;
 
+    public void data(List<T> data) {
+        this.data = data;
+    }
+
+    public List<T> data() {
+        return data;
+    }
+
     /** {@inheritDoc} */
     @Override
     public final Vector estimateGradient(Vector point, int batchSize) {

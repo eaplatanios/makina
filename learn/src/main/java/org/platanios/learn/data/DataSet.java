@@ -20,5 +20,6 @@ public interface DataSet<D extends DataInstance> extends Iterable<D> {
     @Override
     public Iterator<D> iterator();
     public Iterator<List<D>> batchIterator(int batchSize);
+    public Iterator<List<D>> continuousRandomBatchIterator(int batchSize, boolean sampleWithReplacement);
     public Iterator<List<D>> continuousRandomBatchIterator(int batchSize, boolean sampleWithReplacement, Random random);
 }

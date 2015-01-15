@@ -155,7 +155,49 @@ public class DataSetUsingFeatureMap<T extends Vector, D extends DataInstance<T>>
     }
 
     @Override
-    public Iterator<List<D>> continuousRandomBatchIterator(int batchSize, boolean sampleWithReplacement, Random random) {
+    public Iterator<List<D>> continuousRandomBatchIterator(int batchSize, boolean sampleWithReplacement) {
+        return new Iterator<List<D>>() {
+            private int currentIndex = 0;
+
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            @SuppressWarnings("unchecked")
+            public List<D> next() {
+                if (sampleWithReplacement || currentIndex + batchSize >= dataInstances.size()) {
+                    StatisticsUtilities.shuffle(dataInstances);
+                    currentIndex = 0;
+                }
+                int fromIndex = currentIndex;
+                currentIndex += batchSize;
+                if (currentIndex >= dataInstances.size())
+                    currentIndex = dataInstances.size();
+                List<DataInstanceBase<T>> dataInstancesSubList = dataInstances.subList(fromIndex, currentIndex);
+                return dataInstancesSubList.stream()
+                        .map(dataInstance ->
+                                     (D) dataInstance.toDataInstance(
+                                             featureMap.getFeatureVector(dataInstance.name(), featureMapView)
+                                     ))
+                        .collect(Collectors.toList());
+            }
+
+            @Override
+            public void remove() {
+                currentIndex--;
+                int indexLowerBound = currentIndex - batchSize;
+                while (currentIndex > indexLowerBound)
+                    dataInstances.remove(currentIndex--);
+            }
+        };
+    }
+
+    @Override
+    public Iterator<List<D>> continuousRandomBatchIterator(int batchSize,
+                                                           boolean sampleWithReplacement,
+                                                           Random random) {
         return new Iterator<List<D>>() {
             private int currentIndex = 0;
 

@@ -3,10 +3,7 @@ package org.platanios.learn.data;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.statistics.StatisticsUtilities;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -172,6 +169,48 @@ public class MultiViewDataSetUsingFeatureMap<T extends Vector, D extends MultiVi
             public List<D> next() {
                 if (sampleWithReplacement || currentIndex + batchSize >= dataInstances.size()) {
                     StatisticsUtilities.shuffle(dataInstances);
+                    currentIndex = 0;
+                }
+                int fromIndex = currentIndex;
+                currentIndex += batchSize;
+                if (currentIndex >= dataInstances.size())
+                    currentIndex = dataInstances.size();
+                List<DataInstanceBase<T>> dataInstancesSubList = dataInstances.subList(fromIndex, currentIndex);
+                return dataInstancesSubList.stream()
+                        .map(dataInstance ->
+                                     (D) dataInstance.toMultiViewDataInstance(
+                                             featureMap.getFeatureVectors(dataInstance.name())
+                                     ))
+                        .collect(Collectors.toList());
+            }
+
+            @Override
+            public void remove() {
+                currentIndex--;
+                int indexLowerBound = currentIndex - batchSize;
+                while (currentIndex > indexLowerBound)
+                    dataInstances.remove(currentIndex--);
+            }
+        };
+    }
+
+    @Override
+    public Iterator<List<D>> continuousRandomBatchIterator(int batchSize,
+                                                           boolean sampleWithReplacement,
+                                                           Random random) {
+        return new Iterator<List<D>>() {
+            private int currentIndex = 0;
+
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            @SuppressWarnings("unchecked")
+            public List<D> next() {
+                if (sampleWithReplacement || currentIndex + batchSize >= dataInstances.size()) {
+                    StatisticsUtilities.shuffle(dataInstances, random);
                     currentIndex = 0;
                 }
                 int fromIndex = currentIndex;

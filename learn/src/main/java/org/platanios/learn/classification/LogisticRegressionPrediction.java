@@ -134,6 +134,10 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Integer>
         return ClassifierType.LOGISTIC_REGRESSION_PREDICTION;
     }
 
+    public Vector weights() {
+        return weights;
+    }
+
     /**
      * Predict the probability of the class label being 1 for some data instance.
      *
@@ -188,10 +192,6 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Integer>
         UnsafeSerializationUtilities.writeBoolean(outputStream, sparse);
         weights.write(outputStream, true);
     }
-    
-    public Vector getWeights() {
-    	return this.weights;
-    }
 
     public static LogisticRegressionPrediction read(InputStream inputStream, boolean includeType) throws IOException {
         if (includeType) {
@@ -199,8 +199,7 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Integer>
             if (!ClassifierType.LOGISTIC_REGRESSION_PREDICTION
                     .getStorageCompatibleTypes()
                     .contains(classifierType))
-                throw new InvalidObjectException("The stored classifier is of type "
-                                                         + classifierType.name() + "!");
+                throw new InvalidObjectException("The stored classifier is of type " + classifierType.name() + "!");
         }
         int numberOfFeatures = UnsafeSerializationUtilities.readInt(inputStream);
         boolean sparse = UnsafeSerializationUtilities.readBoolean(inputStream);

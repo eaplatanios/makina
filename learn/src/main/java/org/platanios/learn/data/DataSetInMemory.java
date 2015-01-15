@@ -115,7 +115,42 @@ public class DataSetInMemory<D extends DataInstance> implements DataSet<D> {
     }
 
     @Override
-    public Iterator<List<D>> continuousRandomBatchIterator(int batchSize, boolean sampleWithReplacement, Random random) {
+    public Iterator<List<D>> continuousRandomBatchIterator(int batchSize, boolean sampleWithReplacement) {
+        return new Iterator<List<D>>() {
+            private int currentIndex = 0;
+
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public List<D> next() {
+                if (sampleWithReplacement || currentIndex + batchSize >= dataInstances.size()) {
+                    StatisticsUtilities.shuffle(dataInstances);
+                    currentIndex = 0;
+                }
+                int fromIndex = currentIndex;
+                currentIndex += batchSize;
+                if (currentIndex >= dataInstances.size())
+                    currentIndex = dataInstances.size();
+                return dataInstances.subList(fromIndex, currentIndex);
+            }
+
+            @Override
+            public void remove() {
+                currentIndex--;
+                int indexLowerBound = currentIndex - batchSize;
+                while (currentIndex > indexLowerBound)
+                    dataInstances.remove(currentIndex--);
+            }
+        };
+    }
+
+    @Override
+    public Iterator<List<D>> continuousRandomBatchIterator(int batchSize,
+                                                           boolean sampleWithReplacement,
+                                                           Random random) {
         return new Iterator<List<D>>() {
             private int currentIndex = 0;
 
