@@ -116,8 +116,13 @@ public class DataSetInMemory<D extends DataInstance> implements DataSet<D> {
 
     @Override
     public Iterator<List<D>> continuousRandomBatchIterator(int batchSize, boolean sampleWithReplacement, Random random) {
-        return new Iterator<List<D>>() {
+        final List<Integer> iteratorIndices = new ArrayList<Integer>(dataInstances.size());
+        for (int i = 0; i < dataInstances.size(); i++)
+        	iteratorIndices.add(i);
+    	
+    	return new Iterator<List<D>>() {
             private int currentIndex = 0;
+            private List<Integer> indices = iteratorIndices;
 
             @Override
             public boolean hasNext() {
@@ -127,22 +132,27 @@ public class DataSetInMemory<D extends DataInstance> implements DataSet<D> {
             @Override
             public List<D> next() {
                 if (sampleWithReplacement || currentIndex + batchSize >= dataInstances.size()) {
-                    StatisticsUtilities.shuffle(dataInstances, random);
+                    StatisticsUtilities.shuffle(indices, random);
                     currentIndex = 0;
                 }
                 int fromIndex = currentIndex;
-                currentIndex += batchSize;
-                if (currentIndex >= dataInstances.size())
-                    currentIndex = dataInstances.size();
-                return dataInstances.subList(fromIndex, currentIndex);
+                currentIndex = Math.min(currentIndex + batchSize, dataInstances.size());
+                
+                List<D> subList = new ArrayList<D>(batchSize);
+                for (int i = fromIndex; i < currentIndex; i++)
+                	subList.add(dataInstances.get(indices.get(i)));
+
+                return subList;
             }
 
             @Override
             public void remove() {
                 currentIndex--;
                 int indexLowerBound = currentIndex - batchSize;
-                while (currentIndex > indexLowerBound)
-                    dataInstances.remove(currentIndex--);
+                while (currentIndex > indexLowerBound) {
+                	int index = indices.remove(currentIndex--);
+                	dataInstances.remove(index);
+                }
             }
         };
     }
