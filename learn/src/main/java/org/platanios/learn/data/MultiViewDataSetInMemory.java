@@ -103,9 +103,7 @@ public class MultiViewDataSetInMemory<D extends MultiViewDataInstance> implement
             @Override
             public List<D> next() {
                 int fromIndex = currentIndex;
-                currentIndex += batchSize;
-                if (currentIndex >= dataInstances.size())
-                    currentIndex = dataInstances.size();
+                currentIndex = Math.min(currentIndex + batchSize, dataInstances.size());
                 return dataInstances.subList(fromIndex, currentIndex);
             }
 
@@ -121,43 +119,20 @@ public class MultiViewDataSetInMemory<D extends MultiViewDataInstance> implement
 
     @Override
     public Iterator<List<D>> continuousRandomBatchIterator(int batchSize, boolean sampleWithReplacement) {
-        return new Iterator<List<D>>() {
-            private int currentIndex = 0;
-
-            @Override
-            public boolean hasNext() {
-                return true;
-            }
-
-            @Override
-            public List<D> next() {
-                if (sampleWithReplacement || currentIndex + batchSize >= dataInstances.size()) {
-                    StatisticsUtilities.shuffle(dataInstances);
-                    currentIndex = 0;
-                }
-                int fromIndex = currentIndex;
-                currentIndex += batchSize;
-                if (currentIndex >= dataInstances.size())
-                    currentIndex = dataInstances.size();
-                return dataInstances.subList(fromIndex, currentIndex);
-            }
-
-            @Override
-            public void remove() {
-                currentIndex--;
-                int indexLowerBound = currentIndex - batchSize;
-                while (currentIndex > indexLowerBound)
-                    dataInstances.remove(currentIndex--);
-            }
-        };
+        return continuousRandomBatchIterator(batchSize, sampleWithReplacement, null);
     }
 
     @Override
     public Iterator<List<D>> continuousRandomBatchIterator(int batchSize,
                                                            boolean sampleWithReplacement,
                                                            Random random) {
+        final List<Integer> dataInstancesIndexes = new ArrayList<>(dataInstances.size());
+        for (int i = 0; i < dataInstances.size(); i++)
+            dataInstancesIndexes.add(i);
+
         return new Iterator<List<D>>() {
             private int currentIndex = 0;
+            private List<Integer> indexes = dataInstancesIndexes;
 
             @Override
             public boolean hasNext() {
@@ -167,22 +142,28 @@ public class MultiViewDataSetInMemory<D extends MultiViewDataInstance> implement
             @Override
             public List<D> next() {
                 if (sampleWithReplacement || currentIndex + batchSize >= dataInstances.size()) {
-                    StatisticsUtilities.shuffle(dataInstances, random);
+                    if (random == null)
+                        StatisticsUtilities.shuffle(indexes);
+                    else
+                        StatisticsUtilities.shuffle(indexes, random);
                     currentIndex = 0;
                 }
                 int fromIndex = currentIndex;
-                currentIndex += batchSize;
-                if (currentIndex >= dataInstances.size())
-                    currentIndex = dataInstances.size();
-                return dataInstances.subList(fromIndex, currentIndex);
+                currentIndex = Math.min(currentIndex + batchSize, dataInstances.size());
+                List<D> dataInstancesSubList = new ArrayList<>(batchSize);
+                for (int i = fromIndex; i < currentIndex; i++)
+                    dataInstancesSubList.add(dataInstances.get(indexes.get(i)));
+                return dataInstancesSubList;
             }
 
             @Override
             public void remove() {
                 currentIndex--;
                 int indexLowerBound = currentIndex - batchSize;
-                while (currentIndex > indexLowerBound)
-                    dataInstances.remove(currentIndex--);
+                while (currentIndex > indexLowerBound) {
+                    dataInstancesIndexes.remove(indexes.get(currentIndex));
+                    dataInstances.remove((int) indexes.remove(currentIndex--));
+                }
             }
         };
     }

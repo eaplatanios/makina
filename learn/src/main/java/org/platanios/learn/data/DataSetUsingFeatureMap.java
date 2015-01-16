@@ -132,9 +132,7 @@ public class DataSetUsingFeatureMap<T extends Vector, D extends DataInstance<T>>
             @SuppressWarnings("unchecked")
             public List<D> next() {
                 int fromIndex = currentIndex;
-                currentIndex += batchSize;
-                if (currentIndex >= dataInstances.size())
-                    currentIndex = dataInstances.size();
+                currentIndex = Math.min(currentIndex + batchSize, dataInstances.size());
                 List<DataInstanceBase<T>> dataInstancesSubList = dataInstances.subList(fromIndex, currentIndex);
                 return dataInstancesSubList.stream()
                         .map(dataInstance ->
@@ -156,50 +154,20 @@ public class DataSetUsingFeatureMap<T extends Vector, D extends DataInstance<T>>
 
     @Override
     public Iterator<List<D>> continuousRandomBatchIterator(int batchSize, boolean sampleWithReplacement) {
-        return new Iterator<List<D>>() {
-            private int currentIndex = 0;
-
-            @Override
-            public boolean hasNext() {
-                return true;
-            }
-
-            @Override
-            @SuppressWarnings("unchecked")
-            public List<D> next() {
-                if (sampleWithReplacement || currentIndex + batchSize >= dataInstances.size()) {
-                    StatisticsUtilities.shuffle(dataInstances);
-                    currentIndex = 0;
-                }
-                int fromIndex = currentIndex;
-                currentIndex += batchSize;
-                if (currentIndex >= dataInstances.size())
-                    currentIndex = dataInstances.size();
-                List<DataInstanceBase<T>> dataInstancesSubList = dataInstances.subList(fromIndex, currentIndex);
-                return dataInstancesSubList.stream()
-                        .map(dataInstance ->
-                                     (D) dataInstance.toDataInstance(
-                                             featureMap.getFeatureVector(dataInstance.name(), featureMapView)
-                                     ))
-                        .collect(Collectors.toList());
-            }
-
-            @Override
-            public void remove() {
-                currentIndex--;
-                int indexLowerBound = currentIndex - batchSize;
-                while (currentIndex > indexLowerBound)
-                    dataInstances.remove(currentIndex--);
-            }
-        };
+        return continuousRandomBatchIterator(batchSize, sampleWithReplacement, null);
     }
 
     @Override
     public Iterator<List<D>> continuousRandomBatchIterator(int batchSize,
                                                            boolean sampleWithReplacement,
                                                            Random random) {
+        final List<Integer> dataInstancesIndexes = new ArrayList<>(dataInstances.size());
+        for (int i = 0; i < dataInstances.size(); i++)
+            dataInstancesIndexes.add(i);
+
         return new Iterator<List<D>>() {
             private int currentIndex = 0;
+            private List<Integer> indexes = dataInstancesIndexes;
 
             @Override
             public boolean hasNext() {
@@ -210,28 +178,32 @@ public class DataSetUsingFeatureMap<T extends Vector, D extends DataInstance<T>>
             @SuppressWarnings("unchecked")
             public List<D> next() {
                 if (sampleWithReplacement || currentIndex + batchSize >= dataInstances.size()) {
-                    StatisticsUtilities.shuffle(dataInstances, random);
+                    if (random == null)
+                        StatisticsUtilities.shuffle(indexes);
+                    else
+                        StatisticsUtilities.shuffle(indexes, random);
                     currentIndex = 0;
                 }
                 int fromIndex = currentIndex;
-                currentIndex += batchSize;
-                if (currentIndex >= dataInstances.size())
-                    currentIndex = dataInstances.size();
-                List<DataInstanceBase<T>> dataInstancesSubList = dataInstances.subList(fromIndex, currentIndex);
-                return dataInstancesSubList.stream()
-                        .map(dataInstance ->
-                                     (D) dataInstance.toDataInstance(
-                                             featureMap.getFeatureVector(dataInstance.name(), featureMapView)
-                                     ))
-                        .collect(Collectors.toList());
+                currentIndex = Math.min(currentIndex + batchSize, dataInstances.size());
+                List<D> dataInstancesSubList = new ArrayList<>(batchSize);
+                for (int i = fromIndex; i < currentIndex; i++) {
+                    DataInstanceBase<T> dataInstanceBase = (DataInstanceBase<T>) dataInstances.get(indexes.get(i));
+                    dataInstancesSubList.add((D) dataInstanceBase.toDataInstance(
+                            featureMap.getFeatureVector(dataInstanceBase.name(), featureMapView)
+                    ));
+                }
+                return dataInstancesSubList;
             }
 
             @Override
             public void remove() {
                 currentIndex--;
                 int indexLowerBound = currentIndex - batchSize;
-                while (currentIndex > indexLowerBound)
-                    dataInstances.remove(currentIndex--);
+                while (currentIndex > indexLowerBound) {
+                    dataInstancesIndexes.remove(indexes.get(currentIndex));
+                    dataInstances.remove((int) indexes.remove(currentIndex--));
+                }
             }
         };
     }
