@@ -271,7 +271,7 @@ public class SparseVector extends Vector {
         }
         int foundIndex = Arrays.binarySearch(indexes, index);
         if (foundIndex >= 0) {
-            values[indexes[foundIndex]] = value;
+            values[foundIndex] = value;
         } else {
             foundIndex = - foundIndex - 1;
             numberOfNonzeroEntries++;
