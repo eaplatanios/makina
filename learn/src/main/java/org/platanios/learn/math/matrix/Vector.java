@@ -347,8 +347,8 @@ public abstract class Vector {
     /**
      * Performs a modified saxpy operation, as it is named in LAPACK. Let us denote the current vector by
      * \(\boldsymbol{y}\). Given a scalar \(\alpha\) and another vector \(\boldsymbol{x}\) with size 1 less than the
-     * current vector, this function returns the value of \(\boldsymbol{y}+\alpha\boldsymbol{x}\), where the last
-     * element of the current vector, /(\boldsymbol{y}/) is left as it is (i.e., nothing is added to it).
+     * current vector, this function returns the value of \(\boldsymbol{y}+\alpha\boldsymbol{x}\), where for the last
+     * element of the current vector, /(\boldsymbol{y}/), we simply add \(\alpha\).
      *
      * @param   scalar  The scalar \(\alpha\).
      * @param   vector  The vector \(\boldsymbol{x}\).
@@ -359,8 +359,8 @@ public abstract class Vector {
     /**
      * Performs a modified saxpy operation, as it is named in LAPACK. Let us denote the current vector by
      * \(\boldsymbol{y}\). Given a scalar \(\alpha\) and another vector \(\boldsymbol{x}\) with size 1 less than the
-     * current vector, this function replaces this vector with the value of \(\boldsymbol{y}+\alpha\boldsymbol{x}+y'\),
-     * where the last element of the current vector, /(\boldsymbol{y}/) is left as it is (i.e., nothing is added to it).
+     * current vector, this function replaces this vector with the value of \(\boldsymbol{y}+\alpha\boldsymbol{x}\),
+     * where for the last element of the current vector, /(\boldsymbol{y}/), we simply add \(\alpha\).
      *
      * @param   scalar  The scalar \(\alpha\).
      * @param   vector  The vector \(\boldsymbol{x}\).

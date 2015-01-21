@@ -887,8 +887,8 @@ public class SparseVector extends Vector {
             throw new IllegalArgumentException("The provided vector size must be 1 less than the current vector size.");
         SparseVector resultVector;
         if (vector.type() == VectorType.SPARSE) {
-            int[] newIndexes = new int[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
-            double[] newValues = new double[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            int[] newIndexes = new int[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries + 1];
+            double[] newValues = new double[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries + 1];
             int currentIndex = 0;
             int vector1Index = 0;
             int vector2Index = 0;
@@ -924,6 +924,13 @@ public class SparseVector extends Vector {
                 newValues[currentIndex] = scalar * ((SparseVector) vector).values[vector2Index];
                 currentIndex++;
                 vector2Index++;
+            }
+            if (newIndexes[currentIndex - 1] == size - 1) {
+                newValues[currentIndex - 1] += scalar;
+            } else {
+                newIndexes[currentIndex] = size - 1;
+                newValues[currentIndex] = scalar;
+                currentIndex++;
             }
             resultVector = new SparseVector(size, currentIndex, newIndexes, newValues);
         } else {
@@ -938,8 +945,8 @@ public class SparseVector extends Vector {
         if (vector.size() + 1 != this.size())
             throw new IllegalArgumentException("The provided vector size must be 1 less than the current vector size.");
         if (vector.type() == VectorType.SPARSE) {
-            int[] newIndexes = new int[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
-            double[] newValues = new double[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries];
+            int[] newIndexes = new int[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries + 1];
+            double[] newValues = new double[numberOfNonzeroEntries + ((SparseVector) vector).numberOfNonzeroEntries + 1];
             int currentIndex = 0;
             int vector1Index = 0;
             int vector2Index = 0;
@@ -975,6 +982,13 @@ public class SparseVector extends Vector {
                 newValues[currentIndex] = scalar * ((SparseVector) vector).values[vector2Index];
                 currentIndex++;
                 vector2Index++;
+            }
+            if (newIndexes[currentIndex - 1] == size - 1) {
+                newValues[currentIndex - 1] += scalar;
+            } else {
+                newIndexes[currentIndex] = size - 1;
+                newValues[currentIndex] = scalar;
+                currentIndex++;
             }
             indexes = newIndexes;
             values = newValues;

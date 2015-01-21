@@ -423,7 +423,7 @@ public class DenseVector extends Vector {
         double[] resultVectorArray = resultVector.getArray();
         for (int i = 0; i < size - 1; i++)
             resultVectorArray[i] = array[i] + scalar * vector.get(i);
-        resultVectorArray[size - 1] = array[size - 1];
+        resultVectorArray[size - 1] = array[size - 1] + scalar;
         return resultVector;
     }
 
@@ -434,6 +434,7 @@ public class DenseVector extends Vector {
             throw new IllegalArgumentException("The provided vector size must be 1 less than the current vector size.");
         for (int i = 0; i < size - 1; i++)
             array[i] += scalar * vector.get(i);
+        array[size - 1] += scalar;
         return this;
     }
 
