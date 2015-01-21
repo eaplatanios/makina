@@ -1,8 +1,13 @@
 package org.platanios.learn.experiments;
 
 import com.google.common.collect.Maps;
+import org.platanios.learn.data.FeatureMap;
+import org.platanios.learn.data.FeatureMapMariaDB;
+import org.platanios.learn.math.matrix.SparseVector;
+import org.platanios.learn.math.matrix.VectorType;
+import org.platanios.learn.math.matrix.Vectors;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -11,6 +16,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.GZIPInputStream;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -20,6 +26,7 @@ public class FeaturesPreprocessing {
     private static final String labeledNounPhrasesDirectory = "/Volumes/Macintosh HD/Users/Anthony/Development/NELL/data/server/NELL.08m.880.mttrain.csv";
     private static final String featureMapsDirectory = "/Volumes/Macintosh HD/Users/Anthony/Development/NELL/data/features";
     private static final String trainingDataDirectory = "/Volumes/Macintosh HD/Users/Anthony/Development/NELL/data/varias_data/trainData";
+    private static final String cplFeatureMapDirectory = "/Volumes/Macintosh HD/Users/Anthony/Development/Data Sets/NELL/Server/all-pairs/all-pairs-OC-2011-12-31-big2-gz";
 
     private static Map<String, List<Map<String, Boolean>>> categoriesFiles;
     private static Map<String, Map<String, Boolean>> combinedCategoriesNounPhrases;
@@ -90,8 +97,92 @@ public class FeaturesPreprocessing {
         }
     }
 
+    private static void buildFeatureMap() {
+        FeatureMapMariaDB<SparseVector> featureMap =
+                (FeatureMapMariaDB<SparseVector>) FeatureMap.Type.MARIA_DB.<SparseVector>build(3);
+        featureMap.createDatabase();
+        buildCPLFeatureMap(featureMap);
+    }
+
+    private static void buildCPLFeatureMap(FeatureMapMariaDB<SparseVector> featureMap) {
+        Map<String, Integer> contexts;
+        try {
+            if (Files.exists(Paths.get(cplFeatureMapDirectory + "/contexts.bin"))) {
+                contexts = readContexts();
+            } else {
+                contexts = new HashMap<>();
+                Stream<String> npContextPairsLines = new BufferedReader(new InputStreamReader(new GZIPInputStream(
+                        Files.newInputStream(Paths.get(cplFeatureMapDirectory + "/cat_pairs_np-idx.txt.gz"))
+                ))).lines();
+                int[] contextIndex = {0};
+                npContextPairsLines.forEachOrdered(line -> {
+                    String[] lineParts = line.split("\t");
+                    for (int i = 1; i < lineParts.length; i++) {
+                        String[] contextParts = lineParts[i].split(" -#- ");
+                        if (!contexts.containsKey(contextParts[0]))
+                            contexts.put(contextParts[0], contextIndex[0]++);
+                    }
+                });
+                writeContexts(contexts);
+            }
+            Stream<String> npContextPairsLines = new BufferedReader(new InputStreamReader(new GZIPInputStream(
+                    Files.newInputStream(Paths.get(cplFeatureMapDirectory + "/cat_pairs_np-idx.txt.gz"))
+            ))).lines();
+            npContextPairsLines.forEachOrdered(line -> {
+                String[] lineParts = line.split("\t");
+                String np = lineParts[0];
+                SparseVector features = (SparseVector) Vectors.build(contexts.size(), VectorType.SPARSE);
+                for (int i = 1; i < lineParts.length; i++) {
+                    String[] contextParts = lineParts[i].split(" -#- ");
+                    features.set(contexts.get(contextParts[0]), Double.parseDouble(contextParts[1]));
+                }
+                lineParts = null;
+                line = null;
+                try {
+                    featureMap.addFeatureMappings(np, features, 0);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+        } catch (IOException e) {
+            System.out.println("An exception was thrown while trying to build the CPL feature map.");
+        }
+    }
+
+    public static void writeContexts(Map<String, Integer> contexts) {
+        try
+        {
+            FileOutputStream fos = new FileOutputStream(cplFeatureMapDirectory + "/contexts.bin");
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(contexts);
+            oos.close();
+            fos.close();
+        } catch (IOException e) {
+            System.out.println("An exception was thrown while trying to write the CPL contexts map.");
+            e.printStackTrace();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static Map<String, Integer> readContexts() {
+        Map<String, Integer> contexts = new HashMap<>();
+        try
+        {
+            FileInputStream fis = new FileInputStream(cplFeatureMapDirectory + "/contexts.bin");
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            contexts = (Map<String, Integer>) ois.readObject();
+            ois.close();
+            fis.close();
+        } catch (IOException|ClassNotFoundException e) {
+            System.out.println("An exception was thrown while trying to read the CPL contexts map.");
+            e.printStackTrace();
+        }
+        return contexts;
+    }
+
     public static void main(String[] args) {
-        parseCategoriesFiles();
-        combineCategoriesFiles();
+        buildFeatureMap();
+//        parseCategoriesFiles();
+//        combineCategoriesFiles();
     }
 }

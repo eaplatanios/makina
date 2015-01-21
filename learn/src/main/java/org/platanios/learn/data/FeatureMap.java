@@ -84,17 +84,17 @@ public abstract class FeatureMap<T extends Vector> {
     public enum Type {
         IN_MEMORY {
             @Override
-            protected <T extends Vector> FeatureMap<T> build(int numberOfViews) {
+            public <T extends Vector> FeatureMapInMemory<T> build(int numberOfViews) {
                 return new FeatureMapInMemory<>(numberOfViews);
             }
         },
         MARIA_DB {
             @Override
-            protected <T extends Vector> FeatureMap<T> build(int numberOfViews) {
-                throw new UnsupportedOperationException();
+            public <T extends Vector> FeatureMapMariaDB<T> build(int numberOfViews) {
+                return new FeatureMapMariaDB<>(numberOfViews);
             }
         };
 
-        protected abstract <T extends Vector> FeatureMap<T> build(int numberOfViews);
+        public abstract <T extends Vector> FeatureMap<T> build(int numberOfViews);
     }
 }

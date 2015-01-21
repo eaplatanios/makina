@@ -191,7 +191,7 @@ public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
         throw new UnsupportedOperationException();
     }
 
-    protected void createDatabase() {
+    public void createDatabase() {
         try {
             Statement statement = connection.createStatement();
             statement.executeUpdate("DROP DATABASE IF EXISTS " + databaseName);
