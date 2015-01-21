@@ -20,6 +20,8 @@ public class Integrator<T extends Vector, S> {
     private static final Logger logger = LogManager.getLogger("Classification / Integrator");
 
     private List<TrainableClassifier<T, S>> classifiers;
+    private MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> labeledDataSet;
+    private MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> unlabeledDataSet;
     private DataSelectionMethod dataSelectionMethod;
     private double dataSelectionParameter;
     private ExecutorService taskExecutor;
@@ -27,14 +29,14 @@ public class Integrator<T extends Vector, S> {
     private boolean saveModelsOnEveryIteration;
     private boolean useDifferentFilePerIteration;
 
-    private MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> labeledDataSet;
-    private MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> unlabeledDataSet;
     private int iterationNumber = 1;
 
     public static class Builder<T extends Vector, S> {
         private List<TrainableClassifier<T, S>> classifiers;
-        private MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> dataSet;
+        private MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> labeledDataSet;
+        private MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> unlabeledDataSet;
 
+        private int iterationNumber = 1;
         private DataSelectionMethod dataSelectionMethod = DataSelectionMethod.FIXED_PROPORTION;
         private double dataSelectionParameter = 0.1;
         private int numberOfThreads = Runtime.getRuntime().availableProcessors();
@@ -44,23 +46,22 @@ public class Integrator<T extends Vector, S> {
 
         public Builder() {
             classifiers = new ArrayList<>();
-            dataSet = new MultiViewDataSetInMemory<>();
         }
 
         @SuppressWarnings("unchecked")
         public Builder(String modelsFileAbsolutePath, boolean resumeTraining) {
             classifiers = new ArrayList<>();
-            dataSet = new MultiViewDataSetInMemory<>();
             if (resumeTraining) {
                 File inputFile = new File(modelsFileAbsolutePath);
                 workingDirectory = inputFile.getParentFile().getAbsolutePath();
                 try {
-                    ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(inputFile));
-                    int numberOfClassifiers = objectInputStream.readInt();
+                    InputStream inputStream = new FileInputStream(inputFile);
+                    iterationNumber = UnsafeSerializationUtilities.readInt(inputStream);
+                    int numberOfClassifiers = UnsafeSerializationUtilities.readInt(inputStream);
                     for (int i = 0; i < numberOfClassifiers; i++)
-                        classifiers.add((TrainableClassifier<T, S>) objectInputStream.readObject());
-                    objectInputStream.close();
-                } catch (IOException|ClassNotFoundException e) {
+                        classifiers.add((TrainableClassifier<T, S>) Classifiers.read(inputStream));
+                    inputStream.close();
+                } catch (IOException e) {
                     logger.error("Could load the classifier models from the file \""
                                          + inputFile.getAbsolutePath() + "\"!");
                 }
@@ -72,13 +73,13 @@ public class Integrator<T extends Vector, S> {
             return this;
         }
 
-        public Builder addDataInstance(MultiViewPredictedDataInstance<T, S> dataInstance) {
-            dataSet.add(dataInstance);
+        public Builder labeledDataSet(MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> labeledDataSet) {
+            this.labeledDataSet = labeledDataSet;
             return this;
         }
 
-        public Builder addDataInstances(List<MultiViewPredictedDataInstance<T, S>> dataInstances) {
-            this.dataSet.add(dataInstances);
+        public Builder unlabeledDataSet(MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> unlabeledDataSet) {
+            this.unlabeledDataSet = unlabeledDataSet;
             return this;
         }
 
@@ -113,12 +114,14 @@ public class Integrator<T extends Vector, S> {
         }
 
         public Integrator<T, S> build() {
-            return new Integrator<T, S>(this);
+            return new Integrator<>(this);
         }
     }
 
     private Integrator(Builder<T, S> builder) {
         classifiers = builder.classifiers;
+        labeledDataSet = builder.labeledDataSet;
+        unlabeledDataSet = builder.unlabeledDataSet;
         dataSelectionMethod = builder.dataSelectionMethod;
         dataSelectionParameter = builder.dataSelectionParameter;
         taskExecutor = Executors.newFixedThreadPool(builder.numberOfThreads);
@@ -126,22 +129,13 @@ public class Integrator<T extends Vector, S> {
         saveModelsOnEveryIteration = builder.saveModelsOnEveryIteration;
         useDifferentFilePerIteration = builder.useDifferentFilePerIteration;
         initializeWorkingDirectory();
-        labeledDataSet = new MultiViewDataSetInMemory<>();
-        unlabeledDataSet = new MultiViewDataSetInMemory<>();
-        for (MultiViewPredictedDataInstance<T, S> dataInstance : builder.dataSet) {
-            if (dataInstance.label() != null) {
-                labeledDataSet.add(dataInstance);
-            } else {
-                unlabeledDataSet.add(dataInstance);
-            }
-        }
+        iterationNumber = builder.iterationNumber;
     }
 
     private void initializeWorkingDirectory() {
         File directory = new File(workingDirectory);
-        if (!directory.exists() && !directory.mkdirs()) {
+        if (!directory.exists() && !directory.mkdirs())
             logger.error("Unable to create directory " + directory.getAbsolutePath());
-        }
     }
 
     public void trainClassifiers() {
