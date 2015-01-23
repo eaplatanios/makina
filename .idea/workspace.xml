@@ -10,104 +10,236 @@
     <bookmark url="file://$PROJECT_DIR$/../../NELL/OntologyLearner/src/java/edu/cmu/ml/rtw/shell/LogisticRegressionToy.java" description="int length = features.size() - 1;" line="321" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="06096c01-39a4-421b-bbfc-512d98f31451" name="Default" comment="Made several changes to the data library.">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__mysql_mysql_connector_java_5_1_34.xml" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/DataInstance$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/DataInstance$Builder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/DataInstance.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/DataInstances.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/FeatureMap$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/FeatureMap$Type$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/FeatureMap$Type$2.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/FeatureMap$Type.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/FeatureMap.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/FeatureMapInMemory.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/FeatureMapMariaDB.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/MultiViewDataInstance$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/MultiViewDataInstance$Builder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/MultiViewDataInstance.class" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/function/AbstractStochasticFunction.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/function/AbstractStochasticFunction.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AbstractStochasticIterativeSolver$AbstractBuilder.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AbstractStochasticIterativeSolver$AbstractBuilder.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AbstractStochasticIterativeSolver$Builder.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AbstractStochasticIterativeSolver$Builder.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AbstractStochasticIterativeSolver.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AbstractStochasticIterativeSolver.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/AbstractTrainableLogisticRegression$AbstractBuilder.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/AbstractTrainableLogisticRegression$AbstractBuilder.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/AbstractTrainableLogisticRegression$Builder.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/AbstractTrainableLogisticRegression$Builder.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/AbstractTrainableLogisticRegression$LikelihoodFunction.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/AbstractTrainableLogisticRegression$LikelihoodFunction.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/AbstractTrainableLogisticRegression$StochasticLikelihoodFunction.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/AbstractTrainableLogisticRegression$StochasticLikelihoodFunction.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/AbstractTrainableLogisticRegression.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/AbstractTrainableLogisticRegression.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AdaptiveGradientSolver$Builder.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AdaptiveGradientSolver$Builder.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AdaptiveGradientSolver.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AdaptiveGradientSolver.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/classification/BinaryLogisticRegressionTest.class" afterPath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/classification/BinaryLogisticRegressionTest.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/math/matrix/CholeskyDecompositionTest.class" afterPath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/math/matrix/CholeskyDecompositionTest.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/Classifier.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/Classifier.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/ClassifierType$1.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/ClassifierType$1.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/ClassifierType$2.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/ClassifierType$2.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/ClassifierType$3.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/ClassifierType$3.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/ClassifierType.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/ClassifierType.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/math/combinatorics/CombinatoricsUtilitiesTest.class" afterPath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/math/combinatorics/CombinatoricsUtilitiesTest.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/ConjugateGradientSolverTest.class" afterPath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/ConjugateGradientSolverTest.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/CoordinateDescentSolverTest.class" afterPath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/CoordinateDescentSolverTest.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/DenseVector.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/DenseVector.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/function/DerivativesApproximationTest$RosenbrockFunction.class" afterPath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/function/DerivativesApproximationTest$RosenbrockFunction.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/function/DerivativesApproximationTest.class" afterPath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/function/DerivativesApproximationTest.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$1$DependencyObjectiveFunction.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$1$DependencyObjectiveFunction.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$1.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$1.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$2.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$2.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$3.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$3.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$4.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$4.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$5.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$5.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$6.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$6.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$7.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$7.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$8.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$8.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$9.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$9.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/classification/reflection/ErrorEstimationTest.class" afterPath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/classification/reflection/ErrorEstimationTest.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/experiments/FeaturesPreprocessing.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/experiments/FeaturesPreprocessing.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/GaussNewtonSolverTest$ExponentialLeastSquaresFunction.class" afterPath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/GaussNewtonSolverTest$ExponentialLeastSquaresFunction.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/GaussNewtonSolverTest.class" afterPath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/GaussNewtonSolverTest.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/GradientDescentSolverTest.class" afterPath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/GradientDescentSolverTest.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/HashVector.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/HashVector.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/Integrator$Builder.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/Integrator$Builder.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/Integrator$DataSelectionMethod$1.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/Integrator$DataSelectionMethod$1.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/Integrator$DataSelectionMethod$2.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/Integrator$DataSelectionMethod$2.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/Integrator$DataSelectionMethod.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/Integrator$DataSelectionMethod.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/Integrator.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/Integrator.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/experiments/Integrator.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/experiments/Integrator.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/math/matrix/LUDecompositionTest.class" afterPath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/math/matrix/LUDecompositionTest.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/LinearLeastSquaresSolver$Method$4.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/LinearLeastSquaresSolver$Method$4.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/LinearLeastSquaresSolverTest.class" afterPath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/LinearLeastSquaresSolverTest.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionAdaGrad$AbstractBuilder.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionAdaGrad$AbstractBuilder.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionAdaGrad$Builder.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionAdaGrad$Builder.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionAdaGrad.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionAdaGrad.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionPrediction$AbstractBuilder.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionPrediction$AbstractBuilder.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionPrediction$Builder.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionPrediction$Builder.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionPrediction.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionPrediction.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionSGD$AbstractBuilder.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionSGD$AbstractBuilder.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionSGD$Builder.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionSGD$Builder.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionSGD.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionSGD.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/MultiClassLogisticRegression$StochasticLikelihoodFunction.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/MultiClassLogisticRegression$StochasticLikelihoodFunction.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/classification/MultiClassLogisticRegressionTest.class" afterPath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/classification/MultiClassLogisticRegressionTest.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/NewtonSolverTest.class" afterPath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/NewtonSolverTest.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolverTest.class" afterPath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolverTest.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/math/matrix/QRDecompositionTest.class" afterPath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/math/matrix/QRDecompositionTest.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/QuasiNewtonSolverTest.class" afterPath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/QuasiNewtonSolverTest.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/RosenbrockFunction.class" afterPath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/RosenbrockFunction.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/math/matrix/SingularValueDecompositionTest.class" afterPath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/math/matrix/SingularValueDecompositionTest.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/SparseVector.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/SparseVector.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/statistics/StatisticsUtilities.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/statistics/StatisticsUtilities.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/StochasticGradientDescentSolver$Builder.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/StochasticGradientDescentSolver$Builder.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/StochasticGradientDescentSolver.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/StochasticGradientDescentSolver.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/TrainableClassifier.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/TrainableClassifier.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/Vector.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/Vector.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/Vectors.class" afterPath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/Vectors.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/artifacts/learn_jar/learn.jar" afterPath="$PROJECT_DIR$/target/classes/artifacts/learn_jar/learn.jar" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/FeatureMap.java" afterPath="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/FeatureMap.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/FeatureMapInMemory.java" afterPath="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/FeatureMapInMemory.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/FeatureMapMariaDB.java" afterPath="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/FeatureMapMariaDB.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/data/FeatureMapMariaDBTest.java" afterPath="$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/data/FeatureMapMariaDBTest.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/experiments/FeaturesPreprocessing.java" afterPath="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/experiments/FeaturesPreprocessing.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/doc/org/platanios/learn/combination/error/OptimizationProblem.html" afterPath="$PROJECT_DIR$/learn/doc/org/platanios/learn/combination/error/OptimizationProblem.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/doc/index-files/index-9.html" afterPath="$PROJECT_DIR$/learn/doc/index-files/index-9.html" />
+    <list default="true" id="06096c01-39a4-421b-bbfc-512d98f31451" name="Default" comment="">
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/AbstractTrainableLogisticRegression$AbstractBuilder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/AbstractTrainableLogisticRegression$Builder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/AbstractTrainableLogisticRegression$LikelihoodFunction.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/AbstractTrainableLogisticRegression$StochasticLikelihoodFunction.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/AbstractTrainableLogisticRegression.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/Classifier.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/ClassifierType$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/ClassifierType$2.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/ClassifierType$3.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/ClassifierType.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/DataPreprocessing.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionAdaGrad$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionAdaGrad$AbstractBuilder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionAdaGrad$Builder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionAdaGrad.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionPrediction$AbstractBuilder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionPrediction$Builder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionPrediction.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionSGD$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionSGD$AbstractBuilder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionSGD$Builder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionSGD.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/MultiClassLogisticRegression$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/MultiClassLogisticRegression$Builder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/MultiClassLogisticRegression$LikelihoodFunction.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/MultiClassLogisticRegression$StochasticLikelihoodFunction.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/MultiClassLogisticRegression.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/TrainableClassifier.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/TrainingData$Entry.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/TrainingData.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/AgreementRatesPowerSetVector.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimation$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimation$Builder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimation.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationData$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationData$Builder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationData.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationInternalSolver$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationInternalSolver$2.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationInternalSolver.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$1$DependencyObjectiveFunction.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$2.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$3.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$4.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$5.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$6.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$7.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$8.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$9.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$Function.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationOptimization.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationOptimizationIpOpt.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationOptimizationKNITRO.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorRatesPowerSetVector.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/Integrator$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/Integrator$Builder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/Integrator$DataSelectionMethod$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/Integrator$DataSelectionMethod$2.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/Integrator$DataSelectionMethod.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/Integrator.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/PowerSetVector.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/experiments/FeaturesPreprocessing.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/experiments/Integrator.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/MathUtilities.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/combinatorics/CombinatoricsUtilities.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/CholeskyDecomposition.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/DenseVector.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/HashVector.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/LUDecomposition.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/Matrix.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/MatrixUtilities.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/NonPositiveDefiniteMatrixException.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/NonSymmetricMatrixException.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/QRDecomposition.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/SingularMatrixException.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/SingularValueDecomposition.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/SparseVector.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/Vector.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/VectorNorm$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/VectorNorm$2.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/VectorNorm$3.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/VectorNorm$4.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/VectorNorm.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/VectorType$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/VectorType$2.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/VectorType$3.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/VectorType.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/Vectors.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/statistics/StatisticsUtilities.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AbstractIterativeSolver$AbstractBuilder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AbstractIterativeSolver$Builder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AbstractIterativeSolver.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AbstractLineSearchSolver$AbstractBuilder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AbstractLineSearchSolver$Builder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AbstractLineSearchSolver.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AbstractStochasticIterativeSolver$AbstractBuilder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AbstractStochasticIterativeSolver$Builder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AbstractStochasticIterativeSolver.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AdaptiveGradientSolver$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AdaptiveGradientSolver$AbstractBuilder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AdaptiveGradientSolver$Builder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AdaptiveGradientSolver.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/ConjugateGradientSolver$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/ConjugateGradientSolver$AbstractBuilder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/ConjugateGradientSolver$Builder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/ConjugateGradientSolver$PreconditioningMethod$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/ConjugateGradientSolver$PreconditioningMethod$2.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/ConjugateGradientSolver$PreconditioningMethod$3.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/ConjugateGradientSolver$PreconditioningMethod.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/ConjugateGradientSolver$ProblemConversionMethod$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/ConjugateGradientSolver$ProblemConversionMethod$2.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/ConjugateGradientSolver$ProblemConversionMethod.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/ConjugateGradientSolver.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/CoordinateDescentSolver$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/CoordinateDescentSolver$AbstractBuilder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/CoordinateDescentSolver$Builder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/CoordinateDescentSolver$Method$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/CoordinateDescentSolver$Method$2.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/CoordinateDescentSolver$Method$3.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/CoordinateDescentSolver$Method.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/CoordinateDescentSolver.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/GaussNewtonSolver$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/GaussNewtonSolver$AbstractBuilder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/GaussNewtonSolver$Builder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/GaussNewtonSolver.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/GradientDescentSolver$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/GradientDescentSolver$AbstractBuilder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/GradientDescentSolver$Builder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/GradientDescentSolver.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/LinearLeastSquaresSolver$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/LinearLeastSquaresSolver$Builder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/LinearLeastSquaresSolver$Method$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/LinearLeastSquaresSolver$Method$2.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/LinearLeastSquaresSolver$Method$3.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/LinearLeastSquaresSolver$Method$4.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/LinearLeastSquaresSolver$Method.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/LinearLeastSquaresSolver.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NewtonSolver$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NewtonSolver$AbstractBuilder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NewtonSolver$Builder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NewtonSolver.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$AbstractBuilder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$Builder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$Method$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$Method$2.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$Method$3.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$Method$4.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$Method$5.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$Method$6.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$Method$7.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$Method.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$RestartMethod$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$RestartMethod$2.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$RestartMethod$3.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$RestartMethod.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/QuasiNewtonSolver$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/QuasiNewtonSolver$AbstractBuilder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/QuasiNewtonSolver$Builder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/QuasiNewtonSolver$Method$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/QuasiNewtonSolver$Method$2.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/QuasiNewtonSolver$Method$3.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/QuasiNewtonSolver$Method$4.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/QuasiNewtonSolver$Method$5.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/QuasiNewtonSolver$Method.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/QuasiNewtonSolver.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/Solver.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/StochasticGradientDescentSolver$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/StochasticGradientDescentSolver$AbstractBuilder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/StochasticGradientDescentSolver$Builder.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/StochasticGradientDescentSolver.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/StochasticSolverStepSize$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/StochasticSolverStepSize$2.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/StochasticSolverStepSize.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/function/AbstractFunction.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/function/AbstractLeastSquaresFunction.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/function/AbstractStochasticFunction.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/function/DerivativesApproximation$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/function/DerivativesApproximation$Method$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/function/DerivativesApproximation$Method$2.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/function/DerivativesApproximation$Method.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/function/DerivativesApproximation.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/function/LinearLeastSquaresFunction.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/function/QuadraticFunction.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/ArmijoInterpolationLineSearch.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/BacktrackingLineSearch.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/ExactLineSearch.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/IterativeLineSearch.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/LineSearch.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/LineSearchConditions.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/StepSizeInitializationMethod$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/StepSizeInitializationMethod$2.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/StepSizeInitializationMethod$3.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/StepSizeInitializationMethod$4.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/StepSizeInitializationMethod$5.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/StepSizeInitializationMethod.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/StrongWolfeInterpolationLineSearch.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/classification/BinaryLogisticRegressionTest.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/classification/MultiClassLogisticRegressionTest.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/classification/reflection/ErrorEstimationTest.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/math/combinatorics/CombinatoricsUtilitiesTest.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/math/matrix/CholeskyDecompositionTest.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/math/matrix/LUDecompositionTest.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/math/matrix/QRDecompositionTest.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/math/matrix/SingularValueDecompositionTest.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/ConjugateGradientSolverTest.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/CoordinateDescentSolverTest.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/GaussNewtonSolverTest$ExponentialLeastSquaresFunction.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/GaussNewtonSolverTest.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/GradientDescentSolverTest.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/LinearLeastSquaresSolverTest.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/NewtonSolverTest.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolverTest.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/QuasiNewtonSolverTest.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/RosenbrockFunction.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/function/DerivativesApproximationTest$RosenbrockFunction.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/function/DerivativesApproximationTest.class" afterPath="" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/lib/IpOpt/IpOpt/3.11.9/IpOpt-3.11.9.jar" afterPath="$PROJECT_DIR$/learn/lib/IpOpt/IpOpt/3.11.9/IpOpt-3.11.9.jar" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/lib/IpOpt/IpOpt/3.11.9/IpOpt-3.11.9.pom" afterPath="$PROJECT_DIR$/learn/lib/IpOpt/IpOpt/3.11.9/IpOpt-3.11.9.pom" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/lib/IpOpt/IpOpt/maven-metadata-local.xml" afterPath="$PROJECT_DIR$/learn/lib/IpOpt/IpOpt/maven-metadata-local.xml" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/lib/knitro/knitro/9.01/knitro-9.01.jar" afterPath="$PROJECT_DIR$/learn/lib/knitro/knitro/9.01/knitro-9.01.jar" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/lib/knitro/knitro/9.01/knitro-9.01.pom" afterPath="$PROJECT_DIR$/learn/lib/knitro/knitro/9.01/knitro-9.01.pom" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/lib/knitro/knitro/maven-metadata-local.xml" afterPath="$PROJECT_DIR$/learn/lib/knitro/knitro/maven-metadata-local.xml" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/lib/libjipopt.dylib" afterPath="$PROJECT_DIR$/learn/lib/libjipopt.dylib" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/artifacts/org_platanios_learn_jar.xml" afterPath="$PROJECT_DIR$/.idea/artifacts/org_platanios_learn_jar.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="learn.iws" />
@@ -259,11 +391,31 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="MariaDB - Local" pinned="false" current-in-tab="true">
+      <file leaf-file-name="MariaDB - Local" pinned="false" current-in-tab="false">
         <entry file="dbDummy://db-console:/8a94e1db/4e7dbfa6-8474-442c-b88b-883bf535e151/">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.04398827" vertical-offset="0" max-vertical-offset="1023">
+            <state vertical-scroll-proportion="-1.5" vertical-offset="0" max-vertical-offset="135">
               <caret line="3" column="41" selection-start-line="3" selection-start-column="41" selection-end-line="3" selection-end-column="41" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name=".gitignore" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/.gitignore">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.021520803" vertical-offset="0" max-vertical-offset="697">
+              <caret line="1" column="7" selection-start-line="1" selection-start-column="7" selection-end-line="1" selection-end-column="7" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="pom.xml" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/learn/pom.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1260">
+              <caret line="33" column="38" selection-start-line="33" selection-start-column="38" selection-end-line="33" selection-end-column="38" />
               <folding />
             </state>
           </provider>
@@ -309,7 +461,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/DataInstance.java" />
         <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/LabeledDataInstance.java" />
         <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/PredictedDataInstance.java" />
         <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/TrainableClassifier.java" />
@@ -347,7 +498,6 @@
         <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/DataSetUsingFeatureMap.java" />
         <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/MultiViewDataSetUsingFeatureMap.java" />
         <option value="db-console:/8a94e1db/715bd81e-77c9-44a7-87d4-673ca3956fe7/" />
-        <option value="$PROJECT_DIR$/learn/pom.xml" />
         <option value="$PROJECT_DIR$/learn/learn.iml" />
         <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/math/matrix/DenseVector.java" />
         <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/math/matrix/Vector.java" />
@@ -360,6 +510,8 @@
         <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/experiments/FeaturesPreprocessing.java" />
         <option value="$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/data/FeatureMapMariaDBTest.java" />
         <option value="db-console:/8a94e1db/4e7dbfa6-8474-442c-b88b-883bf535e151/" />
+        <option value="$PROJECT_DIR$/.gitignore" />
+        <option value="$PROJECT_DIR$/learn/pom.xml" />
       </list>
     </option>
   </component>
@@ -1807,13 +1959,7 @@
       <workItem from="1420048910330" duration="9231000" />
       <workItem from="1420990790027" duration="37000" />
       <workItem from="1420990839036" duration="50595000" />
-      <workItem from="1421965747358" duration="4151000" />
-    </task>
-    <task id="LOCAL-00225" summary="Fixed some bugs related to the trading library database.">
-      <created>1415529206727</created>
-      <option name="number" value="00225" />
-      <option name="project" value="LOCAL" />
-      <updated>1415529206727</updated>
+      <workItem from="1421965747358" duration="4691000" />
     </task>
     <task id="LOCAL-00226" summary="Made several changes and somewhat refactored the perception library.">
       <created>1415569189313</created>
@@ -2103,11 +2249,17 @@
       <option name="project" value="LOCAL" />
       <updated>1421814952141</updated>
     </task>
-    <option name="localTasksCounter" value="274" />
+    <task id="LOCAL-00274" summary="Made some minor changes.">
+      <created>1421978228249</created>
+      <option name="number" value="00274" />
+      <option name="project" value="LOCAL" />
+      <updated>1421978228250</updated>
+    </task>
+    <option name="localTasksCounter" value="275" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="911147000" />
+    <option name="totallyTimeSpent" value="911687000" />
   </component>
   <component name="TodoView" selected-index="0">
     <todo-panel id="selected-file">
@@ -2139,7 +2291,7 @@
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3293247" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Statistic" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3209991" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3293247" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3293247" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22523962" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -2155,7 +2307,7 @@
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.21458998" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21671991" sideWeight="0.49953747" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21671991" sideWeight="0.49953747" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32747456" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Persistence" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.21671991" sideWeight="0.50046253" order="4" side_tool="true" content_ui="tabs" />
       <window_info id="Java Enterprise" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3293247" sideWeight="0.5" order="15" side_tool="false" content_ui="tabs" />
@@ -2226,7 +2378,6 @@
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
-    <MESSAGE value="Simplified the data library." />
     <MESSAGE value="Added support for serializing boolean variables." />
     <MESSAGE value="Fixed a bug related to the sparse vectors serialization method." />
     <MESSAGE value="Added some more unit tests for the SparseVector class to allow catching bugs related to serialization, similar to those fixed with the previous commit." />
@@ -2251,7 +2402,8 @@
     <MESSAGE value="Made some minor changes and additions." />
     <MESSAGE value="Made the integrator work with data sets instead of lists holding data instances." />
     <MESSAGE value="Fixed a bug with the saxpyPlusConstant vector operation that resulted in the logistic regression bias term always being equal to zero." />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed a bug with the saxpyPlusConstant vector operation that resulted in the logistic regression bias term always being equal to zero." />
+    <MESSAGE value="Made some minor changes." />
+    <option name="LAST_COMMIT_MESSAGE" value="Made some minor changes." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2289,13 +2441,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/math/matrix/VectorType.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.15669516" vertical-offset="0" max-vertical-offset="1110">
-          <caret line="11" column="12" selection-start-line="11" selection-start-column="12" selection-end-line="11" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/TrainableClassifier.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.12820514" vertical-offset="0" max-vertical-offset="1053">
@@ -2597,14 +2742,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/learn/pom.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.52991456" vertical-offset="207" max-vertical-offset="1260">
-          <caret line="51" column="21" selection-start-line="51" selection-start-column="21" selection-end-line="51" selection-end-column="21" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/learn/learn.iml">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.28490028" vertical-offset="0" max-vertical-offset="1053">
@@ -2772,8 +2909,24 @@
     </entry>
     <entry file="dbDummy://db-console:/8a94e1db/4e7dbfa6-8474-442c-b88b-883bf535e151/">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.04398827" vertical-offset="0" max-vertical-offset="1023">
+        <state vertical-scroll-proportion="-1.5" vertical-offset="0" max-vertical-offset="135">
           <caret line="3" column="41" selection-start-line="3" selection-start-column="41" selection-end-line="3" selection-end-column="41" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/pom.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1260">
+          <caret line="33" column="38" selection-start-line="33" selection-start-column="38" selection-end-line="33" selection-end-column="38" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.021520803" vertical-offset="0" max-vertical-offset="697">
+          <caret line="1" column="7" selection-start-line="1" selection-start-column="7" selection-end-line="1" selection-end-column="7" />
           <folding />
         </state>
       </provider>

@@ -1,1 +1,2 @@
-target/
+learn/target/
+*.class

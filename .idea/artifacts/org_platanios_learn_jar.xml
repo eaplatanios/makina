@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
-  <artifact type="jar" name="org.platanios.learn:jar">
-    <output-path>$PROJECT_DIR$/target/classes/artifacts/org_platanios_learn_jar</output-path>
+  <artifact type="jar" build-on-make="true" name="org.platanios.learn:jar">
+    <output-path>$PROJECT_DIR$/target/artifacts/org_platanios_learn_jar</output-path>
     <root id="archive" name="org.platanios.learn.jar">
       <element id="module-output" name="learn" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/apache/commons/commons-lang3/3.3.2/commons-lang3-3.3.2.jar" path-in-jar="/" />
