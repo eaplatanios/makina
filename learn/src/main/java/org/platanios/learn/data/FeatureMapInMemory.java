@@ -16,7 +16,7 @@ import java.util.Map;
 public class FeatureMapInMemory<T extends Vector> extends FeatureMap<T> {
     private Map<String, List<T>> featureMap;
 
-    protected FeatureMapInMemory(int numberOfViews) {
+    public FeatureMapInMemory(int numberOfViews) {
         super(numberOfViews);
         featureMap = new HashMap<>();
     }

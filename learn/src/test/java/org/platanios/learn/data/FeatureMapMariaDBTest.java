@@ -19,7 +19,8 @@ public class FeatureMapMariaDBTest {
         DenseVector appleView2Vector = DenseVector.generateRandomVector(20);
         DenseVector orangeView0Vector = DenseVector.generateRandomVector(15);
         DenseVector orangeView1Vector = DenseVector.generateRandomVector(5);
-        FeatureMapMariaDB<DenseVector> featureMap = new FeatureMapMariaDB<>(3);
+        FeatureMapMariaDB<DenseVector> featureMap =
+                (FeatureMapMariaDB<DenseVector>) FeatureMap.Type.MARIA_DB.<DenseVector>build(3);
         featureMap.createDatabase();
         featureMap.addFeatureMappings("apple", appleView1Vector, 1);
         featureMap.addFeatureMappings("apple", appleView2Vector, 2);
@@ -46,7 +47,8 @@ public class FeatureMapMariaDBTest {
         view1FeatureMappings.put("orange", orangeView1Vector);
         Map<String, DenseVector> view2FeatureMappings = new HashMap<>();
         view2FeatureMappings.put("apple", appleView2Vector);
-        FeatureMapMariaDB<DenseVector> featureMap = new FeatureMapMariaDB<>(3);
+        FeatureMapMariaDB<DenseVector> featureMap =
+                (FeatureMapMariaDB<DenseVector>) FeatureMap.Type.MARIA_DB.<DenseVector>build(3);
         featureMap.createDatabase();
         featureMap.addFeatureMappings(view1FeatureMappings, 1);
         featureMap.addFeatureMappings(view2FeatureMappings, 2);
@@ -73,7 +75,8 @@ public class FeatureMapMariaDBTest {
         orangeFeatures.add(orangeView0Vector);
         orangeFeatures.add(orangeView1Vector);
         orangeFeatures.add(null);
-        FeatureMapMariaDB<DenseVector> featureMap = new FeatureMapMariaDB<>(3);
+        FeatureMapMariaDB<DenseVector> featureMap =
+                (FeatureMapMariaDB<DenseVector>) FeatureMap.Type.MARIA_DB.<DenseVector>build(3);
         featureMap.createDatabase();
         featureMap.addFeatureMappings("apple", appleFeatures);
         featureMap.addFeatureMappings("orange", orangeFeatures);
@@ -102,7 +105,8 @@ public class FeatureMapMariaDBTest {
         Map<String, List<DenseVector>> featureMappings = new HashMap<>();
         featureMappings.put("apple", appleFeatures);
         featureMappings.put("orange", orangeFeatures);
-        FeatureMapMariaDB<DenseVector> featureMap = new FeatureMapMariaDB<>(3);
+        FeatureMapMariaDB<DenseVector> featureMap =
+                (FeatureMapMariaDB<DenseVector>) FeatureMap.Type.MARIA_DB.<DenseVector>build(3);
         featureMap.createDatabase();
         featureMap.addFeatureMappings(featureMappings);
         Assert.assertTrue(featureMap.getFeatureVector("apple", 0) == null);

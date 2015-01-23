@@ -13,40 +13,24 @@ import java.util.*;
  * @author Emmanouil Antonios Platanios
  */
 public class FeatureMapMariaDB<T extends Vector> extends FeatureMap<T> {
-    private static final Properties properties = new Properties();
-    private static final String databaseServerURL;
-    private static final String databaseServerUserName;
-    private static final String databaseServerPassword;
-    private static final String databaseName;
-    private static final String tableName;
-    static {
-        try {
-            properties.load(ClassLoader.getSystemResourceAsStream("FeatureMapMariaDB.properties"));
-            databaseServerURL = properties.getProperty("databaseServerURL", "jdbc:mariadb://localhost/");
-            databaseServerUserName = properties.getProperty("databaseServerUserName", "root");
-            databaseServerPassword = properties.getProperty("databaseServerPassword", null);
-            databaseName = properties.getProperty("databaseName", "learn");
-            tableName = properties.getProperty("tableName", "features");
-        } catch (IOException e) {
-            logger.error("Could not load the MariaDB feature map properties!", e);
-            throw new RuntimeException(e);
-        }
-    }
+    private final String databaseName;
+    private final String tableName;
 
     private final Connection connection;
 
-    protected FeatureMapMariaDB(int numberOfViews) {
-        super(numberOfViews);
-        try {
-            connection = DriverManager.getConnection(databaseServerURL, databaseServerUserName, databaseServerPassword);
-        } catch (SQLException e) {
-            logger.error("Could not connect to the default database server!", e);
-            throw new RuntimeException(e);
-        }
+    public FeatureMapMariaDB(int numberOfViews, String host, String username, String password) {
+        this(numberOfViews, host, username, password, "learn", "features");
     }
 
-    protected FeatureMapMariaDB(int numberOfViews, String host, String username, String password) {
+    public FeatureMapMariaDB(int numberOfViews,
+                                String host,
+                                String username,
+                                String password,
+                                String databaseName,
+                                String tableName) {
         super(numberOfViews);
+        this.databaseName = databaseName;
+        this.tableName = tableName;
         try {
             connection = DriverManager.getConnection(host, username, password);
         } catch (SQLException e) {

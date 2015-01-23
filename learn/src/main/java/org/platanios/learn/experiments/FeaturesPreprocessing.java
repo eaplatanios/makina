@@ -1,7 +1,6 @@
 package org.platanios.learn.experiments;
 
 import com.google.common.collect.Maps;
-import org.platanios.learn.data.FeatureMap;
 import org.platanios.learn.data.FeatureMapMariaDB;
 import org.platanios.learn.math.matrix.SparseVector;
 import org.platanios.learn.math.matrix.VectorType;
@@ -98,8 +97,14 @@ public class FeaturesPreprocessing {
     }
 
     private static void buildFeatureMap() {
-        FeatureMapMariaDB<SparseVector> featureMap =
-                (FeatureMapMariaDB<SparseVector>) FeatureMap.Type.MARIA_DB.<SparseVector>build(3);
+        FeatureMapMariaDB<SparseVector> featureMap = new FeatureMapMariaDB<>(
+                3,
+                "jdbc:mariadb://localhost/",
+                "root",
+                null,
+                "learn",
+                "features"
+        );
         featureMap.createDatabase();
         buildCPLFeatureMap(featureMap);
     }

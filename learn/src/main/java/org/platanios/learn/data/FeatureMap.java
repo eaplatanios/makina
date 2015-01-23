@@ -91,7 +91,7 @@ public abstract class FeatureMap<T extends Vector> {
         MARIA_DB {
             @Override
             public <T extends Vector> FeatureMapMariaDB<T> build(int numberOfViews) {
-                return new FeatureMapMariaDB<>(numberOfViews);
+                return new FeatureMapMariaDB<>(numberOfViews, "jdbc:mariadb://localhost/", "root", null);
             }
         };
 
