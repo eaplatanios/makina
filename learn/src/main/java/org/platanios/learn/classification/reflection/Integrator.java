@@ -1,10 +1,16 @@
 package org.platanios.learn.classification.reflection;
 
+import com.lmax.disruptor.EventHandler;
+import com.lmax.disruptor.RingBuffer;
+import com.lmax.disruptor.dsl.Disruptor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.platanios.learn.classification.Classifiers;
 import org.platanios.learn.classification.TrainableClassifier;
-import org.platanios.learn.data.*;
+import org.platanios.learn.data.DataSet;
+import org.platanios.learn.data.MultiViewDataSet;
+import org.platanios.learn.data.MultiViewPredictedDataInstance;
+import org.platanios.learn.data.PredictedDataInstance;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.serialization.UnsafeSerializationUtilities;
 
@@ -22,6 +28,7 @@ public class Integrator<T extends Vector, S> {
     private List<TrainableClassifier<T, S>> classifiers;
     private MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> labeledDataSet;
     private MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> unlabeledDataSet;
+    private RingBuffer<CompletedIterationEvent> ringBuffer;
     private DataSelectionMethod dataSelectionMethod;
     private double dataSelectionParameter;
     private ExecutorService taskExecutor;
@@ -35,6 +42,7 @@ public class Integrator<T extends Vector, S> {
         private List<TrainableClassifier<T, S>> classifiers;
         private MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> labeledDataSet;
         private MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> unlabeledDataSet;
+        private EventHandler<Integrator.CompletedIterationEvent>[] completedIterationEventHandlers;
 
         private int iterationNumber = 1;
         private DataSelectionMethod dataSelectionMethod = DataSelectionMethod.FIXED_PROPORTION;
@@ -83,6 +91,11 @@ public class Integrator<T extends Vector, S> {
             return this;
         }
 
+        public Builder completedIterationEventHandlers(EventHandler<Integrator.CompletedIterationEvent>... eventHandlers) {
+            completedIterationEventHandlers = eventHandlers;
+            return this;
+        }
+
         public Builder dataSelectionMethod(DataSelectionMethod dataSelectionMethod) {
             this.dataSelectionMethod = dataSelectionMethod;
             return this;
@@ -118,6 +131,7 @@ public class Integrator<T extends Vector, S> {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private Integrator(Builder<T, S> builder) {
         classifiers = builder.classifiers;
         labeledDataSet = builder.labeledDataSet;
@@ -130,6 +144,11 @@ public class Integrator<T extends Vector, S> {
         useDifferentFilePerIteration = builder.useDifferentFilePerIteration;
         initializeWorkingDirectory();
         iterationNumber = builder.iterationNumber;
+        Disruptor<CompletedIterationEvent> disruptor =
+                new Disruptor<>(CompletedIterationEvent::new, 1024, Executors.newCachedThreadPool());
+        disruptor.handleEventsWith(builder.completedIterationEventHandlers);
+        disruptor.start();
+        ringBuffer = disruptor.getRingBuffer();
     }
 
     private void initializeWorkingDirectory() {
@@ -167,7 +186,8 @@ public class Integrator<T extends Vector, S> {
             for (int i = 0; i < classifiers.size(); i++) {
                 DataSet<PredictedDataInstance<T, S>> dataSet = predictionResults.get(i).get();
                 for (int j = 0; j < dataSet.size(); j++) {
-                    if (dataSet.get(j).probability() > unlabeledDataSet.get(j).probability()) { // Keep the highest probability prediction / Most confident prediction
+                    // Keep the highest probability prediction / Most confident prediction
+                    if (dataSet.get(j).probability() > unlabeledDataSet.get(j).probability()) {
                         unlabeledDataSet.set(i, new MultiViewPredictedDataInstance<>(
                                 null,
                                 unlabeledDataSet.get(j).features(),
@@ -195,6 +215,7 @@ public class Integrator<T extends Vector, S> {
         transferData();
         if (saveModelsOnEveryIteration)
             saveModels(useDifferentFilePerIteration);
+        ringBuffer.publishEvent((event, sequence, classifiers) -> event.setClassifiers(classifiers), classifiers);
         iterationNumber++;
     }
 
@@ -235,6 +256,18 @@ public class Integrator<T extends Vector, S> {
             inputStream.close();
         } catch (IOException e) {
             logger.error("Could load the classifier models from the file \"" + inputFile.getAbsolutePath() + "\"!");
+        }
+    }
+
+    public class CompletedIterationEvent {
+        private List<TrainableClassifier<T, S>> classifiers;
+
+        public void setClassifiers(List<TrainableClassifier<T, S>> classifiers) {
+            this.classifiers = classifiers;
+        }
+
+        public List<TrainableClassifier<T, S>> getClassifiers() {
+            return classifiers;
         }
     }
 

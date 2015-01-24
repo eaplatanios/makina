@@ -11,235 +11,27 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="06096c01-39a4-421b-bbfc-512d98f31451" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/AbstractTrainableLogisticRegression$AbstractBuilder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/AbstractTrainableLogisticRegression$Builder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/AbstractTrainableLogisticRegression$LikelihoodFunction.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/AbstractTrainableLogisticRegression$StochasticLikelihoodFunction.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/AbstractTrainableLogisticRegression.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/Classifier.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/ClassifierType$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/ClassifierType$2.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/ClassifierType$3.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/ClassifierType.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/DataPreprocessing.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionAdaGrad$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionAdaGrad$AbstractBuilder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionAdaGrad$Builder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionAdaGrad.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionPrediction$AbstractBuilder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionPrediction$Builder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionPrediction.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionSGD$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionSGD$AbstractBuilder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionSGD$Builder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/LogisticRegressionSGD.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/MultiClassLogisticRegression$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/MultiClassLogisticRegression$Builder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/MultiClassLogisticRegression$LikelihoodFunction.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/MultiClassLogisticRegression$StochasticLikelihoodFunction.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/MultiClassLogisticRegression.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/TrainableClassifier.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/TrainingData$Entry.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/TrainingData.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/AgreementRatesPowerSetVector.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimation$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimation$Builder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimation.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationData$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationData$Builder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationData.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationInternalSolver$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationInternalSolver$2.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationInternalSolver.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$1$DependencyObjectiveFunction.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$2.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$3.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$4.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$5.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$6.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$7.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$8.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$9.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective$Function.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationObjective.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationOptimization.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationOptimizationIpOpt.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorEstimationOptimizationKNITRO.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/ErrorRatesPowerSetVector.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/Integrator$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/Integrator$Builder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/Integrator$DataSelectionMethod$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/Integrator$DataSelectionMethod$2.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/Integrator$DataSelectionMethod.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/Integrator.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/classification/reflection/PowerSetVector.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/experiments/FeaturesPreprocessing.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/experiments/Integrator.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/MathUtilities.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/combinatorics/CombinatoricsUtilities.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/CholeskyDecomposition.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/DenseVector.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/HashVector.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/LUDecomposition.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/Matrix.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/MatrixUtilities.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/NonPositiveDefiniteMatrixException.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/NonSymmetricMatrixException.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/QRDecomposition.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/SingularMatrixException.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/SingularValueDecomposition.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/SparseVector.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/Vector.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/VectorNorm$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/VectorNorm$2.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/VectorNorm$3.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/VectorNorm$4.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/VectorNorm.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/VectorType$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/VectorType$2.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/VectorType$3.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/VectorType.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/matrix/Vectors.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/math/statistics/StatisticsUtilities.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AbstractIterativeSolver$AbstractBuilder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AbstractIterativeSolver$Builder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AbstractIterativeSolver.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AbstractLineSearchSolver$AbstractBuilder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AbstractLineSearchSolver$Builder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AbstractLineSearchSolver.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AbstractStochasticIterativeSolver$AbstractBuilder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AbstractStochasticIterativeSolver$Builder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AbstractStochasticIterativeSolver.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AdaptiveGradientSolver$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AdaptiveGradientSolver$AbstractBuilder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AdaptiveGradientSolver$Builder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/AdaptiveGradientSolver.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/ConjugateGradientSolver$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/ConjugateGradientSolver$AbstractBuilder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/ConjugateGradientSolver$Builder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/ConjugateGradientSolver$PreconditioningMethod$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/ConjugateGradientSolver$PreconditioningMethod$2.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/ConjugateGradientSolver$PreconditioningMethod$3.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/ConjugateGradientSolver$PreconditioningMethod.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/ConjugateGradientSolver$ProblemConversionMethod$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/ConjugateGradientSolver$ProblemConversionMethod$2.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/ConjugateGradientSolver$ProblemConversionMethod.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/ConjugateGradientSolver.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/CoordinateDescentSolver$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/CoordinateDescentSolver$AbstractBuilder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/CoordinateDescentSolver$Builder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/CoordinateDescentSolver$Method$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/CoordinateDescentSolver$Method$2.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/CoordinateDescentSolver$Method$3.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/CoordinateDescentSolver$Method.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/CoordinateDescentSolver.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/GaussNewtonSolver$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/GaussNewtonSolver$AbstractBuilder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/GaussNewtonSolver$Builder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/GaussNewtonSolver.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/GradientDescentSolver$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/GradientDescentSolver$AbstractBuilder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/GradientDescentSolver$Builder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/GradientDescentSolver.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/LinearLeastSquaresSolver$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/LinearLeastSquaresSolver$Builder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/LinearLeastSquaresSolver$Method$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/LinearLeastSquaresSolver$Method$2.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/LinearLeastSquaresSolver$Method$3.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/LinearLeastSquaresSolver$Method$4.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/LinearLeastSquaresSolver$Method.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/LinearLeastSquaresSolver.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NewtonSolver$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NewtonSolver$AbstractBuilder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NewtonSolver$Builder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NewtonSolver.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$AbstractBuilder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$Builder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$Method$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$Method$2.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$Method$3.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$Method$4.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$Method$5.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$Method$6.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$Method$7.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$Method.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$RestartMethod$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$RestartMethod$2.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$RestartMethod$3.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver$RestartMethod.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolver.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/QuasiNewtonSolver$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/QuasiNewtonSolver$AbstractBuilder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/QuasiNewtonSolver$Builder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/QuasiNewtonSolver$Method$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/QuasiNewtonSolver$Method$2.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/QuasiNewtonSolver$Method$3.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/QuasiNewtonSolver$Method$4.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/QuasiNewtonSolver$Method$5.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/QuasiNewtonSolver$Method.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/QuasiNewtonSolver.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/Solver.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/StochasticGradientDescentSolver$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/StochasticGradientDescentSolver$AbstractBuilder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/StochasticGradientDescentSolver$Builder.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/StochasticGradientDescentSolver.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/StochasticSolverStepSize$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/StochasticSolverStepSize$2.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/StochasticSolverStepSize.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/function/AbstractFunction.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/function/AbstractLeastSquaresFunction.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/function/AbstractStochasticFunction.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/function/DerivativesApproximation$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/function/DerivativesApproximation$Method$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/function/DerivativesApproximation$Method$2.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/function/DerivativesApproximation$Method.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/function/DerivativesApproximation.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/function/LinearLeastSquaresFunction.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/function/QuadraticFunction.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/ArmijoInterpolationLineSearch.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/BacktrackingLineSearch.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/ExactLineSearch.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/IterativeLineSearch.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/LineSearch.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/LineSearchConditions.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/StepSizeInitializationMethod$1.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/StepSizeInitializationMethod$2.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/StepSizeInitializationMethod$3.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/StepSizeInitializationMethod$4.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/StepSizeInitializationMethod$5.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/StepSizeInitializationMethod.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/classes/org/platanios/learn/optimization/linesearch/StrongWolfeInterpolationLineSearch.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/classification/BinaryLogisticRegressionTest.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/classification/MultiClassLogisticRegressionTest.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/classification/reflection/ErrorEstimationTest.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/math/combinatorics/CombinatoricsUtilitiesTest.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/math/matrix/CholeskyDecompositionTest.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/math/matrix/LUDecompositionTest.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/math/matrix/QRDecompositionTest.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/math/matrix/SingularValueDecompositionTest.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/ConjugateGradientSolverTest.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/CoordinateDescentSolverTest.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/GaussNewtonSolverTest$ExponentialLeastSquaresFunction.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/GaussNewtonSolverTest.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/GradientDescentSolverTest.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/LinearLeastSquaresSolverTest.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/NewtonSolverTest.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/NonlinearConjugateGradientSolverTest.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/QuasiNewtonSolverTest.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/RosenbrockFunction.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/function/DerivativesApproximationTest$RosenbrockFunction.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/target/test-classes/org/platanios/learn/optimization/function/DerivativesApproximationTest.class" afterPath="" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/lib/IpOpt/IpOpt/3.11.9/IpOpt-3.11.9.jar" afterPath="$PROJECT_DIR$/learn/lib/IpOpt/IpOpt/3.11.9/IpOpt-3.11.9.jar" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/lib/IpOpt/IpOpt/3.11.9/IpOpt-3.11.9.pom" afterPath="$PROJECT_DIR$/learn/lib/IpOpt/IpOpt/3.11.9/IpOpt-3.11.9.pom" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/lib/IpOpt/IpOpt/maven-metadata-local.xml" afterPath="$PROJECT_DIR$/learn/lib/IpOpt/IpOpt/maven-metadata-local.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/lib/knitro/knitro/9.01/knitro-9.01.jar" afterPath="$PROJECT_DIR$/learn/lib/knitro/knitro/9.01/knitro-9.01.jar" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/lib/knitro/knitro/9.01/knitro-9.01.pom" afterPath="$PROJECT_DIR$/learn/lib/knitro/knitro/9.01/knitro-9.01.pom" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/lib/knitro/knitro/maven-metadata-local.xml" afterPath="$PROJECT_DIR$/learn/lib/knitro/knitro/maven-metadata-local.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/lib/libjipopt.dylib" afterPath="$PROJECT_DIR$/learn/lib/libjipopt.dylib" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_lmax_disruptor_3_3_0.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/experiment/experiment.iml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/experiment/pom.xml" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/learn/src/main/resources/FeatureMapMariaDB.properties" afterPath="" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/FeatureMapMariaDB.java" afterPath="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/FeatureMapMySQL.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/experiments/FeaturesPreprocessing.java" afterPath="$PROJECT_DIR$/experiment/src/main/java/org/platanios/experiment/FeaturesPreprocessing.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/experiments/Integrator.java" afterPath="$PROJECT_DIR$/experiment/src/main/java/org/platanios/experiment/Integrator.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/data/FeatureMapMariaDBTest.java" afterPath="$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/data/FeatureMapMySQLTest.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/dataSources.ids" afterPath="$PROJECT_DIR$/.idea/dataSources.ids" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/artifacts/org_platanios_learn_jar/org.platanios.learn.jar" afterPath="$PROJECT_DIR$/target/artifacts/org_platanios_learn_jar/org.platanios.learn.jar" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/FeatureMap.java" afterPath="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/FeatureMap.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/reflection/Integrator.java" afterPath="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/reflection/Integrator.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/compiler.xml" afterPath="$PROJECT_DIR$/.idea/compiler.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/dataSources.xml" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/learn.iml" afterPath="$PROJECT_DIR$/learn/learn.iml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules.xml" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/artifacts/org_platanios_learn_jar.xml" afterPath="$PROJECT_DIR$/.idea/artifacts/org_platanios_learn_jar.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learn/pom.xml" afterPath="$PROJECT_DIR$/learn/pom.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="learn.iws" />
@@ -248,6 +40,7 @@
     <ignored path=".idea/dataSources.local.xml" />
     <ignored path="$PROJECT_DIR$/learn/target/" />
     <ignored path="$PROJECT_DIR$/trade/target/" />
+    <ignored path="$PROJECT_DIR$/experiment/target/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -267,6 +60,34 @@
     <option name="GROUP_BY_TYPE" value="true" />
     <option name="SORT_CHILDREN" value="false" />
     <option name="SHOW_TABLE_CONSTRAINTS" value="true" />
+    <PATH>
+      <PATH_ELEMENT>
+        <option name="myItemId" />
+        <option name="myItemType" value="com.intellij.database.view.DbRootNodeDescriptor" />
+      </PATH_ELEMENT>
+      <PATH_ELEMENT>
+        <option name="myItemId" value="MySQL - @localhost" />
+        <option name="myItemType" value="com.intellij.database.view.DbNodeDescriptor" />
+      </PATH_ELEMENT>
+      <PATH_ELEMENT>
+        <option name="myItemId" value="learn" />
+        <option name="myItemType" value="com.intellij.database.view.DbNodeDescriptor" />
+      </PATH_ELEMENT>
+      <PATH_ELEMENT>
+        <option name="myItemId" value="features" />
+        <option name="myItemType" value="com.intellij.database.view.DbNodeDescriptor" />
+      </PATH_ELEMENT>
+    </PATH>
+    <PATH>
+      <PATH_ELEMENT>
+        <option name="myItemId" />
+        <option name="myItemType" value="com.intellij.database.view.DbRootNodeDescriptor" />
+      </PATH_ELEMENT>
+      <PATH_ELEMENT>
+        <option name="myItemId" value="MySQL - @localhost" />
+        <option name="myItemType" value="com.intellij.database.view.DbNodeDescriptor" />
+      </PATH_ELEMENT>
+    </PATH>
     <PATH>
       <PATH_ELEMENT>
         <option name="myItemId" />
@@ -356,89 +177,49 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Integrator.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="Integrator.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/reflection/Integrator.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="465" max-vertical-offset="4260">
-              <caret line="50" column="38" selection-start-line="50" selection-start-column="38" selection-end-line="50" selection-end-column="38" />
+            <state vertical-scroll-proportion="0.23672883" vertical-offset="1560" max-vertical-offset="4815">
+              <caret line="115" column="24" selection-start-line="115" selection-start-column="24" selection-end-line="115" selection-end-column="24" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#2083#2113#0" expanded="true" />
+                <element signature="e#2471#2472#0" expanded="true" />
+                <element signature="e#2526#2527#0" expanded="true" />
+                <element signature="e#2537#2567#0" expanded="true" />
+                <element signature="e#5509#5510#0" expanded="true" />
+                <element signature="e#5562#5563#0" expanded="true" />
+                <element signature="e#5575#5605#0" expanded="true" />
+                <element signature="e#11132#11162#0" expanded="true" />
+                <element signature="e#12186#12187#0" expanded="true" />
+                <element signature="e#12240#12241#0" expanded="true" />
+                <element signature="e#12307#12308#0" expanded="true" />
+                <element signature="e#12349#12350#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file leaf-file-name="Integrator.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/experiments/Integrator.java">
+        <entry file="file://$PROJECT_DIR$/experiment/src/main/java/org/platanios/experiment/Integrator.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="405" max-vertical-offset="510">
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="510">
               <caret line="27" column="1" selection-start-line="27" selection-start-column="1" selection-end-line="27" selection-end-column="1" />
-              <folding />
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file leaf-file-name="FeaturesPreprocessing.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/experiments/FeaturesPreprocessing.java">
+        <entry file="file://$PROJECT_DIR$/experiment/src/main/java/org/platanios/experiment/FeaturesPreprocessing.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="1302" max-vertical-offset="2985">
-              <caret line="106" column="10" selection-start-line="106" selection-start-column="10" selection-end-line="106" selection-end-column="10" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="1932" max-vertical-offset="2985">
+              <caret line="101" column="29" selection-start-line="101" selection-start-column="29" selection-end-line="101" selection-end-column="29" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="MariaDB - Local" pinned="false" current-in-tab="false">
-        <entry file="dbDummy://db-console:/8a94e1db/4e7dbfa6-8474-442c-b88b-883bf535e151/">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-1.5" vertical-offset="0" max-vertical-offset="135">
-              <caret line="3" column="41" selection-start-line="3" selection-start-column="41" selection-end-line="3" selection-end-column="41" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name=".gitignore" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/.gitignore">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.021520803" vertical-offset="0" max-vertical-offset="697">
-              <caret line="1" column="7" selection-start-line="1" selection-start-column="7" selection-end-line="1" selection-end-column="7" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="pom.xml" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/learn/pom.xml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1260">
-              <caret line="33" column="38" selection-start-line="33" selection-start-column="38" selection-end-line="33" selection-end-column="38" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="FeatureMap.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/FeatureMap.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="282" max-vertical-offset="1530">
-              <caret line="74" column="32" selection-start-line="74" selection-start-column="32" selection-end-line="74" selection-end-column="32" />
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="FeatureMapMariaDB.properties" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/learn/src/main/resources/FeatureMapMariaDB.properties">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="150">
-              <caret line="1" column="29" selection-start-line="1" selection-start-column="25" selection-end-line="1" selection-end-column="29" />
-              <folding />
             </state>
           </provider>
         </entry>
@@ -461,10 +242,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/LabeledDataInstance.java" />
-        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/PredictedDataInstance.java" />
-        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/TrainableClassifier.java" />
-        <option value="$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/serialization/UnsafeSerializationUtilitiesTest.java" />
         <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/serialization/UnsafeSerializationUtilities.java" />
         <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/DataInstances.java" />
         <option value="$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/math/matrix/SparseVectorTest.java" />
@@ -498,20 +275,24 @@
         <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/DataSetUsingFeatureMap.java" />
         <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/MultiViewDataSetUsingFeatureMap.java" />
         <option value="db-console:/8a94e1db/715bd81e-77c9-44a7-87d4-673ca3956fe7/" />
-        <option value="$PROJECT_DIR$/learn/learn.iml" />
         <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/math/matrix/DenseVector.java" />
         <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/math/matrix/Vector.java" />
         <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/math/matrix/SparseVector.java" />
         <option value="$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/classification/BinaryLogisticRegressionTest.java" />
-        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/reflection/Integrator.java" />
-        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/FeatureMapMariaDB.java" />
         <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/FeatureMapInMemory.java" />
-        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/FeatureMap.java" />
-        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/experiments/FeaturesPreprocessing.java" />
         <option value="$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/data/FeatureMapMariaDBTest.java" />
         <option value="db-console:/8a94e1db/4e7dbfa6-8474-442c-b88b-883bf535e151/" />
-        <option value="$PROJECT_DIR$/.gitignore" />
+        <option value="db-console:/8a94e1db/9548ea6b-7f55-4006-b6d3-ddc8a9a4b9c1/" />
+        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/FeatureMapMariaDB.java" />
+        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/FeatureMapMySQL.java" />
+        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/experiments/FeaturesPreprocessing.java" />
         <option value="$PROJECT_DIR$/learn/pom.xml" />
+        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/FeatureMap.java" />
+        <option value="$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/reflection/Integrator.java" />
+        <option value="$PROJECT_DIR$/experiment/pom.xml" />
+        <option value="$PROJECT_DIR$/experiment/experiment.iml" />
+        <option value="$PROJECT_DIR$/learn/learn.iml" />
+        <option value="$PROJECT_DIR$/.gitignore" />
       </list>
     </option>
   </component>
@@ -538,7 +319,7 @@
           <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$RootNode" />
         </PATH_ELEMENT>
         <PATH_ELEMENT>
-          <option name="myItemId" value="trade" />
+          <option name="myItemId" value="learn" />
           <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$ProjectNode" />
         </PATH_ELEMENT>
       </PATH>
@@ -546,6 +327,10 @@
         <PATH_ELEMENT>
           <option name="myItemId" value="" />
           <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$RootNode" />
+        </PATH_ELEMENT>
+        <PATH_ELEMENT>
+          <option name="myItemId" value="experiment" />
+          <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$ProjectNode" />
         </PATH_ELEMENT>
       </PATH>
     </treeState>
@@ -616,6 +401,42 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="learn" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="org.platanios" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="learn" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="target" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="generated-test-sources" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="org.platanios" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="learn" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="target" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="generated-sources" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -1201,36 +1022,6 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="experiments" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="org.platanios" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="main" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="java" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="learn" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
               <option name="myItemId" value="data" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
@@ -1299,6 +1090,78 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="org.platanios" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="experiment" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="org.platanios" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="experiment" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="test" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="org.platanios" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="experiment" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="org.platanios" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="experiment" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="experiment" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
         </subPane>
       </pane>
       <pane id="PackagesPane">
@@ -1320,9 +1183,9 @@
     <property name="MemberChooser.sorted" value="false" />
     <property name="MemberChooser.showClasses" value="true" />
     <property name="MemberChooser.copyJavadoc" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/trade/conf" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/experiment/pom.xml" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="project.structure.last.edited" value="Artifacts" />
+    <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
     <property name="options.lastSelected" value="database.main" />
@@ -1366,21 +1229,17 @@
       <recent name="org.platanios.learn.data" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/experiment" />
       <recent name="$PROJECT_DIR$/trade/data" />
       <recent name="$PROJECT_DIR$/learn/src/test/resources" />
       <recent name="$PROJECT_DIR$/trade/conf" />
       <recent name="$PROJECT_DIR$/trade" />
-      <recent name="$PROJECT_DIR$/lib" />
     </key>
     <key name="CreateClassDialog.RecentsKey">
       <recent name="org.platanios.trade.data" />
     </key>
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/trade/data" />
-      <recent name="$PROJECT_DIR$/learn/src/main/resources" />
-      <recent name="$PROJECT_DIR$/trade/src/main/resources" />
-      <recent name="$PROJECT_DIR$/trade/conf" />
-      <recent name="$PROJECT_DIR$/learn" />
+    <key name="ImportMappingsDialog.RecentPackages">
+      <recent name="org.platanios.trade.data" />
     </key>
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
       <recent name="org.platanios.learn.data" />
@@ -1389,8 +1248,12 @@
       <recent name="org.platanios" />
       <recent name="org.platanios.learn.optimization" />
     </key>
-    <key name="ImportMappingsDialog.RecentPackages">
-      <recent name="org.platanios.trade.data" />
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/trade/data" />
+      <recent name="$PROJECT_DIR$/learn/src/main/resources" />
+      <recent name="$PROJECT_DIR$/trade/src/main/resources" />
+      <recent name="$PROJECT_DIR$/trade/conf" />
+      <recent name="$PROJECT_DIR$/learn" />
     </key>
   </component>
   <component name="RunManager" selected="JUnit.BinaryLogisticRegressionTest.testLargeSparseBinaryLogisticRegressionUsingAdaGrad">
@@ -1401,7 +1264,7 @@
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
-      <option name="MAIN_CLASS_NAME" value="org.platanios.learn.experiments.FeaturesPreprocessing" />
+      <option name="MAIN_CLASS_NAME" value="org.platanios.experiment.FeaturesPreprocessing" />
       <option name="VM_PARAMETERS" value="-Xmx10G" />
       <option name="PROGRAM_PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
@@ -1410,7 +1273,7 @@
       <option name="ENABLE_SWING_INSPECTOR" value="false" />
       <option name="ENV_VARIABLES" />
       <option name="PASS_PARENT_ENVS" value="true" />
-      <module name="learn" />
+      <module name="experiment" />
       <envs />
       <RunnerSettings RunnerId="Debug">
         <option name="DEBUG_PORT" value="" />
@@ -1959,7 +1822,7 @@
       <workItem from="1420048910330" duration="9231000" />
       <workItem from="1420990790027" duration="37000" />
       <workItem from="1420990839036" duration="50595000" />
-      <workItem from="1421965747358" duration="4691000" />
+      <workItem from="1421965747358" duration="10190000" />
     </task>
     <task id="LOCAL-00226" summary="Made several changes and somewhat refactored the perception library.">
       <created>1415569189313</created>
@@ -2259,7 +2122,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="911687000" />
+    <option name="totallyTimeSpent" value="917186000" />
   </component>
   <component name="TodoView" selected-index="0">
     <todo-panel id="selected-file">
@@ -2283,7 +2146,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1920" height="1173" extended-state="6" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Database Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3265495" sideWeight="0.5" order="15" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -2291,9 +2154,9 @@
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3293247" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Statistic" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3209991" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3293247" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3293247" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22523962" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22523962" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39777982" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
@@ -2441,20 +2304,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/TrainableClassifier.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.12820514" vertical-offset="0" max-vertical-offset="1053">
-          <caret line="9" column="17" selection-start-line="9" selection-start-column="17" selection-end-line="9" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/Classifier.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.15669516" vertical-offset="0" max-vertical-offset="1053">
-          <caret line="15" column="68" selection-start-line="15" selection-start-column="47" selection-end-line="15" selection-end-column="68" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/ClassifierType.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.6980057" vertical-offset="0" max-vertical-offset="1053">
@@ -2467,7 +2316,7 @@
         <state vertical-scroll-proportion="0.18518518" vertical-offset="0" max-vertical-offset="1053">
           <caret line="13" column="55" selection-start-line="13" selection-start-column="55" selection-end-line="13" selection-end-column="55" />
           <folding>
-            <element signature="imports" expanded="true" />
+            <element signature="imports" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -2637,6 +2486,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.42979944" vertical-offset="0" max-vertical-offset="698">
           <caret line="20" column="13" selection-start-line="20" selection-start-column="13" selection-end-line="20" selection-end-column="13" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -2656,14 +2508,6 @@
       <provider selected="true" editor-type-id="com.intellij.database.editor.DatabaseTableFileEditorProvider">
         <state>
           <filtering enabled="true" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/experiments/Integrator.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="510">
-          <caret line="27" column="1" selection-start-line="27" selection-start-column="1" selection-end-line="27" selection-end-column="1" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2742,13 +2586,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/learn/learn.iml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.28490028" vertical-offset="0" max-vertical-offset="1053">
-          <caret line="20" column="99" selection-start-line="20" selection-start-column="99" selection-end-line="20" selection-end-column="99" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/math/matrix/DenseVector.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.5470086" vertical-offset="5664" max-vertical-offset="14460">
@@ -2816,48 +2653,15 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-0.15954416" vertical-offset="14028" max-vertical-offset="33900">
           <caret line="947" column="114" selection-start-line="947" selection-start-column="114" selection-end-line="947" selection-end-column="114" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/reflection/Integrator.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="465" max-vertical-offset="4260">
-          <caret line="50" column="38" selection-start-line="50" selection-start-column="38" selection-end-line="50" selection-end-column="38" />
           <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#2083#2113#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/learn/src/main/resources/FeatureMapMariaDB.properties">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="150">
-          <caret line="1" column="29" selection-start-line="1" selection-start-column="25" selection-end-line="1" selection-end-column="29" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/FeatureMapMariaDB.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.28490028" vertical-offset="0" max-vertical-offset="6135">
-          <caret line="20" column="10" selection-start-line="20" selection-start-column="10" selection-end-line="20" selection-end-column="10" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <marker date="1421968734000" expanded="true" signature="-1:-1" placeholder="DROP DATABAS..." />
-            <marker date="1421968734000" expanded="true" signature="-1:-1" placeholder="CREATE DATAB..missingValue..." />
-            <marker date="1421968734000" expanded="true" signature="-1:-1" placeholder="CREATE TABLE..missingValue..." />
-            <marker date="1421968734000" expanded="true" signature="-1:-1" placeholder="INSERT INTO ..." />
-            <marker date="1421968734000" expanded="true" signature="-1:-1" placeholder="INSERT INTO ..." />
-            <marker date="1421968734000" expanded="true" signature="-1:-1" placeholder="UPDATE featu..." />
-            <marker date="1421968734000" expanded="true" signature="-1:-1" placeholder="INSERT INTO ..." />
-            <marker date="1421968734000" expanded="true" signature="-1:-1" placeholder="INSERT INTO ..." />
-            <marker date="1421968734000" expanded="true" signature="-1:-1" placeholder="SELECT name ..missingValue..." />
-            <marker date="1421968734000" expanded="true" signature="-1:-1" placeholder="SELECT featu..missingValue..." />
-            <marker date="1421968734000" expanded="true" signature="-1:-1" placeholder="SELECT name,..missingValue..." />
-            <marker date="1421968734000" expanded="true" signature="-1:-1" placeholder="SELECT name,..missingValue..." />
-            <marker date="1421968734000" expanded="true" signature="-1:-1" placeholder="SELECT * FRO..missingValue..." />
-            <marker date="1421968734000" expanded="true" signature="-1:-1" placeholder="SELECT * FRO..missingValue..." />
+            <element signature="e#91541#91542#0" expanded="false" />
+            <element signature="e#91568#91569#0" expanded="false" />
+            <element signature="e#91670#91671#0" expanded="false" />
+            <element signature="e#91697#91698#0" expanded="false" />
+            <element signature="e#91806#91807#0" expanded="false" />
+            <element signature="e#91833#91834#0" expanded="false" />
+            <element signature="e#91924#91925#0" expanded="false" />
+            <element signature="e#91951#91952#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -2867,67 +2671,150 @@
         <state vertical-scroll-proportion="0.041785374" vertical-offset="1" max-vertical-offset="1995">
           <caret line="3" column="70" selection-start-line="3" selection-start-column="70" selection-end-line="3" selection-end-column="70" />
           <folding>
-            <element signature="e#679#680#0" expanded="true" />
-            <element signature="e#738#739#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/data/FeatureMapMariaDBTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="2.3175967" vertical-offset="0" max-vertical-offset="1875">
-          <caret line="108" column="96" selection-start-line="108" selection-start-column="96" selection-end-line="108" selection-end-column="96" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#839#852#0" expanded="true" />
-            <element signature="e#2702#2715#0" expanded="true" />
-            <element signature="e#4381#4394#0" expanded="true" />
-            <element signature="e#6180#6193#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/FeatureMap.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="282" max-vertical-offset="1530">
-          <caret line="74" column="32" selection-start-line="74" selection-start-column="32" selection-end-line="74" selection-end-column="32" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/experiments/FeaturesPreprocessing.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="1302" max-vertical-offset="2985">
-          <caret line="106" column="10" selection-start-line="106" selection-start-column="10" selection-end-line="106" selection-end-column="10" />
-          <folding>
-            <element signature="imports" expanded="true" />
+            <element signature="e#679#680#0" expanded="false" />
+            <element signature="e#738#739#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="dbDummy://db-console:/8a94e1db/4e7dbfa6-8474-442c-b88b-883bf535e151/">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-1.5" vertical-offset="0" max-vertical-offset="135">
-          <caret line="3" column="41" selection-start-line="3" selection-start-column="41" selection-end-line="3" selection-end-column="41" />
+        <state vertical-scroll-proportion="0.06716418" vertical-offset="0" max-vertical-offset="670">
+          <caret line="3" column="43" selection-start-line="3" selection-start-column="43" selection-end-line="3" selection-end-column="43" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/learn/pom.xml">
+    <entry file="dbDummy://db-console:/8a94e1db/9548ea6b-7f55-4006-b6d3-ddc8a9a4b9c1/">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1260">
-          <caret line="33" column="38" selection-start-line="33" selection-start-column="38" selection-end-line="33" selection-end-column="38" />
+        <state vertical-scroll-proportion="-0.0" vertical-offset="0" max-vertical-offset="90">
+          <caret line="0" column="102" selection-start-line="0" selection-start-column="102" selection-end-line="0" selection-end-column="102" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/FeatureMapMySQL.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-4.5698004" vertical-offset="5232" max-vertical-offset="6285">
+          <caret line="28" column="47" selection-start-line="28" selection-start-column="47" selection-end-line="28" selection-end-column="47" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <marker date="1422127419000" expanded="true" signature="-1:-1" placeholder="DROP DATABAS..." />
+            <marker date="1422127419000" expanded="true" signature="-1:-1" placeholder="CREATE DATAB..missingValue..." />
+            <marker date="1422127419000" expanded="true" signature="-1:-1" placeholder="CREATE TABLE..missingValue..." />
+            <marker date="1422127419000" expanded="true" signature="-1:-1" placeholder="INSERT INTO ..." />
+            <marker date="1422127419000" expanded="true" signature="-1:-1" placeholder="INSERT INTO ..." />
+            <marker date="1422127419000" expanded="true" signature="-1:-1" placeholder="UPDATE featu..." />
+            <marker date="1422127419000" expanded="true" signature="-1:-1" placeholder="INSERT INTO ..." />
+            <marker date="1422127419000" expanded="true" signature="-1:-1" placeholder="INSERT INTO ..." />
+            <marker date="1422127419000" expanded="true" signature="-1:-1" placeholder="SELECT name ..missingValue..." />
+            <marker date="1422127419000" expanded="true" signature="-1:-1" placeholder="SELECT featu..missingValue..." />
+            <marker date="1422127419000" expanded="true" signature="-1:-1" placeholder="SELECT name,..missingValue..." />
+            <marker date="1422127419000" expanded="true" signature="-1:-1" placeholder="SELECT name,..missingValue..." />
+            <marker date="1422127419000" expanded="true" signature="-1:-1" placeholder="SELECT * FRO..missingValue..." />
+            <marker date="1422127419000" expanded="true" signature="-1:-1" placeholder="SELECT * FRO..missingValue..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/data/FeatureMap.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.43019944" vertical-offset="477" max-vertical-offset="1530">
+          <caret line="66" column="63" selection-start-line="66" selection-start-column="63" selection-end-line="66" selection-end-column="63" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/src/test/java/org/platanios/learn/data/FeatureMapMySQLTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.22792023" vertical-offset="0" max-vertical-offset="1770">
+          <caret line="23" column="36" selection-start-line="23" selection-start-column="36" selection-end-line="23" selection-end-column="36" />
+          <folding>
+            <element signature="e#831#844#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/experiment/experiment.iml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="390">
+          <caret line="5" column="39" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.021520803" vertical-offset="0" max-vertical-offset="697">
-          <caret line="1" column="7" selection-start-line="1" selection-start-column="7" selection-end-line="1" selection-end-column="7" />
+        <state vertical-scroll-proportion="0.02849003" vertical-offset="0" max-vertical-offset="1053">
+          <caret line="2" column="7" selection-start-line="2" selection-start-column="7" selection-end-line="2" selection-end-column="7" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/experiment/pom.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.12820514" vertical-offset="0" max-vertical-offset="1053">
+          <caret line="9" column="0" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/experiment/src/main/java/org/platanios/experiment/FeaturesPreprocessing.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="1932" max-vertical-offset="2985">
+          <caret line="101" column="29" selection-start-line="101" selection-start-column="29" selection-end-line="101" selection-end-column="29" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/experiment/src/main/java/org/platanios/experiment/Integrator.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="510">
+          <caret line="27" column="1" selection-start-line="27" selection-start-column="1" selection-end-line="27" selection-end-column="1" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/learn.iml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.55954087" vertical-offset="0" max-vertical-offset="697">
+          <caret line="26" column="9" selection-start-line="26" selection-start-column="9" selection-end-line="26" selection-end-column="9" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/pom.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="1.097561" vertical-offset="0" max-vertical-offset="1260">
+          <caret line="51" column="21" selection-start-line="51" selection-start-column="21" selection-end-line="51" selection-end-column="21" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learn/src/main/java/org/platanios/learn/classification/reflection/Integrator.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.23672883" vertical-offset="1560" max-vertical-offset="4815">
+          <caret line="115" column="24" selection-start-line="115" selection-start-column="24" selection-end-line="115" selection-end-column="24" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#2471#2472#0" expanded="true" />
+            <element signature="e#2526#2527#0" expanded="true" />
+            <element signature="e#2537#2567#0" expanded="true" />
+            <element signature="e#5509#5510#0" expanded="true" />
+            <element signature="e#5562#5563#0" expanded="true" />
+            <element signature="e#5575#5605#0" expanded="true" />
+            <element signature="e#11132#11162#0" expanded="true" />
+            <element signature="e#12186#12187#0" expanded="true" />
+            <element signature="e#12240#12241#0" expanded="true" />
+            <element signature="e#12307#12308#0" expanded="true" />
+            <element signature="e#12349#12350#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -2986,12 +2873,11 @@
       </state>
       <state key="ModuleStructureConfigurable.UI">
         <settings>
-          <last-edited>learn</last-edited>
+          <last-edited>experiment</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>
                 <option value="0.2" />
-                <option value="0.6" />
               </list>
             </option>
           </splitter-proportions>
@@ -3011,7 +2897,7 @@
       </state>
       <state key="ProjectLibrariesConfigurable.UI">
         <settings>
-          <last-edited>Java EE 6-Java EE 6</last-edited>
+          <last-edited>Maven: colt:colt:1.2.0</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>

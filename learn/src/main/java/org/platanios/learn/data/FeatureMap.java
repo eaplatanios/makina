@@ -39,7 +39,7 @@ public abstract class FeatureMap<T extends Vector> {
                                                                 String host,
                                                                 String username,
                                                                 String password) {
-        return new FeatureMapMariaDB<>(numberOfViews, host, username, password);
+        return new FeatureMapMySQL<>(numberOfViews, host, username, password);
     }
 
     public int getNumberOfViews() {
@@ -88,10 +88,10 @@ public abstract class FeatureMap<T extends Vector> {
                 return new FeatureMapInMemory<>(numberOfViews);
             }
         },
-        MARIA_DB {
+        MY_SQL {
             @Override
-            public <T extends Vector> FeatureMapMariaDB<T> build(int numberOfViews) {
-                return new FeatureMapMariaDB<>(numberOfViews, "jdbc:mariadb://localhost/", "root", null);
+            public <T extends Vector> FeatureMapMySQL<T> build(int numberOfViews) {
+                return new FeatureMapMySQL<>(numberOfViews, "jdbc:mysql://localhost/", "root", null);
             }
         };
 
