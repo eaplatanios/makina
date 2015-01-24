@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InvalidObjectException;
 import java.io.OutputStream;
+import java.util.function.Function;
 
 /**
  * This class implements a binary logistic regression model that is trained using the stochastic gradient descent
@@ -23,6 +24,7 @@ public class LogisticRegressionSGD extends AbstractTrainableLogisticRegression {
     private int maximumNumberOfIterationsWithNoPointChange;
     private double pointChangeTolerance;
     private boolean checkForPointConvergence;
+    private Function<Vector, Boolean> additionalCustomConvergenceCriterion;
     private int batchSize;
     private StochasticSolverStepSize stepSize;
     private double[] stepSizeParameters;
@@ -43,6 +45,7 @@ public class LogisticRegressionSGD extends AbstractTrainableLogisticRegression {
         protected int maximumNumberOfIterationsWithNoPointChange = 5;
         protected double pointChangeTolerance = 1e-10;
         protected boolean checkForPointConvergence = true;
+        private Function<Vector, Boolean> additionalCustomConvergenceCriterion = currentPoint -> false;
         protected int batchSize = 100;
         protected StochasticSolverStepSize stepSize = StochasticSolverStepSize.SCALED;
         protected double[] stepSizeParameters = new double[] { 10, 0.75 };
@@ -77,6 +80,11 @@ public class LogisticRegressionSGD extends AbstractTrainableLogisticRegression {
 
         public T checkForPointConvergence(boolean checkForPointConvergence) {
             this.checkForPointConvergence = checkForPointConvergence;
+            return self();
+        }
+
+        public T additionalCustomConvergenceCriterion(Function<Vector, Boolean> additionalCustomConvergenceCriterion) {
+            this.additionalCustomConvergenceCriterion = additionalCustomConvergenceCriterion;
             return self();
         }
 
@@ -142,6 +150,7 @@ public class LogisticRegressionSGD extends AbstractTrainableLogisticRegression {
         maximumNumberOfIterationsWithNoPointChange = builder.maximumNumberOfIterationsWithNoPointChange;
         pointChangeTolerance = builder.pointChangeTolerance;
         checkForPointConvergence = builder.checkForPointConvergence;
+        additionalCustomConvergenceCriterion = builder.additionalCustomConvergenceCriterion;
         batchSize = builder.batchSize;
         stepSize = builder.stepSize;
         stepSizeParameters = builder.stepSizeParameters;
@@ -161,6 +170,7 @@ public class LogisticRegressionSGD extends AbstractTrainableLogisticRegression {
                 .maximumNumberOfIterationsWithNoPointChange(maximumNumberOfIterationsWithNoPointChange)
                 .pointChangeTolerance(pointChangeTolerance)
                 .checkForPointConvergence(checkForPointConvergence)
+                .additionalCustomConvergenceCriterion(additionalCustomConvergenceCriterion)
                 .batchSize(batchSize)
                 .stepSize(stepSize)
                 .stepSizeParameters(stepSizeParameters)

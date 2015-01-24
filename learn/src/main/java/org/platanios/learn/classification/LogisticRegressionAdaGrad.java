@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.InvalidObjectException;
 import java.io.OutputStream;
 import java.util.Random;
+import java.util.function.Function;
 
 /**
  * This class implements a binary logistic regression model that is trained using the adaptive gradient algorithm.
@@ -25,6 +26,7 @@ public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegressi
     private int maximumNumberOfIterationsWithNoPointChange;
     private double pointChangeTolerance;
     private boolean checkForPointConvergence;
+    private Function<Vector, Boolean> additionalCustomConvergenceCriterion;
     private int batchSize;
     private StochasticSolverStepSize stepSize;
     private double[] stepSizeParameters;
@@ -46,6 +48,7 @@ public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegressi
         protected int maximumNumberOfIterationsWithNoPointChange = 5;
         protected double pointChangeTolerance = 1e-10;
         protected boolean checkForPointConvergence = true;
+        private Function<Vector, Boolean> additionalCustomConvergenceCriterion = currentPoint -> false;
         protected int batchSize = 100;
         protected StochasticSolverStepSize stepSize = StochasticSolverStepSize.SCALED;
         protected double[] stepSizeParameters = new double[] { 10, 0.75 };
@@ -81,6 +84,11 @@ public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegressi
 
         public T checkForPointConvergence(boolean checkForPointConvergence) {
             this.checkForPointConvergence = checkForPointConvergence;
+            return self();
+        }
+
+        public T additionalCustomConvergenceCriterion(Function<Vector, Boolean> additionalCustomConvergenceCriterion) {
+            this.additionalCustomConvergenceCriterion = additionalCustomConvergenceCriterion;
             return self();
         }
 
@@ -151,6 +159,7 @@ public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegressi
         maximumNumberOfIterationsWithNoPointChange = builder.maximumNumberOfIterationsWithNoPointChange;
         pointChangeTolerance = builder.pointChangeTolerance;
         checkForPointConvergence = builder.checkForPointConvergence;
+        additionalCustomConvergenceCriterion = builder.additionalCustomConvergenceCriterion;
         batchSize = builder.batchSize;
         stepSize = builder.stepSize;
         stepSizeParameters = builder.stepSizeParameters;
@@ -171,22 +180,23 @@ public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegressi
     protected void train() {
     	if (solver == null) {
     		likelihood = new StochasticLikelihoodFunction(random);
-    		solver = new AdaptiveGradientSolver.Builder(likelihood, weights)
-		        .sampleWithReplacement(sampleWithReplacement)
-		        .maximumNumberOfIterations(maximumNumberOfIterations)
-		        .maximumNumberOfIterationsWithNoPointChange(maximumNumberOfIterationsWithNoPointChange)
-		        .pointChangeTolerance(pointChangeTolerance)
-		        .checkForPointConvergence(checkForPointConvergence)
-		        .batchSize(batchSize)
-		        .stepSize(stepSize)
-		        .stepSizeParameters(stepSizeParameters)
-		        .useL1Regularization(useL1Regularization)
-		        .l1RegularizationWeight(l1RegularizationWeight)
-		        .useL2Regularization(useL2Regularization)
-		        .l2RegularizationWeight(l2RegularizationWeight)
-		        .loggingLevel(loggingLevel)
-		        .build();
-    	} else {
+            solver = new AdaptiveGradientSolver.Builder(likelihood, weights)
+                    .sampleWithReplacement(sampleWithReplacement)
+                    .maximumNumberOfIterations(maximumNumberOfIterations)
+                    .maximumNumberOfIterationsWithNoPointChange(maximumNumberOfIterationsWithNoPointChange)
+                    .pointChangeTolerance(pointChangeTolerance)
+                    .checkForPointConvergence(checkForPointConvergence)
+                    .additionalCustomConvergenceCriterion(additionalCustomConvergenceCriterion)
+                    .batchSize(batchSize)
+                    .stepSize(stepSize)
+                    .stepSizeParameters(stepSizeParameters)
+                    .useL1Regularization(useL1Regularization)
+                    .l1RegularizationWeight(l1RegularizationWeight)
+                    .useL2Regularization(useL2Regularization)
+                    .l2RegularizationWeight(l2RegularizationWeight)
+                    .loggingLevel(loggingLevel)
+                    .build();
+        } else {
     		// Only reset data set if necessary so that the iterator isn't unnecessarily reset
     		if (!this.trainingDataSet.equals(likelihood.dataSet()))
     			likelihood.dataSet(trainingDataSet);
