@@ -6,6 +6,8 @@ import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.VectorNorm;
 import org.platanios.learn.optimization.function.AbstractStochasticFunction;
 
+import java.util.function.Function;
+
 /**
  * TODO: Generalize the support for regularization. I could add a addRegularization(RegularizationType) method to add
  * many and any kind of regularizations.
@@ -21,6 +23,7 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
     private final int maximumNumberOfIterationsWithNoPointChange;
     private final double pointChangeTolerance;
     private final boolean checkForPointConvergence;
+    private final Function<Vector, Boolean> additionalCustomConvergenceCriterion;
     private final int batchSize;
     private final StochasticSolverStepSize stepSize;
     private final double[] stepSizeParameters;
@@ -60,6 +63,7 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
         protected int maximumNumberOfIterationsWithNoPointChange = 1;
         protected double pointChangeTolerance = 1e-10;
         protected boolean checkForPointConvergence = true;
+        private Function<Vector, Boolean> additionalCustomConvergenceCriterion = currentPoint -> false;
         protected int batchSize = 100;
         protected StochasticSolverStepSize stepSize = StochasticSolverStepSize.SCALED;
         protected double[] stepSizeParameters = new double[] { 10, 0.75 };
@@ -102,6 +106,11 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
 
         public T checkForPointConvergence(boolean checkForPointConvergence) {
             this.checkForPointConvergence = checkForPointConvergence;
+            return self();
+        }
+
+        public T additionalCustomConvergenceCriterion(Function<Vector, Boolean> additionalCustomConvergenceCriterion) {
+            this.additionalCustomConvergenceCriterion = additionalCustomConvergenceCriterion;
             return self();
         }
 
@@ -194,6 +203,7 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
         maximumNumberOfIterationsWithNoPointChange = builder.maximumNumberOfIterationsWithNoPointChange;
         pointChangeTolerance = builder.pointChangeTolerance;
         checkForPointConvergence = builder.checkForPointConvergence;
+        additionalCustomConvergenceCriterion = builder.additionalCustomConvergenceCriterion;
         batchSize = builder.batchSize;
         stepSize = builder.stepSize;
         stepSizeParameters = builder.stepSizeParameters;
@@ -209,7 +219,7 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
 
     @Override
     public Vector solve() {
-        while (!checkTerminationConditions()) {
+        while (!checkTerminationConditions() && !additionalCustomConvergenceCriterion.apply(currentPoint)) {
             performIterationUpdates();
             currentIteration++;
             if ((loggingLevel == 1 && currentIteration % 1000 == 0)

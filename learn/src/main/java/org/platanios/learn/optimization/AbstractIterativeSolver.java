@@ -6,6 +6,8 @@ import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.VectorNorm;
 import org.platanios.learn.optimization.function.AbstractFunction;
 
+import java.util.function.Function;
+
 /**
  * TODO: Add support for regularization.
  *
@@ -22,6 +24,7 @@ abstract class AbstractIterativeSolver implements Solver {
     private final boolean checkForPointConvergence;
     private final boolean checkForObjectiveConvergence;
     private final boolean checkForGradientConvergence;
+    private final Function<Vector, Boolean> additionalCustomConvergenceCriterion;
     private final int loggingLevel;
 
     private double pointChange;
@@ -60,6 +63,7 @@ abstract class AbstractIterativeSolver implements Solver {
         protected boolean checkForPointConvergence = true;
         protected boolean checkForObjectiveConvergence = true;
         protected boolean checkForGradientConvergence = true;
+        private Function<Vector, Boolean> additionalCustomConvergenceCriterion = currentPoint -> false;
         private int loggingLevel = 0;
 
         protected AbstractBuilder(AbstractFunction objective,
@@ -108,6 +112,11 @@ abstract class AbstractIterativeSolver implements Solver {
             return self();
         }
 
+        public T additionalCustomConvergenceCriterion(Function<Vector, Boolean> additionalCustomConvergenceCriterion) {
+            this.additionalCustomConvergenceCriterion = additionalCustomConvergenceCriterion;
+            return self();
+        }
+
         public T loggingLevel(int loggingLevel) {
             this.loggingLevel = loggingLevel;
             return self();
@@ -136,6 +145,7 @@ abstract class AbstractIterativeSolver implements Solver {
         checkForPointConvergence = builder.checkForPointConvergence;
         checkForObjectiveConvergence = builder.checkForObjectiveConvergence;
         checkForGradientConvergence = builder.checkForGradientConvergence;
+        additionalCustomConvergenceCriterion = builder.additionalCustomConvergenceCriterion;
         loggingLevel = builder.loggingLevel;
         currentPoint = builder.initialPoint;
         currentGradient = objective.getGradient(currentPoint);
@@ -145,7 +155,7 @@ abstract class AbstractIterativeSolver implements Solver {
 
     @Override
     public Vector solve() {
-        while (!checkTerminationConditions()) {
+        while (!checkTerminationConditions() && !additionalCustomConvergenceCriterion.apply(currentPoint)) {
             performIterationUpdates();
             currentIteration++;
             if ((loggingLevel == 1 && currentIteration % 1000 == 0)
