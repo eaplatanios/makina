@@ -29,6 +29,7 @@ public class Integrator<T extends Vector, S> {
     private MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> labeledDataSet;
     private MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> unlabeledDataSet;
     private RingBuffer<CompletedIterationEvent> ringBuffer;
+    private CoTrainingMethod coTrainingMethod;
     private DataSelectionMethod dataSelectionMethod;
     private double dataSelectionParameter;
     private ExecutorService taskExecutor;
@@ -45,6 +46,7 @@ public class Integrator<T extends Vector, S> {
         private EventHandler<Integrator.CompletedIterationEvent>[] completedIterationEventHandlers;
 
         private int iterationNumber = 1;
+        private CoTrainingMethod coTrainingMethod = CoTrainingMethod.CO_TRAINING;
         private DataSelectionMethod dataSelectionMethod = DataSelectionMethod.FIXED_PROPORTION;
         private double dataSelectionParameter = 0.1;
         private int numberOfThreads = Runtime.getRuntime().availableProcessors();
@@ -96,6 +98,11 @@ public class Integrator<T extends Vector, S> {
             return this;
         }
 
+        public Builder coTrainingMethod(CoTrainingMethod coTrainingMethod) {
+            this.coTrainingMethod = coTrainingMethod;
+            return this;
+        }
+
         public Builder dataSelectionMethod(DataSelectionMethod dataSelectionMethod) {
             this.dataSelectionMethod = dataSelectionMethod;
             return this;
@@ -136,6 +143,7 @@ public class Integrator<T extends Vector, S> {
         classifiers = builder.classifiers;
         labeledDataSet = builder.labeledDataSet;
         unlabeledDataSet = builder.unlabeledDataSet;
+        coTrainingMethod = builder.coTrainingMethod;
         dataSelectionMethod = builder.dataSelectionMethod;
         dataSelectionParameter = builder.dataSelectionParameter;
         taskExecutor = Executors.newFixedThreadPool(builder.numberOfThreads);
@@ -145,7 +153,7 @@ public class Integrator<T extends Vector, S> {
         initializeWorkingDirectory();
         iterationNumber = builder.iterationNumber;
         Disruptor<CompletedIterationEvent> disruptor =
-                new Disruptor<>(CompletedIterationEvent::new, 1024, Executors.newCachedThreadPool());
+                new Disruptor<>(CompletedIterationEvent::new, 10, Executors.newCachedThreadPool());
         disruptor.handleEventsWith(builder.completedIterationEventHandlers);
         disruptor.start();
         ringBuffer = disruptor.getRingBuffer();
@@ -183,21 +191,7 @@ public class Integrator<T extends Vector, S> {
         try {
             List<Future<DataSet<PredictedDataInstance<T, S>>>> predictionResults =
                     taskExecutor.invokeAll(classifierPredictionTasks);
-            for (int i = 0; i < classifiers.size(); i++) {
-                DataSet<PredictedDataInstance<T, S>> dataSet = predictionResults.get(i).get();
-                for (int j = 0; j < dataSet.size(); j++) {
-                    // Keep the highest probability prediction / Most confident prediction
-                    if (dataSet.get(j).probability() > unlabeledDataSet.get(j).probability()) {
-                        unlabeledDataSet.set(i, new MultiViewPredictedDataInstance<>(
-                                null,
-                                unlabeledDataSet.get(j).features(),
-                                dataSet.get(j).label(),
-                                null,
-                                dataSet.get(j).probability())
-                        );
-                    }
-                }
-            }
+            coTrainingMethod.updatePredictions(predictionResults, unlabeledDataSet);
         } catch (InterruptedException e) {
             logger.error("Execution was interrupted while making predictions with the classifiers.");
         } catch (ExecutionException e) {
@@ -271,10 +265,85 @@ public class Integrator<T extends Vector, S> {
         }
     }
 
+    public enum CoTrainingMethod {
+        CO_TRAINING {
+            @Override
+            protected <T extends Vector, S> void updatePredictions(
+                    List<Future<DataSet<PredictedDataInstance<T, S>>>> predictionResults,
+                    MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> unlabeledDataSet
+            ) throws ExecutionException, InterruptedException {
+                for (int i = 0; i < predictionResults.size(); i++) {
+                    DataSet<PredictedDataInstance<T, S>> dataSet = predictionResults.get(i).get();
+                    for (int j = 0; j < dataSet.size(); j++) {
+                        // Keep the highest probability prediction / Most confident prediction
+                        PredictedDataInstance<T, S> predictedDataInstance = dataSet.get(j);
+                        MultiViewPredictedDataInstance<T, S> unlabeledDataInstance = unlabeledDataSet.get(j);
+                        if (predictedDataInstance.probability() > unlabeledDataInstance.probability()) {
+                            unlabeledDataSet.set(i, new MultiViewPredictedDataInstance<>(
+                                                         null,
+                                                         unlabeledDataInstance.features(),
+                                                         predictedDataInstance.label(),
+                                                         null,
+                                                         predictedDataInstance.probability())
+                            );
+                        }
+                    }
+                }
+            }
+        },
+        ROBUST_CO_TRAINING {
+            @Override
+            protected <T extends Vector, S> void updatePredictions(
+                    List<Future<DataSet<PredictedDataInstance<T, S>>>> predictionResults,
+                    MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> unlabeledDataSet
+            ) throws ExecutionException, InterruptedException {
+                List<boolean[]> classifierOutputs = new ArrayList<>();
+                for (int i = 0; i < predictionResults.size(); i++) {
+                    DataSet<PredictedDataInstance<T, S>> dataSet = predictionResults.get(i).get();
+                    for (int j = 0; j < dataSet.size(); j++) {
+                        if (i == 0)
+                            classifierOutputs.add(new boolean[predictionResults.size()]);
+                        classifierOutputs.get(j)[i] = dataSet.get(j).probability() >= 0.5;
+                    }
+                }
+                ErrorEstimationData errorEstimationData = new ErrorEstimationData.Builder(
+                        classifierOutputs,
+                        predictionResults.size(),
+                        true).build();
+                ErrorEstimation errorEstimation = new ErrorEstimation.Builder(errorEstimationData)
+                        .optimizationSolverType(ErrorEstimationInternalSolver.IP_OPT)
+                        .build();
+                double[] errorRates = errorEstimation.solve().getErrorRates().array;
+                for (int i = 0; i < predictionResults.size(); i++) {
+                    DataSet<PredictedDataInstance<T, S>> dataSet = predictionResults.get(i).get();
+                    for (int j = 0; j < dataSet.size(); j++) {
+                        // Keep the highest probability prediction / Most confident prediction
+                        PredictedDataInstance<T, S> predictedDataInstance = dataSet.get(j);
+                        MultiViewPredictedDataInstance<T, S> unlabeledDataInstance = unlabeledDataSet.get(j);
+                        if (predictedDataInstance.probability() * errorRates[i] > unlabeledDataInstance.probability()) {
+                            unlabeledDataSet.set(i, new MultiViewPredictedDataInstance<>(
+                                                         null,
+                                                         unlabeledDataInstance.features(),
+                                                         predictedDataInstance.label(),
+                                                         null,
+                                                         predictedDataInstance.probability() * errorRates[i])
+                            );
+                        }
+                    }
+                }
+            }
+        };
+
+        protected abstract <T extends Vector, S> void updatePredictions(
+                List<Future<DataSet<PredictedDataInstance<T, S>>>> predictionResults,
+                MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> unlabeledDataSet
+        ) throws ExecutionException, InterruptedException;
+    }
+
     public enum DataSelectionMethod {
         FIXED_PROPORTION {
             @Override
-            public <T extends Vector, S> void transferData(
+            protected <T extends Vector, S> void transferData(
                     MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> labeledDataSet,
                     MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> unlabeledDataSet,
                     double proportionToTransfer
@@ -289,7 +358,7 @@ public class Integrator<T extends Vector, S> {
         },
         PROBABILITY_THRESHOLD {
             @Override
-            public <T extends Vector, S> void transferData(
+            protected <T extends Vector, S> void transferData(
                     MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> labeledDataSet,
                     MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> unlabeledDataSet,
                     double probabilityThreshold
@@ -306,7 +375,7 @@ public class Integrator<T extends Vector, S> {
             }
         };
 
-        public abstract <T extends Vector, S> void transferData(
+        protected abstract <T extends Vector, S> void transferData(
                 MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> labeledDataSet,
                 MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> unlabeledDataSet,
                 double parameter
