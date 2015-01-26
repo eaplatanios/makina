@@ -11,11 +11,6 @@ public class MultiViewDataInstance<T extends Vector> {
     protected final String name;
     protected final List<T> features;
 
-    public MultiViewDataInstance(String name) {
-        this.name = name;
-        this.features = null;
-    }
-
     public MultiViewDataInstance(String name, List<T> features) {
         this.name = name;
         this.features = features;

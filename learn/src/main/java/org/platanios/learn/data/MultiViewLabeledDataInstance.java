@@ -11,12 +11,6 @@ public class MultiViewLabeledDataInstance<T extends Vector, S> extends MultiView
     protected S label;
     protected Object source;
 
-    public MultiViewLabeledDataInstance(String name, S label, Object source) {
-        super(name);
-        this.label = label;
-        this.source = source;
-    }
-
     public MultiViewLabeledDataInstance(String name, List<T> features, S label, Object source) {
         super(name, features);
         this.label = label;

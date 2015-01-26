@@ -10,11 +10,6 @@ import java.util.List;
 public class MultiViewPredictedDataInstance<T extends Vector, S> extends MultiViewLabeledDataInstance<T, S> {
     protected double probability;
 
-    public MultiViewPredictedDataInstance(String name, S label, Object source, double probability) {
-        super(name, label, source);
-        this.probability = probability;
-    }
-
     public MultiViewPredictedDataInstance(String name, List<T> features, S label, Object source, double probability) {
         super(name, features, label, source);
         this.probability = probability;
