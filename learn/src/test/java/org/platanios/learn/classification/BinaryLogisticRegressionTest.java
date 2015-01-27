@@ -6,20 +6,11 @@ import org.platanios.learn.data.DataSet;
 import org.platanios.learn.data.DataSetInMemory;
 import org.platanios.learn.data.LabeledDataInstance;
 import org.platanios.learn.data.PredictedDataInstance;
-import org.platanios.learn.math.matrix.SparseVector;
 import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.matrix.VectorType;
-import org.platanios.learn.math.matrix.Vectors;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -28,14 +19,14 @@ public class BinaryLogisticRegressionTest {
     @Test
     public void testDenseBinaryLogisticRegressionUsingSGD() {
         String filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.txt";
-        DataSet<LabeledDataInstance<Vector, Integer>> trainingDataSet = parseCovTypeDataFromFile(filename, false);
+        DataSet<PredictedDataInstance<Vector, Double>> trainingDataSet = Utilities.parseCovTypeDataFromFile(filename, false);
         LogisticRegressionSGD classifier =
                 new LogisticRegressionSGD.Builder(trainingDataSet.get(0).features().size())
                         .sparse(false)
                         .build();
         classifier.train(trainingDataSet.subSet(0, 500000));
-        DataSet<PredictedDataInstance<Vector, Integer>> testingDataSet = new DataSetInMemory<>();
-        for (LabeledDataInstance<Vector, Integer> dataInstance : trainingDataSet.subSet(500000, trainingDataSet.size()))
+        DataSet<PredictedDataInstance<Vector, Double>> testingDataSet = new DataSetInMemory<>();
+        for (LabeledDataInstance<Vector, Double> dataInstance : trainingDataSet.subSet(500000, trainingDataSet.size()))
             testingDataSet.add(new PredictedDataInstance<>(dataInstance.name(),
                                                            dataInstance.features(),
                                                            dataInstance.label(),
@@ -43,25 +34,25 @@ public class BinaryLogisticRegressionTest {
                                                            1));
         int[] expectedPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < expectedPredictions.length; i++)
-            expectedPredictions[i] = testingDataSet.get(i).label();
-        DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = classifier.predictInPlace(testingDataSet);
+            expectedPredictions[i] = (int) (double) testingDataSet.get(i).label();
+        DataSet<PredictedDataInstance<Vector, Double>> predictedDataSet = classifier.predictInPlace(testingDataSet);
         int[] actualPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < actualPredictions.length; i++)
-            actualPredictions[i] = predictedDataSet.get(i).label();
+            actualPredictions[i] = (int) (double) predictedDataSet.get(i).label();
         Assert.assertArrayEquals(expectedPredictions, actualPredictions);
     }
 
     @Test
     public void testSparseBinaryLogisticRegressionUsingSGD() {
         String filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.txt";
-        DataSet<LabeledDataInstance<Vector, Integer>> trainingDataSet = parseCovTypeDataFromFile(filename, true);
+        DataSet<PredictedDataInstance<Vector, Double>> trainingDataSet = Utilities.parseCovTypeDataFromFile(filename, true);
         LogisticRegressionSGD classifier =
                 new LogisticRegressionSGD.Builder(trainingDataSet.get(0).features().size())
                         .sparse(true)
                         .build();
         classifier.train(trainingDataSet.subSet(0, 500000));
-        DataSet<PredictedDataInstance<Vector, Integer>> testingDataSet = new DataSetInMemory<>();
-        for (LabeledDataInstance<Vector, Integer> dataInstance : trainingDataSet.subSet(500000, trainingDataSet.size()))
+        DataSet<PredictedDataInstance<Vector, Double>> testingDataSet = new DataSetInMemory<>();
+        for (LabeledDataInstance<Vector, Double> dataInstance : trainingDataSet.subSet(500000, trainingDataSet.size()))
             testingDataSet.add(new PredictedDataInstance<>(dataInstance.name(),
                                                            dataInstance.features(),
                                                            dataInstance.label(),
@@ -69,47 +60,47 @@ public class BinaryLogisticRegressionTest {
                                                            1));
         int[] expectedPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < expectedPredictions.length; i++)
-            expectedPredictions[i] = testingDataSet.get(i).label();
-        DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = classifier.predictInPlace(testingDataSet);
+            expectedPredictions[i] = (int) (double) testingDataSet.get(i).label();
+        DataSet<PredictedDataInstance<Vector, Double>> predictedDataSet = classifier.predictInPlace(testingDataSet);
         int[] actualPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < actualPredictions.length; i++)
-            actualPredictions[i] = predictedDataSet.get(i).label();
+            actualPredictions[i] = (int) (double) predictedDataSet.get(i).label();
         Assert.assertArrayEquals(expectedPredictions, actualPredictions);
     }
 
     @Test
     public void testSmallDenseBinaryLogisticRegressionUsingSGDAndDataSetWithPredictedDataInstances() {
         String filename = "/Users/Anthony/Development/Data Sets/Classification/fisher.binary.txt";
-        DataSet<PredictedDataInstance<Vector, Integer>> trainingDataSet = parseFisherDataFromFile(filename);
+        DataSet<PredictedDataInstance<Vector, Double>> trainingDataSet = Utilities.parseFisherDataFromFile(filename);
         LogisticRegressionSGD classifier =
                 new LogisticRegressionSGD.Builder(trainingDataSet.get(0).features().size())
                         .sparse(false)
                         .build();
         classifier.train(trainingDataSet.subSet(0, 80));
-        DataSet<PredictedDataInstance<Vector, Integer>> testingDataSet = new DataSetInMemory<>();
-        for (PredictedDataInstance<Vector, Integer> dataInstance : trainingDataSet.subSet(80, trainingDataSet.size()))
+        DataSet<PredictedDataInstance<Vector, Double>> testingDataSet = new DataSetInMemory<>();
+        for (PredictedDataInstance<Vector, Double> dataInstance : trainingDataSet.subSet(80, trainingDataSet.size()))
             testingDataSet.add(dataInstance);
         int[] expectedPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < expectedPredictions.length; i++)
-            expectedPredictions[i] = testingDataSet.get(i).label();
-        DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = classifier.predictInPlace(testingDataSet);
+            expectedPredictions[i] = (int) (double) testingDataSet.get(i).label();
+        DataSet<PredictedDataInstance<Vector, Double>> predictedDataSet = classifier.predictInPlace(testingDataSet);
         int[] actualPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < actualPredictions.length; i++)
-            actualPredictions[i] = predictedDataSet.get(i).label();
+            actualPredictions[i] = (int) (double) predictedDataSet.get(i).label();
         Assert.assertArrayEquals(expectedPredictions, actualPredictions);
     }
 
     @Test
     public void testDenseBinaryLogisticRegressionUsingAdaGrad() {
         String filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.txt";
-        DataSet<LabeledDataInstance<Vector, Integer>> trainingDataSet = parseCovTypeDataFromFile(filename, false);
+        DataSet<PredictedDataInstance<Vector, Double>> trainingDataSet = Utilities.parseCovTypeDataFromFile(filename, false);
         LogisticRegressionAdaGrad classifier =
                 new LogisticRegressionAdaGrad.Builder(trainingDataSet.get(0).features().size())
                         .sparse(false)
                         .build();
         classifier.train(trainingDataSet.subSet(0, 500000));
-        DataSet<PredictedDataInstance<Vector, Integer>> testingDataSet = new DataSetInMemory<>();
-        for (LabeledDataInstance<Vector, Integer> dataInstance : trainingDataSet.subSet(500000, trainingDataSet.size()))
+        DataSet<PredictedDataInstance<Vector, Double>> testingDataSet = new DataSetInMemory<>();
+        for (LabeledDataInstance<Vector, Double> dataInstance : trainingDataSet.subSet(500000, trainingDataSet.size()))
             testingDataSet.add(new PredictedDataInstance<>(dataInstance.name(),
                                                            dataInstance.features(),
                                                            dataInstance.label(),
@@ -117,18 +108,18 @@ public class BinaryLogisticRegressionTest {
                                                            1));
         int[] expectedPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < expectedPredictions.length; i++)
-            expectedPredictions[i] = testingDataSet.get(i).label();
-        DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = classifier.predictInPlace(testingDataSet);
+            expectedPredictions[i] = (int) (double) testingDataSet.get(i).label();
+        DataSet<PredictedDataInstance<Vector, Double>> predictedDataSet = classifier.predictInPlace(testingDataSet);
         int[] actualPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < actualPredictions.length; i++)
-            actualPredictions[i] = predictedDataSet.get(i).label();
+            actualPredictions[i] = (int) (double) predictedDataSet.get(i).label();
         Assert.assertArrayEquals(expectedPredictions, actualPredictions);
     }
 
     @Test
     public void testSparseBinaryLogisticRegressionUsingAdaGrad() {
         String filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.txt";
-        DataSet<LabeledDataInstance<Vector, Integer>> trainingDataSet = parseCovTypeDataFromFile(filename, true);
+        DataSet<PredictedDataInstance<Vector, Double>> trainingDataSet = Utilities.parseCovTypeDataFromFile(filename, true);
         LogisticRegressionAdaGrad classifier =
                 new LogisticRegressionAdaGrad.Builder(trainingDataSet.get(0).features().size())
                         .batchSize(1000)
@@ -137,8 +128,8 @@ public class BinaryLogisticRegressionTest {
                         .sparse(true)
                         .build();
         classifier.train(trainingDataSet.subSet(0, 500000));
-        DataSet<PredictedDataInstance<Vector, Integer>> testingDataSet = new DataSetInMemory<>();
-        for (LabeledDataInstance<Vector, Integer> dataInstance : trainingDataSet.subSet(500000, trainingDataSet.size()))
+        DataSet<PredictedDataInstance<Vector, Double>> testingDataSet = new DataSetInMemory<>();
+        for (LabeledDataInstance<Vector, Double> dataInstance : trainingDataSet.subSet(500000, trainingDataSet.size()))
             testingDataSet.add(new PredictedDataInstance<>(dataInstance.name(),
                                                            dataInstance.features(),
                                                            dataInstance.label(),
@@ -146,41 +137,41 @@ public class BinaryLogisticRegressionTest {
                                                            1));
         int[] expectedPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < expectedPredictions.length; i++)
-            expectedPredictions[i] = testingDataSet.get(i).label();
-        DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = classifier.predictInPlace(testingDataSet);
+            expectedPredictions[i] = (int) (double) testingDataSet.get(i).label();
+        DataSet<PredictedDataInstance<Vector, Double>> predictedDataSet = classifier.predictInPlace(testingDataSet);
         int[] actualPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < actualPredictions.length; i++)
-            actualPredictions[i] = predictedDataSet.get(i).label();
+            actualPredictions[i] = (int) (double) predictedDataSet.get(i).label();
         Assert.assertArrayEquals(expectedPredictions, actualPredictions);
     }
 
     @Test
     public void testSmallDenseBinaryLogisticRegressionUsingAdaGradAndDataSetWithPredictedDataInstances() {
         String filename = "/Users/Anthony/Development/Data Sets/Classification/fisher.binary.txt";
-        DataSet<PredictedDataInstance<Vector, Integer>> trainingDataSet = parseFisherDataFromFile(filename);
+        DataSet<PredictedDataInstance<Vector, Double>> trainingDataSet = Utilities.parseFisherDataFromFile(filename);
         LogisticRegressionAdaGrad classifier =
                 new LogisticRegressionAdaGrad.Builder(trainingDataSet.get(0).features().size())
                         .sparse(false)
                         .loggingLevel(1)
                         .build();
         classifier.train(trainingDataSet.subSet(0, 80));
-        DataSet<PredictedDataInstance<Vector, Integer>> testingDataSet = new DataSetInMemory<>();
-        for (PredictedDataInstance<Vector, Integer> dataInstance : trainingDataSet.subSet(80, trainingDataSet.size()))
+        DataSet<PredictedDataInstance<Vector, Double>> testingDataSet = new DataSetInMemory<>();
+        for (PredictedDataInstance<Vector, Double> dataInstance : trainingDataSet.subSet(80, trainingDataSet.size()))
             testingDataSet.add(dataInstance);
         int[] expectedPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < expectedPredictions.length; i++)
-            expectedPredictions[i] = testingDataSet.get(i).label();
-        DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = classifier.predictInPlace(testingDataSet);
+            expectedPredictions[i] = (int) (double) testingDataSet.get(i).label();
+        DataSet<PredictedDataInstance<Vector, Double>> predictedDataSet = classifier.predictInPlace(testingDataSet);
         int[] actualPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < actualPredictions.length; i++)
-            actualPredictions[i] = predictedDataSet.get(i).label();
+            actualPredictions[i] = (int) (double) predictedDataSet.get(i).label();
         Assert.assertArrayEquals(expectedPredictions, actualPredictions);
     }
 
     @Test
     public void testLargeSparseBinaryLogisticRegressionUsingAdaGrad() {
         String filename = "/Users/Anthony/Development/Data Sets/Classification/url.binary.txt";
-        DataSet<LabeledDataInstance<Vector, Integer>> trainingDataSet = parseURLDataFromFile(filename, true);
+        DataSet<PredictedDataInstance<Vector, Double>> trainingDataSet = Utilities.parseURLDataFromFile(filename, true);
         LogisticRegressionAdaGrad classifier =
                 new LogisticRegressionAdaGrad.Builder(trainingDataSet.get(0).features().size())
                         .sparse(true)
@@ -192,8 +183,8 @@ public class BinaryLogisticRegressionTest {
                         .useBiasTerm(false)
                         .build();
         classifier.train(trainingDataSet.subSet(0, 20000));
-        DataSet<PredictedDataInstance<Vector, Integer>> testingDataSet = new DataSetInMemory<>();
-        for (LabeledDataInstance<Vector, Integer> dataInstance : trainingDataSet.subSet(20000, trainingDataSet.size()))
+        DataSet<PredictedDataInstance<Vector, Double>> testingDataSet = new DataSetInMemory<>();
+        for (LabeledDataInstance<Vector, Double> dataInstance : trainingDataSet.subSet(20000, trainingDataSet.size()))
             testingDataSet.add(new PredictedDataInstance<>(dataInstance.name(),
                                                            dataInstance.features(),
                                                            dataInstance.label(),
@@ -201,12 +192,12 @@ public class BinaryLogisticRegressionTest {
                                                            1));
         int[] expectedPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < expectedPredictions.length; i++)
-            expectedPredictions[i] = testingDataSet.get(i).label();
-        DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = classifier.predictInPlace(testingDataSet);
+            expectedPredictions[i] = (int) (double) testingDataSet.get(i).label();
+        DataSet<PredictedDataInstance<Vector, Double>> predictedDataSet = classifier.predictInPlace(testingDataSet);
         int[] actualPredictions = new int[testingDataSet.size()];
         double accuracy = 0;
         for (int i = 0; i < actualPredictions.length; i++) {
-            actualPredictions[i] = predictedDataSet.get(i).label();
+            actualPredictions[i] = (int) (double) predictedDataSet.get(i).label();
             accuracy += actualPredictions[i] == expectedPredictions[i] ? 1 : 0;
         }
         accuracy /= actualPredictions.length;
@@ -216,7 +207,7 @@ public class BinaryLogisticRegressionTest {
     @Test
     public void testDenseBinaryLogisticRegressionPrediction() {
         String filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.txt";
-        DataSet<LabeledDataInstance<Vector, Integer>> trainingDataSet = parseCovTypeDataFromFile(filename, false);
+        DataSet<PredictedDataInstance<Vector, Double>> trainingDataSet = Utilities.parseCovTypeDataFromFile(filename, false);
         LogisticRegressionSGD classifier =
                 new LogisticRegressionSGD.Builder(trainingDataSet.get(0).features().size())
                         .sparse(false)
@@ -230,8 +221,8 @@ public class BinaryLogisticRegressionTest {
             FileInputStream fin = new FileInputStream(filename);
             LogisticRegressionPrediction loadedClassifier = LogisticRegressionPrediction.read(fin, true);
             fin.close();
-            DataSet<PredictedDataInstance<Vector, Integer>> testingDataSet = new DataSetInMemory<>();
-            for (LabeledDataInstance<Vector, Integer> dataInstance : trainingDataSet.subSet(500000, trainingDataSet.size()))
+            DataSet<PredictedDataInstance<Vector, Double>> testingDataSet = new DataSetInMemory<>();
+            for (LabeledDataInstance<Vector, Double> dataInstance : trainingDataSet.subSet(500000, trainingDataSet.size()))
                 testingDataSet.add(new PredictedDataInstance<>(dataInstance.name(),
                                                                dataInstance.features(),
                                                                dataInstance.label(),
@@ -239,11 +230,11 @@ public class BinaryLogisticRegressionTest {
                                                                1));
             int[] expectedPredictions = new int[testingDataSet.size()];
             for (int i = 0; i < expectedPredictions.length; i++)
-                expectedPredictions[i] = testingDataSet.get(i).label();
-            DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = loadedClassifier.predictInPlace(testingDataSet);
+                expectedPredictions[i] = (int) (double) testingDataSet.get(i).label();
+            DataSet<PredictedDataInstance<Vector, Double>> predictedDataSet = loadedClassifier.predictInPlace(testingDataSet);
             int[] actualPredictions = new int[testingDataSet.size()];
             for (int i = 0; i < actualPredictions.length; i++)
-                actualPredictions[i] = predictedDataSet.get(i).label();
+                actualPredictions[i] = (int) (double) predictedDataSet.get(i).label();
             Assert.assertArrayEquals(expectedPredictions, actualPredictions);
         } catch (IOException e) {
             Assert.fail(e.getMessage());
@@ -253,7 +244,7 @@ public class BinaryLogisticRegressionTest {
     @Test
     public void testSparseBinaryLogisticRegressionPrediction() {
         String filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.txt";
-        DataSet<LabeledDataInstance<Vector, Integer>> trainingDataSet = parseCovTypeDataFromFile(filename, true);
+        DataSet<PredictedDataInstance<Vector, Double>> trainingDataSet = Utilities.parseCovTypeDataFromFile(filename, true);
         LogisticRegressionSGD classifier =
                 new LogisticRegressionSGD.Builder(trainingDataSet.get(0).features().size())
                         .sparse(true)
@@ -267,8 +258,8 @@ public class BinaryLogisticRegressionTest {
             FileInputStream fin = new FileInputStream(filename);
             LogisticRegressionPrediction loadedClassifier = LogisticRegressionPrediction.read(fin, true);
             fin.close();
-            DataSet<PredictedDataInstance<Vector, Integer>> testingDataSet = new DataSetInMemory<>();
-            for (LabeledDataInstance<Vector, Integer> dataInstance : trainingDataSet.subSet(500000, trainingDataSet.size()))
+            DataSet<PredictedDataInstance<Vector, Double>> testingDataSet = new DataSetInMemory<>();
+            for (LabeledDataInstance<Vector, Double> dataInstance : trainingDataSet.subSet(500000, trainingDataSet.size()))
                 testingDataSet.add(new PredictedDataInstance<>(dataInstance.name(),
                                                                dataInstance.features(),
                                                                dataInstance.label(),
@@ -276,85 +267,14 @@ public class BinaryLogisticRegressionTest {
                                                                1));
             int[] expectedPredictions = new int[testingDataSet.size()];
             for (int i = 0; i < expectedPredictions.length; i++)
-                expectedPredictions[i] = testingDataSet.get(i).label();
-            DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = loadedClassifier.predictInPlace(testingDataSet);
+                expectedPredictions[i] = (int) (double) testingDataSet.get(i).label();
+            DataSet<PredictedDataInstance<Vector, Double>> predictedDataSet = loadedClassifier.predictInPlace(testingDataSet);
             int[] actualPredictions = new int[testingDataSet.size()];
             for (int i = 0; i < actualPredictions.length; i++)
-                actualPredictions[i] = predictedDataSet.get(i).label();
+                actualPredictions[i] = (int) (double) predictedDataSet.get(i).label();
             Assert.assertArrayEquals(expectedPredictions, actualPredictions);
         } catch (IOException e) {
             Assert.fail(e.getMessage());
         }
-    }
-
-    public static DataSet<LabeledDataInstance<Vector, Integer>> parseCovTypeDataFromFile(String filename,
-                                                                                         boolean sparseFeatures) {
-        String separator = " ";
-        List<LabeledDataInstance<Vector, Integer>> data = new ArrayList<>();
-        try (Stream<String> lines = Files.lines(Paths.get(filename), Charset.defaultCharset())) {
-            lines.forEachOrdered(line -> {
-                String[] tokens = line.split(separator);
-                int label = tokens[0].equals("+1") ? 1 : 0;
-                Vector features;
-                if (sparseFeatures) {
-                    features = Vectors.build(54, VectorType.SPARSE);
-                } else {
-                    features = Vectors.build(54, VectorType.DENSE);
-                }
-                for (int i = 1; i < tokens.length; i++) {
-                    String[] featurePair = tokens[i].split(":");
-                    features.set(Integer.parseInt(featurePair[0]) - 1, Double.parseDouble(featurePair[1]));
-                }
-                data.add(new LabeledDataInstance<>(null, features, label, null));
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return new DataSetInMemory<>(data);
-    }
-
-    public static DataSet<PredictedDataInstance<Vector, Integer>> parseFisherDataFromFile(String filename) {
-        String separator = ",";
-        List<PredictedDataInstance<Vector, Integer>> data = new ArrayList<>();
-        try (Stream<String> lines = Files.lines(Paths.get(filename), Charset.defaultCharset())) {
-            lines.forEachOrdered(line -> {
-                int numberOfFeatures = line.split(separator).length - 1;
-                String[] outputs = line.split(separator);
-                SparseVector features = (SparseVector) Vectors.build(numberOfFeatures, VectorType.SPARSE);
-                int label = Integer.parseInt(outputs[0]);
-                for (int i = 0; i < numberOfFeatures; i++)
-                    features.set(i, Double.parseDouble(outputs[i + 1]));
-                data.add(new PredictedDataInstance<>(null, features, label, null, 1));
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return new DataSetInMemory<>(data);
-    }
-
-    public static DataSet<LabeledDataInstance<Vector, Integer>> parseURLDataFromFile(String filename,
-                                                                                     boolean sparseFeatures) {
-        String separator = " ";
-        List<LabeledDataInstance<Vector, Integer>> data = new ArrayList<>();
-        try (Stream<String> lines = Files.lines(Paths.get(filename), Charset.defaultCharset())) {
-            lines.limit(30000).forEachOrdered(line -> {
-                String[] tokens = line.split(separator);
-                int label = tokens[0].equals("+1") ? 1 : 0;
-                Vector features;
-                if (sparseFeatures) {
-                    features = Vectors.build(3231961, VectorType.SPARSE);
-                } else {
-                    features = Vectors.build(3231961, VectorType.DENSE);
-                }
-                for (int i = 1; i < tokens.length; i++) {
-                    String[] featurePair = tokens[i].split(":");
-                    features.set(Integer.parseInt(featurePair[0]) - 1, Double.parseDouble(featurePair[1]));
-                }
-                data.add(new LabeledDataInstance<>(null, features, label, null));
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return new DataSetInMemory<>(data);
     }
 }

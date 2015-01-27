@@ -23,7 +23,7 @@ import java.io.OutputStream;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class LogisticRegressionPrediction implements Classifier<Vector, Integer> {
+public class LogisticRegressionPrediction implements Classifier<Vector, Double> {
     /** The number of features used. */
     protected int numberOfFeatures;
     /** Indicates whether sparse vectors are being used or not. */
@@ -153,7 +153,7 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Integer>
     }
 
     @Override
-    public PredictedDataInstance<Vector, Integer> predict(LabeledDataInstance<Vector, Integer> dataInstance) {
+    public PredictedDataInstance<Vector, Double> predict(LabeledDataInstance<Vector, Double> dataInstance) {
         return predictInPlace(new PredictedDataInstance<>(dataInstance.name(),
                                                           dataInstance.features(),
                                                           dataInstance.label(),
@@ -162,11 +162,11 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Integer>
     }
 
     @Override
-    public DataSet<PredictedDataInstance<Vector, Integer>> predict(
-            DataSet<? extends LabeledDataInstance<Vector, Integer>> dataInstances
+    public DataSet<PredictedDataInstance<Vector, Double>> predict(
+            DataSet<? extends LabeledDataInstance<Vector, Double>> dataInstances
     ) {
-        DataSet<PredictedDataInstance<Vector, Integer>> dataSet = dataInstances.newDataSet();
-        for (LabeledDataInstance<Vector, Integer> dataInstance : dataInstances)
+        DataSet<PredictedDataInstance<Vector, Double>> dataSet = dataInstances.newDataSet();
+        for (LabeledDataInstance<Vector, Double> dataInstance : dataInstances)
             dataSet.add(new PredictedDataInstance<>(dataInstance.name(),
                                                     dataInstance.features(),
                                                     dataInstance.label(),
@@ -182,16 +182,16 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Integer>
      * @return                  The probability of the class label being 1 for the given data instance.
      */
     @Override
-    public PredictedDataInstance<Vector, Integer> predictInPlace(PredictedDataInstance<Vector, Integer> dataInstance) {
+    public PredictedDataInstance<Vector, Double> predictInPlace(PredictedDataInstance<Vector, Double> dataInstance) {
         double probability = useBiasTerm ?
                 1 / (1 + Math.exp(-weights.dotPlusConstant(dataInstance.features()))) :
                 1 / (1 + Math.exp(-weights.dot(dataInstance.features())));
         if (probability >= 0.5) {
             dataInstance.probability(probability);
-            dataInstance.label(1);
+            dataInstance.label((double) 1);
         } else {
             dataInstance.probability(1 - probability);
-            dataInstance.label(0);
+            dataInstance.label((double) 0);
         }
         return dataInstance;
     }
@@ -204,19 +204,19 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Integer>
      * @return          The probabilities of the class labels being equal to 1 for the given set of data instances.
      */
     @Override
-    public DataSet<PredictedDataInstance<Vector, Integer>> predictInPlace(
-            DataSet<PredictedDataInstance<Vector, Integer>> dataSet
+    public DataSet<PredictedDataInstance<Vector, Double>> predictInPlace(
+            DataSet<PredictedDataInstance<Vector, Double>> dataSet
     ) {
-        for (PredictedDataInstance<Vector, Integer> dataInstance : dataSet) {
+        for (PredictedDataInstance<Vector, Double> dataInstance : dataSet) {
             double probability = useBiasTerm ?
                     1 / (1 + Math.exp(-weights.dotPlusConstant(dataInstance.features()))) :
                     1 / (1 + Math.exp(-weights.dot(dataInstance.features())));
             if (probability >= 0.5) {
                 dataInstance.probability(probability);
-                dataInstance.label(1);
+                dataInstance.label((double) 1);
             } else {
                 dataInstance.probability(1 - probability);
-                dataInstance.label(0);
+                dataInstance.label((double) 0);
             }
         }
         return dataSet;

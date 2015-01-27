@@ -21,9 +21,9 @@ import java.util.Random;
  * @author Emmanouil Antonios Platanios
  */
 abstract class AbstractTrainableLogisticRegression
-        extends LogisticRegressionPrediction implements TrainableClassifier<Vector, Integer> {
+        extends LogisticRegressionPrediction implements TrainableClassifier<Vector, Double> {
     /** The data used to train this model. */
-    protected DataSet<LabeledDataInstance<Vector, Integer>> trainingDataSet;
+    protected DataSet<LabeledDataInstance<Vector, Double>> trainingDataSet;
     /** Indicates whether /(L_1/) regularization is used. */
     protected boolean useL1Regularization;
     /** The /(L_1/) regularization weight used. This variable is only used when {@link #useL1Regularization} is set to
@@ -102,12 +102,12 @@ abstract class AbstractTrainableLogisticRegression
         /**
          * Sets the {@link #useL2Regularization} field that indicates whether /(L_2/) regularization is used.
          *
-         * @param   usel2Regularization The value to which to set the {@link #useL2Regularization} field.
+         * @param   useL2Regularization The value to which to set the {@link #useL2Regularization} field.
          * @return                      This builder object itself. That is done so that we can use a nice and
          *                              expressive code format when we build objects using this builder class.
          */
-        public T useL2Regularization(boolean usel2Regularization) {
-            this.useL2Regularization = usel2Regularization;
+        public T useL2Regularization(boolean useL2Regularization) {
+            this.useL2Regularization = useL2Regularization;
             return self();
         }
 
@@ -196,8 +196,8 @@ abstract class AbstractTrainableLogisticRegression
 
     @Override
     @SuppressWarnings("unchecked")
-    public boolean train(DataSet<? extends LabeledDataInstance<Vector, Integer>> trainingDataSet) {
-        this.trainingDataSet = (DataSet<LabeledDataInstance<Vector, Integer>>) trainingDataSet;
+    public boolean train(DataSet<? extends LabeledDataInstance<Vector, Double>> trainingDataSet) {
+        this.trainingDataSet = (DataSet<LabeledDataInstance<Vector, Double>>) trainingDataSet;
         try {
             train();
             return true;
@@ -217,7 +217,7 @@ abstract class AbstractTrainableLogisticRegression
      * compute the hessian matrix because no binary logistic regression class has to use it.
      */
     protected class LikelihoodFunction extends AbstractFunction {
-        private Iterator<LabeledDataInstance<Vector, Integer>> trainingDataIterator;
+        private Iterator<LabeledDataInstance<Vector, Double>> trainingDataIterator;
 
         public LikelihoodFunction() {
             trainingDataIterator = trainingDataSet.iterator();
@@ -233,7 +233,7 @@ abstract class AbstractTrainableLogisticRegression
         public double computeValue(Vector weights) {
             double likelihood = 0;
             while (trainingDataIterator.hasNext()) {
-                LabeledDataInstance<Vector, Integer> dataInstance = trainingDataIterator.next();
+                LabeledDataInstance<Vector, Double> dataInstance = trainingDataIterator.next();
                 double probability = useBiasTerm ?
                         weights.dotPlusConstant(dataInstance.features()) :
                         weights.dot(dataInstance.features());
@@ -252,7 +252,7 @@ abstract class AbstractTrainableLogisticRegression
         public Vector computeGradient(Vector weights) {
             Vector gradient = Vectors.build(weights.size(), weights.type());
             while (trainingDataIterator.hasNext()) {
-                LabeledDataInstance<Vector, Integer> dataInstance = trainingDataIterator.next();
+                LabeledDataInstance<Vector, Double> dataInstance = trainingDataIterator.next();
                 if (useBiasTerm)
                     gradient.saxpyPlusConstantInPlace(
                             (1 / (1 + Math.exp(-weights.dotPlusConstant(dataInstance.features())))) - dataInstance.label(),
@@ -273,7 +273,7 @@ abstract class AbstractTrainableLogisticRegression
      * solvers.
      */
     protected class StochasticLikelihoodFunction
-            extends AbstractStochasticFunctionUsingDataSet<LabeledDataInstance<Vector, Integer>> {
+            extends AbstractStochasticFunctionUsingDataSet<LabeledDataInstance<Vector, Double>> {
         public StochasticLikelihoodFunction() {
         	this.dataSet = trainingDataSet;
         }
@@ -291,9 +291,9 @@ abstract class AbstractTrainableLogisticRegression
          * @return              The gradient vector of the logistic regression likelihood function.
          */
         @Override
-        public Vector estimateGradient(Vector weights, List<LabeledDataInstance<Vector, Integer>> dataBatch) {
+        public Vector estimateGradient(Vector weights, List<LabeledDataInstance<Vector, Double>> dataBatch) {
             Vector gradient = Vectors.build(weights.size(), weights.type());
-            for (LabeledDataInstance<Vector, Integer> dataInstance : dataBatch) {
+            for (LabeledDataInstance<Vector, Double> dataInstance : dataBatch) {
                 if (useBiasTerm)
                     gradient.saxpyPlusConstantInPlace(
                             (1 / (1 + Math.exp(-weights.dotPlusConstant(dataInstance.features())))) - dataInstance.label(),

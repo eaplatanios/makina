@@ -154,7 +154,7 @@ public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegressi
      * builder classes.
      */
     public static class Builder extends AbstractBuilder<Builder>
-            implements TrainableClassifier.Builder<Vector, Integer> {
+            implements TrainableClassifier.Builder<Vector, Double> {
         /**
          * Constructs a builder object for a binary logistic regression model that will be trained with the provided
          * training data using the stochastic gradient descent algorithm.
