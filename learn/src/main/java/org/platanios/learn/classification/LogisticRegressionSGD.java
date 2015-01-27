@@ -221,7 +221,8 @@ public class LogisticRegressionSGD extends AbstractTrainableLogisticRegression {
                 .useL2Regularization(useL2Regularization)
                 .l2RegularizationWeight(l2RegularizationWeight)
                 .loggingLevel(loggingLevel)
-                .build().solve();
+                .build()
+                .solve();
     }
 
     /** {@inheritDoc} */

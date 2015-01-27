@@ -152,10 +152,6 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Integer>
         return ClassifierType.LOGISTIC_REGRESSION_PREDICTION;
     }
 
-    public Vector weights() {
-        return weights;
-    }
-
     @Override
     public PredictedDataInstance<Vector, Integer> predict(LabeledDataInstance<Vector, Integer> dataInstance) {
         return predictInPlace(new PredictedDataInstance<>(dataInstance.name(),

@@ -17,9 +17,7 @@ import java.util.function.Function;
 abstract class AbstractStochasticIterativeSolver implements Solver {
     private static final Logger logger = LogManager.getFormatterLogger("Stochastic Optimization");
 
-    // NOTE: maximumNumberOfIterations is non-final so that it can be reset repeatedly as the solver
-    // is repeatedly paused for other code to do things intermittently --Bill
-    private int maximumNumberOfIterations; 
+    private final int maximumNumberOfIterations;
     private final int maximumNumberOfIterationsWithNoPointChange;
     private final double pointChangeTolerance;
     private final boolean checkForPointConvergence;
@@ -265,15 +263,6 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
         }
     }
 
-    public boolean setMaximumNumberOfIterations(int maximumNumberOfIterations) {
-    	this.maximumNumberOfIterations = maximumNumberOfIterations;
-    	return true;
-    }
-    
-    public int getMaximumNumberOfIterations() {
-    	return this.maximumNumberOfIterations;
-    }
-    
     public void printIteration() {
         logger.info("Iteration #: %10d | Point Change: %20s", currentIteration, DECIMAL_FORMAT.format(pointChange));
     }
@@ -287,10 +276,6 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
                         maximumNumberOfIterationsWithNoPointChange);
         if (currentIteration >= maximumNumberOfIterations)
             logger.info("Reached the maximum number of allowed iterations, %d.", maximumNumberOfIterations);
-    }
-    
-    public double getPointChange() {
-    	return this.pointChange;
     }
 
     /**

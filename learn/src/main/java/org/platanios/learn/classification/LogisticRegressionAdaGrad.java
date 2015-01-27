@@ -19,8 +19,6 @@ import java.util.function.Function;
  * @author Emmanouil Antonios Platanios
  */
 public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegression {
-    private AdaptiveGradientSolver solver;
-    private StochasticLikelihoodFunction likelihood;
     private boolean sampleWithReplacement;
     private int maximumNumberOfIterations;
     private int maximumNumberOfIterationsWithNoPointChange;
@@ -213,38 +211,26 @@ public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegressi
         return ClassifierType.LOGISTIC_REGRESSION_ADAGRAD;
     }
 
-    public AdaptiveGradientSolver solver() {
-        return solver;
-    }
-
     /** {@inheritDoc} */
     @Override
     protected void train() {
-    	if (solver == null) {
-    		likelihood = new StochasticLikelihoodFunction(random);
-            solver = new AdaptiveGradientSolver.Builder(likelihood, weights)
-                    .sampleWithReplacement(sampleWithReplacement)
-                    .maximumNumberOfIterations(maximumNumberOfIterations)
-                    .maximumNumberOfIterationsWithNoPointChange(maximumNumberOfIterationsWithNoPointChange)
-                    .pointChangeTolerance(pointChangeTolerance)
-                    .checkForPointConvergence(checkForPointConvergence)
-                    .additionalCustomConvergenceCriterion(additionalCustomConvergenceCriterion)
-                    .batchSize(batchSize)
-                    .stepSize(stepSize)
-                    .stepSizeParameters(stepSizeParameters)
-                    .useL1Regularization(useL1Regularization)
-                    .l1RegularizationWeight(l1RegularizationWeight)
-                    .useL2Regularization(useL2Regularization)
-                    .l2RegularizationWeight(l2RegularizationWeight)
-                    .loggingLevel(loggingLevel)
-                    .build();
-        } else {
-    		// Only reset data set if necessary so that the iterator isn't unnecessarily reset
-    		if (!this.trainingDataSet.equals(likelihood.dataSet()))
-    			likelihood.dataSet(trainingDataSet);
-    		solver.setMaximumNumberOfIterations(solver.getMaximumNumberOfIterations() + this.maximumNumberOfIterations);
-    	}
-        weights = solver.solve();
+        weights =  new AdaptiveGradientSolver.Builder(new StochasticLikelihoodFunction(random), weights)
+                .sampleWithReplacement(sampleWithReplacement)
+                .maximumNumberOfIterations(maximumNumberOfIterations)
+                .maximumNumberOfIterationsWithNoPointChange(maximumNumberOfIterationsWithNoPointChange)
+                .pointChangeTolerance(pointChangeTolerance)
+                .checkForPointConvergence(checkForPointConvergence)
+                .additionalCustomConvergenceCriterion(additionalCustomConvergenceCriterion)
+                .batchSize(batchSize)
+                .stepSize(stepSize)
+                .stepSizeParameters(stepSizeParameters)
+                .useL1Regularization(useL1Regularization)
+                .l1RegularizationWeight(l1RegularizationWeight)
+                .useL2Regularization(useL2Regularization)
+                .l2RegularizationWeight(l2RegularizationWeight)
+                .loggingLevel(loggingLevel)
+                .build()
+                .solve();
     }
 
     /** {@inheritDoc} */
