@@ -104,6 +104,47 @@ public class LogisticRegressionSGD extends AbstractTrainableLogisticRegression {
         }
 
         @Override
+        public T setParameter(String name, Object value) {
+            switch (name) {
+                case "sampleWithReplacement":
+                    sampleWithReplacement = (boolean) value;
+                    break;
+                case "maximumNumberOfIterations":
+                    maximumNumberOfIterations = (int) value;
+                    break;
+                case "maximumNumberOfIterationsWithNoPointChange":
+                    maximumNumberOfIterationsWithNoPointChange = (int) value;
+                    break;
+                case "pointChangeTolerance":
+                    pointChangeTolerance = (double) value;
+                    break;
+                case "checkForPointConvergence":
+                    checkForPointConvergence = (boolean) value;
+                    break;
+                case "batchSize":
+                    batchSize = (int) value;
+                    break;
+                case "stepSize":
+                    stepSize = (StochasticSolverStepSize) value;
+                    break;
+                case "stepSizeParameters":
+                    stepSizeParameters = (double[]) value;
+                    break;
+                default:
+                    super.setParameter(name, value);
+            }
+            return self();
+        }
+
+        public String printParameterValues() {
+            return "{ " + "\"sampleWithReplacement\": " + sampleWithReplacement
+                    + ", \"batchSize\": " + batchSize
+                    + ", \"useBiasTerm\": " + useBiasTerm
+                    + ", \"l1RegularizationWeight\": " + l1RegularizationWeight
+                    + ", \"l2RegularizationWeight\": " + l2RegularizationWeight + " }";
+        }
+
+        @Override
         public LogisticRegressionSGD build() {
             return new LogisticRegressionSGD(this);
         }
@@ -113,7 +154,8 @@ public class LogisticRegressionSGD extends AbstractTrainableLogisticRegression {
      * The builder class for this class. This is basically part of a small "hack" so that we can have inheritable
      * builder classes.
      */
-    public static class Builder extends AbstractBuilder<Builder> {
+    public static class Builder extends AbstractBuilder<Builder>
+            implements TrainableClassifier.Builder<Vector, Integer> {
         /**
          * Constructs a builder object for a binary logistic regression model that will be trained with the provided
          * training data using the stochastic gradient descent algorithm.

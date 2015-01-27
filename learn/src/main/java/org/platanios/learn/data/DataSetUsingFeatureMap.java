@@ -17,8 +17,8 @@ import java.util.stream.Collectors;
  * @author Emmanouil Antonios Platanios
  */
 public class DataSetUsingFeatureMap<T extends Vector, D extends DataInstance<T>> implements DataSet<D> {
-    private final FeatureMap<T> featureMap;
-    private final int featureMapView;
+    protected final FeatureMap<T> featureMap;
+    protected final int featureMapView;
 
     private List dataInstances;
 
@@ -39,6 +39,11 @@ public class DataSetUsingFeatureMap<T extends Vector, D extends DataInstance<T>>
     @Override
     public int size() {
         return dataInstances.size();
+    }
+
+    @Override
+    public <S extends DataInstance> DataSet<S> newDataSet() {
+        return new DataSetUsingFeatureMap<>(featureMap, featureMapView);
     }
 
     @Override
@@ -74,9 +79,19 @@ public class DataSetUsingFeatureMap<T extends Vector, D extends DataInstance<T>>
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public DataSetUsingFeatureMap<T, D> subSet(int fromIndex, int toIndex) {
         DataSetUsingFeatureMap<T, D> subSet = new DataSetUsingFeatureMap<>(featureMap, featureMapView);
-        subSet.dataInstances = dataInstances.subList(fromIndex, toIndex);
+        subSet.dataInstances = new ArrayList<>(dataInstances.subList(fromIndex, toIndex));
+        return subSet;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public DataSetUsingFeatureMap<T, D> subSetComplement(int fromIndex, int toIndex) {
+        DataSetUsingFeatureMap<T, D> subSet = new DataSetUsingFeatureMap<>(featureMap, featureMapView);
+        subSet.dataInstances = new ArrayList<>(dataInstances.subList(0, fromIndex));
+        subSet.dataInstances.addAll(dataInstances.subList(toIndex, dataInstances.size()));
         return subSet;
     }
 

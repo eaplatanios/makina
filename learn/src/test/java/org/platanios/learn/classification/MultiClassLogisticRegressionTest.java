@@ -61,7 +61,7 @@ public class MultiClassLogisticRegressionTest {
 //                .stepSizeParameters(10, 0.75)
 //                .build();
 //        classifier.train();
-//        double[][] actualPredictionsProbabilities = classifier.predict(new double[][] {
+//        double[][] actualPredictionsProbabilities = classifier.predictInPlace(new double[][] {
 //                { 22, 58, 30, 65 },
 //                { 3, 14, 35, 51 },
 //                { 14, 47, 29, 61 },

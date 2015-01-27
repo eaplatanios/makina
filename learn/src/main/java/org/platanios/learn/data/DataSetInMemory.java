@@ -12,7 +12,7 @@ import java.util.Random;
  * @author Emmanouil Antonios Platanios
  */
 public class DataSetInMemory<D extends DataInstance> implements DataSet<D> {
-    List<D> dataInstances;
+    private List<D> dataInstances;
 
     public DataSetInMemory() {
         this.dataInstances = new ArrayList<>();
@@ -25,6 +25,11 @@ public class DataSetInMemory<D extends DataInstance> implements DataSet<D> {
     @Override
     public int size() {
         return dataInstances.size();
+    }
+
+    @Override
+    public <S extends DataInstance> DataSet<S> newDataSet() {
+        return new DataSetInMemory<>();
     }
 
     @Override
@@ -54,7 +59,14 @@ public class DataSetInMemory<D extends DataInstance> implements DataSet<D> {
 
     @Override
     public DataSetInMemory<D> subSet(int fromIndex, int toIndex) {
-        return new DataSetInMemory<>(dataInstances.subList(fromIndex, toIndex));
+        return new DataSetInMemory<>(new ArrayList<>(dataInstances.subList(fromIndex, toIndex)));
+    }
+
+    @Override
+    public DataSetInMemory<D> subSetComplement(int fromIndex, int toIndex) {
+        List<D> dataInstancesList = new ArrayList<>(dataInstances.subList(0, fromIndex));
+        dataInstancesList.addAll(dataInstances.subList(toIndex, dataInstances.size()));
+        return new DataSetInMemory<>(dataInstancesList);
     }
 
     @Override

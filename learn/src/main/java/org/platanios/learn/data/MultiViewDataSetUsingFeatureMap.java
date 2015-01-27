@@ -36,6 +36,11 @@ public class MultiViewDataSetUsingFeatureMap<T extends Vector, D extends MultiVi
     }
 
     @Override
+    public <S extends MultiViewDataInstance> MultiViewDataSet<S> newDataSet() {
+        return new MultiViewDataSetUsingFeatureMap<>(featureMap);
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public void add(D dataInstance) {
         dataInstances.add(dataInstance.toDataInstanceBase());
@@ -69,9 +74,19 @@ public class MultiViewDataSetUsingFeatureMap<T extends Vector, D extends MultiVi
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public MultiViewDataSetUsingFeatureMap<T, D> subSet(int fromIndex, int toIndex) {
         MultiViewDataSetUsingFeatureMap<T, D> subSet = new MultiViewDataSetUsingFeatureMap<>(featureMap);
-        subSet.dataInstances = dataInstances.subList(fromIndex, toIndex);
+        subSet.dataInstances = new ArrayList<>(dataInstances.subList(fromIndex, toIndex));
+        return subSet;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public MultiViewDataSetUsingFeatureMap<T, D> subSetComplement(int fromIndex, int toIndex) {
+        MultiViewDataSetUsingFeatureMap<T, D> subSet = new MultiViewDataSetUsingFeatureMap<>(featureMap);
+        subSet.dataInstances = new ArrayList<>(dataInstances.subList(0, fromIndex));
+        subSet.dataInstances.addAll(dataInstances.subList(toIndex, dataInstances.size()));
         return subSet;
     }
 

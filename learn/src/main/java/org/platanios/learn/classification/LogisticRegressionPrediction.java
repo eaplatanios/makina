@@ -1,13 +1,17 @@
 package org.platanios.learn.classification;
 
 import org.platanios.learn.data.DataSet;
+import org.platanios.learn.data.LabeledDataInstance;
 import org.platanios.learn.data.PredictedDataInstance;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.VectorType;
 import org.platanios.learn.math.matrix.Vectors;
 import org.platanios.learn.serialization.UnsafeSerializationUtilities;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InvalidObjectException;
+import java.io.OutputStream;
 
 /**
  * This abstract class provides some functionality that is common to all binary logistic regression classes. All those
@@ -51,7 +55,7 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Integer>
         private boolean sparse = false;
         /** Indicates whether a separate bias term must be used along with the feature weights. Note that if a value of
          * 1 has already been appended to all feature vectors, then there is no need for a bias term. */
-        private boolean useBiasTerm = true;
+        protected boolean useBiasTerm = true;
         /** The weights (i.e., parameters) used by this logistic regression model. Note that the size of this vector is
          * equal to 1 + {@link #numberOfFeatures}. */
         protected Vector weights = null;
@@ -86,6 +90,20 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Integer>
          */
         public T useBiasTerm(boolean useBiasTerm) {
             this.useBiasTerm = useBiasTerm;
+            return self();
+        }
+
+        public T setParameter(String name, Object value) {
+            switch (name) {
+                case "sparse":
+                    sparse = (boolean) value;
+                    break;
+                case "useBiasTerm":
+                    useBiasTerm = (boolean) value;
+                    break;
+                default:
+                    break;
+            }
             return self();
         }
 
@@ -138,13 +156,37 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Integer>
         return weights;
     }
 
+    @Override
+    public PredictedDataInstance<Vector, Integer> predict(LabeledDataInstance<Vector, Integer> dataInstance) {
+        return predictInPlace(new PredictedDataInstance<>(dataInstance.name(),
+                                                          dataInstance.features(),
+                                                          dataInstance.label(),
+                                                          dataInstance.source(),
+                                                          0));
+    }
+
+    @Override
+    public DataSet<PredictedDataInstance<Vector, Integer>> predict(
+            DataSet<? extends LabeledDataInstance<Vector, Integer>> dataInstances
+    ) {
+        DataSet<PredictedDataInstance<Vector, Integer>> dataSet = dataInstances.newDataSet();
+        for (LabeledDataInstance<Vector, Integer> dataInstance : dataInstances)
+            dataSet.add(new PredictedDataInstance<>(dataInstance.name(),
+                                                    dataInstance.features(),
+                                                    dataInstance.label(),
+                                                    dataInstance.source(),
+                                                    0));
+        return predictInPlace(dataSet);
+    }
+
     /**
      * Predict the probability of the class label being 1 for some data instance.
      *
      * @param   dataInstance    The data instance for which the probability is computed.
      * @return                  The probability of the class label being 1 for the given data instance.
      */
-    public PredictedDataInstance<Vector, Integer> predict(PredictedDataInstance<Vector, Integer> dataInstance) {
+    @Override
+    public PredictedDataInstance<Vector, Integer> predictInPlace(PredictedDataInstance<Vector, Integer> dataInstance) {
         double probability = useBiasTerm ?
                 1 / (1 + Math.exp(-weights.dotPlusConstant(dataInstance.features()))) :
                 1 / (1 + Math.exp(-weights.dot(dataInstance.features())));
@@ -165,7 +207,8 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Integer>
      * @param   dataSet The set of data instances for which the probabilities are computed in the form of an array.
      * @return          The probabilities of the class labels being equal to 1 for the given set of data instances.
      */
-    public DataSet<PredictedDataInstance<Vector, Integer>> predict(
+    @Override
+    public DataSet<PredictedDataInstance<Vector, Integer>> predictInPlace(
             DataSet<PredictedDataInstance<Vector, Integer>> dataSet
     ) {
         for (PredictedDataInstance<Vector, Integer> dataInstance : dataSet) {

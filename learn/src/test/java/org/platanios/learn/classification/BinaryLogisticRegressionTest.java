@@ -44,7 +44,7 @@ public class BinaryLogisticRegressionTest {
         int[] expectedPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < expectedPredictions.length; i++)
             expectedPredictions[i] = testingDataSet.get(i).label();
-        DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = classifier.predict(testingDataSet);
+        DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = classifier.predictInPlace(testingDataSet);
         int[] actualPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < actualPredictions.length; i++)
             actualPredictions[i] = predictedDataSet.get(i).label();
@@ -70,7 +70,7 @@ public class BinaryLogisticRegressionTest {
         int[] expectedPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < expectedPredictions.length; i++)
             expectedPredictions[i] = testingDataSet.get(i).label();
-        DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = classifier.predict(testingDataSet);
+        DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = classifier.predictInPlace(testingDataSet);
         int[] actualPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < actualPredictions.length; i++)
             actualPredictions[i] = predictedDataSet.get(i).label();
@@ -92,7 +92,7 @@ public class BinaryLogisticRegressionTest {
         int[] expectedPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < expectedPredictions.length; i++)
             expectedPredictions[i] = testingDataSet.get(i).label();
-        DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = classifier.predict(testingDataSet);
+        DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = classifier.predictInPlace(testingDataSet);
         int[] actualPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < actualPredictions.length; i++)
             actualPredictions[i] = predictedDataSet.get(i).label();
@@ -118,7 +118,7 @@ public class BinaryLogisticRegressionTest {
         int[] expectedPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < expectedPredictions.length; i++)
             expectedPredictions[i] = testingDataSet.get(i).label();
-        DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = classifier.predict(testingDataSet);
+        DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = classifier.predictInPlace(testingDataSet);
         int[] actualPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < actualPredictions.length; i++)
             actualPredictions[i] = predictedDataSet.get(i).label();
@@ -147,7 +147,7 @@ public class BinaryLogisticRegressionTest {
         int[] expectedPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < expectedPredictions.length; i++)
             expectedPredictions[i] = testingDataSet.get(i).label();
-        DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = classifier.predict(testingDataSet);
+        DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = classifier.predictInPlace(testingDataSet);
         int[] actualPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < actualPredictions.length; i++)
             actualPredictions[i] = predictedDataSet.get(i).label();
@@ -170,7 +170,7 @@ public class BinaryLogisticRegressionTest {
         int[] expectedPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < expectedPredictions.length; i++)
             expectedPredictions[i] = testingDataSet.get(i).label();
-        DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = classifier.predict(testingDataSet);
+        DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = classifier.predictInPlace(testingDataSet);
         int[] actualPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < actualPredictions.length; i++)
             actualPredictions[i] = predictedDataSet.get(i).label();
@@ -202,7 +202,7 @@ public class BinaryLogisticRegressionTest {
         int[] expectedPredictions = new int[testingDataSet.size()];
         for (int i = 0; i < expectedPredictions.length; i++)
             expectedPredictions[i] = testingDataSet.get(i).label();
-        DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = classifier.predict(testingDataSet);
+        DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = classifier.predictInPlace(testingDataSet);
         int[] actualPredictions = new int[testingDataSet.size()];
         double accuracy = 0;
         for (int i = 0; i < actualPredictions.length; i++) {
@@ -240,7 +240,7 @@ public class BinaryLogisticRegressionTest {
             int[] expectedPredictions = new int[testingDataSet.size()];
             for (int i = 0; i < expectedPredictions.length; i++)
                 expectedPredictions[i] = testingDataSet.get(i).label();
-            DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = loadedClassifier.predict(testingDataSet);
+            DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = loadedClassifier.predictInPlace(testingDataSet);
             int[] actualPredictions = new int[testingDataSet.size()];
             for (int i = 0; i < actualPredictions.length; i++)
                 actualPredictions[i] = predictedDataSet.get(i).label();
@@ -277,7 +277,7 @@ public class BinaryLogisticRegressionTest {
             int[] expectedPredictions = new int[testingDataSet.size()];
             for (int i = 0; i < expectedPredictions.length; i++)
                 expectedPredictions[i] = testingDataSet.get(i).label();
-            DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = loadedClassifier.predict(testingDataSet);
+            DataSet<PredictedDataInstance<Vector, Integer>> predictedDataSet = loadedClassifier.predictInPlace(testingDataSet);
             int[] actualPredictions = new int[testingDataSet.size()];
             for (int i = 0; i < actualPredictions.length; i++)
                 actualPredictions[i] = predictedDataSet.get(i).label();

@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
  * @author Emmanouil Antonios Platanios
  */
 public class MultiViewDataSetInMemory<D extends MultiViewDataInstance> implements MultiViewDataSet<D> {
-    List<D> dataInstances;
+    private List<D> dataInstances;
 
     public MultiViewDataSetInMemory() {
         this.dataInstances = new ArrayList<>();
@@ -22,6 +22,11 @@ public class MultiViewDataSetInMemory<D extends MultiViewDataInstance> implement
     @Override
     public int size() {
         return dataInstances.size();
+    }
+
+    @Override
+    public <S extends MultiViewDataInstance> MultiViewDataSet<S> newDataSet() {
+        return new MultiViewDataSetInMemory<>();
     }
 
     @Override
@@ -51,7 +56,14 @@ public class MultiViewDataSetInMemory<D extends MultiViewDataInstance> implement
 
     @Override
     public MultiViewDataSetInMemory<D> subSet(int fromIndex, int toIndex) {
-        return new MultiViewDataSetInMemory<>(dataInstances.subList(fromIndex, toIndex));
+        return new MultiViewDataSetInMemory<>(new ArrayList<>(dataInstances.subList(fromIndex, toIndex)));
+    }
+
+    @Override
+    public MultiViewDataSetInMemory<D> subSetComplement(int fromIndex, int toIndex) {
+        List<D> dataInstancesList = new ArrayList<>(dataInstances.subList(0, fromIndex));
+        dataInstancesList.addAll(dataInstances.subList(toIndex, dataInstances.size()));
+        return new MultiViewDataSetInMemory<>(dataInstancesList);
     }
 
     @Override

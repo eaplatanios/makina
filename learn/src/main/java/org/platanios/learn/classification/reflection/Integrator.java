@@ -186,7 +186,7 @@ public class Integrator<T extends Vector, S> {
             TrainableClassifier<T, S> classifier = classifiers.get(i);
             DataSet<PredictedDataInstance<T, S>> testingData =
                     (DataSet<PredictedDataInstance<T, S>>) unlabeledDataSet.getSingleViewDataSet(i);
-            classifierPredictionTasks.add(() -> classifier.predict(testingData));
+            classifierPredictionTasks.add(() -> classifier.predictInPlace(testingData));
         }
         try {
             List<Future<DataSet<PredictedDataInstance<T, S>>>> predictionResults =

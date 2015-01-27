@@ -10,12 +10,14 @@ import java.util.Random;
  */
 public interface MultiViewDataSet<D extends MultiViewDataInstance> extends Iterable<D> {
     public int size();
+    public <S extends MultiViewDataInstance> MultiViewDataSet<S> newDataSet();
     public void add(D dataInstance);
     public void add(List<D> dataInstances);
     public void remove(int index);
     public D get(int index);
     public void set(int index, D dataInstance);
     public MultiViewDataSet<D> subSet(int fromIndex, int toIndex);
+    public MultiViewDataSet<D> subSetComplement(int fromIndex, int toIndex);
     public DataSet<? extends DataInstance> getSingleViewDataSet(int view);
     public MultiViewDataSet<D> sort(Comparator<? super D> comparator);
     @Override

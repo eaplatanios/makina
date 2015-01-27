@@ -128,6 +128,27 @@ abstract class AbstractTrainableLogisticRegression
             this.loggingLevel = loggingLevel;
             return self();
         }
+
+        @Override
+        public T setParameter(String name, Object value) {
+            switch (name) {
+                case "useL1Regularization":
+                    useL1Regularization = (boolean) value;
+                    break;
+                case "l1RegularizationWeight":
+                    l1RegularizationWeight = (double) value;
+                    break;
+                case "useL2Regularization":
+                    useL2Regularization = (boolean) value;
+                    break;
+                case "l2RegularizationWeight":
+                    l2RegularizationWeight = (double) value;
+                    break;
+                default:
+                    super.setParameter(name, value);
+            }
+            return self();
+        }
     }
 
     /**

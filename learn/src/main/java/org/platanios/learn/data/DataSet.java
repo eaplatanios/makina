@@ -10,12 +10,14 @@ import java.util.Random;
  */
 public interface DataSet<D extends DataInstance> extends Iterable<D> {
     public int size();
+    public <S extends DataInstance> DataSet<S> newDataSet();
     public void add(D dataInstance);
     public void add(List<D> dataInstances);
     public void remove(int index);
     public D get(int index);
     public void set(int index, D dataInstance);
     public DataSet<D> subSet(int fromIndex, int toIndex);
+    public DataSet<D> subSetComplement(int fromIndex, int toIndex);
     public DataSet<D> sort(Comparator<? super D> comparator);
     @Override
     public Iterator<D> iterator();
