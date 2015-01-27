@@ -143,14 +143,6 @@ public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegressi
             return self();
         }
 
-        public String printParameterValues() {
-            return "{ " + "\"sampleWithReplacement\": " + sampleWithReplacement
-                    + ", \"batchSize\": " + batchSize
-                    + ", \"useBiasTerm\": " + useBiasTerm
-                    + ", \"l1RegularizationWeight\": " + l1RegularizationWeight
-                    + ", \"l2RegularizationWeight\": " + l2RegularizationWeight + " }";
-        }
-
         @Override
         public LogisticRegressionAdaGrad build() {
             return new LogisticRegressionAdaGrad(this);

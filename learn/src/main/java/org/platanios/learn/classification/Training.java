@@ -105,7 +105,6 @@ public abstract class Training<T extends Vector, S> {
                 } else {
                     TrainableClassifier<T, S> classifier = training.classifierBuilder.build();
                     double classifierLoss = training.trainAndEvaluateClassifier(classifier);
-                    logger.info("Loss: " + classifierLoss + " - Parameter Values: " + training.classifierBuilder.printParameterValues());
                     if (classifierLoss < training.bestClassifierLoss) {
                         training.bestClassifier = classifier;
                         training.bestClassifierLoss = classifierLoss;

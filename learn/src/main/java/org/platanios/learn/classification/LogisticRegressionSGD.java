@@ -136,14 +136,6 @@ public class LogisticRegressionSGD extends AbstractTrainableLogisticRegression {
             return self();
         }
 
-        public String printParameterValues() {
-            return "{ " + "\"sampleWithReplacement\": " + sampleWithReplacement
-                    + ", \"batchSize\": " + batchSize
-                    + ", \"useBiasTerm\": " + useBiasTerm
-                    + ", \"l1RegularizationWeight\": " + l1RegularizationWeight
-                    + ", \"l2RegularizationWeight\": " + l2RegularizationWeight + " }";
-        }
-
         @Override
         public LogisticRegressionSGD build() {
             return new LogisticRegressionSGD(this);
