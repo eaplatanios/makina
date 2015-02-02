@@ -303,15 +303,21 @@ public class FeatureMapMySQL<T extends Vector> extends FeatureMap<T> {
     @SuppressWarnings("unchecked")
     private T selectFeatures(String name, int view) throws SQLException, IOException {
         String selectionQuery = "SELECT features_view_" + view + " FROM " + databaseName + "." + tableName +
-                " WHERE name='" + name + "'";
-        ResultSet result = connection.createStatement().executeQuery(selectionQuery);
+                " WHERE name=?";
+        PreparedStatement preparedStatement = connection.prepareStatement(selectionQuery);
+        preparedStatement.setString(1, name);
+        ResultSet result = preparedStatement.executeQuery();
         if (result.next()) {
             InputStream inputStream = result.getBinaryStream("features_view_" + view);
-            if (inputStream != null)
+            if (inputStream != null) {
+                preparedStatement.close();
                 return (T) Vectors.build(inputStream);
-            else
+            } else {
+                preparedStatement.close();
                 return null;
+            }
         } else {
+            preparedStatement.close();
             return null;
         }
     }
@@ -321,9 +327,13 @@ public class FeatureMapMySQL<T extends Vector> extends FeatureMap<T> {
         String selectionQuery = "SELECT name, features_view_" + view + " FROM " + databaseName + "." + tableName +
                 " WHERE name IN (";
         for (String name : names)
-            selectionQuery += "'" + name + "', ";
+            selectionQuery += "?, ";
         selectionQuery = selectionQuery.substring(0, selectionQuery.length() - 1) + ")";
-        ResultSet result = connection.createStatement().executeQuery(selectionQuery);
+        PreparedStatement preparedStatement = connection.prepareStatement(selectionQuery);
+        int parameterIndex = 1;
+        for (String name : names)
+            preparedStatement.setString(parameterIndex++, name);
+        ResultSet result = preparedStatement.executeQuery();
         Map<String, T> features = new HashMap<>();
         while (result.next()) {
             InputStream inputStream = result.getBinaryStream("features_view_" + view);
@@ -332,6 +342,7 @@ public class FeatureMapMySQL<T extends Vector> extends FeatureMap<T> {
             else
                 features.put(result.getString("name"), null);
         }
+        preparedStatement.close();
         return features;
     }
 
@@ -354,9 +365,11 @@ public class FeatureMapMySQL<T extends Vector> extends FeatureMap<T> {
     private List<T> selectFeatures(String name) throws SQLException, IOException {
         String selectionQuery = "SELECT";
         for (int view = 0; view < numberOfViews; view++)
-            selectionQuery += " features_view_" + view;
-        selectionQuery += " FROM " + databaseName + "." + tableName + " WHERE name='" + name + "'";
-        ResultSet result = connection.createStatement().executeQuery(selectionQuery);
+            selectionQuery += " features_view_" + view + ",";
+        selectionQuery = selectionQuery.substring(0, selectionQuery.length() - 1) + " FROM " + databaseName + "." + tableName + " WHERE name=?";
+        PreparedStatement preparedStatement = connection.prepareStatement(selectionQuery);
+        preparedStatement.setString(1, name);
+        ResultSet result = preparedStatement.executeQuery();
         if (result.next()) {
             List<T> features = new ArrayList<>();
             for (int view = 0; view < numberOfViews; view++) {
@@ -366,9 +379,14 @@ public class FeatureMapMySQL<T extends Vector> extends FeatureMap<T> {
                 else
                     features.add(null);
             }
+            preparedStatement.close();
             return features;
         } else {
-            return null;
+            preparedStatement.close();
+            List<T> features = new ArrayList<>();
+            for (int view = 0; view < numberOfViews; view++)
+                features.add(null);
+            return features;
         }
     }
 
@@ -376,9 +394,13 @@ public class FeatureMapMySQL<T extends Vector> extends FeatureMap<T> {
     private Map<String, List<T>> selectFeatures(List<String> names) throws SQLException, IOException {
         String selectionQuery = "SELECT * FROM " + databaseName + "." + tableName + " WHERE name IN (";
         for (String name : names)
-            selectionQuery += "'" + name + "', ";
+            selectionQuery += "?, ";
         selectionQuery = selectionQuery.substring(0, selectionQuery.length() - 1) + ")";
-        ResultSet result = connection.createStatement().executeQuery(selectionQuery);
+        PreparedStatement preparedStatement = connection.prepareStatement(selectionQuery);
+        int parameterIndex = 1;
+        for (String name : names)
+            preparedStatement.setString(parameterIndex++, name);
+        ResultSet result = preparedStatement.executeQuery();
         Map<String, List<T>> featureMappings = new HashMap<>();
         while (result.next()) {
             List<T> features = new ArrayList<>();
@@ -391,6 +413,7 @@ public class FeatureMapMySQL<T extends Vector> extends FeatureMap<T> {
             }
             featureMappings.put(result.getString("name"), features);
         }
+        preparedStatement.close();
         return featureMappings;
     }
 
