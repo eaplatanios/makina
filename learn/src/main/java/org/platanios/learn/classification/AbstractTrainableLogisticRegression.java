@@ -2,6 +2,7 @@ package org.platanios.learn.classification;
 
 import org.platanios.learn.data.DataSet;
 import org.platanios.learn.data.LabeledDataInstance;
+import org.platanios.learn.math.matrix.SparseVector;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
 import org.platanios.learn.optimization.function.AbstractFunction;
@@ -200,6 +201,8 @@ abstract class AbstractTrainableLogisticRegression
         this.trainingDataSet = (DataSet<LabeledDataInstance<Vector, Double>>) trainingDataSet;
         try {
             train();
+            if (sparse)
+                ((SparseVector) weights).compact();
             return true;
         } catch(Exception e) {
             e.printStackTrace();
