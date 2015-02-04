@@ -1,3 +1,5 @@
+.idea/
+target/
 experiment/target/
 learn/target/
 *.class
