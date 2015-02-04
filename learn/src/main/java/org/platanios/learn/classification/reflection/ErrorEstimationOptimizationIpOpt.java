@@ -144,7 +144,7 @@ class ErrorEstimationOptimizationIpOpt extends Ipopt implements ErrorEstimationO
 
         // Configure the IpOpt solver
         // Output Settings
-        if (!setIntegerOption("print_level", 5)) { // Must be between 0 and 12.
+        if (!setIntegerOption("print_level", 0)) { // Must be between 0 and 12.
             logger.error("Error setting parameter 'print_level'!");
             return;
         }

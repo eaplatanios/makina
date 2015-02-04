@@ -188,7 +188,7 @@ public class ErrorEstimationData {
         if (builder.functionNames == null) {
             builder.functionNames = new String[numberOfFunctions];
             for (int i = 1; i <= numberOfFunctions; i++)
-                builder.functionNames[i] = String.valueOf(i);
+                builder.functionNames[i - 1] = String.valueOf(i);
         }
         functionNames = builder.functionNames;
         sampleErrorRates = builder.sampleErrorRates;

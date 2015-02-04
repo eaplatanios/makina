@@ -43,8 +43,8 @@ public class ErrorEstimationTest {
 
     @Test
     public void testErrorRatesEstimationVector() {
-        String filename = "/Users/Anthony/Development/GitHub/learn/learn/data/combination/error/nell/input/animal.csv";
-//        filename = "/Users/Anthony/Development/GitHub/learn/learn/data/combination/error/brain/input/region_1.csv";
+        String filename = "/Users/Anthony/Development/GitHub/org.platanios/learn/data/combination/error/nell/input/animal.csv";
+//        filename = "/Users/Anthony/Development/GitHub/org.platanios/learn/data/combination/error/brain/input/region_1.csv";
         String separator = ",";
         int highestOrder = 4;
         double[] classificationThresholds = new double[] { 0.05, 0.05, 0.1, 0.05 };
@@ -54,6 +54,42 @@ public class ErrorEstimationTest {
                                                                classificationThresholds,
                                                                highestOrder,
                                                                true);
+        ErrorEstimation ere = new ErrorEstimation.Builder(data)
+                .optimizationSolverType(ErrorEstimationInternalSolver.IP_OPT)
+                .build();
+        data = ere.solve();
+
+        double[] obtainedErrorRates = data.getErrorRates().array;
+        double[] sampleErrorRates = data.getSampleErrorRates().array;
+
+        double mad = 0.0;
+        double mad_ind = 0.0;
+
+        for (int i = 0; i < obtainedErrorRates.length; i++) {
+            mad += Math.abs(sampleErrorRates[i] - obtainedErrorRates[i]);
+            if (i < data.getNumberOfFunctions()) {
+                mad_ind += Math.abs(sampleErrorRates[i] - obtainedErrorRates[i]);
+            }
+        }
+
+        mad /= sampleErrorRates.length;
+        mad_ind /= data.getNumberOfFunctions();
+
+        Assert.assertEquals(0.022264846242268578, mad, 1E-10);
+        Assert.assertEquals(0.03873716293662867, mad_ind, 1E-10);
+    }
+
+    @Test
+    public void testErrorRatesEstimationVectorWith3Classifiers() {
+        String filename = "/Users/Anthony/Development/GitHub/org.platanios/learn/data/combination/error/nell/input/animal.csv";
+        String separator = ",";
+        int highestOrder = 3;
+        double[] classificationThresholds = new double[] { 0.05, 0.05, 0.1 };
+        ErrorEstimationData data = parseLabeledDataFromCSVFileWith3Classifiers(filename,
+                                                                               separator,
+                                                                               classificationThresholds,
+                                                                               highestOrder,
+                                                                               true);
         ErrorEstimation ere = new ErrorEstimation.Builder(data)
                 .optimizationSolverType(ErrorEstimationInternalSolver.IP_OPT)
                 .build();
@@ -130,6 +166,63 @@ public class ErrorEstimationTest {
                 trueLabelsList.add(!outputs[0].equals("0"));
                 boolean[] booleanOutputs = new boolean[outputs.length - 1];
                 for (int i = 1; i < outputs.length; i++) {
+                    if (classificationThresholds == null) {
+                        booleanOutputs[i - 1] = Double.parseDouble(outputs[i]) >= 0.5;
+                    } else if (classificationThresholds.length == 1) {
+                        booleanOutputs[i - 1] = Double.parseDouble(outputs[i]) >= classificationThresholds[0];
+                    } else {
+                        booleanOutputs[i - 1] = Double.parseDouble(outputs[i]) >= classificationThresholds[i - 1];
+                    }
+                }
+                classifiersOutputsList.add(booleanOutputs);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        if (highestOrder == -1) {
+            highestOrder = numberOfFunctions;
+        }
+
+        return new ErrorEstimationData.Builder(classifiersOutputsList,
+                                               trueLabelsList,
+                                               highestOrder,
+                                               onlyEvenCardinalitySubsetsAgreements)
+                .functionNames(classifiersNames)
+                .build();
+    }
+
+    public static ErrorEstimationData parseLabeledDataFromCSVFileWith3Classifiers(String filename,
+                                                                                  String separator,
+                                                                                  double[] classificationThresholds,
+                                                                                  int highestOrder,
+                                                                                  boolean onlyEvenCardinalitySubsetsAgreements) {
+        int numberOfFunctions = 0;
+
+        BufferedReader br = null;
+        String line;
+        String[] classifiersNames = null;
+        List<boolean[]> classifiersOutputsList = new ArrayList<>();
+        List<Boolean> trueLabelsList = new ArrayList<Boolean>();
+
+        try {
+            br = new BufferedReader(new FileReader(filename));
+            line = br.readLine();
+            classifiersNames = line.split(separator);
+            numberOfFunctions = classifiersNames.length - 1;
+            while ((line = br.readLine()) != null) {
+                String[] outputs = line.split(separator);
+                trueLabelsList.add(!outputs[0].equals("0"));
+                boolean[] booleanOutputs = new boolean[3];
+                for (int i = 1; i < 3; i++) {
                     if (classificationThresholds == null) {
                         booleanOutputs[i - 1] = Double.parseDouble(outputs[i]) >= 0.5;
                     } else if (classificationThresholds.length == 1) {

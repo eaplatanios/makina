@@ -36,11 +36,13 @@ public class Integrator<T extends Vector, S> {
     private String workingDirectory;
     private boolean saveModelsOnEveryIteration;
     private boolean useDifferentFilePerIteration;
+    private double[] errorRates;
 
     private int iterationNumber = 1;
 
     public static class Builder<T extends Vector, S> {
         private List<TrainableClassifier<T, S>> classifiers;
+        private String workingDirectory;
         private MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> labeledDataSet;
         private MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> unlabeledDataSet;
         private EventHandler<Integrator.CompletedIterationEvent>[] completedIterationEventHandlers;
@@ -50,12 +52,12 @@ public class Integrator<T extends Vector, S> {
         private DataSelectionMethod dataSelectionMethod = DataSelectionMethod.FIXED_PROPORTION;
         private double dataSelectionParameter = 0.1;
         private int numberOfThreads = Runtime.getRuntime().availableProcessors();
-        private String workingDirectory = "Integrator Directory";
         private boolean saveModelsOnEveryIteration = true;
         private boolean useDifferentFilePerIteration = true;
 
-        public Builder() {
+        public Builder(String workingDirectory) {
             classifiers = new ArrayList<>();
+            this.workingDirectory = workingDirectory;
         }
 
         @SuppressWarnings("unchecked")
@@ -118,11 +120,6 @@ public class Integrator<T extends Vector, S> {
             return this;
         }
 
-        public Builder workingDirectory(String workingDirectory) {
-            this.workingDirectory = workingDirectory;
-            return this;
-        }
-
         public Builder saveModelsOnEveryIteration(boolean saveModelsOnEveryIteration) {
             this.saveModelsOnEveryIteration = saveModelsOnEveryIteration;
             return this;
@@ -150,13 +147,18 @@ public class Integrator<T extends Vector, S> {
         workingDirectory = builder.workingDirectory;
         saveModelsOnEveryIteration = builder.saveModelsOnEveryIteration;
         useDifferentFilePerIteration = builder.useDifferentFilePerIteration;
+        errorRates = new double[classifiers.size()];
         initializeWorkingDirectory();
         iterationNumber = builder.iterationNumber;
         Disruptor<CompletedIterationEvent> disruptor =
-                new Disruptor<>(CompletedIterationEvent::new, 10, Executors.newCachedThreadPool());
+                new Disruptor<>(CompletedIterationEvent::new, 16, Executors.newCachedThreadPool());
         disruptor.handleEventsWith(builder.completedIterationEventHandlers);
         disruptor.start();
         ringBuffer = disruptor.getRingBuffer();
+    }
+
+    public int getIterationNumber() {
+        return iterationNumber;
     }
 
     private void initializeWorkingDirectory() {
@@ -186,12 +188,12 @@ public class Integrator<T extends Vector, S> {
             TrainableClassifier<T, S> classifier = classifiers.get(i);
             DataSet<PredictedDataInstance<T, S>> testingData =
                     (DataSet<PredictedDataInstance<T, S>>) unlabeledDataSet.getSingleViewDataSet(i);
-            classifierPredictionTasks.add(() -> classifier.predictInPlace(testingData));
+            classifierPredictionTasks.add(() -> classifier.predict(testingData));
         }
         try {
             List<Future<DataSet<PredictedDataInstance<T, S>>>> predictionResults =
                     taskExecutor.invokeAll(classifierPredictionTasks);
-            coTrainingMethod.updatePredictions(predictionResults, unlabeledDataSet);
+            coTrainingMethod.updatePredictions(predictionResults, this);
         } catch (InterruptedException e) {
             logger.error("Execution was interrupted while making predictions with the classifiers.");
         } catch (ExecutionException e) {
@@ -209,7 +211,11 @@ public class Integrator<T extends Vector, S> {
         transferData();
         if (saveModelsOnEveryIteration)
             saveModels(useDifferentFilePerIteration);
-        ringBuffer.publishEvent((event, sequence, classifiers) -> event.setClassifiers(classifiers), classifiers);
+        ringBuffer.publishEvent((event, sequence, classifiers) -> {
+            event.setIterationNumber(iterationNumber);
+            event.setClassifiers(classifiers);
+            event.setErrorRates(errorRates);
+        }, classifiers);
         iterationNumber++;
     }
 
@@ -222,7 +228,7 @@ public class Integrator<T extends Vector, S> {
             outputFile = new File(workingDirectory + File.separator + "Models.integrator");
 
         try {
-            if (!outputFile.exists() && outputFile.createNewFile())
+            if (!outputFile.exists() && !outputFile.createNewFile())
                 logger.error("Could not create the file \"" + outputFile.getAbsolutePath() + "\" to store the models!");
             OutputStream outputStream = new FileOutputStream(outputFile, false);
             UnsafeSerializationUtilities.writeInt(outputStream, iterationNumber);
@@ -254,7 +260,17 @@ public class Integrator<T extends Vector, S> {
     }
 
     public class CompletedIterationEvent {
+        private int iterationNumber;
         private List<TrainableClassifier<T, S>> classifiers;
+        private double[] errorRates;
+
+        public void setIterationNumber(int iterationNumber) {
+            this.iterationNumber = iterationNumber;
+        }
+
+        public int getIterationNumber() {
+            return iterationNumber;
+        }
 
         public void setClassifiers(List<TrainableClassifier<T, S>> classifiers) {
             this.classifiers = classifiers;
@@ -263,6 +279,14 @@ public class Integrator<T extends Vector, S> {
         public List<TrainableClassifier<T, S>> getClassifiers() {
             return classifiers;
         }
+
+        public void setErrorRates(double[] errorRates) {
+            this.errorRates = errorRates;
+        }
+
+        public double[] getErrorRates() {
+            return errorRates;
+        }
     }
 
     public enum CoTrainingMethod {
@@ -270,16 +294,16 @@ public class Integrator<T extends Vector, S> {
             @Override
             protected <T extends Vector, S> void updatePredictions(
                     List<Future<DataSet<PredictedDataInstance<T, S>>>> predictionResults,
-                    MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> unlabeledDataSet
+                    Integrator<T, S> integrator
             ) throws ExecutionException, InterruptedException {
                 for (int i = 0; i < predictionResults.size(); i++) {
                     DataSet<PredictedDataInstance<T, S>> dataSet = predictionResults.get(i).get();
                     for (int j = 0; j < dataSet.size(); j++) {
                         // Keep the highest probability prediction / Most confident prediction
                         PredictedDataInstance<T, S> predictedDataInstance = dataSet.get(j);
-                        MultiViewPredictedDataInstance<T, S> unlabeledDataInstance = unlabeledDataSet.get(j);
-                        if (predictedDataInstance.probability() > unlabeledDataInstance.probability()) {
-                            unlabeledDataSet.set(i, new MultiViewPredictedDataInstance<>(
+                        MultiViewPredictedDataInstance<T, S> unlabeledDataInstance = integrator.unlabeledDataSet.get(j);
+                        if (i == 0 || predictedDataInstance.probability() > unlabeledDataInstance.probability()) {
+                            integrator.unlabeledDataSet.set(i, new MultiViewPredictedDataInstance<>(
                                                          null,
                                                          unlabeledDataInstance.features(),
                                                          predictedDataInstance.label(),
@@ -295,7 +319,7 @@ public class Integrator<T extends Vector, S> {
             @Override
             protected <T extends Vector, S> void updatePredictions(
                     List<Future<DataSet<PredictedDataInstance<T, S>>>> predictionResults,
-                    MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> unlabeledDataSet
+                    Integrator<T, S> integrator
             ) throws ExecutionException, InterruptedException {
                 List<boolean[]> classifierOutputs = new ArrayList<>();
                 for (int i = 0; i < predictionResults.size(); i++) {
@@ -303,7 +327,7 @@ public class Integrator<T extends Vector, S> {
                     for (int j = 0; j < dataSet.size(); j++) {
                         if (i == 0)
                             classifierOutputs.add(new boolean[predictionResults.size()]);
-                        classifierOutputs.get(j)[i] = dataSet.get(j).probability() >= 0.5;
+                        classifierOutputs.get(j)[i] = dataSet.get(j).label().equals(1.0);
                     }
                 }
                 ErrorEstimationData errorEstimationData = new ErrorEstimationData.Builder(
@@ -313,20 +337,61 @@ public class Integrator<T extends Vector, S> {
                 ErrorEstimation errorEstimation = new ErrorEstimation.Builder(errorEstimationData)
                         .optimizationSolverType(ErrorEstimationInternalSolver.IP_OPT)
                         .build();
-                double[] errorRates = errorEstimation.solve().getErrorRates().array;
+                integrator.errorRates = errorEstimation.solve().getErrorRates().array;
                 for (int i = 0; i < predictionResults.size(); i++) {
                     DataSet<PredictedDataInstance<T, S>> dataSet = predictionResults.get(i).get();
                     for (int j = 0; j < dataSet.size(); j++) {
                         // Keep the highest probability prediction / Most confident prediction
                         PredictedDataInstance<T, S> predictedDataInstance = dataSet.get(j);
-                        MultiViewPredictedDataInstance<T, S> unlabeledDataInstance = unlabeledDataSet.get(j);
-                        if (predictedDataInstance.probability() * errorRates[i] > unlabeledDataInstance.probability()) {
-                            unlabeledDataSet.set(i, new MultiViewPredictedDataInstance<>(
+                        MultiViewPredictedDataInstance<T, S> unlabeledDataInstance = integrator.unlabeledDataSet.get(j);
+                        double weightedProbability = predictedDataInstance.probability() * integrator.errorRates[i];
+                        if (i == 0 || weightedProbability > unlabeledDataInstance.probability()) {
+                            integrator.unlabeledDataSet.set(i, new MultiViewPredictedDataInstance<>(
                                                          null,
                                                          unlabeledDataInstance.features(),
                                                          predictedDataInstance.label(),
                                                          null,
-                                                         predictedDataInstance.probability() * errorRates[i])
+                                                         weightedProbability)
+                            );
+                        }
+                    }
+                }
+            }
+        },
+        ROBUST_CO_TRAINING_GM {
+            @Override
+            protected <T extends Vector, S> void updatePredictions(
+                    List<Future<DataSet<PredictedDataInstance<T, S>>>> predictionResults,
+                    Integrator<T, S> integrator
+            ) throws ExecutionException, InterruptedException {
+                List<boolean[]> classifierOutputs = new ArrayList<>();
+                for (int i = 0; i < predictionResults.size(); i++) {
+                    DataSet<PredictedDataInstance<T, S>> dataSet = predictionResults.get(i).get();
+                    for (int j = 0; j < dataSet.size(); j++) {
+                        if (i == 0)
+                            classifierOutputs.add(new boolean[predictionResults.size()]);
+                        classifierOutputs.get(j)[i] = dataSet.get(j).label().equals(1.0);
+                    }
+                }
+                List<boolean[][]> functionOutputs = new ArrayList<>();
+                functionOutputs.add(classifierOutputs.toArray(new boolean[classifierOutputs.size()][]));
+                ErrorEstimationSimpleGraphicalModel eegm = new ErrorEstimationSimpleGraphicalModel(functionOutputs, 100);
+                eegm.performGibbsSampling();
+                integrator.errorRates = eegm.getErrorRatesMeans()[0];
+                for (int i = 0; i < predictionResults.size(); i++) {
+                    DataSet<PredictedDataInstance<T, S>> dataSet = predictionResults.get(i).get();
+                    for (int j = 0; j < dataSet.size(); j++) {
+                        // Keep the highest probability prediction / Most confident prediction
+                        PredictedDataInstance<T, S> predictedDataInstance = dataSet.get(j);
+                        MultiViewPredictedDataInstance<T, S> unlabeledDataInstance = integrator.unlabeledDataSet.get(j);
+                        double weightedProbability = predictedDataInstance.probability() * integrator.errorRates[i];
+                        if (i == 0 || weightedProbability > unlabeledDataInstance.probability()) {
+                            integrator.unlabeledDataSet.set(i, new MultiViewPredictedDataInstance<>(
+                                                                    null,
+                                                                    unlabeledDataInstance.features(),
+                                                                    predictedDataInstance.label(),
+                                                                    null,
+                                                                    weightedProbability)
                             );
                         }
                     }
@@ -336,7 +401,7 @@ public class Integrator<T extends Vector, S> {
 
         protected abstract <T extends Vector, S> void updatePredictions(
                 List<Future<DataSet<PredictedDataInstance<T, S>>>> predictionResults,
-                MultiViewDataSet<MultiViewPredictedDataInstance<T, S>> unlabeledDataSet
+                Integrator<T, S> integrator
         ) throws ExecutionException, InterruptedException;
     }
 
