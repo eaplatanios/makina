@@ -26,9 +26,9 @@ public class IntegratorExperiment {
     private static final int numberOfIterations = 100;
     private static final FeatureMapMySQL<SparseVector> featureMap = new FeatureMapMySQL<>(
             3,
-            "jdbc:mysql://localhost/",
-            "root",
-            null,
+            "jdbc:mysql://rtw.ml.cmu.edu/",
+            "eplatani",
+            "Ant0nisS719791!",
             "learn",
             "features"
     );
