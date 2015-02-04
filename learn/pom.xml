@@ -20,15 +20,47 @@
                     <compilerArgument>-XDignore.symbol.file</compilerArgument>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <id>install-ipopt</id>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <phase>clean</phase>
+                        <configuration>
+                            <groupId>Ipopt</groupId>
+                            <artifactId>Ipopt</artifactId>
+                            <version>3.11.6</version>
+                            <packaging>jar</packaging>
+                            <generatePom>true</generatePom>
+                            <createChecksum>true</createChecksum>
+                            <file>${project.basedir}/lib/IpOpt-3.11.6.jar</file>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>install-knitro</id>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <phase>clean</phase>
+                        <configuration>
+                            <groupId>knitro</groupId>
+                            <artifactId>knitro</artifactId>
+                            <version>9.01</version>
+                            <packaging>jar</packaging>
+                            <generatePom>true</generatePom>
+                            <createChecksum>true</createChecksum>
+                            <file>${project.basedir}/lib/knitro-9.01.jar</file>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
-
-    <repositories>
-        <repository>
-            <id>lib</id>
-            <url>file://${basedir}/lib</url>
-        </repository>
-    </repositories>
 
     <dependencies>
         <dependency>
@@ -78,9 +110,9 @@
             <version>1.2.0</version>
         </dependency>
         <dependency>
-            <groupId>IpOpt</groupId>
-            <artifactId>IpOpt</artifactId>
-            <version>3.11.9</version>
+            <groupId>Ipopt</groupId>
+            <artifactId>Ipopt</artifactId>
+            <version>3.11.6</version>
         </dependency>
         <dependency>
             <groupId>knitro</groupId>
