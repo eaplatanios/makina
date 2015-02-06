@@ -202,7 +202,7 @@ public class IntegratorExperiment {
                                                  recall,
                                                  f1Score);
                         })
-                        .coTrainingMethod(Integrator.CoTrainingMethod.ROBUST_CO_TRAINING_GM)
+                        .coTrainingMethod(coTrainingMethod)
                         .dataSelectionMethod(Integrator.DataSelectionMethod.FIXED_PROPORTION)
                         .dataSelectionParameter(0.01)
                         .numberOfThreads(numberOfViews)
