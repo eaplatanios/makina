@@ -37,14 +37,6 @@ public class FeaturesPreprocessing {
 
     private static Map<String, Map<String, Boolean>> labeledData;
     private static Map<String, Map<String, Boolean>> filteredLabeledData;
-    private static FeatureMapMySQL<SparseVector> featureMap = new FeatureMapMySQL<>(
-            3,
-            "jdbc:mysql://localhost/",
-            "root",
-            null,
-            "learn",
-            "features"
-    );
 
     private static void parseVariasCategoriesFiles() {
         if (Files.exists(Paths.get(labeledDataDirectory))) {
@@ -102,7 +94,7 @@ public class FeaturesPreprocessing {
         }
     }
 
-    private static void buildFeatureMap() {
+    private static void buildFeatureMap(FeatureMapMySQL<SparseVector> featureMap) {
         featureMap.createDatabase();
         buildCPLFeatureMap(featureMap);
         buildADJFeatureMap(featureMap);
@@ -201,7 +193,7 @@ public class FeaturesPreprocessing {
         }
     }
 
-    public static void filterLabeledDataByFeatureMap() {
+    public static void filterLabeledDataByFeatureMap(FeatureMapMySQL<SparseVector> featureMap) {
         if (Files.exists(Paths.get(filteredLabeledDataDirectory))) {
             filteredLabeledData = readStringStringBooleanMap(filteredLabeledDataDirectory);
             logger.info("Read the filtered labeled data from the existing file.");
@@ -287,8 +279,16 @@ public class FeaturesPreprocessing {
     }
 
     public static void main(String[] args) {
-//        buildFeatureMap();
+        FeatureMapMySQL<SparseVector> featureMap = new FeatureMapMySQL<>(
+                3,
+                "jdbc:mysql://localhost/",
+                "root",
+                null,
+                "learn",
+                "features"
+        );
+//        buildFeatureMap(featureMap);
         parseVariasCategoriesFiles();
-        filterLabeledDataByFeatureMap();
+        filterLabeledDataByFeatureMap(featureMap);
     }
 }
