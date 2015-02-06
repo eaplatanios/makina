@@ -24,17 +24,17 @@ public class IntegratorExperiment {
 
     private static final Random random = new Random(1000);
     private static final int numberOfIterations = 100;
+    private static final int numberOfViews = 3;
     private static final FeatureMapMySQL<SparseVector> featureMap = new FeatureMapMySQL<>(
-            3,
+            numberOfViews,
             "jdbc:mysql://rtw.ml.cmu.edu/",
             "eplatani",
             "Ant0nisS719791!",
             "learn",
             "features"
     );
-    private static final String filteredLabeledDataDirectory = "/Volumes/Macintosh HD/Users/Anthony/Development/Data Sets/NELL/Training Data/filtered_labeled_nps.data";
-    private static final String integratorWorkingDirectory = "/Volumes/Macintosh HD/Users/Anthony/Development/Data Sets/NELL/Integrator Experiment/Integrator Working Directory/";
-    private static final String matlabPlottingScriptsDirectory = "/Volumes/Macintosh HD/Users/Anthony/Development/Data Sets/NELL/Integrator Experiment/MATLAB Plotting Scripts/";
+    private static final String filteredLabeledDataDirectory = "/home/eplatani/Integrator Experiment/Training Data/filtered_labeled_nps.data";
+    private static final String integratorWorkingDirectory = "/home/eplatani/Integrator Experiment/Integrator Working Directory/";
     private static final Map<String, Map<String, Boolean>> filteredLabeledData = FeaturesPreprocessing.readStringStringBooleanMap(filteredLabeledDataDirectory);
     private static final String category = "animal";
     private static final List<String> seeds = Arrays.asList(
@@ -50,6 +50,15 @@ public class IntegratorExperiment {
     private static MultiViewDataSet<MultiViewPredictedDataInstance<Vector, Double>> labeledDataSet;
     private static MultiViewDataSet<MultiViewPredictedDataInstance<Vector, Double>> unlabeledDataSet;
     private static MultiViewDataSet<MultiViewPredictedDataInstance<Vector, Double>> evaluationDataSet;
+
+    private static void initializeWorkingDirectory(String workingDirectory) {
+        File directory = new File(workingDirectory);
+        if (!directory.exists() && !directory.mkdirs())
+            logger.error("Unable to create directory " + directory.getAbsolutePath());
+        directory = new File(workingDirectory + "MATLAB Plotting Scripts/");
+        if (!directory.exists() && !directory.mkdirs())
+            logger.error("Unable to create directory " + directory.getAbsolutePath());
+    }
 
     private static void loadLabeledNPsData() {
         labeledDataSet = new MultiViewDataSetInMemory<>();
@@ -112,13 +121,33 @@ public class IntegratorExperiment {
 
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
+        Integrator.CoTrainingMethod coTrainingMethod;
+        String workingDirectory;
+        switch (args[0]) {
+            case "0":
+                coTrainingMethod = Integrator.CoTrainingMethod.CO_TRAINING;
+                workingDirectory = integratorWorkingDirectory + "Co-Training/";
+                break;
+            case "1":
+                coTrainingMethod = Integrator.CoTrainingMethod.ROBUST_CO_TRAINING;
+                workingDirectory = integratorWorkingDirectory + "Robust Co-Training/";
+                break;
+            case "2":
+                coTrainingMethod = Integrator.CoTrainingMethod.ROBUST_CO_TRAINING_GM;
+                workingDirectory = integratorWorkingDirectory + "Robust Co-Training GM/";
+                break;
+            default:
+                coTrainingMethod = Integrator.CoTrainingMethod.CO_TRAINING;
+                workingDirectory = integratorWorkingDirectory + "Co-Training/";
+        }
+        initializeWorkingDirectory(workingDirectory);
         loadLabeledNPsData();
         double[] weightedMajorityAccuracy = new double[numberOfIterations];
-        double[][] actualErrorRates = new double[numberOfIterations][featureMap.getNumberOfViews()];
-        double[][] precision = new double[numberOfIterations][featureMap.getNumberOfViews()];
-        double[][] recall = new double[numberOfIterations][featureMap.getNumberOfViews()];
-        double[][] f1Score = new double[numberOfIterations][featureMap.getNumberOfViews()];
-        double[][] estimatedErrorRates = new double[numberOfIterations][featureMap.getNumberOfViews()];
+        double[][] actualErrorRates = new double[numberOfIterations][numberOfViews];
+        double[][] precision = new double[numberOfIterations][numberOfViews];
+        double[][] recall = new double[numberOfIterations][numberOfViews];
+        double[][] f1Score = new double[numberOfIterations][numberOfViews];
+        double[][] estimatedErrorRates = new double[numberOfIterations][numberOfViews];
         Integrator.Builder<Vector, Double> integratorBuilder =
                 new Integrator.Builder<Vector, Double>(integratorWorkingDirectory)
                         .labeledDataSet(labeledDataSet)
@@ -127,7 +156,7 @@ public class IntegratorExperiment {
                             int iterationNumber = ((Integrator.CompletedIterationEvent) completedIterationEvent).getIterationNumber();
                             List<TrainableClassifier<Vector, Double>> classifiers = ((Integrator.CompletedIterationEvent) completedIterationEvent).getClassifiers();
                             estimatedErrorRates[iterationNumber] = ((Integrator.CompletedIterationEvent) completedIterationEvent).getErrorRates();
-                            for (int view = 0; view < featureMap.getNumberOfViews(); view++) {
+                            for (int view = 0; view < numberOfViews; view++) {
                                 DataSet<PredictedDataInstance<Vector, Double>> predictedEvaluationDataSet =
                                         classifiers.get(view).predict((DataSet<PredictedDataInstance<Vector, Double>>) evaluationDataSet.getSingleViewDataSet(view));
                                 double precisionDenominator = 0;
@@ -166,16 +195,20 @@ public class IntegratorExperiment {
                                                     "F-1 Score: " + formatter.format(f1Score[iterationNumber][view]) + " |"
                                 );
                             }
-//                            if (iterationNumber[0] == numberOfIterations)
-                            saveResultsForMATLAB(actualErrorRates, estimatedErrorRates, precision, recall, f1Score);
+                            saveResultsForMATLAB(workingDirectory + "MATLAB Plotting Scripts/",
+                                                 actualErrorRates,
+                                                 estimatedErrorRates,
+                                                 precision,
+                                                 recall,
+                                                 f1Score);
                         })
                         .coTrainingMethod(Integrator.CoTrainingMethod.ROBUST_CO_TRAINING_GM)
                         .dataSelectionMethod(Integrator.DataSelectionMethod.FIXED_PROPORTION)
                         .dataSelectionParameter(0.01)
-                        .numberOfThreads(4)
+                        .numberOfThreads(numberOfViews)
                         .saveModelsOnEveryIteration(true)
                         .useDifferentFilePerIteration(true);
-        for (int view = 0; view < featureMap.getNumberOfViews(); view++) {
+        for (int view = 0; view < numberOfViews; view++) {
             LogisticRegressionAdaGrad classifier =
                     new LogisticRegressionAdaGrad.Builder(unlabeledDataSet
                                                                   .get(0)
@@ -205,13 +238,14 @@ public class IntegratorExperiment {
     }
 
     private static void saveResultsForMATLAB(
+            String directory,
             double[][] actualErrorRates,
             double[][] estimatedErrorRates,
             double[][] precision,
             double[][] recall,
             double[][] f1Score
     ) {
-        File outputFile = new File(matlabPlottingScriptsDirectory + File.separator + "data.m");
+        File outputFile = new File(directory + File.separator + "data.m");
 
         try {
             if (!outputFile.exists() && !outputFile.createNewFile())
