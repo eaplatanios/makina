@@ -1,7 +1,8 @@
+.gradle/
 .idea/
-target/
-experiment/target/
-learn/target/
+build/
+experiment/build/
+learn/build/
 *.iml
 *.class
 *.DS_Store
