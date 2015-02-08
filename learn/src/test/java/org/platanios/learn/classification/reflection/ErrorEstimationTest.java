@@ -3,9 +3,7 @@ package org.platanios.learn.classification.reflection;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,11 +13,11 @@ import java.util.List;
 public class ErrorEstimationTest {
     @Test
     public void testAgreementRatesPowerSetVector() {
-        String filename = "/Users/Anthony/Development/GitHub/learn/learn/data/combination/error/nell/input/animal.csv";
+        InputStream dataInputStream = ErrorEstimationTest.class.getResourceAsStream("./nell/input/animal.csv");
         String separator = ",";
         int maximumOrder = 4;
         double[] classificationThresholds = new double[] { 0.05, 0.05, 0.1, 0.05 };
-        ErrorEstimationData data = parseLabeledDataFromCSVFile(filename,
+        ErrorEstimationData data = parseLabeledDataFromCSVFile(dataInputStream,
                                                                separator,
                                                                classificationThresholds,
                                                                maximumOrder,
@@ -43,13 +41,13 @@ public class ErrorEstimationTest {
 
     @Test
     public void testErrorRatesEstimationVector() {
-        String filename = "/Users/Anthony/Development/GitHub/org.platanios/learn/data/combination/error/nell/input/animal.csv";
-//        filename = "/Users/Anthony/Development/GitHub/org.platanios/learn/data/combination/error/brain/input/region_1.csv";
+        InputStream dataInputStream = ErrorEstimationTest.class.getResourceAsStream("./nell/input/animal.csv");
+//        dataInputStream = ErrorEstimationTest.class.getResourceAsStream("./brain/input/region_1.csv");
         String separator = ",";
         int highestOrder = 4;
         double[] classificationThresholds = new double[] { 0.05, 0.05, 0.1, 0.05 };
 //        classificationThresholds = new double[] { 0.5 };
-        ErrorEstimationData data = parseLabeledDataFromCSVFile(filename,
+        ErrorEstimationData data = parseLabeledDataFromCSVFile(dataInputStream,
                                                                separator,
                                                                classificationThresholds,
                                                                highestOrder,
@@ -81,11 +79,11 @@ public class ErrorEstimationTest {
 
     @Test
     public void testErrorRatesEstimationVectorWith3Classifiers() {
-        String filename = "/Users/Anthony/Development/GitHub/org.platanios/learn/data/combination/error/nell/input/animal.csv";
+        InputStream dataInputStream = ErrorEstimationTest.class.getResourceAsStream("./nell/input/animal.csv");
         String separator = ",";
         int highestOrder = 3;
         double[] classificationThresholds = new double[] { 0.05, 0.05, 0.1 };
-        ErrorEstimationData data = parseLabeledDataFromCSVFileWith3Classifiers(filename,
+        ErrorEstimationData data = parseLabeledDataFromCSVFileWith3Classifiers(dataInputStream,
                                                                                separator,
                                                                                classificationThresholds,
                                                                                highestOrder,
@@ -115,35 +113,35 @@ public class ErrorEstimationTest {
         Assert.assertEquals(0.03873716293662867, mad_ind, 1E-10);
     }
 
-    public static ErrorEstimationData parseLabeledDataFromCSVFile(String filename, String separator) {
-        return parseLabeledDataFromCSVFile(filename, separator, null, -1, true);
+    public static ErrorEstimationData parseLabeledDataFromCSVFile(InputStream dataInputStream, String separator) {
+        return parseLabeledDataFromCSVFile(dataInputStream, separator, null, -1, true);
     }
 
-    public static ErrorEstimationData parseLabeledDataFromCSVFile(String filename, String separator, double classificationThreshold) {
-        return parseLabeledDataFromCSVFile(filename, separator, new double[] { classificationThreshold }, -1, true);
+    public static ErrorEstimationData parseLabeledDataFromCSVFile(InputStream dataInputStream, String separator, double classificationThreshold) {
+        return parseLabeledDataFromCSVFile(dataInputStream, separator, new double[] { classificationThreshold }, -1, true);
     }
 
-    public static ErrorEstimationData parseLabeledDataFromCSVFile(String filename, String separator, double[] classificationThresholds) {
-        return parseLabeledDataFromCSVFile(filename, separator, classificationThresholds, -1, true);
+    public static ErrorEstimationData parseLabeledDataFromCSVFile(InputStream dataInputStream, String separator, double[] classificationThresholds) {
+        return parseLabeledDataFromCSVFile(dataInputStream, separator, classificationThresholds, -1, true);
     }
 
-    public static ErrorEstimationData parseLabeledDataFromCSVFile(String filename, String separator, double[] classificationThresholds, int maximumOrder) {
-        return parseLabeledDataFromCSVFile(filename, separator, classificationThresholds, maximumOrder, true);
+    public static ErrorEstimationData parseLabeledDataFromCSVFile(InputStream dataInputStream, String separator, double[] classificationThresholds, int maximumOrder) {
+        return parseLabeledDataFromCSVFile(dataInputStream, separator, classificationThresholds, maximumOrder, true);
     }
 
-    public static ErrorEstimationData parseLabeledDataFromCSVFile(String filename, String separator, boolean onlyEvenCardinalitySubsetsAgreements) {
-        return parseLabeledDataFromCSVFile(filename, separator, null, -1, onlyEvenCardinalitySubsetsAgreements);
+    public static ErrorEstimationData parseLabeledDataFromCSVFile(InputStream dataInputStream, String separator, boolean onlyEvenCardinalitySubsetsAgreements) {
+        return parseLabeledDataFromCSVFile(dataInputStream, separator, null, -1, onlyEvenCardinalitySubsetsAgreements);
     }
 
-    public static ErrorEstimationData parseLabeledDataFromCSVFile(String filename, String separator, double classificationThreshold, boolean onlyEvenCardinalitySubsetsAgreements) {
-        return parseLabeledDataFromCSVFile(filename, separator, new double[] { classificationThreshold }, -1, onlyEvenCardinalitySubsetsAgreements);
+    public static ErrorEstimationData parseLabeledDataFromCSVFile(InputStream dataInputStream, String separator, double classificationThreshold, boolean onlyEvenCardinalitySubsetsAgreements) {
+        return parseLabeledDataFromCSVFile(dataInputStream, separator, new double[] { classificationThreshold }, -1, onlyEvenCardinalitySubsetsAgreements);
     }
 
-    public static ErrorEstimationData parseLabeledDataFromCSVFile(String filename, String separator, double[] classificationThresholds, boolean onlyEvenCardinalitySubsetsAgreements) {
-        return parseLabeledDataFromCSVFile(filename, separator, classificationThresholds, -1, onlyEvenCardinalitySubsetsAgreements);
+    public static ErrorEstimationData parseLabeledDataFromCSVFile(InputStream dataInputStream, String separator, double[] classificationThresholds, boolean onlyEvenCardinalitySubsetsAgreements) {
+        return parseLabeledDataFromCSVFile(dataInputStream, separator, classificationThresholds, -1, onlyEvenCardinalitySubsetsAgreements);
     }
 
-    public static ErrorEstimationData parseLabeledDataFromCSVFile(String filename,
+    public static ErrorEstimationData parseLabeledDataFromCSVFile(InputStream dataInputStream,
                                                                   String separator,
                                                                   double[] classificationThresholds,
                                                                   int highestOrder,
@@ -157,7 +155,7 @@ public class ErrorEstimationTest {
         List<Boolean> trueLabelsList = new ArrayList<Boolean>();
 
         try {
-            br = new BufferedReader(new FileReader(filename));
+            br = new BufferedReader(new InputStreamReader(dataInputStream));
             line = br.readLine();
             classifiersNames = line.split(separator);
             numberOfFunctions = classifiersNames.length - 1;
@@ -200,7 +198,7 @@ public class ErrorEstimationTest {
                 .build();
     }
 
-    public static ErrorEstimationData parseLabeledDataFromCSVFileWith3Classifiers(String filename,
+    public static ErrorEstimationData parseLabeledDataFromCSVFileWith3Classifiers(InputStream dataInputStream,
                                                                                   String separator,
                                                                                   double[] classificationThresholds,
                                                                                   int highestOrder,
@@ -214,7 +212,7 @@ public class ErrorEstimationTest {
         List<Boolean> trueLabelsList = new ArrayList<Boolean>();
 
         try {
-            br = new BufferedReader(new FileReader(filename));
+            br = new BufferedReader(new InputStreamReader(dataInputStream));
             line = br.readLine();
             classifiersNames = line.split(separator);
             numberOfFunctions = classifiersNames.length - 1;

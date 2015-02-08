@@ -33,8 +33,8 @@ public class IntegratorExperiment {
             "learn",
             "features"
     );
-    private static final String filteredLabeledDataDirectory = "/home/eplatani/Integrator Experiment/Training Data/filtered_labeled_nps.data";
-    private static final String integratorWorkingDirectory = "/home/eplatani/Integrator Experiment/Integrator Working Directory/";
+    private static final String filteredLabeledDataDirectory = "/Volumes/Macintosh HD/Users/Anthony/Development/Data Sets/NELL/Training Data/filtered_labeled_nps.data";
+    private static final String integratorWorkingDirectory = "/Volumes/Macintosh HD/Users/Anthony/Development/Data Sets/NELL/Integrator Working Directory/";
     private static final Map<String, Map<String, Boolean>> filteredLabeledData = FeaturesPreprocessing.readStringStringBooleanMap(filteredLabeledDataDirectory);
     private static final String category = "animal";
     private static final List<String> seeds = Arrays.asList(
@@ -140,6 +140,7 @@ public class IntegratorExperiment {
                 coTrainingMethod = Integrator.CoTrainingMethod.CO_TRAINING;
                 workingDirectory = integratorWorkingDirectory + "Co-Training/";
         }
+        logger.info("Starting the integrator with co-training method: " + coTrainingMethod.name());
         initializeWorkingDirectory(workingDirectory);
         loadLabeledNPsData();
         double[] weightedMajorityAccuracy = new double[numberOfIterations];
@@ -149,13 +150,13 @@ public class IntegratorExperiment {
         double[][] f1Score = new double[numberOfIterations][numberOfViews];
         double[][] estimatedErrorRates = new double[numberOfIterations][numberOfViews];
         Integrator.Builder<Vector, Double> integratorBuilder =
-                new Integrator.Builder<Vector, Double>(integratorWorkingDirectory)
+                new Integrator.Builder<Vector, Double>(workingDirectory)
                         .labeledDataSet(labeledDataSet)
                         .unlabeledDataSet(unlabeledDataSet)
                         .completedIterationEventHandlers((completedIterationEvent, sequence, endOfBatch) -> {
                             int iterationNumber = ((Integrator.CompletedIterationEvent) completedIterationEvent).getIterationNumber();
                             List<TrainableClassifier<Vector, Double>> classifiers = ((Integrator.CompletedIterationEvent) completedIterationEvent).getClassifiers();
-                            estimatedErrorRates[iterationNumber] = ((Integrator.CompletedIterationEvent) completedIterationEvent).getErrorRates();
+                            estimatedErrorRates[iterationNumber - 1] = ((Integrator.CompletedIterationEvent) completedIterationEvent).getErrorRates();
                             for (int view = 0; view < numberOfViews; view++) {
                                 DataSet<PredictedDataInstance<Vector, Double>> predictedEvaluationDataSet =
                                         classifiers.get(view).predict((DataSet<PredictedDataInstance<Vector, Double>>) evaluationDataSet.getSingleViewDataSet(view));
@@ -163,36 +164,36 @@ public class IntegratorExperiment {
                                 double recallDenominator = 0;
                                 for (PredictedDataInstance<Vector, Double> dataInstance : predictedEvaluationDataSet) {
                                     if (dataInstance.label() != (filteredLabeledData.get(category).get(dataInstance.name()) ? 1 : 0))
-                                        actualErrorRates[iterationNumber][view]++;
+                                        actualErrorRates[iterationNumber - 1][view]++;
                                     if (dataInstance.label() == 1) {
                                         precisionDenominator++;
                                         if (filteredLabeledData.get(category).get(dataInstance.name()))
-                                            precision[iterationNumber][view]++;
+                                            precision[iterationNumber - 1][view]++;
                                     }
                                     if (filteredLabeledData.get(category).get(dataInstance.name())) {
                                         recallDenominator++;
                                         if (dataInstance.label() == 1)
-                                            recall[iterationNumber][view]++;
+                                            recall[iterationNumber - 1][view]++;
                                     }
                                 }
                                 if (precisionDenominator == 0)
                                     precisionDenominator = 1;
                                 if (recallDenominator == 0)
                                     recallDenominator = 1;
-                                actualErrorRates[iterationNumber][view] /= predictedEvaluationDataSet.size();
-                                precision[iterationNumber][view] /= precisionDenominator;
-                                recall[iterationNumber][view] /= recallDenominator;
-                                f1Score[iterationNumber][view] = 2
-                                        * (precision[iterationNumber][view] * recall[iterationNumber][view])
-                                        / (precision[iterationNumber][view] + recall[iterationNumber][view]);
-                                if (precision[iterationNumber][view] == 0 && recall[iterationNumber][view] == 0)
-                                    f1Score[iterationNumber][view] = 0;
-                                logger.info("Iteration #" + (iterationNumber + 1) + ", Classifier #" + (view + 1) + " | " +
-                                                    "Actual Error Rate: " + formatter.format(actualErrorRates[iterationNumber][view]) + " | " +
-                                                    "Estimated Error Rate: " + formatter.format(estimatedErrorRates[iterationNumber][view]) + " | " +
-                                                    "Precision: " + formatter.format(precision[iterationNumber][view]) + " | " +
-                                                    "Recall: " + formatter.format(recall[iterationNumber][view]) + " | " +
-                                                    "F-1 Score: " + formatter.format(f1Score[iterationNumber][view]) + " |"
+                                actualErrorRates[iterationNumber - 1][view] /= predictedEvaluationDataSet.size();
+                                precision[iterationNumber - 1][view] /= precisionDenominator;
+                                recall[iterationNumber - 1][view] /= recallDenominator;
+                                f1Score[iterationNumber - 1][view] = 2
+                                        * (precision[iterationNumber - 1][view] * recall[iterationNumber - 1][view])
+                                        / (precision[iterationNumber - 1][view] + recall[iterationNumber - 1][view]);
+                                if (precision[iterationNumber - 1][view] == 0 && recall[iterationNumber - 1][view] == 0)
+                                    f1Score[iterationNumber - 1][view] = 0;
+                                logger.info("Iteration #" + iterationNumber + ", Classifier #" + (view + 1) + " | " +
+                                                    "Actual Error Rate: " + formatter.format(actualErrorRates[iterationNumber - 1][view]) + " | " +
+                                                    "Estimated Error Rate: " + formatter.format(estimatedErrorRates[iterationNumber - 1][view]) + " | " +
+                                                    "Precision: " + formatter.format(precision[iterationNumber - 1][view]) + " | " +
+                                                    "Recall: " + formatter.format(recall[iterationNumber - 1][view]) + " | " +
+                                                    "F-1 Score: " + formatter.format(f1Score[iterationNumber - 1][view]) + " |"
                                 );
                             }
                             saveResultsForMATLAB(workingDirectory + "MATLAB Plotting Scripts/",
