@@ -344,7 +344,7 @@ public class Integrator<T extends Vector, S> {
                         // Keep the highest probability prediction / Most confident prediction
                         PredictedDataInstance<T, S> predictedDataInstance = dataSet.get(j);
                         MultiViewPredictedDataInstance<T, S> unlabeledDataInstance = integrator.unlabeledDataSet.get(j);
-                        double weightedProbability = predictedDataInstance.probability() * integrator.errorRates[i];
+                        double weightedProbability = predictedDataInstance.probability() * (1 - integrator.errorRates[i]);
                         if (i == 0 || weightedProbability > unlabeledDataInstance.probability()) {
                             integrator.unlabeledDataSet.set(i, new MultiViewPredictedDataInstance<>(
                                                          null,
@@ -384,7 +384,7 @@ public class Integrator<T extends Vector, S> {
                         // Keep the highest probability prediction / Most confident prediction
                         PredictedDataInstance<T, S> predictedDataInstance = dataSet.get(j);
                         MultiViewPredictedDataInstance<T, S> unlabeledDataInstance = integrator.unlabeledDataSet.get(j);
-                        double weightedProbability = predictedDataInstance.probability() * integrator.errorRates[i];
+                        double weightedProbability = predictedDataInstance.probability() * (1 - integrator.errorRates[i]);
                         if (i == 0 || weightedProbability > unlabeledDataInstance.probability()) {
                             integrator.unlabeledDataSet.set(i, new MultiViewPredictedDataInstance<>(
                                                                     null,
