@@ -16,7 +16,9 @@ import org.platanios.learn.serialization.UnsafeSerializationUtilities;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 
 /**
@@ -135,11 +137,15 @@ public class Integrator<T extends Vector, S> {
         }
     }
 
+    private Map<String, S> trueLabels = new HashMap<>();
+
     @SuppressWarnings("unchecked")
     private Integrator(Builder<T, S> builder) {
         classifiers = builder.classifiers;
         labeledDataSet = builder.labeledDataSet;
         unlabeledDataSet = builder.unlabeledDataSet;
+        for (MultiViewPredictedDataInstance<T, S> dataInstance : unlabeledDataSet)
+            trueLabels.put(dataInstance.name(), dataInstance.label());
         coTrainingMethod = builder.coTrainingMethod;
         dataSelectionMethod = builder.dataSelectionMethod;
         dataSelectionParameter = builder.dataSelectionParameter;
@@ -378,6 +384,45 @@ public class Integrator<T extends Vector, S> {
                 ErrorEstimationSimpleGraphicalModel eegm = new ErrorEstimationSimpleGraphicalModel(functionOutputs, 100);
                 eegm.performGibbsSampling();
                 integrator.errorRates = eegm.getErrorRatesMeans()[0];
+                for (int i = 0; i < predictionResults.size(); i++) {
+                    DataSet<PredictedDataInstance<T, S>> dataSet = predictionResults.get(i).get();
+                    for (int j = 0; j < dataSet.size(); j++) {
+                        // Keep the highest probability prediction / Most confident prediction
+                        PredictedDataInstance<T, S> predictedDataInstance = dataSet.get(j);
+                        MultiViewPredictedDataInstance<T, S> unlabeledDataInstance = integrator.unlabeledDataSet.get(j);
+                        double weightedProbability = predictedDataInstance.probability() * (1 - integrator.errorRates[i]);
+                        if (i == 0 || weightedProbability > unlabeledDataInstance.probability()) {
+                            integrator.unlabeledDataSet.set(i, new MultiViewPredictedDataInstance<>(
+                                                                    null,
+                                                                    unlabeledDataInstance.features(),
+                                                                    predictedDataInstance.label(),
+                                                                    null,
+                                                                    weightedProbability)
+                            );
+                        }
+                    }
+                }
+            }
+        },
+        TRUE_ERRORS_ROBUST_CO_TRAINING {
+            @Override
+            protected <T extends Vector, S> void updatePredictions(
+                    List<Future<DataSet<PredictedDataInstance<T, S>>>> predictionResults,
+                    Integrator<T, S> integrator
+            ) throws ExecutionException, InterruptedException {
+                List<boolean[]> classifierOutputs = new ArrayList<>();
+                integrator.errorRates = new double[predictionResults.size()];
+                for (int i = 0; i < predictionResults.size(); i++) {
+                    DataSet<PredictedDataInstance<T, S>> dataSet = predictionResults.get(i).get();
+                    integrator.errorRates[i] = 0;
+                    for (int j = 0; j < dataSet.size(); j++) {
+                        if (i == 0)
+                            classifierOutputs.add(new boolean[predictionResults.size()]);
+                        classifierOutputs.get(j)[i] = dataSet.get(j).label().equals(1.0);
+                        integrator.errorRates[i] += dataSet.get(j).label().equals(integrator.trueLabels.get(dataSet.get(j).name())) ? 0 : 1;
+                    }
+                    integrator.errorRates[i] /= dataSet.size();
+                }
                 for (int i = 0; i < predictionResults.size(); i++) {
                     DataSet<PredictedDataInstance<T, S>> dataSet = predictionResults.get(i).get();
                     for (int j = 0; j < dataSet.size(); j++) {

@@ -33,17 +33,26 @@ public class IntegratorExperiment {
             "learn",
             "features"
     );
-    private static final String filteredLabeledDataDirectory = "/Volumes/Macintosh HD/Users/Anthony/Development/Data Sets/NELL/Training Data/filtered_labeled_nps.data";
-    private static final String integratorWorkingDirectory = "/Volumes/Macintosh HD/Users/Anthony/Development/Data Sets/NELL/Integrator Working Directory/";
+    private static final String filteredLabeledDataDirectory = "/home/eplatani/Integrator Experiment/Training Data/filtered_labeled_nps.data";
+    private static final String integratorWorkingDirectory = "/home/eplatani/Integrator Working Directory/Working Directory/";
     private static final Map<String, Map<String, Boolean>> filteredLabeledData = FeaturesPreprocessing.readStringStringBooleanMap(filteredLabeledDataDirectory);
-    private static final String category = "animal";
+//    private static final String category = "animal";
+//    private static final List<String> seeds = Arrays.asList(
+//            "cattle", "livestock", "pigs", "amazons", "badgers", "barbs", "bluegills", "bowhead whales", "brontosauruses",
+//            "bryozoans", "bunnies", "bunnies", "carnivores", "cavity nesters", "cavity nesters", "cetaceans", "cnidarians",
+//            "corvids", "cow", "creatures", "cyprinids", "dog", "echinoderms", "endangered species", "filter feeders",
+//            "furbearers", "great apes", "guppies", "hammerheads", "herbor seals", "hawks", "herbivores", "humans", "hyenas",
+//            "insectivores", "invertebrates", "leatherjackets", "lemurs", "locusts", "manatees", "marine animals", "marine life",
+//            "marine mammals", "marlins", "minnows", "monkey", "cat", "fish"
+//    );
+    private static final String category = "city";
     private static final List<String> seeds = Arrays.asList(
-            "cattle", "livestock", "pigs", "amazons", "badgers", "barbs", "bluegills", "bowhead whales", "brontosauruses",
-            "bryozoans", "bunnies", "bunnies", "carnivores", "cavity nesters", "cavity nesters", "cetaceans", "cnidarians",
-            "corvids", "cow", "creatures", "cyprinids", "dog", "echinoderms", "endangered species", "filter feeders",
-            "furbearers", "great apes", "guppies", "hammerheads", "herbor seals", "hawks", "herbivores", "humans", "hyenas",
-            "insectivores", "invertebrates", "leatherjackets", "lemurs", "locusts", "manatees", "marine animals", "marine life",
-            "marine mammals", "marlins", "minnows", "monkey", "cat", "fish"
+            "aarhus", "adelaide", "albany", "albuquerque", "alexandria", "alicante", "annapolis", "antigua", "antioch",
+            "antwerp", "athens", "atlantic city", "auckland", "augusta", "austin", "baabda", "baabdat",
+            "baghdad", "baltimore", "bangkok", "barcelona", "bariloche", "basel", "beaufort", "bedford",
+            "beijing", "belfast", "belleair", "berlin", "bethesda", "birmingham", "bloomington", "boise", "bologna",
+            "bombay", "boston", "bournemouth", "bremen", "brisbane", "bristol", "brooklyn", "buenos aires",
+            "cadiz", "cairo", "calgary", "cambridge", "cape town", "charleston"
     );
     private static final int evaluationDataSetSize = 200;
 
@@ -136,6 +145,10 @@ public class IntegratorExperiment {
                 coTrainingMethod = Integrator.CoTrainingMethod.ROBUST_CO_TRAINING_GM;
                 workingDirectory = integratorWorkingDirectory + "Robust Co-Training GM/";
                 break;
+            case "3":
+                coTrainingMethod = Integrator.CoTrainingMethod.TRUE_ERRORS_ROBUST_CO_TRAINING;
+                workingDirectory = integratorWorkingDirectory + "True Errors Co-Training/";
+                break;
             default:
                 coTrainingMethod = Integrator.CoTrainingMethod.CO_TRAINING;
                 workingDirectory = integratorWorkingDirectory + "Co-Training/";
@@ -218,17 +231,17 @@ public class IntegratorExperiment {
                                                                   .size())
                             .sparse(true)
                             .useBiasTerm(true)
-                            .useL1Regularization(false)
-                            .l1RegularizationWeight(0.0001)
-                            .useL2Regularization(false)
-                            .l2RegularizationWeight(0.1)
+                            .useL1Regularization(true)
+                            .l1RegularizationWeight(0.01)
+                            .useL2Regularization(true)
+                            .l2RegularizationWeight(0.01)
                             .loggingLevel(0)
                             .sampleWithReplacement(true)
                             .maximumNumberOfIterations(1000)
                             .maximumNumberOfIterationsWithNoPointChange(10)
                             .pointChangeTolerance(1e-5)
                             .checkForPointConvergence(true)
-                            .batchSize(10000000)
+                            .batchSize(100)
                             .random(random)
                             .build();
             integratorBuilder.addClassifier(classifier);
