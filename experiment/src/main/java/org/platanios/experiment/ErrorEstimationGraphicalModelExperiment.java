@@ -1,12 +1,13 @@
 package org.platanios.experiment;
 
-import org.platanios.learn.classification.reflection.ErrorEstimationSimpleGraphicalModel;
+import org.platanios.learn.classification.reflection.*;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -14,10 +15,12 @@ import java.util.List;
  */
 public class ErrorEstimationGraphicalModelExperiment {
     public static void main(String[] args) {
-        String filename = "/Users/Anthony/Development/GitHub/org.platanios/learn/data/combination/error/nell/input/";
-//        filename = "/Users/Anthony/Development/GitHub/org.platanios/learn/data/combination/error/brain/input/";
+        int errorEstimationMethod = Integer.parseInt(args[0]);
+//        manyThresholdsExperiment(errorEstimationMethod);
+        String filename = "/Users/Anthony/Development/GitHub/org.platanios/learn/src/test/resources/org/platanios/learn/classification/reflection/nell/input/";
+//        filename = "/Users/Anthony/Development/GitHub/org.platanios/learn/src/test/resources/org/platanios/learn/classification/reflection/brain/input/";
         String separator = ",";
-        double[] classificationThresholds = new double[] { 0.05, 0.05, 0.1, 0.05 };
+        double[] classificationThresholds = new double[] { 0.1, 0.1, 0.1, 0.1 };
 //        classificationThresholds = new double[] { 0.5 };
         List<boolean[][]> functionOutputs = new ArrayList<>();
         List<boolean[]> trueLabels = new ArrayList<>();
@@ -28,36 +31,69 @@ public class ErrorEstimationGraphicalModelExperiment {
                                                               classificationThresholds);
                 functionOutputs.add(data.functionOutputs);
                 trueLabels.add(data.trueLabels);
-//                if (functionOutputs.size() == 2)
-//                    break;
             }
         }
-        ErrorEstimationSimpleGraphicalModel eegm = new ErrorEstimationSimpleGraphicalModel(functionOutputs, 100);
-        eegm.performGibbsSampling();
-        double[][] labelMeans = eegm.getLabelMeans();
-        double[][] labelVariances = eegm.getLabelVariances();
-        double[][] errorRatesMeans = eegm.getErrorRatesMeans();
-        double[][] errorRatesVariances = eegm.getErrorRatesVariances();
-        double[] combinedErrorRate = new double[functionOutputs.size()];
-        double combinedErrorRateMean = 0;
+        double[][] errorRates = new double[functionOutputs.size()][];
+        switch (errorEstimationMethod) {
+            case 0:
+                for (int p = 0; p < functionOutputs.size(); p++) {
+                    int numberOfFunctions = functionOutputs.get(p)[0].length;
+                    ErrorEstimationData errorEstimationData = new ErrorEstimationData.Builder(
+                            Arrays.asList(functionOutputs.get(p)),
+                            2, // functionOutputs.get(0)[0].length,
+                            true).build();
+                    ErrorEstimation errorEstimation = new ErrorEstimation.Builder(errorEstimationData)
+                            .optimizationSolverType(ErrorEstimationInternalSolver.IP_OPT)
+                            .build();
+                    double[] allErrorRates = errorEstimation.solve().getErrorRates().array;
+                    errorRates[p] = new double[numberOfFunctions];
+                    System.arraycopy(allErrorRates, 0, errorRates[p], 0, numberOfFunctions);
+                }
+                break;
+            case 1:
+                ErrorEstimationSimpleGraphicalModel eesgm = new ErrorEstimationSimpleGraphicalModel(functionOutputs, 1000);
+                eesgm.performGibbsSampling();
+                errorRates = eesgm.getErrorRatesMeans();
+//                double[][] labelMeans = eegm.getLabelMeans();
+                break;
+            case 2:
+                ErrorEstimationDomainsDPGraphicalModel eeddpgm = new ErrorEstimationDomainsDPGraphicalModel(functionOutputs, 100, null);
+                eeddpgm.performGibbsSampling();
+                errorRates = eeddpgm.getErrorRatesMeans();
+//                double[][] labelMeans = eegm.getLabelMeans();
+                break;
+            case 3:
+                ErrorEstimationDomainsDPMixedGraphicalModel eeddpmgm = new ErrorEstimationDomainsDPMixedGraphicalModel(functionOutputs, 20000, null);
+                eeddpmgm.performGibbsSampling();
+                errorRates = eeddpmgm.getErrorRatesMeans();
+//                double[][] labelMeans = eegm.getLabelMeans();
+                break;
+            case 4:
+                ErrorEstimationDomainsDPGraphicalModelComplicated eeddpgmc = new ErrorEstimationDomainsDPGraphicalModelComplicated(functionOutputs, 1000, null);
+                eeddpgmc.performGibbsSampling();
+                errorRates = eeddpgmc.getErrorRatesMeans();
+//                double[][] labelMeans = eegm.getLabelMeans();
+        }
+//        double[] combinedErrorRate = new double[functionOutputs.size()];
+//        double combinedErrorRateMean = 0;
         double[] mad = new double[functionOutputs.size()];
         double madMean = 0;
         for (int p = 0; p < functionOutputs.size(); p++) {
-            combinedErrorRate[p] = 0;
-            double[] realErrorRates = new double[errorRatesMeans[p].length];
+//            combinedErrorRate[p] = 0;
+            double[] realErrorRates = new double[errorRates[p].length];
             for (int i = 0; i < trueLabels.get(p).length; i++) {
-                combinedErrorRate[p] += ((labelMeans[p][i] >= 0.5) != trueLabels.get(p)[i]) ? 1 : 0;
-                for (int j = 0; j < errorRatesMeans[p].length; j++)
+//                combinedErrorRate[p] += ((labelMeans[p][i] >= 0.5) != trueLabels.get(p)[i]) ? 1 : 0;
+                for (int j = 0; j < errorRates[p].length; j++)
                     realErrorRates[j] += (functionOutputs.get(p)[i][j] != trueLabels.get(p)[i]) ? 1 : 0;
             }
-            combinedErrorRate[p] /= trueLabels.get(p).length;
-            combinedErrorRateMean += combinedErrorRate[p];
+//            combinedErrorRate[p] /= trueLabels.get(p).length;
+//            combinedErrorRateMean += combinedErrorRate[p];
             mad[p] = 0;
-            for (int j = 0; j < errorRatesMeans[p].length; j++) {
+            for (int j = 0; j < errorRates[p].length; j++) {
                 realErrorRates[j] /= trueLabels.get(p).length;
-                mad[p] += Math.abs(errorRatesMeans[p][j] - realErrorRates[j]);
+                mad[p] += Math.abs(errorRates[p][j] - realErrorRates[j]);
             }
-            mad[p] /= errorRatesMeans[p].length;
+            mad[p] /= errorRates[p].length;
             madMean += mad[p];
             System.out.println("DOMAIN #" + p + ":");
             System.out.println("===================================================");
@@ -68,26 +104,98 @@ public class ErrorEstimationGraphicalModelExperiment {
                 else
                     System.out.print(realErrorRates[j] + "\n");
             System.out.print("Error rates means:\t\t");
-            for (int j = 0; j < errorRatesMeans[p].length; j++)
-                if (j != errorRatesMeans[p].length - 1)
-                    System.out.print(errorRatesMeans[p][j] + ", ");
+            for (int j = 0; j < errorRates[p].length; j++)
+                if (j != errorRates[p].length - 1)
+                    System.out.print(errorRates[p][j] + ", ");
                 else
-                    System.out.print(errorRatesMeans[p][j] + "\n");
-            System.out.print("Error rates variances:\t");
-            for (int j = 0; j < errorRatesVariances[p].length; j++)
-                if (j != errorRatesVariances[p].length - 1)
-                    System.out.print(errorRatesVariances[p][j] + ", ");
-                else
-                    System.out.print(errorRatesVariances[p][j] + "\n");
-            System.out.println("---------------------------------------------------");
-            System.out.println("Combined labels error rate:\t" + combinedErrorRate[p]);
-            System.out.println("MAD:\t\t\t\t\t\t" + mad[p]);
-            System.out.println("---------------------------------------------------");
+                    System.out.print(errorRates[p][j] + "\n");
+//            System.out.print("Error rates variances:\t");
+//            for (int j = 0; j < errorRatesVariances[p].length; j++)
+//                if (j != errorRatesVariances[p].length - 1)
+//                    System.out.print(errorRatesVariances[p][j] + ", ");
+//                else
+//                    System.out.print(errorRatesVariances[p][j] + "\n");
+//            System.out.println("---------------------------------------------------");
+//            System.out.println("Combined labels error rate:\t" + combinedErrorRate[p]);
+//            System.out.println("MAD:\t\t\t\t\t\t" + mad[p]);
+//            System.out.println("---------------------------------------------------");
         }
-        combinedErrorRateMean /= functionOutputs.size();
+//        combinedErrorRateMean /= functionOutputs.size();
         madMean /= functionOutputs.size();
         System.out.println("===================================================");
-        System.out.println("Combined Labels Error Rate Mean:\t" + combinedErrorRateMean);
+//        System.out.println("Combined Labels Error Rate Mean:\t" + combinedErrorRateMean);
+        System.out.println("MAD Mean:\t\t\t\t\t\t" + madMean);
+        System.out.println("===================================================");
+    }
+
+    public static void manyThresholdsExperiment(int errorEstimationMethod) {
+        String filename = "/Users/Anthony/Development/GitHub/org.platanios/learn/src/test/resources/org/platanios/learn/classification/reflection/nell/input/";
+//        filename = "/Users/Anthony/Development/GitHub/org.platanios/learn/src/test/resources/org/platanios/learn/classification/reflection/brain/input/";
+        String separator = ",";
+        double[] classificationThresholds = new double[] { 0.01, 0.02, 0.03, 0.04, 0.05 };
+//        classificationThresholds = new double[] { 0.5 };
+        double[] madMeans = new double[classificationThresholds.length];
+        double madMean = 0;
+        for (int t = 0; t < classificationThresholds.length; t++) {
+            List<boolean[][]> functionOutputs = new ArrayList<>();
+            List<boolean[]> trueLabels = new ArrayList<>();
+            for (File file : new File(filename).listFiles()) {
+                if (file.isFile()) {
+                    DomainData data = parseLabeledDataFromCSVFile(file,
+                                                                  separator,
+                                                                  new double[] { classificationThresholds[t] });
+                    functionOutputs.add(data.functionOutputs);
+                    trueLabels.add(data.trueLabels);
+                }
+            }
+            double[][] errorRates = new double[functionOutputs.size()][];
+            switch (errorEstimationMethod) {
+                case 0:
+                    for (int p = 0; p < functionOutputs.size(); p++) {
+                        int numberOfFunctions = functionOutputs.get(p)[0].length;
+                        ErrorEstimationData errorEstimationData = new ErrorEstimationData.Builder(
+                                Arrays.asList(functionOutputs.get(p)),
+                                numberOfFunctions,
+                                true).build();
+                        ErrorEstimation errorEstimation = new ErrorEstimation.Builder(errorEstimationData)
+                                .optimizationSolverType(ErrorEstimationInternalSolver.IP_OPT)
+                                .build();
+                        double[] allErrorRates = errorEstimation.solve().getErrorRates().array;
+                        errorRates[p] = new double[numberOfFunctions];
+                        System.arraycopy(allErrorRates, 0, errorRates[p], 0, numberOfFunctions);
+                    }
+                    break;
+                case 1:
+                    ErrorEstimationSimpleGraphicalModel eesgm = new ErrorEstimationSimpleGraphicalModel(functionOutputs, 1000);
+                    eesgm.performGibbsSampling();
+                    errorRates = eesgm.getErrorRatesMeans();
+                    break;
+                case 2:
+                    ErrorEstimationDomainsDPGraphicalModelComplicated eeddpgm = new ErrorEstimationDomainsDPGraphicalModelComplicated(functionOutputs, 1000, null);
+                    eeddpgm.performGibbsSampling();
+                    errorRates = eeddpgm.getErrorRatesMeans();
+            }
+            double[] mad = new double[functionOutputs.size()];
+
+            for (int p = 0; p < functionOutputs.size(); p++) {
+                double[] realErrorRates = new double[errorRates[p].length];
+                for (int i = 0; i < trueLabels.get(p).length; i++) {
+                    for (int j = 0; j < errorRates[p].length; j++)
+                        realErrorRates[j] += (functionOutputs.get(p)[i][j] != trueLabels.get(p)[i]) ? 1 : 0;
+                }
+                mad[p] = 0;
+                for (int j = 0; j < errorRates[p].length; j++) {
+                    realErrorRates[j] /= trueLabels.get(p).length;
+                    mad[p] += Math.abs(errorRates[p][j] - realErrorRates[j]);
+                }
+                mad[p] /= errorRates[p].length;
+                madMeans[t] += mad[p];
+            }
+            madMeans[t] /= functionOutputs.size();
+            madMean += madMeans[t];
+        }
+        madMean /= madMeans.length;
+        System.out.println("===================================================");
         System.out.println("MAD Mean:\t\t\t\t\t\t" + madMean);
         System.out.println("===================================================");
     }

@@ -3,13 +3,11 @@ package org.platanios.learn.classification.reflection;
 import org.apache.commons.math3.random.RandomDataGenerator;
 
 import java.util.List;
-import java.util.Random;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
 public class ErrorEstimationSimpleGraphicalModel {
-    private final Random random = new Random();
     private final RandomDataGenerator randomDataGenerator = new RandomDataGenerator();
     private final double alpha_p = 1;
     private final double beta_p = 1;
@@ -18,9 +16,11 @@ public class ErrorEstimationSimpleGraphicalModel {
 
     private final int numberOfIterations;
     private final int burnInIterations;
+    private final int thinning = 10;
+    private final int numberOfSamples;
     private final int numberOfFunctions;
     private final int numberOfDomains;
-    private final int[] numberOfSamples;
+    private final int[] numberOfDataSamples;
     private final int[][][] labelsSamples;
     private final int[][][] functionOutputsArray;
     private final double[][] priorSamples;
@@ -35,117 +35,187 @@ public class ErrorEstimationSimpleGraphicalModel {
 
     public ErrorEstimationSimpleGraphicalModel(List<boolean[][]> functionOutputs, int numberOfIterations) {
         this.numberOfIterations = numberOfIterations;
-        burnInIterations = numberOfIterations / 10;
+        burnInIterations = numberOfIterations * 9 / 10;
         numberOfFunctions = functionOutputs.get(0)[0].length;
         numberOfDomains = functionOutputs.size();
-        numberOfSamples = new int[numberOfDomains];
+        numberOfDataSamples = new int[numberOfDomains];
         functionOutputsArray = new int[numberOfFunctions][numberOfDomains][];
         for (int p = 0; p < numberOfDomains; p++) {
-            numberOfSamples[p] = functionOutputs.get(p).length;
+            numberOfDataSamples[p] = functionOutputs.get(p).length;
             for (int j = 0; j < numberOfFunctions; j++) {
-                functionOutputsArray[j][p] = new int[numberOfSamples[p]];
-                for (int i = 0; i < numberOfSamples[p]; i++)
+                functionOutputsArray[j][p] = new int[numberOfDataSamples[p]];
+                for (int i = 0; i < numberOfDataSamples[p]; i++)
                     functionOutputsArray[j][p][i] = functionOutputs.get(p)[i][j] ? 1 : 0;
             }
         }
-        priorSamples = new double[numberOfIterations][numberOfDomains];
-        errorRateSamples = new double[numberOfIterations][numberOfDomains][numberOfFunctions];
-        labelsSamples = new int[numberOfIterations][numberOfDomains][];
+        numberOfSamples = (numberOfIterations - burnInIterations) / thinning;
+        priorSamples = new double[numberOfSamples][numberOfDomains];
+        errorRateSamples = new double[numberOfSamples][numberOfDomains][numberOfFunctions];
+        labelsSamples = new int[numberOfSamples][numberOfDomains][];
         priorMeans = new double[numberOfDomains];
         priorVariances = new double[numberOfDomains];
         labelMeans = new double[numberOfDomains][];
         labelVariances = new double[numberOfDomains][];
         errorRateMeans = new double[numberOfDomains][numberOfFunctions];
         errorRateVariances = new double[numberOfDomains][numberOfFunctions];
-        // Initialization
         for (int p = 0; p < numberOfDomains; p++) {
-            labelMeans[p] = new double[numberOfSamples[p]];
-            labelVariances[p] = new double[numberOfSamples[p]];
+            labelMeans[p] = new double[numberOfDataSamples[p]];
+            labelVariances[p] = new double[numberOfDataSamples[p]];
             priorSamples[0][p] = 0.5;
             for (int j = 0; j < numberOfFunctions; j++)
                 errorRateSamples[0][p][j] = 0.25;
-            labelsSamples[0][p] = new int[numberOfSamples[p]];
-            for (int i = 0; i < numberOfSamples[p]; i++)
+            labelsSamples[0][p] = new int[numberOfDataSamples[p]];
+            for (int i = 0; i < numberOfDataSamples[p]; i++)
                 labelsSamples[0][p][i] = randomDataGenerator.nextBinomial(1, 0.5);
         }
     }
 
     public void performGibbsSampling() {
-        for (int iterationNumber = 0; iterationNumber < numberOfIterations - 1; iterationNumber++) {
-            // Sample priors and error rates
-            for (int p = 0; p < numberOfDomains; p++) {
-                int labelsCount = 0;
-                for (int i = 0; i < numberOfSamples[p]; i++)
-                    labelsCount += labelsSamples[iterationNumber][p][i];
-                priorSamples[iterationNumber + 1][p] = randomDataGenerator.nextBeta(alpha_p + labelsCount, beta_p + numberOfSamples[p] - labelsCount);
-                int numberOfErrorRatesBelowChance = 0;
-                for (int j = 0; j < numberOfFunctions; j++) {
-                    int disagreementCount = 0;
-                    for (int i = 0; i < numberOfSamples[p]; i++)
-                        if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
-                            disagreementCount++;
-                    errorRateSamples[iterationNumber + 1][p][j] = randomDataGenerator.nextBeta(alpha_e + disagreementCount, beta_e + numberOfSamples[p] - disagreementCount);
-                    if (errorRateSamples[iterationNumber + 1][p][j] < 0.5)
-                        numberOfErrorRatesBelowChance += 1;
-                }
-                if (numberOfErrorRatesBelowChance < numberOfFunctions / 2.0) {
-                    priorSamples[iterationNumber + 1][p] = 1 - priorSamples[iterationNumber + 1][p];
-                    for (int j = 0; j < numberOfFunctions; j++)
-                        errorRateSamples[iterationNumber + 1][p][j] = 1 - errorRateSamples[iterationNumber + 1][p][j];
-                }
+        for (int iterationNumber = 0; iterationNumber < burnInIterations; iterationNumber++) {
+            samplePriorsAndErrorRatesAndBurn(0);
+            sampleLabelsAndBurn(0);
+            if (iterationNumber % 100 == 0)
+                System.out.println("Iteration #" + iterationNumber);
+        }
+        for (int iterationNumber = 0; iterationNumber < numberOfSamples - 1; iterationNumber++) {
+            samplePriorsAndErrorRates(iterationNumber);
+            sampleLabels(iterationNumber);
+            for (int i = 0; i < thinning; i++) {
+                samplePriorsAndErrorRatesAndBurn(iterationNumber);
+                sampleLabelsAndBurn(iterationNumber);
             }
-            // Sample labels
+        }
+        // Aggregate values for means and variances computation
+        for (int sampleNumber = 0; sampleNumber < numberOfSamples; sampleNumber++) {
             for (int p = 0; p < numberOfDomains; p++) {
-                labelsSamples[iterationNumber + 1][p] = new int[numberOfSamples[p]];
-                for (int i = 0; i < numberOfSamples[p]; i++) {
-                    double p0 = 1 - priorSamples[iterationNumber + 1][p];
-                    double p1 = priorSamples[iterationNumber + 1][p];
-                    for (int j = 0; j < numberOfFunctions; j++) {
-                        if (functionOutputsArray[j][p][i] == 0) {
-                            p0 *= (1 - errorRateSamples[iterationNumber + 1][p][j]);
-                            p1 *=errorRateSamples[iterationNumber + 1][p][j];
-                        } else {
-                            p0 *= errorRateSamples[iterationNumber + 1][p][j];
-                            p1 *= (1 - errorRateSamples[iterationNumber + 1][p][j]);
-                        }
-                    }
-                    labelsSamples[iterationNumber + 1][p][i] = randomDataGenerator.nextBinomial(1, p1 / (p0 + p1));
-                }
-            }
-            // Aggregate values for means and variances computation
-            if (iterationNumber > burnInIterations)
-                for (int p = 0; p < numberOfDomains; p++) {
-                    priorMeans[p] += priorSamples[iterationNumber + 1][p];
+                int numberOfPhiBelowChance = 0;
+                for (int j = 0; j < numberOfFunctions; j++)
+                    if (errorRateSamples[sampleNumber][p][j] < 0.5)
+                        numberOfPhiBelowChance++;
+                if (numberOfPhiBelowChance < numberOfFunctions / 2.0) {
+                    priorSamples[sampleNumber][p] = 1 - priorSamples[sampleNumber][p];
                     for (int j = 0; j < numberOfFunctions; j++)
-                        errorRateMeans[p][j] += errorRateSamples[iterationNumber + 1][p][j];
-                    for (int i = 0; i < numberOfSamples[p]; i++)
-                        labelMeans[p][i] += labelsSamples[iterationNumber + 1][p][i];
+                        errorRateSamples[sampleNumber][p][j] = 1 - errorRateSamples[sampleNumber][p][j];
                 }
+                priorMeans[p] += priorSamples[sampleNumber][p];
+                for (int j = 0; j < numberOfFunctions; j++)
+                    errorRateMeans[p][j] += errorRateSamples[sampleNumber][p][j];
+                for (int i = 0; i < numberOfDataSamples[p]; i++)
+                    labelMeans[p][i] += labelsSamples[sampleNumber][p][i];
+            }
         }
         // Compute values for the means and the variances
         for (int p = 0; p < numberOfDomains; p++) {
-            priorMeans[p] /= (numberOfIterations - burnInIterations);
+            priorMeans[p] /= numberOfSamples;
             for (int j = 0; j < numberOfFunctions; j++)
-                errorRateMeans[p][j] /= (numberOfIterations - burnInIterations);
-            for (int i = 0; i < numberOfSamples[p]; i++)
-                labelMeans[p][i] /= (numberOfIterations - burnInIterations);
-            for (int iterationNumber = burnInIterations; iterationNumber < numberOfIterations - 1; iterationNumber++) {
-                double temp = priorSamples[iterationNumber + 1][p] - priorMeans[p];
+                errorRateMeans[p][j] /= numberOfSamples;
+            for (int i = 0; i < numberOfDataSamples[p]; i++)
+                labelMeans[p][i] /= numberOfSamples;
+            for (int sampleNumber = 0; sampleNumber < numberOfSamples; sampleNumber++) {
+                double temp = priorSamples[sampleNumber][p] - priorMeans[p];
                 priorVariances[p] += temp * temp;
                 for (int j = 0; j < numberOfFunctions; j++) {
-                    temp = errorRateSamples[iterationNumber + 1][p][j] - errorRateMeans[p][j];
+                    temp = errorRateSamples[sampleNumber][p][j] - errorRateMeans[p][j];
                     errorRateVariances[p][j] += temp * temp;
                 }
-                for (int i = 0; i < numberOfSamples[p]; i++) {
-                    temp = labelsSamples[iterationNumber + 1][p][i] - labelMeans[p][i];
+                for (int i = 0; i < numberOfDataSamples[p]; i++) {
+                    temp = labelsSamples[sampleNumber][p][i] - labelMeans[p][i];
                     labelVariances[p][i] += temp * temp;
                 }
             }
             priorVariances[p] /= (numberOfIterations - burnInIterations - 1);
             for (int j = 0; j < numberOfFunctions; j++)
                 errorRateVariances[p][j] /= (numberOfIterations - burnInIterations - 1);
-            for (int i = 0; i < numberOfSamples[p]; i++)
+            for (int i = 0; i < numberOfDataSamples[p]; i++)
                 labelVariances[p][i] /= (numberOfIterations - burnInIterations - 1);
+        }
+    }
+
+    private void samplePriorsAndErrorRatesAndBurn(int iterationNumber) {
+        for (int p = 0; p < numberOfDomains; p++) {
+            int labelsCount = 0;
+            for (int i = 0; i < numberOfDataSamples[p]; i++)
+                labelsCount += labelsSamples[iterationNumber][p][i];
+            priorSamples[iterationNumber][p] = randomDataGenerator.nextBeta(alpha_p + labelsCount, beta_p + numberOfDataSamples[p] - labelsCount);
+            int numberOfErrorRatesBelowChance = 0;
+            for (int j = 0; j < numberOfFunctions; j++) {
+                int disagreementCount = 0;
+                for (int i = 0; i < numberOfDataSamples[p]; i++)
+                    if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
+                        disagreementCount++;
+                errorRateSamples[iterationNumber][p][j] = randomDataGenerator.nextBeta(alpha_e + disagreementCount, beta_e + numberOfDataSamples[p] - disagreementCount);
+                if (errorRateSamples[iterationNumber][p][j] < 0.5)
+                    numberOfErrorRatesBelowChance += 1;
+            }
+            if (numberOfErrorRatesBelowChance < numberOfFunctions / 2.0) {
+                priorSamples[iterationNumber][p] = 1 - priorSamples[iterationNumber][p];
+                for (int j = 0; j < numberOfFunctions; j++)
+                    errorRateSamples[iterationNumber][p][j] = 1 - errorRateSamples[iterationNumber][p][j];
+            }
+        }
+    }
+
+    private void samplePriorsAndErrorRates(int iterationNumber) {
+        for (int p = 0; p < numberOfDomains; p++) {
+            int labelsCount = 0;
+            for (int i = 0; i < numberOfDataSamples[p]; i++)
+                labelsCount += labelsSamples[iterationNumber][p][i];
+            priorSamples[iterationNumber + 1][p] = randomDataGenerator.nextBeta(alpha_p + labelsCount, beta_p + numberOfDataSamples[p] - labelsCount);
+            int numberOfErrorRatesBelowChance = 0;
+            for (int j = 0; j < numberOfFunctions; j++) {
+                int disagreementCount = 0;
+                for (int i = 0; i < numberOfDataSamples[p]; i++)
+                    if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
+                        disagreementCount++;
+                errorRateSamples[iterationNumber + 1][p][j] = randomDataGenerator.nextBeta(alpha_e + disagreementCount, beta_e + numberOfDataSamples[p] - disagreementCount);
+                if (errorRateSamples[iterationNumber + 1][p][j] < 0.5)
+                    numberOfErrorRatesBelowChance += 1;
+            }
+            if (numberOfErrorRatesBelowChance < numberOfFunctions / 2.0) {
+                priorSamples[iterationNumber + 1][p] = 1 - priorSamples[iterationNumber + 1][p];
+                for (int j = 0; j < numberOfFunctions; j++)
+                    errorRateSamples[iterationNumber + 1][p][j] = 1 - errorRateSamples[iterationNumber + 1][p][j];
+            }
+        }
+    }
+
+    private void sampleLabelsAndBurn(int iterationNumber) {
+        for (int p = 0; p < numberOfDomains; p++) {
+            labelsSamples[iterationNumber][p] = new int[numberOfDataSamples[p]];
+            for (int i = 0; i < numberOfDataSamples[p]; i++) {
+                double p0 = 1 - priorSamples[iterationNumber][p];
+                double p1 = priorSamples[iterationNumber][p];
+                for (int j = 0; j < numberOfFunctions; j++) {
+                    if (functionOutputsArray[j][p][i] == 0) {
+                        p0 *= (1 - errorRateSamples[iterationNumber][p][j]);
+                        p1 *=errorRateSamples[iterationNumber][p][j];
+                    } else {
+                        p0 *= errorRateSamples[iterationNumber][p][j];
+                        p1 *= (1 - errorRateSamples[iterationNumber][p][j]);
+                    }
+                }
+                labelsSamples[iterationNumber][p][i] = randomDataGenerator.nextBinomial(1, p1 / (p0 + p1));
+            }
+        }
+    }
+
+    private void sampleLabels(int iterationNumber) {
+        for (int p = 0; p < numberOfDomains; p++) {
+            labelsSamples[iterationNumber + 1][p] = new int[numberOfDataSamples[p]];
+            for (int i = 0; i < numberOfDataSamples[p]; i++) {
+                double p0 = 1 - priorSamples[iterationNumber + 1][p];
+                double p1 = priorSamples[iterationNumber + 1][p];
+                for (int j = 0; j < numberOfFunctions; j++) {
+                    if (functionOutputsArray[j][p][i] == 0) {
+                        p0 *= (1 - errorRateSamples[iterationNumber + 1][p][j]);
+                        p1 *=errorRateSamples[iterationNumber + 1][p][j];
+                    } else {
+                        p0 *= errorRateSamples[iterationNumber + 1][p][j];
+                        p1 *= (1 - errorRateSamples[iterationNumber + 1][p][j]);
+                    }
+                }
+                labelsSamples[iterationNumber + 1][p][i] = randomDataGenerator.nextBinomial(1, p1 / (p0 + p1));
+            }
         }
     }
 
