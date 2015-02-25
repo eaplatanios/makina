@@ -12,11 +12,11 @@ public class ErrorEstimationSimpleGraphicalModel {
     private final double alpha_p = 1;
     private final double beta_p = 1;
     private final double alpha_e = 1;
-    private final double beta_e = 1;
+    private final double beta_e = 100;
 
     private final int numberOfIterations;
     private final int burnInIterations;
-    private final int thinning = 10;
+    private final int thinning = 100;
     private final int numberOfSamples;
     private final int numberOfFunctions;
     private final int numberOfDomains;
@@ -35,7 +35,7 @@ public class ErrorEstimationSimpleGraphicalModel {
 
     public ErrorEstimationSimpleGraphicalModel(List<boolean[][]> functionOutputs, int numberOfIterations) {
         this.numberOfIterations = numberOfIterations;
-        burnInIterations = numberOfIterations * 9 / 10;
+        burnInIterations = numberOfIterations / 2;
         numberOfFunctions = functionOutputs.get(0)[0].length;
         numberOfDomains = functionOutputs.size();
         numberOfDataSamples = new int[numberOfDomains];

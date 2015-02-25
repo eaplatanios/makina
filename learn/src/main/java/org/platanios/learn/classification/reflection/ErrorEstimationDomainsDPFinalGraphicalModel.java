@@ -13,7 +13,7 @@ import static org.apache.commons.math3.special.Beta.logBeta;
 public class ErrorEstimationDomainsDPFinalGraphicalModel {
     private final Random random = new Random();
     private final RandomDataGenerator randomDataGenerator = new RandomDataGenerator();
-    private final double alpha = 1e50;
+    private final double alpha = 0.1;
     private final double alpha_p = 1;
     private final double beta_p = 1;
     private final double alpha_e = 1;
@@ -21,7 +21,7 @@ public class ErrorEstimationDomainsDPFinalGraphicalModel {
 
     private final int numberOfIterations;
     private final int burnInIterations;
-    private final int thinning = 100;
+    private final int thinning = 10;
     private final int numberOfSamples;
     private final int numberOfFunctions;
     private final int numberOfDomains;
@@ -239,6 +239,23 @@ public class ErrorEstimationDomainsDPFinalGraphicalModel {
     private void sampleZAndBurnWithCollapsedErrorRates(int iterationNumber) {
         for (int p = 0; p < numberOfDomains; p++) {
             for (int j = 0; j < numberOfFunctions; j++) {
+                disagreements[j][p] = 0;
+                for (int i = 0; i < numberOfDataSamples[p]; i++)
+                    if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
+                        disagreements[j][p]++;
+            }
+        }
+        for (int j = 0; j < numberOfFunctions; j++) {
+            for (int k = 0; k < numberOfDomains; k++) {
+                sum_2[j][k] = 0;
+                for (int p = 0; p < numberOfDomains; p++) {
+                    if (zSamples[iterationNumber][p][j] == k)
+                        sum_2[j][k] += disagreements[j][p];
+                }
+            }
+        }
+        for (int p = 0; p < numberOfDomains; p++) {
+            for (int j = 0; j < numberOfFunctions; j++) {
                 double[] z_probabilities = new double[numberOfDomains];
                 for (int p_inner = 0; p_inner < numberOfDomains; p_inner++)
                     if (p_inner != p)
@@ -260,20 +277,11 @@ public class ErrorEstimationDomainsDPFinalGraphicalModel {
                         sum_2[j][k] -= disagreements[j][p];
                     }
                     if (k != k_new) {
-                        double alpha = alpha_e + sum_2[j][k];
-                        double beta = beta_e + sum_1[j][k] - sum_2[j][k];
-                        for (int i = 0; i < numberOfDataSamples[p]; i++)
-                            if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
-                                alpha++;
-                            else
-                                beta++;
+                        double alpha = alpha_e + sum_2[j][k] + disagreements[j][p];
+                        double beta = beta_e + sum_1[j][k] - sum_2[j][k] + numberOfDataSamples[p] - disagreements[j][p];
                         z_probabilities[k] += logBeta(alpha, beta) - logBeta(alpha_e + sum_2[j][k], beta_e + sum_1[j][k] - sum_2[j][k]);
                     } else {
-                        int count = 0;
-                        for (int i = 0; i < numberOfDataSamples[p]; i++)
-                            if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
-                                count += 1;
-                        z_probabilities[k_new] += logBeta(alpha_e + count, beta_e + numberOfDataSamples[p] - count);
+                        z_probabilities[k_new] += logBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]) - logBeta(alpha_e, beta_e);
                     }
                 }
                 double normalizationConstant = MatrixUtilities.computeLogSumExp(z_probabilities);
@@ -294,6 +302,10 @@ public class ErrorEstimationDomainsDPFinalGraphicalModel {
                         break;
                     }
                 }
+                if (zSamples[iterationNumber][p][j] == z_probabilities.length - 1) {
+                    sum_1[j][z_probabilities.length - 1] += numberOfDataSamples[p];
+                    sum_2[j][z_probabilities.length - 1] += disagreements[j][p];
+                }
             }
         }
     }
@@ -303,7 +315,8 @@ public class ErrorEstimationDomainsDPFinalGraphicalModel {
             for (int j = 0; j < numberOfFunctions; j++) {
                 double[] z_probabilities = new double[numberOfDomains];
                 for (int p_inner = 0; p_inner < numberOfDomains; p_inner++)
-                    z_probabilities[zSamples[iterationNumber][p_inner][j]] += 1;
+                    if (p_inner != p)
+                        z_probabilities[zSamples[iterationNumber][p_inner][j]] += 1;
                 int k_new = -1;
                 for (int k = 0; k < z_probabilities.length; k++)
                     if (z_probabilities[k] == 0.0) {
@@ -315,16 +328,16 @@ public class ErrorEstimationDomainsDPFinalGraphicalModel {
                     z_probabilities[k] = Math.log(z_probabilities[k]);
                     z_probabilities[k] -= Math.log(numberOfDomains - 1 + alpha);
                 }
-                int count = 0;
+                disagreements[j][p] = 0;
                 for (int i = 0; i < numberOfDataSamples[p]; i++)
                     if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
-                        count++;
+                        disagreements[j][p]++;
                 for (int k = 0; k < z_probabilities.length; k++) {
                     if (k != k_new) {
-                        z_probabilities[k] += count * Math.log(errorRateSamples[iterationNumber][k][j]);
-                        z_probabilities[k] += (numberOfDataSamples[p] - count) * Math.log(1 - errorRateSamples[iterationNumber][k][j]);
+                        z_probabilities[k] += disagreements[j][p] * Math.log(errorRateSamples[iterationNumber][k][j]);
+                        z_probabilities[k] += (numberOfDataSamples[p] - disagreements[j][p]) * Math.log(1 - errorRateSamples[iterationNumber][k][j]);
                     } else {
-                        z_probabilities[k_new] += logBeta(alpha_e + count, beta_e + numberOfDataSamples[p] - count) - logBeta(alpha_e, beta_e);
+                        z_probabilities[k_new] += logBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]) - logBeta(alpha_e, beta_e);
                     }
                 }
                 double normalizationConstant = MatrixUtilities.computeLogSumExp(z_probabilities);
@@ -350,6 +363,10 @@ public class ErrorEstimationDomainsDPFinalGraphicalModel {
     private void sampleZ(int iterationNumber) {
         for (int p = 0; p < numberOfDomains; p++) {
             for (int j = 0; j < numberOfFunctions; j++) {
+                disagreements[j][p] = 0;
+                for (int i = 0; i < numberOfDataSamples[p]; i++)
+                    if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
+                        disagreements[j][p]++;
                 double[] z_probabilities = new double[numberOfDomains];
                 for (int p_inner = 0; p_inner < numberOfDomains; p_inner++)
                     if (p_inner < p)
@@ -367,16 +384,16 @@ public class ErrorEstimationDomainsDPFinalGraphicalModel {
                     z_probabilities[k] = Math.log(z_probabilities[k]);
                     z_probabilities[k] -= Math.log(numberOfDomains - 1 + alpha);
                 }
-                int count = 0;
+                disagreements[j][p] = 0;
                 for (int i = 0; i < numberOfDataSamples[p]; i++)
                     if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
-                        count++;
+                        disagreements[j][p]++;
                 for (int k = 0; k < z_probabilities.length; k++) {
                     if (k != k_new) {
-                        z_probabilities[k] += count * Math.log(errorRateSamples[iterationNumber + 1][k][j]);
-                        z_probabilities[k] += (numberOfDataSamples[p] - count) * Math.log(1 - errorRateSamples[iterationNumber + 1][k][j]);
+                        z_probabilities[k] += disagreements[j][p] * Math.log(errorRateSamples[iterationNumber + 1][k][j]);
+                        z_probabilities[k] += (numberOfDataSamples[p] - disagreements[j][p]) * Math.log(1 - errorRateSamples[iterationNumber + 1][k][j]);
                     } else {
-                        z_probabilities[k_new] += logBeta(alpha_e + count, beta_e + numberOfDataSamples[p] - count) - logBeta(alpha_e, beta_e);
+                        z_probabilities[k_new] += logBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]) - logBeta(alpha_e, beta_e);
                     }
                 }
                 double normalizationConstant = MatrixUtilities.computeLogSumExp(z_probabilities);
