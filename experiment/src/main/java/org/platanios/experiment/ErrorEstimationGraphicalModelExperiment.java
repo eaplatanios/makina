@@ -28,7 +28,8 @@ public class ErrorEstimationGraphicalModelExperiment {
             if (file.isFile()) {
                 DomainData data = parseLabeledDataFromCSVFile(file,
                                                               separator,
-                                                              classificationThresholds);
+                                                              classificationThresholds,
+                                                              1);
                 functionOutputs.add(data.functionOutputs);
                 trueLabels.add(data.trueLabels);
             }
@@ -40,7 +41,7 @@ public class ErrorEstimationGraphicalModelExperiment {
                     int numberOfFunctions = functionOutputs.get(p)[0].length;
                     ErrorEstimationData errorEstimationData = new ErrorEstimationData.Builder(
                             Arrays.asList(functionOutputs.get(p)),
-                            2, // functionOutputs.get(0)[0].length,
+                            2, //functionOutputs.get(0)[0].length,
                             true).build();
                     ErrorEstimation errorEstimation = new ErrorEstimation.Builder(errorEstimationData)
                             .optimizationSolverType(ErrorEstimationInternalSolver.IP_OPT)
@@ -51,24 +52,30 @@ public class ErrorEstimationGraphicalModelExperiment {
                 }
                 break;
             case 1:
-                ErrorEstimationSimpleGraphicalModel eesgm = new ErrorEstimationSimpleGraphicalModel(functionOutputs, 1000);
+                ErrorEstimationSimpleGraphicalModel eesgm = new ErrorEstimationSimpleGraphicalModel(functionOutputs, 20000, 100);
                 eesgm.performGibbsSampling();
                 errorRates = eesgm.getErrorRatesMeans();
 //                double[][] labelMeans = eegm.getLabelMeans();
                 break;
             case 2:
-                ErrorEstimationDomainsDPGraphicalModel eeddpgm = new ErrorEstimationDomainsDPGraphicalModel(functionOutputs, 100, null);
+                ErrorEstimationDomainsDPGraphicalModel eeddpgm = new ErrorEstimationDomainsDPGraphicalModel(functionOutputs, 10000, 100, 0.1);
                 eeddpgm.performGibbsSampling();
                 errorRates = eeddpgm.getErrorRatesMeans();
 //                double[][] labelMeans = eegm.getLabelMeans();
                 break;
             case 3:
-                ErrorEstimationDomainsDPMixedGraphicalModel eeddpmgm = new ErrorEstimationDomainsDPMixedGraphicalModel(functionOutputs, 20000, null);
+                ErrorEstimationDomainsDPMixedGraphicalModel eeddpmgm = new ErrorEstimationDomainsDPMixedGraphicalModel(functionOutputs, 100000, 100, 0.1);
                 eeddpmgm.performGibbsSampling();
                 errorRates = eeddpmgm.getErrorRatesMeans();
 //                double[][] labelMeans = eegm.getLabelMeans();
                 break;
             case 4:
+                ErrorEstimationDomainsDPFinalGraphicalModel eeddpfgm = new ErrorEstimationDomainsDPFinalGraphicalModel(functionOutputs, 20000, 100, 0.1);
+                eeddpfgm.performGibbsSampling();
+                errorRates = eeddpfgm.getErrorRatesMeans();
+//                double[][] labelMeans = eegm.getLabelMeans();
+                break;
+            case 5:
                 ErrorEstimationDomainsDPGraphicalModelComplicated eeddpgmc = new ErrorEstimationDomainsDPGraphicalModelComplicated(functionOutputs, 1000, null);
                 eeddpgmc.performGibbsSampling();
                 errorRates = eeddpgmc.getErrorRatesMeans();
@@ -143,7 +150,8 @@ public class ErrorEstimationGraphicalModelExperiment {
                 if (file.isFile()) {
                     DomainData data = parseLabeledDataFromCSVFile(file,
                                                                   separator,
-                                                                  new double[] { classificationThresholds[t] });
+                                                                  new double[] { classificationThresholds[t] },
+                                                                  1);
                     functionOutputs.add(data.functionOutputs);
                     trueLabels.add(data.trueLabels);
                 }
@@ -166,7 +174,7 @@ public class ErrorEstimationGraphicalModelExperiment {
                     }
                     break;
                 case 1:
-                    ErrorEstimationSimpleGraphicalModel eesgm = new ErrorEstimationSimpleGraphicalModel(functionOutputs, 1000);
+                    ErrorEstimationSimpleGraphicalModel eesgm = new ErrorEstimationSimpleGraphicalModel(functionOutputs, 1000, 10);
                     eesgm.performGibbsSampling();
                     errorRates = eesgm.getErrorRatesMeans();
                     break;
@@ -203,7 +211,8 @@ public class ErrorEstimationGraphicalModelExperiment {
     public static DomainData parseLabeledDataFromCSVFile(
             File file,
             String separator,
-            double[] classificationThresholds
+            double[] classificationThresholds,
+            int subSampling
     ) {
         BufferedReader br = null;
         String line;
@@ -213,20 +222,24 @@ public class ErrorEstimationGraphicalModelExperiment {
         try {
             br = new BufferedReader(new FileReader(file));
             br.readLine();
+            int numberOfSamplesRead = 0;
             while ((line = br.readLine()) != null) {
-                String[] outputs = line.split(separator);
-                trueLabelsList.add(!outputs[0].equals("0"));
-                boolean[] booleanOutputs = new boolean[outputs.length - 1];
-                for (int i = 1; i < outputs.length; i++) {
-                    if (classificationThresholds == null) {
-                        booleanOutputs[i - 1] = Double.parseDouble(outputs[i]) >= 0.5;
-                    } else if (classificationThresholds.length == 1) {
-                        booleanOutputs[i - 1] = Double.parseDouble(outputs[i]) >= classificationThresholds[0];
-                    } else {
-                        booleanOutputs[i - 1] = Double.parseDouble(outputs[i]) >= classificationThresholds[i - 1];
+                if (numberOfSamplesRead % subSampling == 0) {
+                    String[] outputs = line.split(separator);
+                    trueLabelsList.add(!outputs[0].equals("0"));
+                    boolean[] booleanOutputs = new boolean[outputs.length - 1];
+                    for (int i = 1; i < outputs.length; i++) {
+                        if (classificationThresholds == null) {
+                            booleanOutputs[i - 1] = Double.parseDouble(outputs[i]) >= 0.5;
+                        } else if (classificationThresholds.length == 1) {
+                            booleanOutputs[i - 1] = Double.parseDouble(outputs[i]) >= classificationThresholds[0];
+                        } else {
+                            booleanOutputs[i - 1] = Double.parseDouble(outputs[i]) >= classificationThresholds[i - 1];
+                        }
                     }
+                    classifiersOutputsList.add(booleanOutputs);
                 }
-                classifiersOutputsList.add(booleanOutputs);
+                numberOfSamplesRead++;
             }
         } catch (IOException e) {
             e.printStackTrace();

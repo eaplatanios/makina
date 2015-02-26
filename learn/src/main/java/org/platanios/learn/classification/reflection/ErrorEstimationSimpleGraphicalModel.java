@@ -16,7 +16,7 @@ public class ErrorEstimationSimpleGraphicalModel {
 
     private final int numberOfIterations;
     private final int burnInIterations;
-    private final int thinning = 100;
+    private final int thinning;
     private final int numberOfSamples;
     private final int numberOfFunctions;
     private final int numberOfDomains;
@@ -33,9 +33,10 @@ public class ErrorEstimationSimpleGraphicalModel {
     private double[][] errorRateMeans;
     private double[][] errorRateVariances;
 
-    public ErrorEstimationSimpleGraphicalModel(List<boolean[][]> functionOutputs, int numberOfIterations) {
+    public ErrorEstimationSimpleGraphicalModel(List<boolean[][]> functionOutputs, int numberOfIterations, int thinning) {
         this.numberOfIterations = numberOfIterations;
-        burnInIterations = numberOfIterations / 2;
+        burnInIterations = numberOfIterations * 9 / 10;
+        this.thinning = thinning;
         numberOfFunctions = functionOutputs.get(0)[0].length;
         numberOfDomains = functionOutputs.size();
         numberOfDataSamples = new int[numberOfDomains];
@@ -74,8 +75,6 @@ public class ErrorEstimationSimpleGraphicalModel {
         for (int iterationNumber = 0; iterationNumber < burnInIterations; iterationNumber++) {
             samplePriorsAndErrorRatesAndBurn(0);
             sampleLabelsAndBurn(0);
-            if (iterationNumber % 100 == 0)
-                System.out.println("Iteration #" + iterationNumber);
         }
         for (int iterationNumber = 0; iterationNumber < numberOfSamples - 1; iterationNumber++) {
             samplePriorsAndErrorRates(iterationNumber);

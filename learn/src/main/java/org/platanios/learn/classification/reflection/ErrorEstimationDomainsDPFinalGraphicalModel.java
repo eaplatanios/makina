@@ -13,15 +13,15 @@ import static org.apache.commons.math3.special.Beta.logBeta;
 public class ErrorEstimationDomainsDPFinalGraphicalModel {
     private final Random random = new Random();
     private final RandomDataGenerator randomDataGenerator = new RandomDataGenerator();
-    private final double alpha = 0.1;
     private final double alpha_p = 1;
     private final double beta_p = 1;
     private final double alpha_e = 1;
     private final double beta_e = 100;
 
+    private final double alpha;
     private final int numberOfIterations;
     private final int burnInIterations;
-    private final int thinning = 10;
+    private final int thinning;
     private final int numberOfSamples;
     private final int numberOfFunctions;
     private final int numberOfDomains;
@@ -43,9 +43,11 @@ public class ErrorEstimationDomainsDPFinalGraphicalModel {
     private double[][] errorRateMeans;
     private double[][] errorRateVariances;
 
-    public ErrorEstimationDomainsDPFinalGraphicalModel(List<boolean[][]> functionOutputs, int numberOfIterations, List<boolean[]> trueLabels) {
+    public ErrorEstimationDomainsDPFinalGraphicalModel(List<boolean[][]> functionOutputs, int numberOfIterations, int thinning, double alpha) {
+        this.alpha = alpha;
         this.numberOfIterations = numberOfIterations;
         burnInIterations = numberOfIterations * 9 / 10;
+        this.thinning = thinning;
         numberOfFunctions = functionOutputs.get(0)[0].length;
         numberOfDomains = functionOutputs.size();
         numberOfDataSamples = new int[numberOfDomains];
@@ -113,8 +115,6 @@ public class ErrorEstimationDomainsDPFinalGraphicalModel {
 //            sampleErrorRatesAndBurn(0);
 //            sampleZAndBurn(0);
 //            sampleLabelsAndBurn(0);
-            if (iterationNumber % 100 == 0)
-                System.out.println("Iteration #" + iterationNumber);
         }
         for (int iterationNumber = 0; iterationNumber < numberOfSamples - 1; iterationNumber++) {
             for (int i = 0; i < thinning; i++) {
