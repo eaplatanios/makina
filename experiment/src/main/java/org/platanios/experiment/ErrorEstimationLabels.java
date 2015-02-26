@@ -1,5 +1,6 @@
 package org.platanios.experiment;
 
+import org.platanios.learn.classification.reflection.ErrorEstimationDomainsFastHDPMixedGraphicalModel;
 import org.platanios.learn.classification.reflection.*;
 
 import java.io.BufferedReader;
@@ -15,8 +16,8 @@ import java.util.List;
  */
 public class ErrorEstimationLabels {
     public static void main(String[] args) {
-        String filename = "/Users/Anthony/Development/GitHub/org.platanios/learn/src/test/resources/org/platanios/learn/classification/reflection/nell/input/";
-        filename = "/Users/Anthony/Development/GitHub/org.platanios/learn/src/test/resources/org/platanios/learn/classification/reflection/brain/input/";
+        String filename = "/usr0/home/akdubey/Anthony/learn/learn/src/test/resources/org/platanios/learn/classification/reflection/nell/input/";
+        filename = "/usr0/home/akdubey/Anthony/learn/learn/src/test/resources/org/platanios/learn/classification/reflection/brain/input/";
         String separator = ",";
         double[] classificationThresholds = new double[] { 0.1, 0.1, 0.1, 0.1 };
         classificationThresholds = new double[] { 0.5 };
@@ -35,17 +36,13 @@ public class ErrorEstimationLabels {
         ErrorEstimationMethod[] errorEstimationMethods = new ErrorEstimationMethod[] {
 //                ErrorEstimationMethod.AR_2,
 //                ErrorEstimationMethod.SIMPLE_GM,
-                ErrorEstimationMethod.DOMAINS_DP_GM,
-                ErrorEstimationMethod.PAIRS_DP_GM
+//                ErrorEstimationMethod.DOMAINS_DP_GM,
+//                ErrorEstimationMethod.PAIRS_FAST_DP_GM,
+            ErrorEstimationMethod.PAIRS_FAST_HDP_GM,
+//                ErrorEstimationMethod.DOMAINS_PER_CLASSIFIER_DP_GM
         };
         double[] alphaValues = new double[]{
-                1e-3,
-                1e-2,
-                1e-1,
-                1e0,
-                1e1,
-                1e2,
-                1e3
+                1e5
         };
         runExperiments(errorEstimationMethods, alphaValues, functionOutputs, trueLabels);
     }
@@ -175,6 +172,19 @@ public class ErrorEstimationLabels {
                     }
                 }
                 break;
+            case DOMAINS_FAST_DP_GM:
+                ErrorEstimationDomainsFastDPGraphicalModel eedfdpgm = new ErrorEstimationDomainsFastDPGraphicalModel(functionOutputs, 10000, 10, alpha);
+                eedfdpgm.performGibbsSampling();
+                errorRates = eedfdpgm.getErrorRatesMeans();
+
+                double[][] labelMeansEedfdpgm = eedfdpgm.getLabelMeans();
+                for (int p = 0; p < functionOutputs.size(); p++) {
+                    labels[p] = new boolean[functionOutputs.get(p).length];
+                    for (int i = 0; i < functionOutputs.get(p).length; i++) {
+                        labels[p][i] = labelMeansEedfdpgm[p][i] >= 0.5;
+                    }
+                }
+                break;
             case PAIRS_DP_GM:
                 ErrorEstimationDomainsDPMixedGraphicalModel eeddpmgm = new ErrorEstimationDomainsDPMixedGraphicalModel(functionOutputs, 10000, 10, alpha);
                 eeddpmgm.performGibbsSampling();
@@ -188,6 +198,32 @@ public class ErrorEstimationLabels {
                     }
                 }
                 break;
+            case PAIRS_FAST_DP_GM:
+                ErrorEstimationDomainsFastDPMixedGraphicalModel eedfdpmgm = new ErrorEstimationDomainsFastDPMixedGraphicalModel(functionOutputs, 10000, 10, alpha);
+                eedfdpmgm.performGibbsSampling();
+                errorRates = eedfdpmgm.getErrorRatesMeans();
+
+                double[][] labelMeansEedfdpmgm = eedfdpmgm.getLabelMeans();
+                for (int p = 0; p < functionOutputs.size(); p++) {
+                    labels[p] = new boolean[functionOutputs.get(p).length];
+                    for (int i = 0; i < functionOutputs.get(p).length; i++) {
+                        labels[p][i] = labelMeansEedfdpmgm[p][i] >= 0.5;
+                    }
+                }
+                break;
+            case PAIRS_FAST_HDP_GM:
+                ErrorEstimationDomainsFastHDPMixedGraphicalModel eedfhdpmgm = new ErrorEstimationDomainsFastHDPMixedGraphicalModel(functionOutputs, 10000, 10, alpha);
+                eedfhdpmgm.performGibbsSampling();
+                errorRates = eedfhdpmgm.getErrorRatesMeans();
+
+                double[][] labelMeansEedfhdpmgm = eedfhdpmgm.getLabelMeans();
+                for (int p = 0; p < functionOutputs.size(); p++) {
+                    labels[p] = new boolean[functionOutputs.get(p).length];
+                    for (int i = 0; i < functionOutputs.get(p).length; i++) {
+                        labels[p][i] = labelMeansEedfhdpmgm[p][i] >= 0.5;
+                    }
+                }
+                break;
             case DOMAINS_PER_CLASSIFIER_DP_GM:
                 ErrorEstimationDomainsDPFinalGraphicalModel eeddpfgm = new ErrorEstimationDomainsDPFinalGraphicalModel(functionOutputs, 10000, 10, alpha);
                 eeddpfgm.performGibbsSampling();
@@ -198,6 +234,19 @@ public class ErrorEstimationLabels {
                     labels[p] = new boolean[functionOutputs.get(p).length];
                     for (int i = 0; i < functionOutputs.get(p).length; i++) {
                         labels[p][i] = labelMeansEeddpfgm[p][i] >= 0.5;
+                    }
+                }
+                break;
+            case DOMAINS_PER_CLASSIFIER_FAST_DP_GM:
+                ErrorEstimationDomainsFastDPFinalGraphicalModel eedfdpfgm = new ErrorEstimationDomainsFastDPFinalGraphicalModel(functionOutputs, 10000, 10, alpha);
+                eedfdpfgm.performGibbsSampling();
+                errorRates = eedfdpfgm.getErrorRatesMeans();
+
+                double[][] labelMeansEedfdpfgm = eedfdpfgm.getLabelMeans();
+                for (int p = 0; p < functionOutputs.size(); p++) {
+                    labels[p] = new boolean[functionOutputs.get(p).length];
+                    for (int i = 0; i < functionOutputs.get(p).length; i++) {
+                        labels[p][i] = labelMeansEedfdpfgm[p][i] >= 0.5;
                     }
                 }
                 break;
@@ -334,8 +383,12 @@ public class ErrorEstimationLabels {
         AR_N,
         SIMPLE_GM,
         DOMAINS_DP_GM,
+        DOMAINS_FAST_DP_GM,
         PAIRS_DP_GM,
+        PAIRS_FAST_DP_GM,
+        PAIRS_FAST_HDP_GM,
         DOMAINS_PER_CLASSIFIER_DP_GM,
+        DOMAINS_PER_CLASSIFIER_FAST_DP_GM,
         COMPLICATED_DP_GM
     }
 }

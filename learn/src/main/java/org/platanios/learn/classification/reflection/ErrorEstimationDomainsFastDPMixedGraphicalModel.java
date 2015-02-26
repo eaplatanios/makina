@@ -10,7 +10,7 @@ import static org.apache.commons.math3.special.Beta.logBeta;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class ErrorEstimationDomainsDPMixedGraphicalModel {
+public class ErrorEstimationDomainsFastDPMixedGraphicalModel {
     private final Random random = new Random();
     private final RandomDataGenerator randomDataGenerator = new RandomDataGenerator();
     private final double alpha_p = 1;
@@ -42,8 +42,10 @@ public class ErrorEstimationDomainsDPMixedGraphicalModel {
     private double[][] labelVariances;
     private double[][] errorRateMeans;
     private double[][] errorRateVariances;
+    
+    private FastDPPrior dp;
 
-    public ErrorEstimationDomainsDPMixedGraphicalModel(List<boolean[][]> functionOutputs, int numberOfIterations, int thinning, double alpha) {
+    public ErrorEstimationDomainsFastDPMixedGraphicalModel(List<boolean[][]> functionOutputs, int numberOfIterations, int thinning, double alpha) {
         this.alpha = alpha;
         this.numberOfIterations = numberOfIterations;
         burnInIterations = numberOfIterations * 9 / 10;
@@ -60,6 +62,8 @@ public class ErrorEstimationDomainsDPMixedGraphicalModel {
                     functionOutputsArray[j][p][i] = functionOutputs.get(p)[i][j] ? 1 : 0;
             }
         }
+        dp = new FastDPPrior(alpha, numberOfDomains * numberOfFunctions);
+        
         numberOfSamples = (numberOfIterations - burnInIterations) / thinning;
         priorSamples = new double[numberOfSamples][numberOfDomains];
         errorRateSamples = new double[numberOfSamples][numberOfDomains * numberOfFunctions];
@@ -85,6 +89,7 @@ public class ErrorEstimationDomainsDPMixedGraphicalModel {
                 labelsSamples[0][p][i] = randomDataGenerator.nextBinomial(1, 0.5);
             for (int j = 0; j < numberOfFunctions; j++) {
                 zSamples[0][p][j] = 0;
+                dp.add_topic_assingment(0);
                 errorRateSamples[0][p * numberOfFunctions + j] = 0.25;
                 disagreements[j][p] = 0;
                 for (int i = 0; i < numberOfDataSamples[p]; i++)
@@ -132,6 +137,7 @@ public class ErrorEstimationDomainsDPMixedGraphicalModel {
         for (int p = 0; p < numberOfDomains; p++)
             for (int j = 0; j < numberOfFunctions; j++)
                 uniqueClusters.add(zSamples[zSamples.length - 1][p][j]);
+        System.out.println("Number of clusters: " + uniqueClusters.size());
         // Aggregate values for means and variances computation
         for (int sampleNumber = 0; sampleNumber < numberOfSamples; sampleNumber++) {
             for (int p = 0; p < numberOfDomains; p++) {
@@ -254,56 +260,45 @@ public class ErrorEstimationDomainsDPMixedGraphicalModel {
         }
         for (int p = 0; p < numberOfDomains; p++) {
             for (int j = 0; j < numberOfFunctions; j++) {
-                double[] z_probabilities = new double[numberOfDomains * numberOfFunctions];
-                for (int p_inner = 0; p_inner < numberOfDomains; p_inner++)
-                    for (int j_inner = 0; j_inner < numberOfFunctions; j_inner++)
-                        if (p_inner != p || j_inner != j)
-                            z_probabilities[zSamples[iterationNumber][p_inner][j_inner]]++;
-                int k_new = -1;
-                for (int k = 0; k < z_probabilities.length; k++)
-                    if (z_probabilities[k] == 0.0) {
-                        z_probabilities[k] = alpha;
-                        k_new = k;
-                        break;
-                    }
-                for (int k = 0; k < z_probabilities.length; k++) {
-                    z_probabilities[k] = Math.log(z_probabilities[k]);
-                    z_probabilities[k] -= Math.log(numberOfDomains - 1 + alpha);
+                dp.remove_topic_assignment(zSamples[iterationNumber][p][j]);
+                int total_cnt = dp.prob_topics();
+
+                double z_probabilities[] = new double[total_cnt];
+                for(int i=0;i<total_cnt;i++){
+                    z_probabilities[i] = Math.log(dp.pdf[i].prob);
                 }
-                for (int k = 0; k < z_probabilities.length; k++) {
-                    if (zSamples[iterationNumber][p][j] == k) {
-                        sum_1[k] -= numberOfDataSamples[p];
-                        sum_2[k] -= disagreements[j][p];
+                int previous_topic= zSamples[iterationNumber][p][j];
+                for(int i=0;i<total_cnt - 1;i++) {
+                    if(previous_topic == dp.pdf[i].topic){
+                        sum_1[previous_topic] -= numberOfDataSamples[p];
+                        sum_2[previous_topic] -= disagreements[j][p];
                     }
-                    if (k != k_new) {
-                        double alpha = alpha_e + sum_2[k] + disagreements[j][p];
-                        double beta = beta_e + sum_1[k] - sum_2[k] + numberOfDataSamples[p] - disagreements[j][p];
-                        z_probabilities[k] += logBeta(alpha, beta) - logBeta(alpha_e + sum_2[k], beta_e + sum_1[k] - sum_2[k]);
-                    } else {
-                        z_probabilities[k_new] += logBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]) - logBeta(alpha_e, beta_e);
-                    }
+                    int k = dp.pdf[i].topic;
+                    double alpha = alpha_e + sum_2[k] + disagreements[j][p];
+                    double beta = beta_e + sum_1[k] + numberOfDataSamples[p] - disagreements[j][p];
+                    z_probabilities[i] += logBeta(alpha, beta) - logBeta(alpha_e + sum_2[k], beta_e + sum_1[k] - sum_2[k]);
                 }
-                double normalizationConstant = MatrixUtilities.computeLogSumExp(z_probabilities);
-                for (int k = 0; k < z_probabilities.length; k++)
-                    z_probabilities[k] = Math.exp(z_probabilities[k] - normalizationConstant);
-                // Sample from a multinomial
-                double[] z_cdf = new double[z_probabilities.length];
-                z_cdf[0] = z_probabilities[0];
-                for (int i = 1; i < z_probabilities.length; i++)
-                    z_cdf[i] = z_cdf[i - 1] + z_probabilities[i];
-                double uniform = random.nextDouble();
-                zSamples[iterationNumber][p][j] = z_probabilities.length - 1;
-                for (int k = 0; k < z_probabilities.length - 1; k++) {
-                    if (z_cdf[k] > uniform) {
-                        zSamples[iterationNumber][p][j] = k;
-                        sum_1[k] += numberOfDataSamples[p];
-                        sum_2[k] += disagreements[j][p];
+                z_probabilities[total_cnt - 1] += logBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]) - logBeta(alpha_e, beta_e);
+                
+                for(int i=1;i<total_cnt;i++){
+                    z_probabilities[i] = MatrixUtilities.computeLogSumExp(z_probabilities[i-1],z_probabilities[i]);
+                }
+                
+                double uniform = Math.log(random.nextDouble()) + z_probabilities[total_cnt-1];
+                zSamples[iterationNumber][p][j] = dp.pdf[total_cnt-1].topic;
+                for(int i=0;i<total_cnt-1;i++){
+                    if(z_probabilities[i] > uniform){
+                        zSamples[iterationNumber][p][j] = dp.pdf[i].topic;
+                        sum_1[dp.pdf[i].topic] += numberOfDataSamples[p];
+                        sum_2[dp.pdf[i].topic] += disagreements[j][p];
+                        dp.add_topic_assingment(dp.pdf[i].topic);
                         break;
                     }
                 }
-                if (zSamples[iterationNumber][p][j] == z_probabilities.length - 1) {
-                    sum_1[z_probabilities.length - 1] += numberOfDataSamples[p];
-                    sum_2[z_probabilities.length - 1] += disagreements[j][p];
+                if (zSamples[iterationNumber][p][j] == dp.pdf[total_cnt-1].topic) {
+                    sum_1[dp.pdf[total_cnt-1].topic] += numberOfDataSamples[p];
+                    sum_2[dp.pdf[total_cnt-1].topic] += disagreements[j][p];
+                    dp.add_topic_assingment(dp.pdf[total_cnt-1].topic);
                 }
             }
         }
@@ -312,50 +307,38 @@ public class ErrorEstimationDomainsDPMixedGraphicalModel {
     private void sampleZAndBurn(int iterationNumber) {
         for (int p = 0; p < numberOfDomains; p++) {
             for (int j = 0; j < numberOfFunctions; j++) {
-                double[] z_probabilities = new double[numberOfDomains * numberOfFunctions];
-                for (int p_inner = 0; p_inner < numberOfDomains; p_inner++)
-                    for (int j_inner = 0; j_inner < numberOfFunctions; j_inner++)
-                        if (p_inner != p || j_inner != j)
-                            z_probabilities[zSamples[iterationNumber][p_inner][j_inner]] += 1;
-                int k_new = -1;
-                for (int k = 0; k < z_probabilities.length; k++)
-                    if (z_probabilities[k] == 0.0) {
-                        z_probabilities[k] = alpha;
-                        k_new = k;
-                        break;
-                    }
-                for (int k = 0; k < z_probabilities.length; k++) {
-                    z_probabilities[k] = Math.log(z_probabilities[k]);
-                    z_probabilities[k] -= Math.log(numberOfDomains - 1 + alpha);
+                dp.remove_topic_assignment(zSamples[iterationNumber][p][j]);
+                int total_cnt = dp.prob_topics();
+
+                double z_probabilities[] = new double[total_cnt];
+                for(int i=0;i<total_cnt;i++){
+                    z_probabilities[i] = Math.log(dp.pdf[i].prob);
                 }
                 disagreements[j][p] = 0;
                 for (int i = 0; i < numberOfDataSamples[p]; i++)
                     if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
                         disagreements[j][p]++;
-                for (int k = 0; k < z_probabilities.length; k++) {
-                    if (k != k_new) {
-                        z_probabilities[k] += disagreements[j][p] * Math.log(errorRateSamples[iterationNumber][k]);
-                        z_probabilities[k] += (numberOfDataSamples[p] - disagreements[j][p]) * Math.log(1 - errorRateSamples[iterationNumber][k]);
-                    } else {
-                        z_probabilities[k_new] += logBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]) - logBeta(alpha_e, beta_e);
-                    }
+                for(int i=0;i<total_cnt - 1;i++) {
+                    int k = dp.pdf[i].topic;
+                    z_probabilities[i] += disagreements[j][p] * Math.log(errorRateSamples[iterationNumber][k]);
+                    z_probabilities[i] += (numberOfDataSamples[p] - disagreements[j][p]) * Math.log(1 - errorRateSamples[iterationNumber][k]);
                 }
-                double normalizationConstant = MatrixUtilities.computeLogSumExp(z_probabilities);
-                for (int k = 0; k < z_probabilities.length; k++)
-                    z_probabilities[k] = Math.exp(z_probabilities[k] - normalizationConstant);
-                // Sample from a multinomial
-                double[] z_cdf = new double[z_probabilities.length];
-                z_cdf[0] = z_probabilities[0];
-                for (int i = 1; i < z_probabilities.length; i++)
-                    z_cdf[i] = z_cdf[i - 1] + z_probabilities[i];
-                double uniform = random.nextDouble();
-                zSamples[iterationNumber][p][j] = z_probabilities.length - 1;
-                for (int k = 0; k < z_probabilities.length - 1; k++) {
-                    if (z_cdf[k] > uniform) {
-                        zSamples[iterationNumber][p][j] = k;
+                z_probabilities[total_cnt - 1] += logBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]) - logBeta(alpha_e, beta_e);
+                for(int i=1;i<total_cnt;i++){
+                    z_probabilities[i] = MatrixUtilities.computeLogSumExp(z_probabilities[i-1],z_probabilities[i]);
+                }
+                
+                double uniform = Math.log(random.nextDouble()) + z_probabilities[total_cnt-1];
+                zSamples[iterationNumber][p][j] = dp.pdf[total_cnt-1].topic;
+                for(int i=0;i<total_cnt-1;i++){
+                    if(z_probabilities[i] > uniform){
+                        zSamples[iterationNumber][p][j] = dp.pdf[i].topic;
+                        dp.add_topic_assingment(dp.pdf[i].topic);
                         break;
                     }
                 }
+                if (zSamples[iterationNumber][p][j] == dp.pdf[total_cnt-1].topic)
+                    dp.add_topic_assingment(dp.pdf[total_cnt-1].topic);
             }
         }
     }
@@ -363,52 +346,38 @@ public class ErrorEstimationDomainsDPMixedGraphicalModel {
     private void sampleZ(int iterationNumber) {
         for (int p = 0; p < numberOfDomains; p++) {
             for (int j = 0; j < numberOfFunctions; j++) {
-                double[] z_probabilities = new double[numberOfDomains * numberOfFunctions];
-                for (int p_inner = 0; p_inner < numberOfDomains; p_inner++)
-                    for (int j_inner = 0; j_inner < numberOfFunctions; j_inner++)
-                        if (p_inner < p || (p_inner == p && j_inner < p))
-                            z_probabilities[zSamples[iterationNumber + 1][p_inner][j_inner]] += 1;
-                        else if (p_inner != p || j_inner != j)
-                            z_probabilities[zSamples[iterationNumber][p_inner][j_inner]] += 1;
-                int k_new = -1;
-                for (int k = 0; k < z_probabilities.length; k++)
-                    if (z_probabilities[k] == 0.0) {
-                        z_probabilities[k] = alpha;
-                        k_new = k;
-                        break;
-                    }
-                for (int k = 0; k < z_probabilities.length; k++) {
-                    z_probabilities[k] = Math.log(z_probabilities[k]);
-                    z_probabilities[k] -= Math.log(numberOfDomains - 1 + alpha);
+                dp.remove_topic_assignment(zSamples[iterationNumber][p][j]);
+                int total_cnt = dp.prob_topics();
+
+                double z_probabilities[] = new double[total_cnt];
+                for(int i=0;i<total_cnt;i++){
+                    z_probabilities[i] = Math.log(dp.pdf[i].prob);
                 }
                 disagreements[j][p] = 0;
                 for (int i = 0; i < numberOfDataSamples[p]; i++)
                     if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
                         disagreements[j][p]++;
-                for (int k = 0; k < z_probabilities.length; k++) {
-                    if (k != k_new) {
-                        z_probabilities[k] += disagreements[j][p] * Math.log(errorRateSamples[iterationNumber + 1][k]);
-                        z_probabilities[k] += (numberOfDataSamples[p] - disagreements[j][p]) * Math.log(1 - errorRateSamples[iterationNumber + 1][k]);
-                    } else {
-                        z_probabilities[k_new] += logBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]) - logBeta(alpha_e, beta_e);
-                    }
+                for(int i=0;i<total_cnt - 1;i++) {
+                    int k = dp.pdf[i].topic;
+                    z_probabilities[i] += disagreements[j][p] * Math.log(errorRateSamples[iterationNumber + 1][k]);
+                    z_probabilities[i] += (numberOfDataSamples[p] - disagreements[j][p]) * Math.log(1 - errorRateSamples[iterationNumber + 1][k]);
                 }
-                double normalizationConstant = MatrixUtilities.computeLogSumExp(z_probabilities);
-                for (int k = 0; k < z_probabilities.length; k++)
-                    z_probabilities[k] = Math.exp(z_probabilities[k] - normalizationConstant);
-                // Sample from a multinomial
-                double[] z_cdf = new double[z_probabilities.length];
-                z_cdf[0] = z_probabilities[0];
-                for (int i = 1; i < z_probabilities.length; i++)
-                    z_cdf[i] = z_cdf[i - 1] + z_probabilities[i];
-                double uniform = random.nextDouble();
-                zSamples[iterationNumber + 1][p][j] = z_probabilities.length - 1;
-                for (int k = 0; k < z_probabilities.length - 1; k++) {
-                    if (z_cdf[k] > uniform) {
-                        zSamples[iterationNumber + 1][p][j] = k;
+                z_probabilities[total_cnt - 1] += logBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]) - logBeta(alpha_e, beta_e);
+                for(int i=1;i<total_cnt;i++){
+                    z_probabilities[i] = MatrixUtilities.computeLogSumExp(z_probabilities[i-1],z_probabilities[i]);
+                }
+                
+                double uniform = Math.log(random.nextDouble()) + z_probabilities[total_cnt-1];
+                zSamples[iterationNumber + 1][p][j] = dp.pdf[total_cnt-1].topic;
+                for(int i=0;i<total_cnt-1;i++){
+                    if(z_probabilities[i] > uniform){
+                        zSamples[iterationNumber + 1][p][j] = dp.pdf[i].topic;
+                        dp.add_topic_assingment(dp.pdf[i].topic);
                         break;
                     }
                 }
+                if (zSamples[iterationNumber + 1][p][j] == dp.pdf[total_cnt-1].topic)
+                    dp.add_topic_assingment(dp.pdf[total_cnt-1].topic);
             }
         }
     }
