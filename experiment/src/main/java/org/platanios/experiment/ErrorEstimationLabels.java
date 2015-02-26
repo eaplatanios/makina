@@ -27,25 +27,29 @@ public class ErrorEstimationLabels {
                 DomainData data = parseLabeledDataFromCSVFile(file,
                                                               separator,
                                                               classificationThresholds,
-                                                              1);
+                                                              10);
                 functionOutputs.add(data.functionOutputs);
                 trueLabels.add(data.trueLabels);
             }
         }
         ErrorEstimationMethod[] errorEstimationMethods = new ErrorEstimationMethod[] {
-//                ErrorEstimationMethod.AR_2,
-//                ErrorEstimationMethod.SIMPLE_GM,
+                ErrorEstimationMethod.AR_2,
+                ErrorEstimationMethod.SIMPLE_GM,
                 ErrorEstimationMethod.DOMAINS_DP_GM,
                 ErrorEstimationMethod.PAIRS_DP_GM
         };
         double[] alphaValues = new double[]{
+                1e-5,
+                1e-4,
                 1e-3,
                 1e-2,
                 1e-1,
                 1e0,
                 1e1,
                 1e2,
-                1e3
+                1e3,
+                1e4,
+                1e5
         };
         runExperiments(errorEstimationMethods, alphaValues, functionOutputs, trueLabels);
     }
@@ -74,21 +78,21 @@ public class ErrorEstimationLabels {
         }
         labelsErrorRateMean /= functionOutputs.size();
         System.out.println("Simple Majority Vote Labels Error Rate Mean: " + labelsErrorRateMean);
-        for (ErrorEstimationMethod method : errorEstimationMethods) {
+        Arrays.asList(errorEstimationMethods).parallelStream().forEach(method -> {
             if (method != ErrorEstimationMethod.AR_2 && method != ErrorEstimationMethod.AR_N && method != ErrorEstimationMethod.SIMPLE_GM) {
                 for (double alpha : alphaValues) {
                     Results results = runExperiment(method, functionOutputs, trueLabels, alpha);
-                    System.out.println("Method " + method + "\t-\tα = " + alpha
+                    System.out.println(method + "\t-\tα = " + alpha
                                                + "\t-\tError Rates MAD Mean: " + results.getErrorRatesMAD()
                                                + "\t-\tLabels Error Rate Mean: " + results.getLabelsMeanErrorRate());
                 }
             } else {
                 Results results = runExperiment(method, functionOutputs, trueLabels, 0);
-                System.out.println("Method " + method
+                System.out.println(method
                                            + "\t-\tError Rates MAD Mean: " + results.getErrorRatesMAD()
                                            + "\t-\tLabels Error Rate Mean: " + results.getLabelsMeanErrorRate());
             }
-        }
+        });
     }
 
     public static Results runExperiment(ErrorEstimationMethod method, List<boolean[][]> functionOutputs, List<boolean[]> trueLabels, double alpha) {
@@ -150,7 +154,7 @@ public class ErrorEstimationLabels {
                 }
                 break;
             case SIMPLE_GM:
-                ErrorEstimationSimpleGraphicalModel eesgm = new ErrorEstimationSimpleGraphicalModel(functionOutputs, 10000, 10);
+                ErrorEstimationSimpleGraphicalModel eesgm = new ErrorEstimationSimpleGraphicalModel(functionOutputs, 20000, 10);
                 eesgm.performGibbsSampling();
                 errorRates = eesgm.getErrorRatesMeans();
 
@@ -163,7 +167,7 @@ public class ErrorEstimationLabels {
                 }
                 break;
             case DOMAINS_DP_GM:
-                ErrorEstimationDomainsDPGraphicalModel eeddpgm = new ErrorEstimationDomainsDPGraphicalModel(functionOutputs, 10000, 10, alpha);
+                ErrorEstimationDomainsDPGraphicalModel eeddpgm = new ErrorEstimationDomainsDPGraphicalModel(functionOutputs, 20000, 10, alpha);
                 eeddpgm.performGibbsSampling();
                 errorRates = eeddpgm.getErrorRatesMeans();
 
@@ -176,7 +180,7 @@ public class ErrorEstimationLabels {
                 }
                 break;
             case PAIRS_DP_GM:
-                ErrorEstimationDomainsDPMixedGraphicalModel eeddpmgm = new ErrorEstimationDomainsDPMixedGraphicalModel(functionOutputs, 10000, 10, alpha);
+                ErrorEstimationDomainsDPMixedGraphicalModel eeddpmgm = new ErrorEstimationDomainsDPMixedGraphicalModel(functionOutputs, 20000, 10, alpha);
                 eeddpmgm.performGibbsSampling();
                 errorRates = eeddpmgm.getErrorRatesMeans();
 
@@ -189,7 +193,7 @@ public class ErrorEstimationLabels {
                 }
                 break;
             case DOMAINS_PER_CLASSIFIER_DP_GM:
-                ErrorEstimationDomainsDPFinalGraphicalModel eeddpfgm = new ErrorEstimationDomainsDPFinalGraphicalModel(functionOutputs, 10000, 10, alpha);
+                ErrorEstimationDomainsDPFinalGraphicalModel eeddpfgm = new ErrorEstimationDomainsDPFinalGraphicalModel(functionOutputs, 20000, 10, alpha);
                 eeddpfgm.performGibbsSampling();
                 errorRates = eeddpfgm.getErrorRatesMeans();
 
