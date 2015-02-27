@@ -349,7 +349,7 @@ public class ErrorEstimationDomainsFastDPMixedGraphicalModel {
                 }
                 if (zSamples[iterationNumber][p][j] == dp.pdf[total_cnt-1].topic) {
                     dp.add_topic_assingment(dp.pdf[total_cnt - 1].topic);
-                    errorRateSamples[iterationNumber][dp.pdf[total_cnt-1].topic] = randomDataGenerator.nextBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]);
+//                    errorRateSamples[iterationNumber][dp.pdf[total_cnt-1].topic] = randomDataGenerator.nextBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]);
                 }
             }
         }
@@ -390,7 +390,7 @@ public class ErrorEstimationDomainsFastDPMixedGraphicalModel {
                 }
                 if (zSamples[iterationNumber + 1][p][j] == dp.pdf[total_cnt-1].topic) {
                     dp.add_topic_assingment(dp.pdf[total_cnt - 1].topic);
-                    errorRateSamples[iterationNumber + 1][dp.pdf[total_cnt - 1].topic] = randomDataGenerator.nextBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]);
+//                    errorRateSamples[iterationNumber + 1][dp.pdf[total_cnt - 1].topic] = randomDataGenerator.nextBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]);
                 }
             }
         }

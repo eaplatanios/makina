@@ -348,17 +348,13 @@ public class ErrorEstimationDomainsFastDPFinalGraphicalModel {
                 for(int i=0;i<total_cnt-1;i++){
                     if(z_probabilities[i] > uniform){
                         zSamples[iterationNumber][p][j] = dp[j].pdf[i].topic;
-                        sum_1[j][dp[j].pdf[i].topic] += numberOfDataSamples[p];
-                        sum_2[j][dp[j].pdf[i].topic] += disagreements[j][p];
                         dp[j].add_topic_assingment(dp[j].pdf[i].topic);
                         break;
                     }
                 }
                 if (zSamples[iterationNumber][p][j] == dp[j].pdf[total_cnt-1].topic) {
-                    sum_1[j][dp[j].pdf[total_cnt-1].topic] += numberOfDataSamples[p];
-                    sum_2[j][dp[j].pdf[total_cnt-1].topic] += disagreements[j][p];
                     dp[j].add_topic_assingment(dp[j].pdf[total_cnt-1].topic);
-                    errorRateSamples[iterationNumber][dp[j].pdf[total_cnt-1].topic][j] = randomDataGenerator.nextBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]);
+//                    errorRateSamples[iterationNumber][dp[j].pdf[total_cnt-1].topic][j] = randomDataGenerator.nextBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]);
                 }
             }
         }
@@ -396,17 +392,13 @@ public class ErrorEstimationDomainsFastDPFinalGraphicalModel {
                 for(int i=0;i<total_cnt-1;i++){
                     if(z_probabilities[i] > uniform){
                         zSamples[iterationNumber + 1][p][j] = dp[j].pdf[i].topic;
-                        sum_1[j][dp[j].pdf[i].topic] += numberOfDataSamples[p];
-                        sum_2[j][dp[j].pdf[i].topic] += disagreements[j][p];
                         dp[j].add_topic_assingment(dp[j].pdf[i].topic);
                         break;
                     }
                 }
                 if (zSamples[iterationNumber + 1][p][j] == dp[j].pdf[total_cnt-1].topic) {
-                    sum_1[j][dp[j].pdf[total_cnt-1].topic] += numberOfDataSamples[p];
-                    sum_2[j][dp[j].pdf[total_cnt-1].topic] += disagreements[j][p];
                     dp[j].add_topic_assingment(dp[j].pdf[total_cnt-1].topic);
-                    errorRateSamples[iterationNumber + 1][dp[j].pdf[total_cnt-1].topic][j] = randomDataGenerator.nextBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]);
+//                    errorRateSamples[iterationNumber + 1][dp[j].pdf[total_cnt-1].topic][j] = randomDataGenerator.nextBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]);
                 }
             }
         }

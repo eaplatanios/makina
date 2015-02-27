@@ -352,15 +352,15 @@ public class ErrorEstimationDomainsFastDPGraphicalModel {
             }
             if (zSamples[iterationNumber][p] == dp.pdf[total_cnt - 1].topic) {
                 dp.add_topic_assingment(dp.pdf[total_cnt - 1].topic);
-                int numberOfErrorRatesBelowChance = 0;
-                for (int j = 0; j < numberOfFunctions; j++) {
-                    errorRateSamples[iterationNumber][dp.pdf[total_cnt - 1].topic][j] = randomDataGenerator.nextBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]);
-                    if (errorRateSamples[iterationNumber][dp.pdf[total_cnt - 1].topic][j] < 0.5)
-                        numberOfErrorRatesBelowChance += 1;
-                }
-                if (numberOfErrorRatesBelowChance < numberOfFunctions / 2.0)
-                    for (int j = 0; j < numberOfFunctions; j++)
-                        errorRateSamples[iterationNumber][dp.pdf[total_cnt - 1].topic][j] = 1 - errorRateSamples[iterationNumber][dp.pdf[total_cnt - 1].topic][j];
+//                int numberOfErrorRatesBelowChance = 0;
+//                for (int j = 0; j < numberOfFunctions; j++) {
+//                    errorRateSamples[iterationNumber][dp.pdf[total_cnt - 1].topic][j] = randomDataGenerator.nextBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]);
+//                    if (errorRateSamples[iterationNumber][dp.pdf[total_cnt - 1].topic][j] < 0.5)
+//                        numberOfErrorRatesBelowChance += 1;
+//                }
+//                if (numberOfErrorRatesBelowChance < numberOfFunctions / 2.0)
+//                    for (int j = 0; j < numberOfFunctions; j++)
+//                        errorRateSamples[iterationNumber][dp.pdf[total_cnt - 1].topic][j] = 1 - errorRateSamples[iterationNumber][dp.pdf[total_cnt - 1].topic][j];
             }
         }
     }
@@ -402,15 +402,15 @@ public class ErrorEstimationDomainsFastDPGraphicalModel {
             }
             if (zSamples[iterationNumber + 1][p] == dp.pdf[total_cnt-1].topic) {
                 dp.add_topic_assingment(dp.pdf[total_cnt - 1].topic);
-                int numberOfErrorRatesBelowChance = 0;
-                for (int j = 0; j < numberOfFunctions; j++) {
-                    errorRateSamples[iterationNumber + 1][dp.pdf[total_cnt - 1].topic][j] = randomDataGenerator.nextBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]);
-                    if (errorRateSamples[iterationNumber + 1][dp.pdf[total_cnt - 1].topic][j] < 0.5)
-                        numberOfErrorRatesBelowChance += 1;
-                }
-                if (numberOfErrorRatesBelowChance < numberOfFunctions / 2.0)
-                    for (int j = 0; j < numberOfFunctions; j++)
-                        errorRateSamples[iterationNumber + 1][dp.pdf[total_cnt - 1].topic][j] = 1 - errorRateSamples[iterationNumber + 1][dp.pdf[total_cnt - 1].topic][j];
+//                int numberOfErrorRatesBelowChance = 0;
+//                for (int j = 0; j < numberOfFunctions; j++) {
+//                    errorRateSamples[iterationNumber + 1][dp.pdf[total_cnt - 1].topic][j] = randomDataGenerator.nextBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]);
+//                    if (errorRateSamples[iterationNumber + 1][dp.pdf[total_cnt - 1].topic][j] < 0.5)
+//                        numberOfErrorRatesBelowChance += 1;
+//                }
+//                if (numberOfErrorRatesBelowChance < numberOfFunctions / 2.0)
+//                    for (int j = 0; j < numberOfFunctions; j++)
+//                        errorRateSamples[iterationNumber + 1][dp.pdf[total_cnt - 1].topic][j] = 1 - errorRateSamples[iterationNumber + 1][dp.pdf[total_cnt - 1].topic][j];
             }
         }
     }
