@@ -117,7 +117,7 @@ public class ErrorEstimationDomainsFastDPGraphicalModel {
     public void performGibbsSampling() {
         for (int iterationNumber = 0; iterationNumber < burnInIterations; iterationNumber++) {
             samplePriorsAndBurn(0);
-            sampleLabelsAndBurn(0);
+            sampleLabelsAndBurnWithCollapsedErrorRates(0);
             sampleZAndBurnWithCollapsedErrorRates(0);
 //            samplePriorsAndBurn(0);
 //            sampleErrorRatesAndBurn(0);
@@ -254,22 +254,22 @@ public class ErrorEstimationDomainsFastDPGraphicalModel {
     }
 
     private void sampleZAndBurnWithCollapsedErrorRates(int iterationNumber) {
-        for (int p = 0; p < numberOfDomains; p++) {
-            for (int j = 0; j < numberOfFunctions; j++) {
-                disagreements[j][p] = 0;
-                for (int i = 0; i < numberOfDataSamples[p]; i++)
-                    if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
-                        disagreements[j][p]++;
-            }
-        }
-        for (int j = 0; j < numberOfFunctions; j++) {
-            for (int k = 0; k < numberOfDomains; k++) {
-                sum_2[j][k] = 0;
-                for (int p = 0; p < numberOfDomains; p++)
-                    if (zSamples[iterationNumber][p] == k)
-                        sum_2[j][k] += disagreements[j][p];
-            }
-        }
+//        for (int p = 0; p < numberOfDomains; p++) {
+//            for (int j = 0; j < numberOfFunctions; j++) {
+//                disagreements[j][p] = 0;
+//                for (int i = 0; i < numberOfDataSamples[p]; i++)
+//                    if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
+//                        disagreements[j][p]++;
+//            }
+//        }
+//        for (int j = 0; j < numberOfFunctions; j++) {
+//            for (int k = 0; k < numberOfDomains; k++) {
+//                sum_2[j][k] = 0;
+//                for (int p = 0; p < numberOfDomains; p++)
+//                    if (zSamples[iterationNumber][p] == k)
+//                        sum_2[j][k] += disagreements[j][p];
+//            }
+//        }
         for (int p = 0; p < numberOfDomains; p++) {
             dp.remove_topic_assignment(zSamples[iterationNumber][p]);
             int total_cnt = dp.prob_topics();
@@ -412,6 +412,42 @@ public class ErrorEstimationDomainsFastDPGraphicalModel {
 //                    for (int j = 0; j < numberOfFunctions; j++)
 //                        errorRateSamples[iterationNumber + 1][dp.pdf[total_cnt - 1].topic][j] = 1 - errorRateSamples[iterationNumber + 1][dp.pdf[total_cnt - 1].topic][j];
             }
+        }
+    }
+
+    private void sampleLabelsAndBurnWithCollapsedErrorRates(int iterationNumber) {
+        for (int p = 0; p < numberOfDomains; p++) {
+            for (int j = 0; j < numberOfFunctions; j++)
+                sum_2[j][zSamples[iterationNumber][p]] -= disagreements[j][p];
+            for (int i = 0; i < numberOfDataSamples[p]; i++) {
+                double a1 = alpha_e;
+                double a0 = beta_e;
+                double sum1 = 0;
+                for (int j = 0; j < numberOfFunctions; j++) {
+                    if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i]) {
+                        a1 += --disagreements[j][p] + sum_2[j][zSamples[iterationNumber][p]];
+                        a0 += sum_1[j][zSamples[iterationNumber][p]] - sum_2[j][zSamples[iterationNumber][p]] - disagreements[j][p];
+                    }
+                    if (functionOutputsArray[j][p][i] != 1)
+                        sum1++;
+                }
+                double p1 = priorSamples[iterationNumber][p];
+                double p0 = 1 - priorSamples[iterationNumber][p];
+                for (int m = 0; m < sum1; m++) {
+                    p1 *= a1 + m;
+                    p0 *= a0 + m;
+                }
+                for (int m = 0; m < numberOfFunctions - sum1; m++) {
+                    p1 *= a0 + m;
+                    p0 *= a1 + m;
+                }
+                labelsSamples[iterationNumber][p][i] = randomDataGenerator.nextBinomial(1, p1 / (p0 + p1));
+                for (int j = 0; j < numberOfFunctions; j++)
+                    if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
+                        disagreements[j][p]++;
+            }
+            for (int j = 0; j < numberOfFunctions; j++)
+                sum_2[j][zSamples[iterationNumber][p]] += disagreements[j][p];
         }
     }
 
