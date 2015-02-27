@@ -358,12 +358,7 @@ public class ErrorEstimationDomainsFastDPFinalGraphicalModel {
                     sum_1[j][dp[j].pdf[total_cnt-1].topic] += numberOfDataSamples[p];
                     sum_2[j][dp[j].pdf[total_cnt-1].topic] += disagreements[j][p];
                     dp[j].add_topic_assingment(dp[j].pdf[total_cnt-1].topic);
-                    
-                    int disagreementCount = 0;
-                        for (int i = 0; i < numberOfDataSamples[p]; i++)
-                            if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
-                                disagreementCount++;
-                    errorRateSamples[iterationNumber][dp[j].pdf[total_cnt-1].topic][j] = randomDataGenerator.nextBeta(alpha_e + disagreementCount, beta_e + numberOfDataSamples[p] - disagreementCount);
+                    errorRateSamples[iterationNumber][dp[j].pdf[total_cnt-1].topic][j] = randomDataGenerator.nextBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]);
                 }
             }
         }
@@ -411,13 +406,7 @@ public class ErrorEstimationDomainsFastDPFinalGraphicalModel {
                     sum_1[j][dp[j].pdf[total_cnt-1].topic] += numberOfDataSamples[p];
                     sum_2[j][dp[j].pdf[total_cnt-1].topic] += disagreements[j][p];
                     dp[j].add_topic_assingment(dp[j].pdf[total_cnt-1].topic);
-                    
-                    int disagreementCount = 0;
-                        for (int i = 0; i < numberOfDataSamples[p]; i++)
-                            if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
-                                disagreementCount++;
-                    errorRateSamples[iterationNumber + 1][dp[j].pdf[total_cnt-1].topic][j] = randomDataGenerator.nextBeta(alpha_e + disagreementCount, beta_e + numberOfDataSamples[p] - disagreementCount);
-                    
+                    errorRateSamples[iterationNumber + 1][dp[j].pdf[total_cnt-1].topic][j] = randomDataGenerator.nextBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]);
                 }
             }
         }
