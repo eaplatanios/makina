@@ -16,10 +16,10 @@ import java.util.List;
  */
 public class ErrorEstimationLabels {
     public static void main(String[] args) {
-        String filename = "/usr0/home/akdubey/Anthony/learn/learn/src/test/resources/org/platanios/learn/classification/reflection/nell/input/";
-        filename = "/usr0/home/akdubey/Anthony/learn/learn/src/test/resources/org/platanios/learn/classification/reflection/brain/input/";
+        String filename = "/Users/Anthony/Development/GitHub/org.platanios/learn/src/test/resources/org/platanios/learn/classification/reflection/nell/input/";
+        filename = "/Users/Anthony/Development/GitHub/org.platanios/learn/src/test/resources/org/platanios/learn/classification/reflection/brain/input/";
         String separator = ",";
-        double[] classificationThresholds = new double[] { 0.1, 0.1, 0.1, 0.1 };
+        double[] classificationThresholds = new double[] { 0.05, 0.05, 0.05, 0.05 };
         classificationThresholds = new double[] { 0.5 };
         List<boolean[][]> functionOutputs = new ArrayList<>();
         List<boolean[]> trueLabels = new ArrayList<>();
@@ -35,14 +35,25 @@ public class ErrorEstimationLabels {
         }
         ErrorEstimationMethod[] errorEstimationMethods = new ErrorEstimationMethod[] {
 //                ErrorEstimationMethod.AR_2,
+//                ErrorEstimationMethod.AR_N,
 //                ErrorEstimationMethod.SIMPLE_GM,
-//                ErrorEstimationMethod.DOMAINS_DP_GM,
+                ErrorEstimationMethod.DOMAINS_FAST_DP_GM,
 //                ErrorEstimationMethod.PAIRS_FAST_DP_GM,
-            ErrorEstimationMethod.PAIRS_FAST_HDP_GM,
+//            ErrorEstimationMethod.PAIRS_FAST_HDP_GM,
 //                ErrorEstimationMethod.DOMAINS_PER_CLASSIFIER_DP_GM
         };
         double[] alphaValues = new double[]{
-                1e5
+//                1e-3,
+//                1e-2,
+//                1e-1,
+//                1e0,
+//                1e1,
+//                1e2,
+//                1e3,
+//                1e4,
+//                1e5
+                1e6,
+                1e7
         };
         runExperiments(errorEstimationMethods, alphaValues, functionOutputs, trueLabels);
     }
@@ -147,7 +158,7 @@ public class ErrorEstimationLabels {
                 }
                 break;
             case SIMPLE_GM:
-                ErrorEstimationSimpleGraphicalModel eesgm = new ErrorEstimationSimpleGraphicalModel(functionOutputs, 20000, 10);
+                ErrorEstimationSimpleGraphicalModel eesgm = new ErrorEstimationSimpleGraphicalModel(functionOutputs, 100000, 100);
                 eesgm.performGibbsSampling();
                 errorRates = eesgm.getErrorRatesMeans();
 
@@ -160,7 +171,7 @@ public class ErrorEstimationLabels {
                 }
                 break;
             case DOMAINS_DP_GM:
-                ErrorEstimationDomainsDPGraphicalModel eeddpgm = new ErrorEstimationDomainsDPGraphicalModel(functionOutputs, 20000, 10, alpha);
+                ErrorEstimationDomainsDPGraphicalModel eeddpgm = new ErrorEstimationDomainsDPGraphicalModel(functionOutputs, 100000, 100, alpha);
                 eeddpgm.performGibbsSampling();
                 errorRates = eeddpgm.getErrorRatesMeans();
 
@@ -173,7 +184,7 @@ public class ErrorEstimationLabels {
                 }
                 break;
             case DOMAINS_FAST_DP_GM:
-                ErrorEstimationDomainsFastDPGraphicalModel eedfdpgm = new ErrorEstimationDomainsFastDPGraphicalModel(functionOutputs, 10000, 10, alpha);
+                ErrorEstimationDomainsFastDPGraphicalModel eedfdpgm = new ErrorEstimationDomainsFastDPGraphicalModel(functionOutputs, 20000, 10, alpha);
                 eedfdpgm.performGibbsSampling();
                 errorRates = eedfdpgm.getErrorRatesMeans();
 
@@ -199,7 +210,7 @@ public class ErrorEstimationLabels {
                 }
                 break;
             case PAIRS_FAST_DP_GM:
-                ErrorEstimationDomainsFastDPMixedGraphicalModel eedfdpmgm = new ErrorEstimationDomainsFastDPMixedGraphicalModel(functionOutputs, 10000, 10, alpha);
+                ErrorEstimationDomainsFastDPMixedGraphicalModel eedfdpmgm = new ErrorEstimationDomainsFastDPMixedGraphicalModel(functionOutputs, 20000, 10, alpha);
                 eedfdpmgm.performGibbsSampling();
                 errorRates = eedfdpmgm.getErrorRatesMeans();
 
