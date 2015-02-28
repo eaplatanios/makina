@@ -20,7 +20,7 @@ public class ErrorEstimationDomainsFastHDPMixedGraphicalModel {
     private final double beta_e = 100;
 
     private final double alpha;
-    private final double gamma = 10000;
+    private final double gamma;
     private final int numberOfIterations;
     private final int burnInIterations;
     private final int thinning;
@@ -44,11 +44,14 @@ public class ErrorEstimationDomainsFastHDPMixedGraphicalModel {
     private double[][] labelVariances;
     private double[][] errorRateMeans;
     private double[][] errorRateVariances;
+
+    public int numberOfClusters = 1;
     
     private FastHDPPrior hdp;
 
-    public ErrorEstimationDomainsFastHDPMixedGraphicalModel(List<boolean[][]> functionOutputs, int numberOfIterations, int thinning, double alpha) {
+    public ErrorEstimationDomainsFastHDPMixedGraphicalModel(List<boolean[][]> functionOutputs, int numberOfIterations, int thinning, double alpha, double gamma) {
         this.alpha = alpha;
+        this.gamma = gamma;
         this.numberOfIterations = numberOfIterations;
         burnInIterations = numberOfIterations * 9 / 10;
         this.thinning = thinning;
@@ -143,7 +146,7 @@ public class ErrorEstimationDomainsFastHDPMixedGraphicalModel {
         for (int p = 0; p < numberOfDomains; p++)
             for (int j = 0; j < numberOfFunctions; j++)
                 uniqueClusters.add(zSamples[zSamples.length - 1][p][j]);
-        System.out.println("Number of clusters: " + uniqueClusters.size());
+        numberOfClusters = uniqueClusters.size();
         // Aggregate values for means and variances computation
         for (int sampleNumber = 0; sampleNumber < numberOfSamples; sampleNumber++) {
             for (int p = 0; p < numberOfDomains; p++) {
@@ -224,6 +227,15 @@ public class ErrorEstimationDomainsFastHDPMixedGraphicalModel {
             }
             errorRateSamples[iterationNumber][k] = randomDataGenerator.nextBeta(alpha_e + disagreementCount, beta_e + zCount - disagreementCount);
         }
+        for (int p = 0; p < numberOfDomains; p++) {
+            int numberOfErrorRatesBelowChance = 0;
+            for (int j = 0; j < numberOfFunctions; j++)
+                if (errorRateSamples[iterationNumber][zSamples[iterationNumber][p][j]] < 0.5)
+                    numberOfErrorRatesBelowChance++;
+            if (numberOfErrorRatesBelowChance < numberOfFunctions / 2.0)
+                for (int j = 0; j < numberOfFunctions; j++)
+                    errorRateSamples[iterationNumber][zSamples[iterationNumber][p][j]] = 1 - errorRateSamples[iterationNumber][zSamples[iterationNumber][p][j]];
+        }
     }
 
     private void sampleErrorRates(int iterationNumber) {
@@ -242,26 +254,35 @@ public class ErrorEstimationDomainsFastHDPMixedGraphicalModel {
             }
             errorRateSamples[iterationNumber + 1][k] = randomDataGenerator.nextBeta(alpha_e + disagreementCount, beta_e + zCount - disagreementCount);
         }
+        for (int p = 0; p < numberOfDomains; p++) {
+            int numberOfErrorRatesBelowChance = 0;
+            for (int j = 0; j < numberOfFunctions; j++)
+                if (errorRateSamples[iterationNumber + 1][zSamples[iterationNumber][p][j]] < 0.5)
+                    numberOfErrorRatesBelowChance++;
+            if (numberOfErrorRatesBelowChance < numberOfFunctions / 2.0)
+                for (int j = 0; j < numberOfFunctions; j++)
+                    errorRateSamples[iterationNumber + 1][zSamples[iterationNumber][p][j]] = 1 - errorRateSamples[iterationNumber + 1][zSamples[iterationNumber][p][j]];
+        }
     }
 
     private void sampleZAndBurnWithCollapsedErrorRates(int iterationNumber) {
-        for (int p = 0; p < numberOfDomains; p++) {
-            for (int j = 0; j < numberOfFunctions; j++) {
-                disagreements[j][p] = 0;
-                for (int i = 0; i < numberOfDataSamples[p]; i++)
-                    if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
-                        disagreements[j][p]++;
-            }
-        }
-        for (int k = 0; k < numberOfDomains * numberOfFunctions; k++) {
-            sum_2[k] = 0;
-            for (int j = 0; j < numberOfFunctions; j++) {
-                for (int p = 0; p < numberOfDomains; p++) {
-                    if (zSamples[iterationNumber][p][j] == k)
-                        sum_2[k] += disagreements[j][p];
-                }
-            }
-        }
+//        for (int p = 0; p < numberOfDomains; p++) {
+//            for (int j = 0; j < numberOfFunctions; j++) {
+//                disagreements[j][p] = 0;
+//                for (int i = 0; i < numberOfDataSamples[p]; i++)
+//                    if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
+//                        disagreements[j][p]++;
+//            }
+//        }
+//        for (int k = 0; k < numberOfDomains * numberOfFunctions; k++) {
+//            sum_2[k] = 0;
+//            for (int j = 0; j < numberOfFunctions; j++) {
+//                for (int p = 0; p < numberOfDomains; p++) {
+//                    if (zSamples[iterationNumber][p][j] == k)
+//                        sum_2[k] += disagreements[j][p];
+//                }
+//            }
+//        }
         for (int p = 0; p < numberOfDomains; p++) {
             for (int j = 0; j < numberOfFunctions; j++) {
                 
@@ -306,29 +327,25 @@ public class ErrorEstimationDomainsFastHDPMixedGraphicalModel {
             }
         }
     }
-    
-    
-    
-    
-    
+
     private void sampleInternalTableTopicsAndBurnWithCollapsedErrorRates(int iterationNumber) {
-        for (int p = 0; p < numberOfDomains; p++) {
-            for (int j = 0; j < numberOfFunctions; j++) {
-                disagreements[j][p] = 0;
-                for (int i = 0; i < numberOfDataSamples[p]; i++)
-                    if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
-                        disagreements[j][p]++;
-            }
-        }
-        for (int k = 0; k < numberOfDomains * numberOfFunctions; k++) {
-            sum_2[k] = 0;
-            for (int j = 0; j < numberOfFunctions; j++) {
-                for (int p = 0; p < numberOfDomains; p++) {
-                    if (zSamples[iterationNumber][p][j] == k)
-                        sum_2[k] += disagreements[j][p];
-                }
-            }
-        }
+//        for (int p = 0; p < numberOfDomains; p++) {
+//            for (int j = 0; j < numberOfFunctions; j++) {
+//                disagreements[j][p] = 0;
+//                for (int i = 0; i < numberOfDataSamples[p]; i++)
+//                    if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
+//                        disagreements[j][p]++;
+//            }
+//        }
+//        for (int k = 0; k < numberOfDomains * numberOfFunctions; k++) {
+//            sum_2[k] = 0;
+//            for (int j = 0; j < numberOfFunctions; j++) {
+//                for (int p = 0; p < numberOfDomains; p++) {
+//                    if (zSamples[iterationNumber][p][j] == k)
+//                        sum_2[k] += disagreements[j][p];
+//                }
+//            }
+//        }
         for (int p = 0; p < numberOfDomains; p++) {
             int tables_ids[] = hdp.get_tables_taken(p);
             for (int table_id:tables_ids){
@@ -508,7 +525,6 @@ public class ErrorEstimationDomainsFastHDPMixedGraphicalModel {
         for (int p = 0; p < numberOfDomains; p++) {
             int tables_ids[] = hdp.get_tables_taken(p);
             for (int table_id:tables_ids){
-                int previous_topic = hdp.get_topic_table(p, table_id);
                 int itm_lc[] = hdp.remove_tables_topic_assignment(p, table_id);
                 double smc_1 =0;
                 double smc_2 = 0;
@@ -571,9 +587,9 @@ public class ErrorEstimationDomainsFastHDPMixedGraphicalModel {
                     }
                     if(functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i]){
                         disagreements[j][p] --;
-                        sum_2[zSamples[iterationNumber][j][p]] --;
+                        sum_2[zSamples[iterationNumber][p][j]] --;
                     }
-                    sum_1[zSamples[iterationNumber][j][p]]--;
+                    sum_1[zSamples[iterationNumber][p][j]]--;
                 }
                 double p1 = Math.log(priorSamples[iterationNumber][p]);
                 double p0 = Math.log(1 - priorSamples[iterationNumber][p]);
@@ -596,9 +612,9 @@ public class ErrorEstimationDomainsFastHDPMixedGraphicalModel {
                 for(int j=0; j<numberOfFunctions; j++){
                     if(functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i]){
                         disagreements[j][p] ++;
-                        sum_2[zSamples[iterationNumber][j][p]] ++;
+                        sum_2[zSamples[iterationNumber][p][j]] ++;
                     }
-                    sum_1[zSamples[iterationNumber][j][p]]++;
+                    sum_1[zSamples[iterationNumber][p][j]]++;
                 }
             }
         }
