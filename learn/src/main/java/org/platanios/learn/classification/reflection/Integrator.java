@@ -381,7 +381,7 @@ public class Integrator<T extends Vector, S> {
                 }
                 List<boolean[][]> functionOutputs = new ArrayList<>();
                 functionOutputs.add(classifierOutputs.toArray(new boolean[classifierOutputs.size()][]));
-                ErrorEstimationSimpleGraphicalModel eegm = new ErrorEstimationSimpleGraphicalModel(functionOutputs, 100);
+                ErrorEstimationSimpleGraphicalModel eegm = new ErrorEstimationSimpleGraphicalModel(functionOutputs, 100, 1);
                 eegm.performGibbsSampling();
                 integrator.errorRates = eegm.getErrorRatesMeans()[0];
                 for (int i = 0; i < predictionResults.size(); i++) {

@@ -43,6 +43,8 @@ public class FastHDPPrior {
     public DS_HDP pdf[]; // to store pdf to be sent for sampling.
     
     
+    
+    
     public FastHDPPrior(int N, int M, double alpha, double gamma){
         int max_topic = N*M;
         table_seated = new int[N][M];
@@ -142,8 +144,7 @@ public class FastHDPPrior {
      * @param group_id
      * @param item_location
      * @return 
-     */
-    
+     */    
     public int prob_table_assignment_for_item(int group_id, int item_location){
         
         int total_positions = taken_tables[group_id].size() + taken_topics.size()+1;
@@ -188,6 +189,71 @@ public class FastHDPPrior {
         pdf[position].topic = topic_id;
         position++;
         return position;
+    }
+    
+    
+    public int[] remove_tables_topic_assignment(int group_id, int table_id){
+        
+        int topic_id = tables_topic_id[group_id][table_id];
+        
+        tables_topic_id[group_id][table_id] =-1;
+        topic_table_count[topic_id]--;
+        topic_table_sum--;
+        
+        if (topic_table_count[topic_id] == 0) {
+            available_topcis.add(topic_id);
+            taken_topics.remove(topic_id);
+        }
+        
+        return table_items[group_id][table_id].toArray();
+        
+    }
+    
+    public void add_tobles_topic_assignment(int group_id, int table_id, int topic_id){
+        tables_topic_id[group_id][table_id] =topic_id;
+        topic_table_count[topic_id]++;
+        topic_table_sum++;
+        
+        if (topic_table_count[topic_id] == 1) {
+            available_topcis.remove(topic_id);
+            taken_topics.add(topic_id);
+        }
+    }
+    
+    public int prob_topic_assignment_for_table(int group_id, int table_id){
+        
+        int position = 0;
+        TIntIterator it = taken_topics.iterator();
+        int topic_id;
+        
+        while(it.hasNext()){
+            topic_id = it.next();
+            pdf[position].prob = topic_table_count[topic_id];
+            pdf[position].topic = topic_id;
+            position++;
+        }
+        if(available_topcis.size()==0){
+            return position;
+        }
+        pdf[position].prob = alpha;
+        it = available_topcis.iterator();
+        pdf[position].topic = it.next();
+        position++;
+        
+        return position;
+        
+    }
+    
+    public int[] get_tables_taken(int group_id){
+        return taken_tables[group_id].toArray();
+    }
+    
+    public int get_topic_table(int group_id, int table_id){
+        return tables_topic_id[group_id][table_id];
+    }
+    
+    public int[] get_topics(){
+        return taken_topics.toArray();
     }
     
     
