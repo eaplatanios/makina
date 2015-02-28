@@ -1,5 +1,6 @@
 package org.platanios.learn.classification.reflection;
 
+import gnu.trove.map.hash.TIntIntHashMap;
 import org.apache.commons.math3.random.RandomDataGenerator;
 import org.platanios.learn.math.matrix.MatrixUtilities;
 
@@ -19,7 +20,7 @@ public class ErrorEstimationDomainsFastHDPMixedGraphicalModel {
     private final double beta_e = 100;
 
     private final double alpha;
-    private final double gamma = 1e3;
+    private final double gamma = 10000;
     private final int numberOfIterations;
     private final int burnInIterations;
     private final int thinning;
@@ -91,7 +92,7 @@ public class ErrorEstimationDomainsFastHDPMixedGraphicalModel {
                 labelsSamples[0][p][i] = randomDataGenerator.nextBinomial(1, 0.5);
             for (int j = 0; j < numberOfFunctions; j++) {
                 zSamples[0][p][j] = 0;
-                hdp.add_items_table_assignment(p, j, j, 0);
+                hdp.add_items_table_assignment(p, j, 0, 0);
                 errorRateSamples[0][p * numberOfFunctions + j] = 0.25;
                 disagreements[j][p] = 0;
                 for (int i = 0; i < numberOfDataSamples[p]; i++)
@@ -115,24 +116,27 @@ public class ErrorEstimationDomainsFastHDPMixedGraphicalModel {
 
     public void performGibbsSampling() {
         for (int iterationNumber = 0; iterationNumber < burnInIterations; iterationNumber++) {
-//            samplePriorsAndBurn(0);
-//            sampleLabelsAndBurn(0);
-//            sampleZAndBurnWithCollapsedErrorRates(0);
             samplePriorsAndBurn(0);
-            sampleErrorRatesAndBurn(0);
-            sampleZAndBurn(0);
-            sampleLabelsAndBurn(0);
+            sampleLabelsAndBurnWithCollapsedErrorRates(0);
+            sampleZAndBurnWithCollapsedErrorRates(0);
+            sampleInternalTableTopicsAndBurnWithCollapsedErrorRates(0);
+//            samplePriorsAndBurn(0);
+//            sampleErrorRatesAndBurn(0);
+//            sampleZAndBurn(0);
+//            sampleLabelsAndBurn(0);
         }
         for (int iterationNumber = 0; iterationNumber < numberOfSamples - 1; iterationNumber++) {
             for (int i = 0; i < thinning; i++) {
                 samplePriorsAndBurn(iterationNumber);
                 sampleErrorRatesAndBurn(iterationNumber);
                 sampleZAndBurn(iterationNumber);
+                sampleTableTopicAndBurn(iterationNumber);
                 sampleLabelsAndBurn(iterationNumber);
             }
             samplePriors(iterationNumber);
             sampleErrorRates(iterationNumber);
             sampleZ(iterationNumber);
+            sampleTableTopic(iterationNumber);
             sampleLabels(iterationNumber);
         }
         Set<Integer> uniqueClusters = new HashSet<>();
@@ -218,8 +222,7 @@ public class ErrorEstimationDomainsFastHDPMixedGraphicalModel {
                     }
                 }
             }
-            if (zCount > 0)
-                errorRateSamples[iterationNumber][k] = randomDataGenerator.nextBeta(alpha_e + disagreementCount, beta_e + zCount - disagreementCount);
+            errorRateSamples[iterationNumber][k] = randomDataGenerator.nextBeta(alpha_e + disagreementCount, beta_e + zCount - disagreementCount);
         }
     }
 
@@ -237,8 +240,7 @@ public class ErrorEstimationDomainsFastHDPMixedGraphicalModel {
                     }
                 }
             }
-            if (zCount > 0)
-                errorRateSamples[iterationNumber + 1][k] = randomDataGenerator.nextBeta(alpha_e + disagreementCount, beta_e + zCount - disagreementCount);
+            errorRateSamples[iterationNumber + 1][k] = randomDataGenerator.nextBeta(alpha_e + disagreementCount, beta_e + zCount - disagreementCount);
         }
     }
 
@@ -276,7 +278,7 @@ public class ErrorEstimationDomainsFastHDPMixedGraphicalModel {
                 for(int i=0;i<total_cnt - 1;i++) {
                     int k = hdp.pdf[i].topic;
                     double alpha = alpha_e + sum_2[k] + disagreements[j][p];
-                    double beta = beta_e + sum_1[k] + numberOfDataSamples[p] - disagreements[j][p];
+                    double beta = beta_e + sum_1[k] - sum_2[k] + numberOfDataSamples[p] - disagreements[j][p];
                     z_probabilities[i] += logBeta(alpha, beta) - logBeta(alpha_e + sum_2[k], beta_e + sum_1[k] - sum_2[k]);
                 }
                 z_probabilities[total_cnt - 1] += logBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]) - logBeta(alpha_e, beta_e);
@@ -302,6 +304,75 @@ public class ErrorEstimationDomainsFastHDPMixedGraphicalModel {
                     hdp.add_items_table_assignment(p, j, hdp.pdf[total_cnt-1].table, hdp.pdf[total_cnt-1].topic);
                 }
             }
+        }
+    }
+    
+    
+    
+    
+    
+    private void sampleInternalTableTopicsAndBurnWithCollapsedErrorRates(int iterationNumber) {
+        for (int p = 0; p < numberOfDomains; p++) {
+            for (int j = 0; j < numberOfFunctions; j++) {
+                disagreements[j][p] = 0;
+                for (int i = 0; i < numberOfDataSamples[p]; i++)
+                    if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
+                        disagreements[j][p]++;
+            }
+        }
+        for (int k = 0; k < numberOfDomains * numberOfFunctions; k++) {
+            sum_2[k] = 0;
+            for (int j = 0; j < numberOfFunctions; j++) {
+                for (int p = 0; p < numberOfDomains; p++) {
+                    if (zSamples[iterationNumber][p][j] == k)
+                        sum_2[k] += disagreements[j][p];
+                }
+            }
+        }
+        for (int p = 0; p < numberOfDomains; p++) {
+            int tables_ids[] = hdp.get_tables_taken(p);
+            for (int table_id:tables_ids){
+                int previous_topic = hdp.get_topic_table(p, table_id);
+                int itm_lc[] = hdp.remove_tables_topic_assignment(p, table_id);
+                double smc_1 =0;
+                double smc_2 = 0;
+                for (int j:itm_lc){
+                    sum_1[previous_topic] -= numberOfDataSamples[p];
+                    smc_1 += numberOfDataSamples[p];
+                    sum_2[previous_topic] -= disagreements[j][p];
+                    smc_2 += disagreements[j][p];
+                }
+                int total_cnt = hdp.prob_topic_assignment_for_table(p, table_id);
+                double z_probabilities[] = new double[total_cnt];
+                for(int i=0;i<total_cnt;i++){
+                    z_probabilities[i] = Math.log(hdp.pdf[i].prob);
+                }
+                for(int i=0;i<total_cnt - 1;i++) {
+                    int k = hdp.pdf[i].topic;
+                    double alpha = alpha_e +  sum_2[k] + smc_2;
+                    double beta = beta_e + sum_1[k] -sum_2[k] + smc_1 - smc_2;
+                    z_probabilities[i] += logBeta(alpha, beta) - logBeta(alpha_e + sum_2[k], beta_e + sum_1[k] - sum_2[k]);
+                }
+                z_probabilities[total_cnt - 1] += logBeta(alpha_e + smc_2, beta_e + smc_1-smc_2) - logBeta(alpha_e, beta_e);
+                for(int i=1;i<total_cnt;i++){
+                    z_probabilities[i] = MatrixUtilities.computeLogSumExp(z_probabilities[i-1],z_probabilities[i]);
+                }
+                double uniform = Math.log(random.nextDouble()) + z_probabilities[total_cnt-1];
+                int sample_topic = hdp.pdf[total_cnt-1].topic;
+                for(int i=0;i<total_cnt-1;i++){
+                    if(z_probabilities[i] > uniform){
+                        sample_topic = hdp.pdf[i].topic;
+                        break;
+                    }
+                }
+                hdp.add_tobles_topic_assignment(p, table_id, sample_topic);
+                sum_1[sample_topic] += smc_1;
+                sum_2[sample_topic] += smc_2;
+                for (int j:itm_lc){
+                    zSamples[iterationNumber][p][j] = sample_topic;
+                }
+            }
+            
         }
     }
 
@@ -344,6 +415,55 @@ public class ErrorEstimationDomainsFastHDPMixedGraphicalModel {
             }
         }
     }
+    
+    
+    private void sampleTableTopicAndBurn(int iterationNumber) {
+        for (int p = 0; p < numberOfDomains; p++) {
+            int tables_ids[] = hdp.get_tables_taken(p);
+            for (int table_id:tables_ids){
+                int previous_topic = hdp.get_topic_table(p, table_id);
+                int itm_lc[] = hdp.remove_tables_topic_assignment(p, table_id);
+                double smc_1 =0;
+                double smc_2 = 0;
+                for (int j:itm_lc){
+                    for(int i=0;i<numberOfDataSamples[p];i++){
+                        if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
+                            smc_2++;
+                    }
+                    smc_1 += numberOfDataSamples[p];
+                }
+                int total_cnt = hdp.prob_topic_assignment_for_table(p, table_id);
+                double z_probabilities[] = new double[total_cnt];
+                for(int i=0;i<total_cnt;i++){
+                    z_probabilities[i] = Math.log(hdp.pdf[i].prob);
+                }
+                for(int i=0;i<total_cnt - 1;i++) {
+                    int k = hdp.pdf[i].topic;
+                    z_probabilities[i] += smc_2 * Math.log(errorRateSamples[iterationNumber][k]);
+                    z_probabilities[i] += (smc_1 - smc_2) * Math.log(1 - errorRateSamples[iterationNumber][k]);
+                }
+                z_probabilities[total_cnt - 1] += logBeta(alpha_e + smc_2, beta_e + smc_1-smc_2) - logBeta(alpha_e, beta_e);
+                for(int i=1;i<total_cnt;i++){
+                    z_probabilities[i] = MatrixUtilities.computeLogSumExp(z_probabilities[i-1],z_probabilities[i]);
+                }
+                double uniform = Math.log(random.nextDouble()) + z_probabilities[total_cnt-1];
+                int sample_topic = hdp.pdf[total_cnt-1].topic;
+                for(int i=0;i<total_cnt-1;i++){
+                    if(z_probabilities[i] > uniform){
+                        sample_topic = hdp.pdf[i].topic;
+                        break;
+                    }
+                }
+                hdp.add_tobles_topic_assignment(p, table_id, sample_topic);
+                for (int j:itm_lc){
+                    zSamples[iterationNumber][p][j] = sample_topic;
+                }
+                
+            }
+        }
+    }
+    
+    
 
     private void sampleZ(int iterationNumber) {
         for (int p = 0; p < numberOfDomains; p++) {
@@ -383,6 +503,107 @@ public class ErrorEstimationDomainsFastHDPMixedGraphicalModel {
             }
         }
     }
+    
+    private void sampleTableTopic(int iterationNumber) {
+        for (int p = 0; p < numberOfDomains; p++) {
+            int tables_ids[] = hdp.get_tables_taken(p);
+            for (int table_id:tables_ids){
+                int previous_topic = hdp.get_topic_table(p, table_id);
+                int itm_lc[] = hdp.remove_tables_topic_assignment(p, table_id);
+                double smc_1 =0;
+                double smc_2 = 0;
+                for (int j:itm_lc){
+                    for(int i=0;i<numberOfDataSamples[p];i++){
+                        if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
+                            smc_2++;
+                    }
+                    smc_1 += numberOfDataSamples[p];
+                }
+                int total_cnt = hdp.prob_topic_assignment_for_table(p, table_id);
+                double z_probabilities[] = new double[total_cnt];
+                for(int i=0;i<total_cnt;i++){
+                    z_probabilities[i] = Math.log(hdp.pdf[i].prob);
+                }
+                for(int i=0;i<total_cnt - 1;i++) {
+                    int k = hdp.pdf[i].topic;
+                    z_probabilities[i] += smc_2 * Math.log(errorRateSamples[iterationNumber + 1][k]);
+                    z_probabilities[i] += (smc_1 - smc_2) * Math.log(1 - errorRateSamples[iterationNumber + 1][k]);
+                }
+                z_probabilities[total_cnt - 1] += logBeta(alpha_e + smc_2, beta_e + smc_1-smc_2) - logBeta(alpha_e, beta_e);
+                for(int i=1;i<total_cnt;i++){
+                    z_probabilities[i] = MatrixUtilities.computeLogSumExp(z_probabilities[i-1],z_probabilities[i]);
+                }
+                double uniform = Math.log(random.nextDouble()) + z_probabilities[total_cnt-1];
+                int sample_topic = hdp.pdf[total_cnt-1].topic;
+                for(int i=0;i<total_cnt-1;i++){
+                    if(z_probabilities[i] > uniform){
+                        sample_topic = hdp.pdf[i].topic;
+                        break;
+                    }
+                }
+                hdp.add_tobles_topic_assignment(p, table_id, sample_topic);
+                for (int j:itm_lc){
+                    zSamples[iterationNumber + 1][p][j] = sample_topic;
+                }
+                
+            }
+        }
+    }
+    
+    private void sampleLabelsAndBurnWithCollapsedErrorRates(int iterationNumber) {
+        int topics[] = hdp.get_topics();
+        TIntIntHashMap hmp = new TIntIntHashMap();
+        for(int i=0;i<topics.length;i++){
+            hmp.put(topics[i], i);
+        }
+        for (int p = 0; p < numberOfDomains; p++) {
+            for(int i=0; i < numberOfDataSamples[p]; i++){
+                double mistake[][] = new double[topics.length][2];
+                double matches[][] = new double[topics.length][2];
+                
+                for(int j=0; j<numberOfFunctions; j++){
+                    if(functionOutputsArray[j][p][i] == 1){
+                        mistake[hmp.get(zSamples[iterationNumber][p][j])][0] +=1;
+                        matches[hmp.get(zSamples[iterationNumber][p][j])][1] +=1;
+                    }else{
+                        mistake[hmp.get(zSamples[iterationNumber][p][j])][1] +=1;
+                        matches[hmp.get(zSamples[iterationNumber][p][j])][0] +=1;
+                    }
+                    if(functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i]){
+                        disagreements[j][p] --;
+                        sum_2[zSamples[iterationNumber][j][p]] --;
+                    }
+                    sum_1[zSamples[iterationNumber][j][p]]--;
+                }
+                double p1 = Math.log(priorSamples[iterationNumber][p]);
+                double p0 = Math.log(1 - priorSamples[iterationNumber][p]);
+                for (int tp:topics){
+                    for(int l=0;l<mistake[hmp.get(tp)][0];l++){
+                        p0 += Math.log(alpha_e + sum_2[tp] + l);
+                    }
+                    for(int l=0;l<mistake[hmp.get(tp)][1];l++){
+                        p1 += Math.log(alpha_e + sum_2[tp] + l);
+                    }
+                    for(int l=0;l<matches[hmp.get(tp)][0];l++){
+                        p0 += Math.log(beta_e + sum_1[tp] - sum_2[tp] + l);
+                    }
+                    for(int l=0;l<matches[hmp.get(tp)][1];l++){
+                        p1 += Math.log(beta_e + sum_1[tp] - sum_2[tp] + l);
+                    }
+                }
+                double logsum = MatrixUtilities.computeLogSumExp(p1,p0);
+                labelsSamples[iterationNumber][p][i] = randomDataGenerator.nextBinomial(1, Math.exp(p1 - logsum));
+                for(int j=0; j<numberOfFunctions; j++){
+                    if(functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i]){
+                        disagreements[j][p] ++;
+                        sum_2[zSamples[iterationNumber][j][p]] ++;
+                    }
+                    sum_1[zSamples[iterationNumber][j][p]]++;
+                }
+            }
+        }
+    }
+    
 
     private void sampleLabelsAndBurn(int iterationNumber) {
         for (int p = 0; p < numberOfDomains; p++) {
