@@ -309,12 +309,12 @@ public class Integrator<T extends Vector, S> {
                         PredictedDataInstance<T, S> predictedDataInstance = dataSet.get(j);
                         MultiViewPredictedDataInstance<T, S> unlabeledDataInstance = integrator.unlabeledDataSet.get(j);
                         if (i == 0 || predictedDataInstance.probability() > unlabeledDataInstance.probability()) {
-                            integrator.unlabeledDataSet.set(i, new MultiViewPredictedDataInstance<>(
-                                                         null,
-                                                         unlabeledDataInstance.features(),
-                                                         predictedDataInstance.label(),
-                                                         null,
-                                                         predictedDataInstance.probability())
+                            integrator.unlabeledDataSet.set(j, new MultiViewPredictedDataInstance<>(
+                                                                    unlabeledDataInstance.name(),
+                                                                    unlabeledDataInstance.features(),
+                                                                    predictedDataInstance.label(),
+                                                                    unlabeledDataInstance.source(),
+                                                                    predictedDataInstance.probability())
                             );
                         }
                     }
@@ -352,12 +352,12 @@ public class Integrator<T extends Vector, S> {
                         MultiViewPredictedDataInstance<T, S> unlabeledDataInstance = integrator.unlabeledDataSet.get(j);
                         double weightedProbability = predictedDataInstance.probability() * (1 - integrator.errorRates[i]);
                         if (i == 0 || weightedProbability > unlabeledDataInstance.probability()) {
-                            integrator.unlabeledDataSet.set(i, new MultiViewPredictedDataInstance<>(
-                                                         null,
-                                                         unlabeledDataInstance.features(),
-                                                         predictedDataInstance.label(),
-                                                         null,
-                                                         weightedProbability)
+                            integrator.unlabeledDataSet.set(j, new MultiViewPredictedDataInstance<>(
+                                                                    unlabeledDataInstance.name(),
+                                                                    unlabeledDataInstance.features(),
+                                                                    predictedDataInstance.label(),
+                                                                    unlabeledDataInstance.source(),
+                                                                    weightedProbability)
                             );
                         }
                     }
@@ -381,7 +381,7 @@ public class Integrator<T extends Vector, S> {
                 }
                 List<boolean[][]> functionOutputs = new ArrayList<>();
                 functionOutputs.add(classifierOutputs.toArray(new boolean[classifierOutputs.size()][]));
-                ErrorEstimationSimpleGraphicalModel eegm = new ErrorEstimationSimpleGraphicalModel(functionOutputs, 100);
+                ErrorEstimationSimpleGraphicalModel eegm = new ErrorEstimationSimpleGraphicalModel(functionOutputs, 100, 1);
                 eegm.performGibbsSampling();
                 integrator.errorRates = eegm.getErrorRatesMeans()[0];
                 for (int i = 0; i < predictionResults.size(); i++) {
@@ -392,11 +392,11 @@ public class Integrator<T extends Vector, S> {
                         MultiViewPredictedDataInstance<T, S> unlabeledDataInstance = integrator.unlabeledDataSet.get(j);
                         double weightedProbability = predictedDataInstance.probability() * (1 - integrator.errorRates[i]);
                         if (i == 0 || weightedProbability > unlabeledDataInstance.probability()) {
-                            integrator.unlabeledDataSet.set(i, new MultiViewPredictedDataInstance<>(
-                                                                    null,
+                            integrator.unlabeledDataSet.set(j, new MultiViewPredictedDataInstance<>(
+                                                                    unlabeledDataInstance.name(),
                                                                     unlabeledDataInstance.features(),
                                                                     predictedDataInstance.label(),
-                                                                    null,
+                                                                    unlabeledDataInstance.source(),
                                                                     weightedProbability)
                             );
                         }
@@ -431,11 +431,11 @@ public class Integrator<T extends Vector, S> {
                         MultiViewPredictedDataInstance<T, S> unlabeledDataInstance = integrator.unlabeledDataSet.get(j);
                         double weightedProbability = predictedDataInstance.probability() * (1 - integrator.errorRates[i]);
                         if (i == 0 || weightedProbability > unlabeledDataInstance.probability()) {
-                            integrator.unlabeledDataSet.set(i, new MultiViewPredictedDataInstance<>(
-                                                                    null,
+                            integrator.unlabeledDataSet.set(j, new MultiViewPredictedDataInstance<>(
+                                                                    unlabeledDataInstance.name(),
                                                                     unlabeledDataInstance.features(),
                                                                     predictedDataInstance.label(),
-                                                                    null,
+                                                                    unlabeledDataInstance.source(),
                                                                     weightedProbability)
                             );
                         }
