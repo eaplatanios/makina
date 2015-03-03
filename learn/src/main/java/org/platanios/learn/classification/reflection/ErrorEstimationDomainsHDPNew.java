@@ -305,7 +305,7 @@ public class ErrorEstimationDomainsHDPNew {
             z_probabilities[i] = Math.log(hdp.pdf[i].prob);
         }
         int topic_id = 0;
-        error_rate[total_cnt - 1] = (1.0 * disagreement[domain_id][classifier_id]) / num_example[domain_id];
+        error_rate[hdp.pdf[total_cnt - 1].topic] = (1.0 * disagreement[domain_id][classifier_id]) / num_example[domain_id];
         for (int i = 0; i < total_cnt; i++) {
             topic_id = hdp.pdf[i].topic;
             z_probabilities[i] += disagreement[domain_id][classifier_id] * Math.log(error_rate[topic_id]) + (num_example[domain_id] - disagreement[domain_id][classifier_id]) * Math.log(1 - error_rate[topic_id]);
@@ -492,11 +492,11 @@ public class ErrorEstimationDomainsHDPNew {
     }
     
     public void check_error_negative(){
-        for(int i=0;i<err_cnt.length;i++){
-            if(err_cnt[i][0] < 0 || err_cnt[i][1] < 0){
-                System.out.println("Error");
-            }
-        }
+//        for(int i=0;i<err_cnt.length;i++){
+//            if(err_cnt[i][0] < 0 || err_cnt[i][1] < 0){
+//                System.out.println("Error");
+//            }
+//        }
     }
 
     public void gibbs_one_iteration_uncollapsed() {
