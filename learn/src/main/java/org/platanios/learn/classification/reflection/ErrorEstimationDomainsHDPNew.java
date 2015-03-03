@@ -589,9 +589,14 @@ public class ErrorEstimationDomainsHDPNew {
             for(int i=0;i<fun.get(d).length;i++){
                 for(int j=0;j<fun.get(d)[i].length;j++){
                     if(fun.get(d)[i][j] != ls[d][i]){
-                        log_prob += Math.log(error_rate[zs[d][j]]);
+                        if(!Double.isInfinite(Math.log(error_rate[zs[d][j]]))){
+                            log_prob += Math.log(error_rate[zs[d][j]]);
+                        }
+                        
                     }else{
-                        log_prob += Math.log(1-error_rate[zs[d][j]]);
+                        if(!Double.isInfinite(Math.log(1-error_rate[zs[d][j]]))){
+                            log_prob += Math.log(1-error_rate[zs[d][j]]);
+                        }
                     }
                 }
             }
