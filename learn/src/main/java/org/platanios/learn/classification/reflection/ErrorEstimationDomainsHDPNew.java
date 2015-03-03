@@ -116,6 +116,41 @@ public class ErrorEstimationDomainsHDPNew {
         initialize_for_sampling();
 
     }
+    
+    public ErrorEstimationDomainsHDPNew(List<boolean[][]> f, double alpha, double gamma, double []error_rate, int licnt[][]) {
+        this.num_domain = f.size();
+        this.num_classifier = f.get(0)[0].length;
+        this.num_example = new int[num_domain];
+        for (int d = 0; d < num_domain; d++) {
+            num_example[d] = f.get(d).length;
+        }
+        this.f = new boolean[num_domain][num_classifier][];
+        this.l = new boolean[num_domain][];
+        for (int d = 0; d < num_domain; d++) {
+            l[d] = new boolean[f.get(d).length];
+            for (int j = 0; j < num_classifier; j++) {
+                this.f[d][j] = new boolean[f.get(d).length];
+                for (int i = 0; i < num_example[d]; i++) {
+                    this.f[d][j][i] = f.get(d)[i][j];
+                }
+            }
+        }
+        this.hdp = new FastHDPPrior(num_domain, num_classifier, alpha, gamma);
+        z = new int[num_domain][num_classifier];
+        p = new double[num_domain];
+//        e = new double[num_domain][num_classifier];
+
+        li_cnt = licnt;
+        sum_li = new int[num_domain];
+
+        err_cnt = new int[num_domain * num_classifier][2];
+        sum_err = new int[num_domain * num_classifier];
+
+        rm = new Random(1983473);
+        disagreement = new int[num_domain][num_classifier];
+        this.error_rate = error_rate;
+        initialize_for_sampling();
+    }
 
     public void initialize_for_sampling() {
         for (int domain_id = 0; domain_id < num_domain; domain_id++) {
@@ -513,7 +548,9 @@ public class ErrorEstimationDomainsHDPNew {
     public double rates_to_return[][];
     public double labels_to_return[][];
     public int num_cluster;
+    public double avg_error_rates[];
     public void run_gibbs_uncollapsed(int num_internal_iteration, int num_samples_needed) {
+        avg_error_rates = new double[error_rate.length];
         rates_to_return = new double[num_domain][num_classifier];
         labels_to_return = new double[num_domain][];
         for(int d=0;d<num_domain;d++){
@@ -525,14 +562,50 @@ public class ErrorEstimationDomainsHDPNew {
             }
             for(int d=0;d<num_domain;d++){
                 for(int j=0;j<num_classifier;j++){
-                    rates_to_return[d][j] += (error_rate[z[d][j]]/num_samples_needed);
+                    rates_to_return[d][j] += (error_rate[z[d][j]]/num_samples_needed);                    
                 }
                 for(int i=0;i<num_example[d];i++){
                     labels_to_return[d][i] += l[d][i]? (1.0/num_samples_needed):0;
                 }
-            }            
+            }
+            for(int p=0;p<error_rate.length;p++){
+                avg_error_rates[p] += error_rate[p]/num_samples_needed;
+            }
         }
         num_cluster = hdp.get_topics().length;
+        
+    }
+    
+    public double get_log_likelihood(List<boolean [][]> fun, double alpha, double gamma, int num_iteration, int licnt[][]){
+        ErrorEstimationDomainsHDPNew hdp1 = new ErrorEstimationDomainsHDPNew(fun, alpha, gamma, avg_error_rates,licnt);
+        for(int i=0;i<num_iteration;i++){
+            hdp1.sample_for_likelihood();
+        }
+        double log_prob =0;
+        int zs[][] = hdp1.get_z();
+        boolean ls[][] = hdp1.get_l();
+        double e[] = hdp1.error_rate;
+        for(int d=0;d<fun.size();d++){
+            for(int i=0;i<fun.get(d).length;i++){
+                for(int j=0;j<fun.get(d)[i].length;j++){
+                    if(fun.get(d)[i][j] != ls[d][i]){
+                        log_prob += Math.log(error_rate[zs[d][j]]);
+                    }else{
+                        log_prob += Math.log(1-error_rate[zs[d][j]]);
+                    }
+                }
+            }
+        }
+        return log_prob;
+    }
+    
+    public void sample_for_likelihood(){
+        sample_z_uncollapsed();
+        check_error_negative();
+        sample_tables_topic_uncollapsed();
+        check_error_negative();
+        sample_l_uncolapsed();
+        check_error_negative();
     }
 
     public void sample_error_rate_uncollapsed() {
@@ -540,6 +613,14 @@ public class ErrorEstimationDomainsHDPNew {
         for (int topic_id : topics) {
             error_rate[topic_id] = randomDataGenerator.nextBeta(alphae + err_cnt[topic_id][0], betae + err_cnt[topic_id][1]);
         }
+    }
+    
+    public int[][] get_z(){
+        return z;
+    }
+    
+    public boolean[][] get_l(){
+        return l;
     }
 
     public static double sumLogProb(double a, double b) {
