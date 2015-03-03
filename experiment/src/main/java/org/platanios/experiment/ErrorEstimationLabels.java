@@ -17,21 +17,23 @@ import java.util.Random;
 public class ErrorEstimationLabels {
     public static void main(String[] args) {
         String filename = "/Users/Anthony/Development/GitHub/org.platanios/learn/src/test/resources/org/platanios/learn/classification/reflection/nell/input/";
-//        filename = "/Users/Anthony/Development/GitHub/org.platanios/learn/src/test/resources/org/platanios/learn/classification/reflection/brain/input/";
+        filename = "/Users/Anthony/Development/GitHub/org.platanios/learn/src/test/resources/org/platanios/learn/classification/reflection/brain/input/";
         String separator = ",";
         double[] classificationThresholds = new double[] { 0.05, 0.05, 0.05, 0.05 };
-//        classificationThresholds = new double[] { 0.5 };
+        classificationThresholds = new double[] { 0.5 };
         List<boolean[][]> functionOutputs = new ArrayList<>();
         List<boolean[]> trueLabels = new ArrayList<>();
+        List<boolean[][]> evaluationFunctionOutputs = new ArrayList<>();
         for (File file : new File(filename).listFiles()) {
             if (file.isFile()) {
                 DomainData data = parseLabeledDataFromCSVFile(file,
                                                               separator,
                                                               classificationThresholds,
                                                               1,
-                                                              false);
+                                                              true);
                 functionOutputs.add(data.functionOutputs);
                 trueLabels.add(data.trueLabels);
+                evaluationFunctionOutputs.add(data.evaluationFunctionOutputs);
             }
         }
         ErrorEstimationMethod[] errorEstimationMethods = new ErrorEstimationMethod[] {
@@ -40,7 +42,7 @@ public class ErrorEstimationLabels {
 //                ErrorEstimationMethod.SIMPLE_GM,
                 ErrorEstimationMethod.DOMAINS_FAST_DP_GM,
 //                ErrorEstimationMethod.PAIRS_FAST_DP_GM,
-            ErrorEstimationMethod.HDP_GM,
+//            ErrorEstimationMethod.HDP_GM,
 //                ErrorEstimationMethod.DOMAINS_PER_CLASSIFIER_DP_GM
         };
         Double[] alphaValues = new Double[]{
@@ -53,17 +55,17 @@ public class ErrorEstimationLabels {
                 1e3,
                 1e4,
                 1e5,
-//                1e6,
-//                1e7,
-//                1e8,
-//                1e9,
-//                1e10,
-//                1e11,
-//                1e12,
-//                1e13,
-//                1e14,
-//                1e15,
-//                1e16
+                1e6,
+                1e7,
+                1e8,
+                1e9,
+                1e10,
+                1e11,
+                1e12,
+                1e13,
+                1e14,
+                1e15,
+                1e16
         };
         Double[] gammaValues = new Double[] {
                 1e-3,
@@ -76,10 +78,10 @@ public class ErrorEstimationLabels {
 //                1e4,
 //                1e5,
         };
-        runExperiments(errorEstimationMethods, alphaValues, gammaValues, functionOutputs, trueLabels);
+        runExperiments(errorEstimationMethods, alphaValues, gammaValues, functionOutputs, trueLabels, evaluationFunctionOutputs);
     }
 
-    public static void runExperiments(ErrorEstimationMethod[] errorEstimationMethods, Double[] alphaValues, Double[] gammaValues, List<boolean[][]> functionOutputs, List<boolean[]> trueLabels) {
+    public static void runExperiments(ErrorEstimationMethod[] errorEstimationMethods, Double[] alphaValues, Double[] gammaValues, List<boolean[][]> functionOutputs, List<boolean[]> trueLabels, List<boolean[][]> evaluationFunctionOutputs) {
         // Combine the labels using a simple majority vote
         boolean[][] labels = new boolean[functionOutputs.size()][];
         for (int p = 0; p < functionOutputs.size(); p++) {
@@ -108,23 +110,25 @@ public class ErrorEstimationLabels {
                 Arrays.asList(alphaValues).parallelStream().forEach(alpha -> {
                     if (method == ErrorEstimationMethod.HDP_GM) {
                         Arrays.asList(gammaValues).parallelStream().forEach(gamma -> {
-                            Results results = runExperiment(method, functionOutputs, trueLabels, alpha, gamma);
+                            Results results = runExperiment(method, functionOutputs, trueLabels, evaluationFunctionOutputs, alpha, gamma);
                             System.out.println(method + "\t-\tγ = " + gamma
                                                        + "\t-\tα = " + alpha
                                                        + "\t-\tError Rates MAD Mean: " + results.getErrorRatesMAD()
                                                        + "\t-\tLabels Error Rate Mean: " + results.getLabelsMeanErrorRate()
-                                                       + "\t-\tNumber of Clusters: " + results.getNumberOfClusters());
+                                                       + "\t-\tNumber of Clusters: " + results.getNumberOfClusters()
+                                                       + "\t-\tLog-likelihood: " + results.getLogLikelihood());
                         });
                     } else {
-                        Results results = runExperiment(method, functionOutputs, trueLabels, alpha, 0);
+                        Results results = runExperiment(method, functionOutputs, trueLabels, evaluationFunctionOutputs, alpha, 0);
                         System.out.println(method + "\t-\tα = " + alpha
                                                    + "\t-\tError Rates MAD Mean: " + results.getErrorRatesMAD()
                                                    + "\t-\tLabels Error Rate Mean: " + results.getLabelsMeanErrorRate()
-                                                   + "\t-\tNumber of Clusters: " + results.getNumberOfClusters());
+                                                   + "\t-\tNumber of Clusters: " + results.getNumberOfClusters()
+                                                   + "\t-\tLog-likelihood: " + results.getLogLikelihood());
                     }
                 });
             } else {
-                Results results = runExperiment(method, functionOutputs, trueLabels, 0, 0);
+                Results results = runExperiment(method, functionOutputs, trueLabels, evaluationFunctionOutputs, 0, 0);
                 System.out.println(method
                                            + "\t-\tError Rates MAD Mean: " + results.getErrorRatesMAD()
                                            + "\t-\tLabels Error Rate Mean: " + results.getLabelsMeanErrorRate());
@@ -132,10 +136,11 @@ public class ErrorEstimationLabels {
         });
     }
 
-    public static Results runExperiment(ErrorEstimationMethod method, List<boolean[][]> functionOutputs, List<boolean[]> trueLabels, double alpha, double gamma) {
+    public static Results runExperiment(ErrorEstimationMethod method, List<boolean[][]> functionOutputs, List<boolean[]> trueLabels, List<boolean[][]> evaluationFunctionOutputs, double alpha, double gamma) {
         double[][] errorRates = new double[functionOutputs.size()][];
         boolean[][] labels = new boolean[functionOutputs.size()][];
         int numberOfClusters = 1;
+        double logLikelihood = 0;
         switch (method) {
             case AR_2:
                 for (int p = 0; p < functionOutputs.size(); p++) {
@@ -192,7 +197,7 @@ public class ErrorEstimationLabels {
                 }
                 break;
             case SIMPLE_GM:
-                ErrorEstimationSimpleGraphicalModel eesgm = new ErrorEstimationSimpleGraphicalModel(functionOutputs, 100000, 100);
+                ErrorEstimationSimpleGraphicalModel eesgm = new ErrorEstimationSimpleGraphicalModel(functionOutputs, 20000, 10);
                 eesgm.performGibbsSampling();
                 errorRates = eesgm.getErrorRatesMeans();
 
@@ -205,7 +210,7 @@ public class ErrorEstimationLabels {
                 }
                 break;
             case DOMAINS_DP_GM:
-                ErrorEstimationDomainsDPGraphicalModel eeddpgm = new ErrorEstimationDomainsDPGraphicalModel(functionOutputs, 100000, 100, alpha);
+                ErrorEstimationDomainsDPGraphicalModel eeddpgm = new ErrorEstimationDomainsDPGraphicalModel(functionOutputs, 20000, 10, alpha);
                 eeddpgm.performGibbsSampling();
                 errorRates = eeddpgm.getErrorRatesMeans();
 
@@ -222,6 +227,7 @@ public class ErrorEstimationLabels {
                 eedfdpgm.performGibbsSampling();
                 errorRates = eedfdpgm.getErrorRatesMeans();
                 numberOfClusters = eedfdpgm.numberOfClusters;
+                logLikelihood = eedfdpgm.logLikelihood(evaluationFunctionOutputs);
 
                 double[][] labelMeansEedfdpgm = eedfdpgm.getLabelMeans();
                 for (int p = 0; p < functionOutputs.size(); p++) {
@@ -334,7 +340,7 @@ public class ErrorEstimationLabels {
         }
         errorRatesMADMean /= functionOutputs.size();
         labelsErrorRateMean /= functionOutputs.size();
-        return new Results(errorRatesMADMean, labelsErrorRateMean, numberOfClusters);
+        return new Results(errorRatesMADMean, labelsErrorRateMean, numberOfClusters, logLikelihood);
     }
 
     public static DomainData parseLabeledDataFromCSVFile(
@@ -451,16 +457,18 @@ public class ErrorEstimationLabels {
         private double errorRatesMAD;
         private double labelsMeanErrorRate;
         private int numberOfClusters = 1;
+        private double logLikelihood = 0;
 
         protected Results(double errorRatesMAD, double labelsMeanErrorRate) {
             this.errorRatesMAD = errorRatesMAD;
             this.labelsMeanErrorRate = labelsMeanErrorRate;
         }
 
-        protected Results(double errorRatesMAD, double labelsMeanErrorRate, int numberOfClusters) {
+        protected Results(double errorRatesMAD, double labelsMeanErrorRate, int numberOfClusters, double logLikelihood) {
             this.errorRatesMAD = errorRatesMAD;
             this.labelsMeanErrorRate = labelsMeanErrorRate;
             this.numberOfClusters = numberOfClusters;
+            this.logLikelihood = logLikelihood;
         }
 
         protected double getErrorRatesMAD() {
@@ -473,6 +481,10 @@ public class ErrorEstimationLabels {
 
         protected int getNumberOfClusters() {
             return numberOfClusters;
+        }
+
+        protected double getLogLikelihood() {
+            return logLikelihood;
         }
     }
 

@@ -27,11 +27,11 @@ public class ErrorEstimationDomainsFastDPGraphicalModel {
     private final int thinning;
     private final int numberOfSamples;
     private final int numberOfFunctions;
-    private final int numberOfDomains;
-    private final int[] numberOfDataSamples;
-    private final int[][][] labelsSamples;
-    private final int[][][] functionOutputsArray;
-    private final int[][] zSamples;
+    private int numberOfDomains;
+    private int[] numberOfDataSamples;
+    private int[][][] labelsSamples;
+    private int[][][] functionOutputsArray;
+    private int[][] zSamples;
     private final double[][] priorSamples;
     private final double[][][] errorRateSamples;
 
@@ -96,8 +96,8 @@ public class ErrorEstimationDomainsFastDPGraphicalModel {
                 int sum = 0;
                 for (int j = 0; j < numberOfFunctions; j++)
                     sum += functionOutputsArray[j][p][i];
-//                labelsSamples[0][p][i] = sum >= (numberOfFunctions / 2) ? 1 : 0;
-                labelsSamples[0][p][i] = randomDataGenerator.nextBinomial(1, 0.5);
+                labelsSamples[0][p][i] = sum >= (numberOfFunctions / 2) ? 1 : 0;
+//                labelsSamples[0][p][i] = randomDataGenerator.nextBinomial(1, 0.5);
             }
             for (int j = 0; j < numberOfFunctions; j++) {
                 errorRateSamples[0][p][j] = 0.25;
@@ -122,14 +122,19 @@ public class ErrorEstimationDomainsFastDPGraphicalModel {
     }
 
     public void performGibbsSampling() {
-        for (int iterationNumber = 0; iterationNumber < burnInIterations; iterationNumber++) {
-            samplePriorsAndBurn(0);
-            sampleLabelsAndBurnWithCollapsedErrorRates(0);
+        for (int iterationNumber = 0; iterationNumber < 100; iterationNumber++)
             sampleZAndBurnWithCollapsedErrorRates(0);
-//            samplePriorsAndBurn(0);
-//            sampleErrorRatesAndBurn(0);
-//            sampleZAndBurn(0);
-//            sampleLabelsAndBurn(0);
+        for (int iterationNumber = 0; iterationNumber < burnInIterations; iterationNumber++) {
+            if (iterationNumber < burnInIterations / 2) {
+                samplePriorsAndBurn(0);
+                sampleLabelsAndBurnWithCollapsedErrorRates(0);
+                sampleZAndBurnWithCollapsedErrorRates(0);
+            } else {
+                samplePriorsAndBurn(0);
+                sampleErrorRatesAndBurn(0);
+                sampleZAndBurn(0);
+                sampleLabelsAndBurn(0);
+            }
         }
         for (int iterationNumber = 0; iterationNumber < numberOfSamples - 1; iterationNumber++) {
             for (int i = 0; i < thinning; i++) {
@@ -211,15 +216,6 @@ public class ErrorEstimationDomainsFastDPGraphicalModel {
         }
     }
 
-    private void sampleMAPPriors(int iterationNumber) {
-        for (int p = 0; p < numberOfDomains; p++) {
-            int labelsCount = 0;
-            for (int i = 0; i < numberOfDataSamples[p]; i++)
-                labelsCount += labelsSamples[0][p][i];
-            priorSamples[iterationNumber][p] = randomDataGenerator.nextBeta(alpha_p + labelsCount, beta_p + numberOfDataSamples[p] - labelsCount);
-        }
-    }
-
     private void sampleErrorRatesAndBurn(int iterationNumber) {
         for (int p = 0; p < numberOfDomains; p++) {
             int numberOfErrorRatesBelowChance = 0;
@@ -270,75 +266,7 @@ public class ErrorEstimationDomainsFastDPGraphicalModel {
         }
     }
 
-    private void sampleMAPErrorRatesAndBurn(int iterationNumber) {
-        for (int p = 0; p < numberOfDomains; p++) {
-//            int numberOfErrorRatesBelowChance = 0;
-            for (int j = 0; j < numberOfFunctions; j++) {
-                int disagreementCount = 0;
-                int zCount = 0;
-                for (int k = 0; k < numberOfDomains; k++) {
-                    if (zSamples[iterationNumber][k] == p) {
-                        for (int i = 0; i < numberOfDataSamples[k]; i++)
-                            if (functionOutputsArray[j][k][i] != labelsSamples[iterationNumber][k][i])
-                                disagreementCount++;
-                        zCount += numberOfDataSamples[k];
-                    }
-                }
-                errorRateSamples[iterationNumber][p][j] = (alpha_e + disagreementCount) / (alpha_e + beta_e + zCount);
-//                if (errorRateSamples[iterationNumber][p][j] < 0.5)
-//                    numberOfErrorRatesBelowChance += 1;
-            }
-//            if (numberOfErrorRatesBelowChance < numberOfFunctions / 2.0) {
-//                priorSamples[iterationNumber][p] = 1 - priorSamples[iterationNumber][p];
-//                for (int j = 0; j < numberOfFunctions; j++)
-//                    errorRateSamples[iterationNumber][p][j] = 1 - errorRateSamples[iterationNumber][p][j];
-//            }
-        }
-    }
-
-    private void sampleMAPErrorRates(int iterationNumber) {
-        for (int p = 0; p < numberOfDomains; p++) {
-//            int numberOfErrorRatesBelowChance = 0;
-            for (int j = 0; j < numberOfFunctions; j++) {
-                int disagreementCount = 0;
-                int zCount = 0;
-                for (int k = 0; k < numberOfDomains; k++) {
-                    if (zSamples[iterationNumber + 1][k] == p) {
-                        for (int i = 0; i < numberOfDataSamples[k]; i++)
-                            if (functionOutputsArray[j][k][i] != labelsSamples[iterationNumber + 1][k][i])
-                                disagreementCount++;
-                        zCount += numberOfDataSamples[k];
-                    }
-                }
-                errorRateSamples[iterationNumber + 1][p][j] = (alpha_e + disagreementCount) / (alpha_e + beta_e + zCount);
-//                if (errorRateSamples[iterationNumber + 1][p][j] < 0.5)
-//                    numberOfErrorRatesBelowChance += 1;
-            }
-//            if (numberOfErrorRatesBelowChance < numberOfFunctions / 2.0) {
-//                priorSamples[iterationNumber + 1][p] = 1 - priorSamples[iterationNumber + 1][p];
-//                for (int j = 0; j < numberOfFunctions; j++)
-//                    errorRateSamples[iterationNumber + 1][p][j] = 1 - errorRateSamples[iterationNumber + 1][p][j];
-//            }
-        }
-    }
-
     private void sampleZAndBurnWithCollapsedErrorRates(int iterationNumber) {
-//        for (int p = 0; p < numberOfDomains; p++) {
-//            for (int j = 0; j < numberOfFunctions; j++) {
-//                disagreements[j][p] = 0;
-//                for (int i = 0; i < numberOfDataSamples[p]; i++)
-//                    if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
-//                        disagreements[j][p]++;
-//            }
-//        }
-//        for (int j = 0; j < numberOfFunctions; j++) {
-//            for (int k = 0; k < numberOfDomains; k++) {
-//                sum_2[j][k] = 0;
-//                for (int p = 0; p < numberOfDomains; p++)
-//                    if (zSamples[iterationNumber][p] == k)
-//                        sum_2[j][k] += disagreements[j][p];
-//            }
-//        }
         for (int p = 0; p < numberOfDomains; p++) {
             dp.remove_topic_assignment(zSamples[iterationNumber][p]);
             int total_cnt = dp.prob_topics();
@@ -644,45 +572,104 @@ public class ErrorEstimationDomainsFastDPGraphicalModel {
         }
     }
 
-//    private void sampleLabelsAndBurn(int iterationNumber) {
-//        for (int p = 0; p < numberOfDomains; p++) {
-//            labelsSamples[iterationNumber][p] = new int[numberOfDataSamples[p]];
-//            for (int i = 0; i < numberOfDataSamples[p]; i++) {
-//                double p0 = Math.log(1 - priorSamples[iterationNumber][p]);
-//                double p1 = Math.log(priorSamples[iterationNumber][p]);
-//                for (int j = 0; j < numberOfFunctions; j++) {
-//                    if (functionOutputsArray[j][p][i] == 0) {
-//                        p0 += Math.log(1 - errorRateSamples[iterationNumber][zSamples[iterationNumber][p]][j]);
-//                        p1 += Math.log(errorRateSamples[iterationNumber][zSamples[iterationNumber][p]][j]);
-//                    } else {
-//                        p0 += Math.log(errorRateSamples[iterationNumber][zSamples[iterationNumber][p]][j]);
-//                        p1 += Math.log(1 - errorRateSamples[iterationNumber][zSamples[iterationNumber][p]][j]);
-//                    }
-//                }
-//                labelsSamples[iterationNumber][p][i] = randomDataGenerator.nextBinomial(1, Math.exp(p1 - MatrixUtilities.computeLogSumExp(p0, p1)));
+    public double logLikelihood(List<boolean[][]> functionOutputs) {
+        numberOfDataSamples = new int[numberOfDomains];
+        functionOutputsArray = new int[numberOfFunctions][numberOfDomains][];
+        for (int p = 0; p < numberOfDomains; p++) {
+            numberOfDataSamples[p] = functionOutputs.get(p).length;
+            for (int j = 0; j < numberOfFunctions; j++) {
+                functionOutputsArray[j][p] = new int[numberOfDataSamples[p]];
+                for (int i = 0; i < numberOfDataSamples[p]; i++)
+                    functionOutputsArray[j][p][i] = functionOutputs.get(p)[i][j] ? 1 : 0;
+            }
+        }
+        dp = new FastDPPrior(alpha, numberOfDomains);
+        zSamples = new int[numberOfSamples][numberOfDomains];
+        labelsSamples = new int[numberOfSamples][numberOfDomains][];
+        disagreements = new double[numberOfFunctions][numberOfDomains];
+        sum_1 = new double[numberOfFunctions][numberOfDomains];
+        sum_2 = new double[numberOfFunctions][numberOfDomains];
+        for (int p = 0; p < numberOfDomains; p++) {
+            zSamples[0][p] = 0;
+            dp.add_topic_assingment(0);
+            labelsSamples[0][p] = new int[numberOfDataSamples[p]];
+            for (int i = 0; i < numberOfDataSamples[p]; i++) {
+                int sum = 0;
+                for (int j = 0; j < numberOfFunctions; j++)
+                    sum += functionOutputsArray[j][p][i];
+                labelsSamples[0][p][i] = sum >= (numberOfFunctions / 2) ? 1 : 0;
+            }
+            for (int j = 0; j < numberOfFunctions; j++) {
+                disagreements[j][p] = 0;
+                for (int i = 0; i < numberOfDataSamples[p]; i++)
+                    if (functionOutputsArray[j][p][i] != labelsSamples[0][p][i])
+                        disagreements[j][p]++;
+            }
+        }
+        for (int k = 0; k < numberOfDomains; k++) {
+            for (int j = 0; j < numberOfFunctions; j++) {
+                sum_1[j][k] = 0;
+                sum_2[j][k] = 0;
+                for (int p = 0; p < numberOfDomains; p++) {
+                    if (zSamples[0][p] == k) {
+                        sum_1[j][k] += numberOfDataSamples[p];
+                        sum_2[j][k] += disagreements[j][p];
+                    }
+                }
+            }
+        }
+//        int sample = 0;
+//        int length = 1000;
+        for (int iterationNumber = 0; iterationNumber < 100; iterationNumber++) {
+            sampleZAndBurnWithCollapsedErrorRates(0);
+//            sample++;
+//            if (sample == errorRateSamples.length) {
+//                sample = 0;
+//                length = errorRateSamples.length;
 //            }
-//        }
-//    }
-//
-//    private void sampleLabels(int iterationNumber) {
-//        for (int p = 0; p < numberOfDomains; p++) {
-//            labelsSamples[iterationNumber + 1][p] = new int[numberOfDataSamples[p]];
-//            for (int i = 0; i < numberOfDataSamples[p]; i++) {
-//                double p0 = Math.log(1 - priorSamples[iterationNumber + 1][p]);
-//                double p1 = Math.log(priorSamples[iterationNumber + 1][p]);
-//                for (int j = 0; j < numberOfFunctions; j++) {
-//                    if (functionOutputsArray[j][p][i] == 0) {
-//                        p0 += Math.log(1 - errorRateSamples[iterationNumber][zSamples[iterationNumber + 1][p]][j]);
-//                        p1 += Math.log(errorRateSamples[iterationNumber][zSamples[iterationNumber + 1][p]][j]);
-//                    } else {
-//                        p0 += Math.log(errorRateSamples[iterationNumber][zSamples[iterationNumber + 1][p]][j]);
-//                        p1 += Math.log(1 - errorRateSamples[iterationNumber][zSamples[iterationNumber + 1][p]][j]);
-//                    }
-//                }
-//                labelsSamples[iterationNumber + 1][p][i] = randomDataGenerator.nextBinomial(1, Math.exp(p1 - MatrixUtilities.computeLogSumExp(p0, p1)));
+        }
+        double logLikelihood = 0;
+        for (int iterationNumber = 0; iterationNumber < 1000; iterationNumber++) {
+            priorSamples[0] = priorSamples[iterationNumber % errorRateSamples.length];
+            errorRateSamples[0] = errorRateSamples[iterationNumber % errorRateSamples.length];
+            sampleLabelsAndBurnWithCollapsedErrorRates(0);
+            sampleZAndBurnWithCollapsedErrorRates(0);
+//            sample++;
+//            if (sample == errorRateSamples.length) {
+//                sample = 0;
+//                length = errorRateSamples.length;
 //            }
-//        }
-//    }
+            for (int p = 0; p < numberOfDomains; p++) {
+                for (int i = 0; i < numberOfDataSamples[p]; i++) {
+                    double p0 = 1 - priorSamples[0][p];
+                    double p1 = priorSamples[0][p];
+                    for (int j = 0; j < numberOfFunctions; j++) {
+                        if (functionOutputsArray[j][p][i] == 0) {
+                            p0 *= (1 - errorRateSamples[0][zSamples[0][p]][j]);
+                            p1 *= errorRateSamples[0][zSamples[0][p]][j];
+                            if (labelsSamples[0][p][i] == 1)
+                                logLikelihood += Math.log(errorRateSamples[0][zSamples[0][p]][j]);
+                            else
+                                logLikelihood += Math.log(1 - errorRateSamples[0][zSamples[0][p]][j]);
+                        } else {
+                            p0 *= errorRateSamples[0][zSamples[0][p]][j];
+                            p1 *= (1 - errorRateSamples[0][zSamples[0][p]][j]);
+                            if (labelsSamples[0][p][i] == 0)
+                                logLikelihood += Math.log(errorRateSamples[0][zSamples[0][p]][j]);
+                            else
+                                logLikelihood += Math.log(1 - errorRateSamples[0][zSamples[0][p]][j]);
+                        }
+                    }
+                    if (labelsSamples[0][p][i] == 1)
+                        logLikelihood += Math.log(p1 / (p0 + p1));
+                    else
+                        logLikelihood += Math.log(p0 / (p0 + p1));
+                }
+            }
+        }
+        logLikelihood /= 1000;
+        return logLikelihood;
+    }
 
     public double[] getPriorMeans() {
         return priorMeans;

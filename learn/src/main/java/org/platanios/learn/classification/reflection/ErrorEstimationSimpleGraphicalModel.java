@@ -66,8 +66,13 @@ public class ErrorEstimationSimpleGraphicalModel {
             for (int j = 0; j < numberOfFunctions; j++)
                 errorRateSamples[0][p][j] = 0.25;
             labelsSamples[0][p] = new int[numberOfDataSamples[p]];
-            for (int i = 0; i < numberOfDataSamples[p]; i++)
-                labelsSamples[0][p][i] = randomDataGenerator.nextBinomial(1, 0.5);
+            for (int i = 0; i < numberOfDataSamples[p]; i++) {
+//                labelsSamples[0][p][i] = randomDataGenerator.nextBinomial(1, 0.5);
+                int sum = 0;
+                for (int j = 0; j < numberOfFunctions; j++)
+                    sum += functionOutputsArray[j][p][i];
+                labelsSamples[0][p][i] = sum >= (numberOfFunctions / 2) ? 1 : 0;
+            }
         }
     }
 
