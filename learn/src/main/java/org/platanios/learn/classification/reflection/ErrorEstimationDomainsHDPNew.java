@@ -162,6 +162,7 @@ public class ErrorEstimationDomainsHDPNew {
     public void update_after_sampling_tables_topic(int domain_id, int table_id, int topic_id, int cls_ids[]) {
         hdp.add_tobles_topic_assignment(domain_id, table_id, topic_id);
         for (int classifier_id : cls_ids) {
+            z[domain_id][classifier_id] = topic_id;
             err_cnt[topic_id][0] += disagreement[domain_id][classifier_id];
             err_cnt[topic_id][1] += (num_example[domain_id] - disagreement[domain_id][classifier_id]);
             sum_err[topic_id] += num_example[domain_id];
@@ -476,21 +477,37 @@ public class ErrorEstimationDomainsHDPNew {
 
     public void gibbs_one_iteration_collapsed() {
         sample_z_collapsed();
+        check_error_negative();
         sample_tables_topic_collapsed();
+        check_error_negative();
         sample_l_colapsed();
+        check_error_negative();
     }
 
     public void run_gibbs_collapsed(int num_iteration) {
         for (int i = 0; i < num_iteration; i++) {
             gibbs_one_iteration_collapsed();
+            
+        }
+    }
+    
+    public void check_error_negative(){
+        for(int i=0;i<err_cnt.length;i++){
+            if(err_cnt[i][0] < 0 || err_cnt[i][1] < 0){
+                System.out.println("Error");
+            }
         }
     }
 
     public void gibbs_one_iteration_uncollapsed() {
         sample_error_rate_uncollapsed();
+        check_error_negative();
         sample_z_uncollapsed();
+        check_error_negative();
         sample_tables_topic_uncollapsed();
+        check_error_negative();
         sample_l_uncolapsed();
+        check_error_negative();
     }
     
     public double rates_to_return[][];
