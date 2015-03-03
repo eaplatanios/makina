@@ -577,7 +577,7 @@ public class ErrorEstimationDomainsHDPNew {
     }
     
     public double get_log_likelihood(List<boolean [][]> fun, double alpha, double gamma, int num_iteration, int licnt[][]){
-        ErrorEstimationDomainsHDPNew hdp1 = new ErrorEstimationDomainsHDPNew(fun, alpha, gamma, avg_error_rates,licnt);
+        ErrorEstimationDomainsHDPNew hdp1 = new ErrorEstimationDomainsHDPNew(fun, 1e-100, 1, avg_error_rates,licnt);
         for(int i=0;i<num_iteration;i++){
             hdp1.sample_for_likelihood();
         }
