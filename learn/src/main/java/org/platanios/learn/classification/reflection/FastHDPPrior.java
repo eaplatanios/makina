@@ -172,7 +172,7 @@ public class FastHDPPrior {
         }
         table_id = it.next();
         it = taken_topics.iterator();
-        while(it.hasNext()){
+        while(it.hasNext() || Double.isNaN(Math.log(gamma))){
             topic_id = it.next();
             pdf[position].prob = gamma*(topic_table_count[topic_id]/(alpha + topic_table_sum));
             pdf[position].table = table_id;
@@ -180,7 +180,7 @@ public class FastHDPPrior {
             position++;
         }
         it = available_topcis.iterator();
-        if(!it.hasNext()){
+        if(!it.hasNext() || Double.isNaN(Math.log(alpha))){
             return position;
         }
         topic_id = it.next();
@@ -232,7 +232,7 @@ public class FastHDPPrior {
             pdf[position].topic = topic_id;
             position++;
         }
-        if(available_topcis.size()==0){
+        if(available_topcis.size()==0 || Double.isNaN(Math.log(alpha))){
             return position;
         }
         pdf[position].prob = alpha;
