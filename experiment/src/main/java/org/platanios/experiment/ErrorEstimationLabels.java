@@ -46,28 +46,6 @@ public class ErrorEstimationLabels {
 //                ErrorEstimationMethod.DOMAINS_PER_CLASSIFIER_DP_GM
         };
         Double[] alphaValues = new Double[]{
-//                1e-3,
-//                1e-2,
-//                1e-1,
-//                1e0,
-//                1e1,
-//                1e2,
-//                1e3,
-//                1e4,
-//                1e5,
-//                1e6,
-                1e7,
-                1e8,
-                1e9,
-                1e10,
-                1e11,
-                1e12,
-                1e13,
-                1e14,
-                1e15,
-                1e16
-        };
-        Double[] gammaValues = new Double[] {
                 1e-3,
                 1e-2,
                 1e-1,
@@ -75,6 +53,28 @@ public class ErrorEstimationLabels {
                 1e1,
                 1e2,
                 1e3,
+//                1e4,
+//                1e5,
+//                1e6,
+//                1e7,
+//                1e8,
+//                1e9,
+//                1e10,
+//                1e11,
+//                1e12,
+//                1e13,
+//                1e14,
+//                1e15,
+//                1e16
+        };
+        Double[] gammaValues = new Double[] {
+                1e-3,
+                1e-2,
+                1e-1,
+                1e0,
+                1e1,
+//                1e2,
+//                1e3,
 //                1e4,
 //                1e5,
         };
@@ -265,18 +265,21 @@ public class ErrorEstimationLabels {
                 break;
             case HDP_GM:
                 ErrorEstimationDomainsHDPNew eedfhdp = new ErrorEstimationDomainsHDPNew(functionOutputs, alpha, gamma);
-                eedfhdp.run_gibbs_collapsed(10);
-                eedfhdp.run_gibbs_uncollapsed(1000, 10);
+                eedfhdp.run_gibbs_collapsed(1000);
+                eedfhdp.run_gibbs_uncollapsed(1000, 1);
                 errorRates = eedfhdp.rates_to_return;
                 numberOfClusters = eedfhdp.num_cluster;
                 double[][] labelMeansEedfhdpmgm = eedfhdp.labels_to_return;
+                int li_cnt[][] = new int[functionOutputs.size()][2];
                 for (int p = 0; p < functionOutputs.size(); p++) {
                     labels[p] = new boolean[functionOutputs.get(p).length];
                     for (int i = 0; i < functionOutputs.get(p).length; i++) {
                         labels[p][i] = labelMeansEedfhdpmgm[p][i] >= 0.5;
+                        int lid = labelMeansEedfhdpmgm[p][i] >= 0.5? 1:0;
+                        li_cnt[p][lid]++;
                     }
                 }
-                
+                logLikelihood = eedfhdp.get_log_likelihood(evaluationFunctionOutputs, alpha, gamma, 1000, li_cnt);
 //                ErrorEstimationDomainsFastHDPMixedGraphicalModel eedfhdpmgm = new ErrorEstimationDomainsFastHDPMixedGraphicalModel(functionOutputs, 20000, 10, alpha, gamma);
 //                eedfhdpmgm.performGibbsSampling();
 //                errorRates = eedfhdpmgm.getErrorRatesMeans();
