@@ -588,6 +588,9 @@ public class ErrorEstimationDomainsHDPNew {
         double e[] = hdp1.error_rate;
         for(int d=0;d<fun.size();d++){
             for(int i=0;i<fun.get(d).length;i++){
+                double a = (1.0*licnt[d][0])/(licnt[d][0]+licnt[d][1]);
+                a = ls[d][i] ? a:(1-a);
+                log_prob += Math.log(a);
                 for(int j=0;j<fun.get(d)[i].length;j++){
                     if(fun.get(d)[i][j] != ls[d][i]){
                         if(!Double.isInfinite(Math.log(error_rate[zs[d][j]]))){
