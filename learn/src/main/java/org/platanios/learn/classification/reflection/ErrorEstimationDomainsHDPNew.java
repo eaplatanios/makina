@@ -582,6 +582,7 @@ public class ErrorEstimationDomainsHDPNew {
             hdp1.sample_for_likelihood();
         }
         double log_prob =0;
+        int cnt=0;
         int zs[][] = hdp1.get_z();
         boolean ls[][] = hdp1.get_l();
         double e[] = hdp1.error_rate;
@@ -591,17 +592,19 @@ public class ErrorEstimationDomainsHDPNew {
                     if(fun.get(d)[i][j] != ls[d][i]){
                         if(!Double.isInfinite(Math.log(error_rate[zs[d][j]]))){
                             log_prob += Math.log(error_rate[zs[d][j]]);
+                            cnt++;
                         }
                         
                     }else{
                         if(!Double.isInfinite(Math.log(1-error_rate[zs[d][j]]))){
                             log_prob += Math.log(1-error_rate[zs[d][j]]);
+                            cnt++;
                         }
                     }
                 }
             }
         }
-        return log_prob;
+        return log_prob/cnt;
     }
     
     public void sample_for_likelihood(){
