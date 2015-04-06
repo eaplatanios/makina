@@ -126,7 +126,7 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public DenseVector get(int[] indexes) {
+    public DenseVector get(int... indexes) {
         DenseVector resultVector = new DenseVector(indexes.length);
         double[] resultVectorArray = resultVector.getArray();
         for (int i = 0; i < indexes.length; i++) {

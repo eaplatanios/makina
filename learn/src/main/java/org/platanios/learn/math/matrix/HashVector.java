@@ -116,7 +116,7 @@ public class HashVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public HashVector get(int[] indexes) {
+    public HashVector get(int... indexes) {
         HashVector resultVector = new HashVector(indexes.length);
         for (int i = 0; i < indexes.length; i++) {
             if (i < 0 || i >= size) {

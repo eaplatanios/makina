@@ -121,7 +121,7 @@ public abstract class Vector {
      * @throws  java.lang.IllegalArgumentException  The provided indexes must be between 0 (inclusive) and the size of
      *                                              the vector (exclusive).
      */
-    public abstract Vector get(int[] indexes);
+    public abstract Vector get(int... indexes);
 
     /**
      * Sets the value of the vector element at the provided index to the provided value.

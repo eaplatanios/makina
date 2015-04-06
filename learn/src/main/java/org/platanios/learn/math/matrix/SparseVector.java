@@ -248,7 +248,7 @@ public class SparseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public SparseVector get(int[] indexes) {
+    public SparseVector get(int... indexes) {
         Map<Integer, Double> elements = new TreeMap<>();
         for (int i = 0; i < indexes.length; i++) {
             if (i < 0 || i >= size) {
