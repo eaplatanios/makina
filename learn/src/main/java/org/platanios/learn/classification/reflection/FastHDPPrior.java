@@ -40,7 +40,7 @@ public class FastHDPPrior {
     double alpha; // higher level hyper-parameter
     double gamma; // lower level hyper_parameter
     
-    public DS_HDP pdf[]; // to store pdf to be sent for sampling.
+    public DS_HDP pdf[]; // to store clustersDistribution to be sent for sampling.
     
     
     

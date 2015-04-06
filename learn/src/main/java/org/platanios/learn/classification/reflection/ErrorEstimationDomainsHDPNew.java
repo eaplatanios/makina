@@ -6,9 +6,10 @@
 package org.platanios.learn.classification.reflection;
 
 import gnu.trove.map.hash.TIntIntHashMap;
+import org.apache.commons.math3.random.RandomDataGenerator;
+
 import java.util.List;
 import java.util.Random;
-import org.apache.commons.math3.random.RandomDataGenerator;
 
 import static org.apache.commons.math3.special.Beta.logBeta;
 
@@ -549,12 +550,15 @@ public class ErrorEstimationDomainsHDPNew {
     public double labels_to_return[][];
     public int num_cluster;
     public double avg_error_rates[];
-    public void run_gibbs_uncollapsed(int num_internal_iteration, int num_samples_needed) {
+    public void run_gibbs_uncollapsed(int num_burn_in, int num_internal_iteration, int num_samples_needed) {
         avg_error_rates = new double[error_rate.length];
         rates_to_return = new double[num_domain][num_classifier];
         labels_to_return = new double[num_domain][];
         for(int d=0;d<num_domain;d++){
             labels_to_return[d] = new double[num_example[d]];
+        }
+        for (int i = 0; i < num_burn_in; i++) {
+            gibbs_one_iteration_uncollapsed();
         }
         for (int k = 0; k < num_samples_needed; k++) {
             for (int i = 0; i < num_internal_iteration; i++) {
@@ -582,32 +586,35 @@ public class ErrorEstimationDomainsHDPNew {
             hdp1.sample_for_likelihood();
         }
         double log_prob =0;
-        int cnt=0;
-        int zs[][] = hdp1.get_z();
-        boolean ls[][] = hdp1.get_l();
-        double e[] = hdp1.error_rate;
-        for(int d=0;d<fun.size();d++){
-            for(int i=0;i<fun.get(d).length;i++){
-                double a = (1.0*licnt[d][0])/(licnt[d][0]+licnt[d][1]);
-                a = ls[d][i] ? a:(1-a);
-                log_prob += Math.log(a);
-                for(int j=0;j<fun.get(d)[i].length;j++){
-                    if(fun.get(d)[i][j] != ls[d][i]){
-                        if(!Double.isInfinite(Math.log(error_rate[zs[d][j]]))){
-                            log_prob += Math.log(error_rate[zs[d][j]]);
-                            cnt++;
-                        }
-                        
-                    }else{
-                        if(!Double.isInfinite(Math.log(1-error_rate[zs[d][j]]))){
-                            log_prob += Math.log(1-error_rate[zs[d][j]]);
-                            cnt++;
+        for(int it=0;it<num_iteration;it++) {
+            hdp1.sample_for_likelihood();
+            int zs[][] = hdp1.get_z();
+            boolean ls[][] = hdp1.get_l();
+            for (int d = 0; d < fun.size(); d++) {
+                for (int i = 0; i < fun.get(d).length; i++) {
+                    double a = (1.0 * licnt[d][0] + 1) / (licnt[d][0] + licnt[d][1] + 2);
+                    a = ls[d][i] ? a : (1 - a);
+                    log_prob += Math.log(a);
+                    for (int j = 0; j < fun.get(d)[i].length; j++) {
+                        if (fun.get(d)[i][j] != ls[d][i]) {
+                            if (!Double.isInfinite(Math.log(avg_error_rates[zs[d][j]]))) {
+                                log_prob += Math.log(avg_error_rates[zs[d][j]]);
+                            } else {
+                                log_prob += Math.log(alphae / (alphae + betae));
+                            }
+
+                        } else {
+                            if (!Double.isInfinite(Math.log(1 - avg_error_rates[zs[d][j]]))) {
+                                log_prob += Math.log(1 - avg_error_rates[zs[d][j]]);
+                            } else {
+                                log_prob += Math.log(betae / (alphae + betae));
+                            }
                         }
                     }
                 }
             }
         }
-        return log_prob/cnt;
+        return log_prob / num_iteration;
     }
     
     public void sample_for_likelihood(){

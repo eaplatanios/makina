@@ -27,14 +27,14 @@ public class IntegratorExperiment {
     private static final int numberOfViews = 3;
     private static final FeatureMapMySQL<SparseVector> featureMap = new FeatureMapMySQL<>(
             numberOfViews,
-            "jdbc:mysql://rtw.ml.cmu.edu/",
-            "eplatani",
-            "Ant0nisS719791!",
+            "jdbc:mysql://localhost/",
+            "root",
+            null,
             "learn",
             "features"
     );
-    private static final String filteredLabeledDataDirectory = "/home/eplatani/Integrator Experiment/Training Data/filtered_labeled_nps.data";
-    private static final String integratorWorkingDirectory = "/home/eplatani/Integrator Working Directory/Working Directory/";
+    private static final String filteredLabeledDataDirectory = "/Volumes/Macintosh HD/Users/Anthony/Development/Data Sets/NELL/Training Data/filtered_labeled_nps.data";
+    private static final String integratorWorkingDirectory = "/Volumes/Macintosh HD/Users/Anthony/Development/Data Sets/NELL/Integrator Experiment/City Working Directory 3/";
     private static final Map<String, Map<String, Boolean>> filteredLabeledData = FeaturesPreprocessing.readStringStringBooleanMap(filteredLabeledDataDirectory);
 //    private static final String category = "animal";
 //    private static final List<String> seeds = Arrays.asList(
