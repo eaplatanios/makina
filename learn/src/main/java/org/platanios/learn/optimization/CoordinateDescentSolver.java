@@ -72,10 +72,8 @@ public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
     public void updateDirection() {
         method.updateDirection(this);
         // Check to see on which side along the current direction the objective function value is decreasing.
-        if (!(objective.computeValue(currentPoint.add(currentDirection.mult(epsilon))) - currentObjectiveValue
-                < 0)) {
+        if (!(objective.getValue(currentPoint.add(currentDirection.mult(epsilon))) - currentObjectiveValue < 0))
             currentDirection = currentDirection.mult(-1);
-        }
     }
 
     @Override
