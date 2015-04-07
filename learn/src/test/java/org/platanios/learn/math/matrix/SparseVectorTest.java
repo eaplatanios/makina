@@ -32,7 +32,7 @@ public class SparseVectorTest {
                                                                0.91 + alpha * 0.56,
                                                                0.05,
                                                                0,
-                                                               5.63
+                                                               5.63 + alpha
                                                        });
         SparseVector actualVector = vector1.saxpyPlusConstant(alpha, vector2);
         Assert.assertTrue(expectedVector.equals(actualVector));
