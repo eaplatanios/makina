@@ -23,7 +23,7 @@ public class DenseVectorTest {
                 0.91 + alpha * 1.97,
                 0.05 + alpha * 0.56,
                 0.01 + alpha * 0.04,
-                5.63
+                5.63 + alpha
         });
         DenseVector actualVector = vector1.saxpyPlusConstant(alpha, vector2);
         Assert.assertTrue(expectedVector.equals(actualVector));
