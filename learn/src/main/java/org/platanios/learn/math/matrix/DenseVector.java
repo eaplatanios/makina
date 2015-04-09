@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.io.InvalidObjectException;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -799,6 +801,39 @@ public class DenseVector extends Vector {
         UnsafeSerializationUtilities.writeDoubleArray(outputStream, array);
     }
 
+    /**
+     * Returns an iterator for iterating over all elements of the vector
+     */
+    @Override
+	public Iterator<VectorElement> iterator() {
+		return new DenseVectorIterator();
+	}
+	
+	private class DenseVectorIterator implements Iterator<Vector.VectorElement> {
+		private int nextIndex = 0;
+		
+		@Override
+		public boolean hasNext() {
+			return this.nextIndex < DenseVector.this.array.length;
+		}
+
+		@Override
+		public Vector.VectorElement next() {
+			if (!hasNext())
+				throw new NoSuchElementException();
+			
+			Vector.VectorElement vectorElement = new Vector.VectorElement(this.nextIndex, DenseVector.this.array[this.nextIndex]);
+			this.nextIndex++;
+			
+			return vectorElement;
+		}
+
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+	}
+    
     /**
      * Deserializes the dense vector stored in the provided input stream and returns it.
      *

@@ -8,7 +8,9 @@ import java.io.InputStream;
 import java.io.InvalidObjectException;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.TreeMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -2278,4 +2280,38 @@ public class SparseVector extends Vector {
         /** Represents the state the encoder is in, while encoding the underlying values array of the sparse vector. */
         VALUES
     }
+
+    /**
+     * Returns an iterator for iterating over all non-zero elements of the vector, and some non-zero elements
+     * which have indices in the SparseVector's internal sparse representation.
+     */
+	@Override
+	public Iterator<VectorElement> iterator() {
+		return new SparseVectorIterator();
+	}
+	
+	private class SparseVectorIterator implements Iterator<Vector.VectorElement> {
+		private int nextIndex = 0;
+		
+		@Override
+		public boolean hasNext() {
+			return this.nextIndex < SparseVector.this.indexes.length;
+		}
+
+		@Override
+		public Vector.VectorElement next() {
+			if (!hasNext())
+				throw new NoSuchElementException();
+			
+			Vector.VectorElement vectorElement = new Vector.VectorElement(this.nextIndex, SparseVector.this.indexes[this.nextIndex]);
+			this.nextIndex++;
+			
+			return vectorElement;
+		}
+
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+	}
 }

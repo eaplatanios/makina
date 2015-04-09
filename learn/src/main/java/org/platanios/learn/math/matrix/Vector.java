@@ -4,6 +4,7 @@ import sun.misc.Unsafe;
 
 import java.io.*;
 import java.lang.reflect.Field;
+import java.util.Iterator;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -15,7 +16,7 @@ import java.util.function.Function;
  *
  * @author Emmanouil Antonios Platanios
  */
-public abstract class Vector {
+public abstract class Vector implements Iterable<Vector.VectorElement> {
     /** Obtain a singleton instance of the {@link sun.misc.Unsafe} class for use within the unsafe serialization
      * mechanism used for all the {@link Vector} subclasses. */
     protected static final Unsafe UNSAFE;
@@ -704,4 +705,29 @@ public abstract class Vector {
      */
     @Override
     public abstract boolean equals(Object object);
+    
+    /**
+     * Returns an iterator for iterating over a superset of the non-zero elements of the vector.  The particular
+     * superset returned depends on the vector implementation.
+     */
+	@Override
+	public abstract Iterator<VectorElement> iterator();
+    
+	public class VectorElement {
+		private int index;
+		private double value;
+		
+		public VectorElement(int index, double value) {
+			this.index = index;
+			this.value = value;
+		}
+		
+		public int index() {
+			return this.index;
+		}
+		
+		public double value() {
+			return this.value;
+		}
+	}
 }
