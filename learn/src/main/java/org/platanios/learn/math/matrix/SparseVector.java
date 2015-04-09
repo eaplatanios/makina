@@ -2303,7 +2303,7 @@ public class SparseVector extends Vector {
 			if (!hasNext())
 				throw new NoSuchElementException();
 			
-			Vector.VectorElement vectorElement = new Vector.VectorElement(this.nextIndex, SparseVector.this.indexes[this.nextIndex]);
+			Vector.VectorElement vectorElement = new Vector.VectorElement(SparseVector.this.indexes[this.nextIndex], SparseVector.this.values[this.nextIndex]);
 			this.nextIndex++;
 			
 			return vectorElement;
