@@ -16,10 +16,10 @@ public abstract class AbstractFunction {
             new DerivativesApproximation(this, DerivativesApproximation.Method.CENTRAL_DIFFERENCE);
 
     /**
-     * Computes the objective function value and the constraints values at a particular point.
+     * Computes the function value at a particular point.
      *
-     * @param   point   The point in which to evaluate the objective function and the constraints.
-     * @return          The value of the objective function, evaluated at the given point.
+     * @param   point   The point in which to evaluate the function.
+     * @return          The value of the function, evaluated at the given point.
      */
     public final double getValue(Vector point) {
         numberOfFunctionEvaluations++;
@@ -29,10 +29,10 @@ public abstract class AbstractFunction {
     abstract protected double computeValue(Vector point);
 
     /**
-     * Computes the first derivatives of the objective function and the constraints at a particular point.
+     * Computes the first derivatives of the function at a particular point.
      *
      * @param   point   The point in which to evaluate the derivatives.
-     * @return          The values of the first derivatives of the objective function, evaluated at the given point.
+     * @return          The values of the first derivatives of the function, evaluated at the given point.
      */
     public final Vector getGradient(Vector point) {
         numberOfGradientEvaluations++;
@@ -46,10 +46,10 @@ public abstract class AbstractFunction {
     }
 
     /**
-     * Computes the Hessian of the objective function at a particular point.
+     * Computes the Hessian of the function at a particular point.
      *
      * @param   point   The point in which to evaluate the Hessian.
-     * @return          The value of the Hessian matrix of the objective function, evaluated at the given point.
+     * @return          The value of the Hessian matrix of the function, evaluated at the given point.
      */
     public final Matrix getHessian(Vector point) {
         numberOfHessianEvaluations++;
