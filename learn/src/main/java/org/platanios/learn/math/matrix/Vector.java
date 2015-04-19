@@ -2,14 +2,17 @@ package org.platanios.learn.math.matrix;
 
 import sun.misc.Unsafe;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.util.Iterator;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
- * Interface for classes representing vectors and supporting operations related to vectors.
+ * Abstract class that needs to be extended by classes representing vectors and supporting operations related to
+ * vectors.
  *
  * TODO: Allow transposing all matrix arguments.
  * TODO: Add vector iterators support (over all elements and nonzero elements only).
@@ -691,6 +694,17 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
     public abstract InputStream getEncoder(boolean includeType);
 
     /**
+     * Returns an iterator used for iterating over a superset of the non-zero elements of the vector. The particular
+     * superset used depends on the vector implementation. For example, for {@link DenseVector} that superset is the
+     * set of all elements in the vector, whereas for {@link SparseVector} that superset will include all non-zero
+     * elements in the vector, but may also include some zero elements.
+     *
+     * @return  An iterator used for iterating over a superset of the non-zero elements of the vector.
+     */
+    @Override
+    public abstract Iterator<VectorElement> iterator();
+
+    /**
      * Compares the current vector with another object for equality. Note that if the provided object is not a vector
      * object, then this method returns false. Otherwise, it checks for equality of the element values of the two
      * vectors, with some tolerance that is equal to the square root of the smallest possible value that can be
@@ -705,27 +719,42 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
      */
     @Override
     public abstract boolean equals(Object object);
-    
+
     /**
-     * Returns an iterator for iterating over a superset of the non-zero elements of the vector.  The particular
-     * superset returned depends on the vector implementation.
+     * Class representing a single vector element. This class contains the index of the element and the value of that
+     * element. This class is mainly used by vector iterators.
      */
-	@Override
-	public abstract Iterator<VectorElement> iterator();
-    
-	public class VectorElement {
-		private int index;
-		private double value;
-		
+	public final class VectorElement {
+        /** The index of the element in its vector. */
+		private final int index;
+        /** The value of the element. */
+		private final double value;
+
+        /**
+         * Construct a single vector element using the provided index and value.
+         *
+         * @param   index   The index of the element in its vector.
+         * @param   value   The value of the element.
+         */
 		public VectorElement(int index, double value) {
 			this.index = index;
 			this.value = value;
 		}
-		
+
+        /**
+         * Returns the index of the element in its vector.
+         *
+         * @return  The index of the element in its vector.
+         */
 		public int index() {
 			return this.index;
 		}
-		
+
+        /**
+         * Returns the value of the element.
+         *
+         * @return  The value of the element.
+         */
 		public double value() {
 			return this.value;
 		}

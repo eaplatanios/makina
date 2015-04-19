@@ -1990,6 +1990,53 @@ public class SparseVector extends Vector {
         return this;
     }
 
+    /**
+     * Returns an iterator for iterating over all non-zero elements of the vector, and maybe also some zero
+     * elements. The zero elements that may be returned are due to their indexes being stored in the internal
+     * representation of this vector. That can be due to those element having been non-zero in the past and not having
+     * been "cleaned up" yet.
+     *
+     * @return  An iterator for iterating over all non-zero elements of the vector, and maybe also some zero elements.
+     */
+    @Override
+    public Iterator<VectorElement> iterator() {
+        return new SparseVectorIterator();
+    }
+
+    /**
+     * An iterator class used for iterating over non-zero {@link SparseVector} elements (and maybe some zero elements as
+     * well).
+     */
+    private class SparseVectorIterator implements Iterator<Vector.VectorElement> {
+        /** Current element index in the internal vector representation. */
+        private int nextElementIndex = 0;
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean hasNext() {
+            return nextElementIndex < SparseVector.this.numberOfNonzeroEntries;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Vector.VectorElement next() {
+            if (!hasNext())
+                throw new NoSuchElementException();
+
+            Vector.VectorElement vectorElement = new Vector.VectorElement(SparseVector.this.indexes[nextElementIndex],
+                                                                          SparseVector.this.values[nextElementIndex]);
+            nextElementIndex++;
+
+            return vectorElement;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
     /** {@inheritDoc} */
     @Override
     public boolean equals(Object object) {
@@ -2280,38 +2327,4 @@ public class SparseVector extends Vector {
         /** Represents the state the encoder is in, while encoding the underlying values array of the sparse vector. */
         VALUES
     }
-
-    /**
-     * Returns an iterator for iterating over all non-zero elements of the vector, and some non-zero elements
-     * which have indices in the SparseVector's internal sparse representation.
-     */
-	@Override
-	public Iterator<VectorElement> iterator() {
-		return new SparseVectorIterator();
-	}
-	
-	private class SparseVectorIterator implements Iterator<Vector.VectorElement> {
-		private int nextIndex = 0;
-		
-		@Override
-		public boolean hasNext() {
-			return this.nextIndex < SparseVector.this.indexes.length;
-		}
-
-		@Override
-		public Vector.VectorElement next() {
-			if (!hasNext())
-				throw new NoSuchElementException();
-			
-			Vector.VectorElement vectorElement = new Vector.VectorElement(SparseVector.this.indexes[this.nextIndex], SparseVector.this.values[this.nextIndex]);
-			this.nextIndex++;
-			
-			return vectorElement;
-		}
-
-		@Override
-		public void remove() {
-			throw new UnsupportedOperationException();
-		}
-	}
 }

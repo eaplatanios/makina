@@ -773,6 +773,49 @@ public class DenseVector extends Vector {
         return array;
     }
 
+    /**
+     * Returns an iterator used for iterating over all elements of this vector.
+     *
+     * @return  An iterator used for iterating over all elements of this vector.
+     */
+    @Override
+    public Iterator<VectorElement> iterator() {
+        return new DenseVectorIterator();
+    }
+
+    /**
+     * An iterator class used for iterating over {@link DenseVector} elements.
+     */
+    private class DenseVectorIterator implements Iterator<Vector.VectorElement> {
+        /** Current element index in the vector. */
+        private int nextElementIndex = 0;
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean hasNext() {
+            return nextElementIndex < DenseVector.this.size;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Vector.VectorElement next() {
+            if (!hasNext())
+                throw new NoSuchElementException();
+
+            Vector.VectorElement vectorElement = new Vector.VectorElement(nextElementIndex,
+                                                                          DenseVector.this.array[nextElementIndex]);
+            nextElementIndex++;
+
+            return vectorElement;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
     /** {@inheritDoc} */
     @Override
     public boolean equals(Object object) {
@@ -801,39 +844,6 @@ public class DenseVector extends Vector {
         UnsafeSerializationUtilities.writeDoubleArray(outputStream, array);
     }
 
-    /**
-     * Returns an iterator for iterating over all elements of the vector
-     */
-    @Override
-	public Iterator<VectorElement> iterator() {
-		return new DenseVectorIterator();
-	}
-	
-	private class DenseVectorIterator implements Iterator<Vector.VectorElement> {
-		private int nextIndex = 0;
-		
-		@Override
-		public boolean hasNext() {
-			return this.nextIndex < DenseVector.this.array.length;
-		}
-
-		@Override
-		public Vector.VectorElement next() {
-			if (!hasNext())
-				throw new NoSuchElementException();
-			
-			Vector.VectorElement vectorElement = new Vector.VectorElement(this.nextIndex, DenseVector.this.array[this.nextIndex]);
-			this.nextIndex++;
-			
-			return vectorElement;
-		}
-
-		@Override
-		public void remove() {
-			throw new UnsupportedOperationException();
-		}
-	}
-    
     /**
      * Deserializes the dense vector stored in the provided input stream and returns it.
      *

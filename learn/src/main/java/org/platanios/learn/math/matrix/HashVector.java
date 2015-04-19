@@ -2,9 +2,6 @@ package org.platanios.learn.math.matrix;
 
 import cern.colt.list.IntArrayList;
 import cern.colt.map.OpenIntDoubleHashMap;
-
-import org.platanios.learn.math.matrix.SparseVector.SparseVectorIterator;
-import org.platanios.learn.math.matrix.Vector.VectorElement;
 import org.platanios.learn.serialization.UnsafeSerializationUtilities;
 
 import java.io.IOException;
@@ -12,7 +9,6 @@ import java.io.InputStream;
 import java.io.InvalidObjectException;
 import java.io.OutputStream;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -654,6 +650,12 @@ public class HashVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
+    public Iterator<VectorElement> iterator() {
+        throw new UnsupportedOperationException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public boolean equals(Object object) { // TODO: Fix this! It is currently implemented in a very "hacky" way.
         if (!(object instanceof Vector))
             return false;
@@ -714,11 +716,6 @@ public class HashVector extends Vector {
     public InputStream getEncoder(boolean includeType) {
         return new Encoder(includeType);
     }
-    
-    @Override
-	public Iterator<VectorElement> iterator() {
-		throw new UnsupportedOperationException();
-	}
 
     /**
      * Encoder class for hash vectors. This class extends the Java {@link InputStream} class and can be used to copy
