@@ -10,6 +10,7 @@ import org.platanios.learn.optimization.function.SumFunction;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
@@ -222,16 +223,36 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver imple
         previousGradient = currentGradient;
         previousObjectiveValue = currentObjectiveValue;
         Vector variableCopiesSum = Vectors.build(currentPoint.size(), currentPoint.type());
+        List<Callable<Object>> subProblemTasks = new ArrayList<>();
         for (int subProblemIndex = 0; subProblemIndex < objective.getNumberOfTerms(); subProblemIndex++) {
             int[] variableIndexes = objective.getTermVariables(subProblemIndex);
             final int currentSubProblemIndex = subProblemIndex;
-            taskExecutor.submit(() -> solveSubProblem(currentSubProblemIndex, variableIndexes, variableCopiesSum));
+            subProblemTasks.add(Executors.callable(
+                    () -> solveSubProblem(currentSubProblemIndex, variableIndexes, variableCopiesSum)
+            ));
         }
         for (int constraintIndex = 0; constraintIndex < constraints.size(); constraintIndex++) {
             int[] variableIndexes = constraintsVariablesIndexes.get(constraintIndex);
             final int currentConstraintIndex = constraintIndex;
-            taskExecutor.submit(() -> projectOnConstraint(currentConstraintIndex, variableIndexes, variableCopiesSum));
+            subProblemTasks.add(Executors.callable(
+                    () -> projectOnConstraint(currentConstraintIndex, variableIndexes, variableCopiesSum)
+            ));
         }
+        try {
+            taskExecutor.invokeAll(subProblemTasks);
+        } catch (InterruptedException e) {
+            logger.error("Execution was interrupted while solving the subproblems.");
+        }
+//        for (int subProblemIndex = 0; subProblemIndex < objective.getNumberOfTerms(); subProblemIndex++) {
+//            int[] variableIndexes = objective.getTermVariables(subProblemIndex);
+//            final int currentSubProblemIndex = subProblemIndex;
+//            taskExecutor.submit(() -> solveSubProblem(currentSubProblemIndex, variableIndexes, variableCopiesSum));
+//        }
+//        for (int constraintIndex = 0; constraintIndex < constraints.size(); constraintIndex++) {
+//            int[] variableIndexes = constraintsVariablesIndexes.get(constraintIndex);
+//            final int currentConstraintIndex = constraintIndex;
+//            taskExecutor.submit(() -> projectOnConstraint(currentConstraintIndex, variableIndexes, variableCopiesSum));
+//        }
 //        for (int subProblemIndex = 0; subProblemIndex < objective.getNumberOfTerms(); subProblemIndex++) {
 //            int[] variableIndexes = objective.getTermVariables(subProblemIndex);
 //            solveSubProblem(subProblemIndex, variableIndexes);
