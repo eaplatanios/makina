@@ -41,6 +41,12 @@ public class SumFunction extends AbstractFunction {
         terms = builder.terms;
     }
 
+    public final double getValue(Vector point, int term) {
+        Vector termPoint = Vectors.build(termsVariables.get(term).length, point.type());
+        termPoint.set(0, termsVariables.get(term).length - 1, point.get(termsVariables.get(term)));
+        return terms.get(term).computeValue(termPoint);
+    }
+
     @Override
     protected double computeValue(Vector point) {
         double value = 0;
@@ -50,6 +56,12 @@ public class SumFunction extends AbstractFunction {
             value += terms.get(term).computeValue(termPoint);
         }
         return value;
+    }
+
+    public final Vector getGradient(Vector point, int term) {
+        Vector termPoint = Vectors.build(termsVariables.get(term).length, point.type());
+        termPoint.set(0, termsVariables.get(term).length - 1, point.get(termsVariables.get(term)));
+        return terms.get(term).computeGradient(termPoint);
     }
 
     @Override
@@ -65,6 +77,12 @@ public class SumFunction extends AbstractFunction {
         return gradient;
     }
 
+    public final Matrix getHessian(Vector point, int term) {
+        Vector termPoint = Vectors.build(termsVariables.get(term).length, point.type());
+        termPoint.set(0, termsVariables.get(term).length - 1, point.get(termsVariables.get(term)));
+        return terms.get(term).computeHessian(termPoint);
+    }
+
     @Override
     protected Matrix computeHessian(Vector point) {
         Matrix hessian = new Matrix(point.size(), point.size());
@@ -78,5 +96,17 @@ public class SumFunction extends AbstractFunction {
             hessian.add(termHessian);
         }
         return hessian;
+    }
+
+    public int getNumberOfVariables() {
+        return numberOfVariables;
+    }
+
+    public List<int[]> getTermsVariables() {
+        return termsVariables;
+    }
+
+    public List<AbstractFunction> getTerms() {
+        return terms;
     }
 }
