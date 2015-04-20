@@ -102,6 +102,10 @@ public final class SumFunction extends AbstractFunction {
         return numberOfVariables;
     }
 
+    public int getNumberOfTerms() {
+        return terms.size();
+    }
+
     public List<int[]> getTermsVariables() {
         return termsVariables;
     }
