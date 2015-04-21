@@ -295,7 +295,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver imple
         }
         Vector termPoint = Vectors.build(currentPoint.size(), currentPoint.type());
         termPoint.set(variableIndexes, variables.add(multipliers.div(augmentedLagrangianParameter)));
-        variableCopiesSum.add(termPoint);
+        variableCopiesSum.addInPlace(termPoint);
     }
 
     private void projectOnConstraint(int constraintIndex, int[] variableIndexes, Vector variableCopiesSum) {
