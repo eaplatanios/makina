@@ -11,7 +11,7 @@ public final class LinearEqualityConstraint extends AbstractEqualityConstraint {
     private final Matrix A;
     private final Vector b;
 
-    private CholeskyDecomposition linearSystemMatrixCholesky;
+    private SingularValueDecomposition linearSystemMatrixCholesky;
 
     public LinearEqualityConstraint(Matrix A, Vector b) {
         this.A = A;
@@ -48,7 +48,7 @@ public final class LinearEqualityConstraint extends AbstractEqualityConstraint {
                                       0,
                                       A.getColumnDimension() - 1,
                                       A);
-            linearSystemMatrixCholesky = new CholeskyDecomposition(linearSystemMatrix);
+            linearSystemMatrixCholesky = new SingularValueDecomposition(linearSystemMatrix);
         }
         Vector linearSystemVector = Vectors.build(point.size() + A.getRowDimension(), point.type());
         linearSystemVector.set(0, point.size() - 1, point);

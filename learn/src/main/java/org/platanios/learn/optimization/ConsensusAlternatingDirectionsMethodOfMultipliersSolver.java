@@ -231,11 +231,12 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver imple
                     () -> solveSubProblem(currentSubProblemIndex, variableIndexes, variableCopiesSum)
             ));
         }
+        final int numberOfObjectiveTerms = objective.getNumberOfTerms();
         for (int constraintIndex = 0; constraintIndex < constraints.size(); constraintIndex++) {
             int[] variableIndexes = constraintsVariablesIndexes.get(constraintIndex);
             final int currentConstraintIndex = constraintIndex;
             subProblemTasks.add(Executors.callable(
-                    () -> projectOnConstraint(currentConstraintIndex, variableIndexes, variableCopiesSum)
+                    () -> projectOnConstraint(currentConstraintIndex, numberOfObjectiveTerms, variableIndexes, variableCopiesSum)
             ));
         }
         try {
@@ -279,7 +280,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver imple
         Vector multipliers = lagrangeMultipliers.get(subProblemIndex);
         Vector consensusVariables = Vectors.build(variableIndexes.length, currentPoint.type());
         consensusVariables.set(0, variableIndexes.length - 1, currentPoint.get(variableIndexes));
-        multipliers.addInPlace(variableCopies.get(subProblemIndex)
+        multipliers.addInPlace(variables
                                        .sub(consensusVariables)
                                        .mult(augmentedLagrangianParameter));
         variables.set(0, variables.size() - 1, consensusVariables.sub(multipliers.div(augmentedLagrangianParameter)));
@@ -298,12 +299,12 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver imple
         variableCopiesSum.addInPlace(termPoint);
     }
 
-    private void projectOnConstraint(int constraintIndex, int[] variableIndexes, Vector variableCopiesSum) {
-        Vector variables = variableCopies.get(constraintIndex);
-        Vector multipliers = lagrangeMultipliers.get(constraintIndex);
+    private void projectOnConstraint(int constraintIndex, int numberOfObjectiveTerms, int[] variableIndexes, Vector variableCopiesSum) {
+        Vector variables = variableCopies.get(numberOfObjectiveTerms + constraintIndex);
+        Vector multipliers = lagrangeMultipliers.get(numberOfObjectiveTerms + constraintIndex);
         Vector consensusVariables = Vectors.build(variableIndexes.length, currentPoint.type());
         consensusVariables.set(0, variableIndexes.length - 1, currentPoint.get(variableIndexes));
-        multipliers.addInPlace(variableCopies.get(constraintIndex)
+        multipliers.addInPlace(variables
                                        .sub(consensusVariables)
                                        .mult(augmentedLagrangianParameter));
         try {
@@ -315,7 +316,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver imple
         }
         Vector termPoint = Vectors.build(currentPoint.size(), currentPoint.type());
         termPoint.set(variableIndexes, variables.add(multipliers.div(augmentedLagrangianParameter)));
-        variableCopiesSum.add(termPoint);
+        variableCopiesSum.addInPlace(termPoint);
     }
 
     public boolean checkTerminationConditions() {
