@@ -7,7 +7,7 @@ import org.platanios.learn.optimization.function.AbstractStochasticFunction;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public final class AdaptiveGradientSolver extends AbstractStochasticIterativeSolver {
+public class AdaptiveGradientSolver extends AbstractStochasticIterativeSolver {
     private final double epsilon = Math.sqrt(Double.MIN_VALUE);
 
     private Vector sumOfGradients;
@@ -35,7 +35,7 @@ public final class AdaptiveGradientSolver extends AbstractStochasticIterativeSol
         }
     }
 
-    private AdaptiveGradientSolver(AbstractBuilder<?> builder) {
+    protected AdaptiveGradientSolver(AbstractBuilder<?> builder) {
         super(builder);
 
         sumOfGradients = Vectors.build(currentGradient.size(), currentGradient.type());

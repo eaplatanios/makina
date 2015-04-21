@@ -43,8 +43,10 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
 
     final AbstractStochasticFunction objective;
 
+    // NOTE: I made this protected so that I could modify it from a child class
+    // outside this package
+    protected Vector currentPoint;
     int currentIteration;
-    Vector currentPoint;
     Vector previousPoint;
     Vector currentGradient;
     Vector currentDirection;

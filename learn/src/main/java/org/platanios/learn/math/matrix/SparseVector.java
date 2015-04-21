@@ -307,8 +307,60 @@ public class SparseVector extends Vector {
         if (initialIndex > finalIndex) {
             throw new IllegalArgumentException("The initial index must be smaller or equal to the final index");
         }
-        for (int i = initialIndex; i <= finalIndex; i++) {
-            set(i, vector.get(i - initialIndex));
+        
+        if (vector.type() == VectorType.SPARSE) {
+            SparseVector sparseVector = (SparseVector)vector;
+        
+            // Overwritten initial/final positions within this vector's indexes/values arrays
+            int overwrittenInitial = Arrays.binarySearch(this.indexes, initialIndex);
+            if (overwrittenInitial < 0)
+                overwrittenInitial = -overwrittenInitial - 1; // search returned -(insertion point) - 1 
+            int overwrittenFinal = Arrays.binarySearch(this.indexes, finalIndex);
+            if (overwrittenFinal < 0)
+                overwrittenFinal = -overwrittenFinal - 2; // search returned -(insertion point) - 1 
+        
+            // Overwriting inital/final overwriting positions within other (sparseVector) vector's indexes/values arrays
+            int overwritingInitial = 0;
+            int overwritingFinal = Arrays.binarySearch(sparseVector.indexes, finalIndex - initialIndex);
+            if (overwritingFinal < 0)
+                overwritingFinal = -overwritingFinal - 2; // search returned -(insertion point) - 1
+            
+            
+            this.numberOfNonzeroEntries = (overwritingFinal - overwritingInitial + 1)
+            		+ overwrittenInitial + (this.indexes.length - overwrittenFinal - 1);
+        
+            int[] newIndexes = new int[this.numberOfNonzeroEntries];
+            double[] newValues = new double[this.numberOfNonzeroEntries];
+        	
+            // Copy values from this vector up until initial overwritten position
+            int newPos = 0;
+            for (int i = 0; i < overwrittenInitial; i++) {
+                newIndexes[newPos] = indexes[i];
+                newValues[newPos] = values[i];
+                newPos++;
+            }
+        	
+            // Copy values from other (sparseVector) from initialOverwriting position 
+            // until finalOverwriting position
+            for (int i = overwritingInitial; i <= overwritingFinal; i++) {
+                newIndexes[newPos] = sparseVector.indexes[i] + initialIndex;
+                newValues[newPos] = sparseVector.values[i];
+                newPos++;
+            }
+        
+            // Copy remaining values from this vector after final overwritten position
+            for (int i = overwrittenFinal + 1; i < this.indexes.length; i++) {
+        	    newIndexes[newPos] = indexes[i];
+                newValues[newPos] = values[i];
+                newPos++;
+            }
+        
+            indexes = newIndexes;
+            values = newValues;
+        } else {
+	        for (int i = initialIndex; i <= finalIndex; i++) {
+	            set(i, vector.get(i - initialIndex));
+	        }
         }
     }
 
