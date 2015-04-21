@@ -26,6 +26,8 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver imple
     private final List<Vector> variableCopies = new ArrayList<>();
     private final List<Vector> lagrangeMultipliers = new ArrayList<>();
 
+    private final Object lock = new Object();
+
     private final Vector variableCopiesCounts;
     private final double augmentedLagrangianParameter;
     private final int maximumNumberOfIterations;
@@ -285,18 +287,20 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver imple
                                        .mult(augmentedLagrangianParameter));
         variables.set(0, variables.size() - 1, consensusVariables.sub(multipliers.div(augmentedLagrangianParameter)));
         if (objective.getValue(variables, subProblemIndex) > 0) {
-            variables = new NewtonSolver.Builder(new SubProblemObjectiveFunction(objective.getTerm(subProblemIndex),
+            variables.set(0, variables.size() - 1, new NewtonSolver.Builder(new SubProblemObjectiveFunction(objective.getTerm(subProblemIndex),
                                                                                  consensusVariables,
                                                                                  multipliers),
-                                                 variables).build().solve();
+                                                 variables).build().solve());
             if (objective.getValue(variables, subProblemIndex) < 0) {
-                variables = ((LinearFunction) objective.getTerm(subProblemIndex))
-                        .projectToHyperplane(consensusVariables);
+                variables.set(0, variables.size() - 1, ((LinearFunction) objective.getTerm(subProblemIndex))
+                        .projectToHyperplane(consensusVariables));
             }
         }
         Vector termPoint = Vectors.build(currentPoint.size(), currentPoint.type());
         termPoint.set(variableIndexes, variables.add(multipliers.div(augmentedLagrangianParameter)));
-        variableCopiesSum.addInPlace(termPoint);
+        synchronized (lock) {
+            variableCopiesSum.addInPlace(termPoint);
+        }
     }
 
     private void projectOnConstraint(int constraintIndex, int numberOfObjectiveTerms, int[] variableIndexes, Vector variableCopiesSum) {
@@ -308,7 +312,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver imple
                                        .sub(consensusVariables)
                                        .mult(augmentedLagrangianParameter));
         try {
-            variables = constraints.get(constraintIndex).project(consensusVariables);
+            variables.set(0, variables.size() - 1, constraints.get(constraintIndex).project(consensusVariables));
         } catch (NonSymmetricMatrixException e) {
             logger.error("Non-symmetric matrix encountered in one of the problem constraints!");
         } catch (NonPositiveDefiniteMatrixException e) {
@@ -316,7 +320,9 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver imple
         }
         Vector termPoint = Vectors.build(currentPoint.size(), currentPoint.type());
         termPoint.set(variableIndexes, variables.add(multipliers.div(augmentedLagrangianParameter)));
-        variableCopiesSum.addInPlace(termPoint);
+        synchronized (lock) {
+            variableCopiesSum.addInPlace(termPoint);
+        }
     }
 
     public boolean checkTerminationConditions() {
