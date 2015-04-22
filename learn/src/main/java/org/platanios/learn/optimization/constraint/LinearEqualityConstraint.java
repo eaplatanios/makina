@@ -11,11 +11,16 @@ public final class LinearEqualityConstraint extends AbstractEqualityConstraint {
     private final Matrix A;
     private final Vector b;
 
-    private SingularValueDecomposition linearSystemMatrixCholesky;
+    private SingularValueDecomposition linearSystemMatrixSingularValueDecomposition;
 
     public LinearEqualityConstraint(Matrix A, Vector b) {
         this.A = A;
         this.b = b;
+    }
+
+    public LinearEqualityConstraint(Vector a, double b) {
+        this.A = new Matrix(a.getDenseArray(), 1);
+        this.b = Vectors.dense(1, b);
     }
 
     @Override
@@ -30,7 +35,7 @@ public final class LinearEqualityConstraint extends AbstractEqualityConstraint {
 
     @Override
     public Vector project(Vector point) throws NonSymmetricMatrixException, NonPositiveDefiniteMatrixException {
-        if (linearSystemMatrixCholesky == null) {
+        if (linearSystemMatrixSingularValueDecomposition == null) {
             Matrix linearSystemMatrix = new Matrix(A.getRowDimension() + A.getColumnDimension(),
                                              A.getRowDimension() + A.getColumnDimension());
             linearSystemMatrix.setSubMatrix(0,
@@ -48,12 +53,12 @@ public final class LinearEqualityConstraint extends AbstractEqualityConstraint {
                                       0,
                                       A.getColumnDimension() - 1,
                                       A);
-            linearSystemMatrixCholesky = new SingularValueDecomposition(linearSystemMatrix);
+            linearSystemMatrixSingularValueDecomposition = new SingularValueDecomposition(linearSystemMatrix);
         }
         Vector linearSystemVector = Vectors.build(point.size() + A.getRowDimension(), point.type());
         linearSystemVector.set(0, point.size() - 1, point);
         linearSystemVector.set(point.size(), linearSystemVector.size() - 1, b);
-        return linearSystemMatrixCholesky.solve(linearSystemVector).get(0, point.size() - 1);
+        return linearSystemMatrixSingularValueDecomposition.solve(linearSystemVector).get(0, point.size() - 1);
     }
 
     public Matrix getA() {

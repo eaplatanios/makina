@@ -1,7 +1,6 @@
 package org.platanios.learn.optimization;
 
 import org.junit.Test;
-import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
 import org.platanios.learn.optimization.constraint.LinearEqualityConstraint;
@@ -77,7 +76,7 @@ public class ConsensusAlternatingDirectionsMethodOfMultipliersSolverTest {
 
         ConsensusAlternatingDirectionsMethodOfMultipliersSolver consensusADMMSolver =
                 new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder(sumFunction, Vectors.dense(new double[]{0.5,0.5}))
-                        .addConstraint(new int[]{0, 1}, new LinearEqualityConstraint(new Matrix(new double[][]{new double[]{-1, 1}}), Vectors.dense(new double[]{0.2})))
+                        .addConstraint(new int[]{0, 1}, new LinearEqualityConstraint(Vectors.dense(new double[]{-1, 1}), 0.2))
                         .augmentedLagrangianParameter(1)
                         .maximumNumberOfIterations(100)
                         .checkForObjectiveConvergence(false)
