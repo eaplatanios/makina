@@ -1,6 +1,7 @@
 package org.platanios.learn.optimization.linesearch;
 
 import org.platanios.learn.math.matrix.Vector;
+import org.platanios.learn.optimization.function.NonSmoothFunctionException;
 
 /**
  * Interface specifying the methods for which all classes implementing line search algorithms should have
@@ -27,5 +28,5 @@ public interface LineSearch {
                                    Vector direction,
                                    Vector previousPoint,
                                    Vector previousDirection,
-                                   double previousStepSize);
+                                   double previousStepSize) throws NonSmoothFunctionException;
 }

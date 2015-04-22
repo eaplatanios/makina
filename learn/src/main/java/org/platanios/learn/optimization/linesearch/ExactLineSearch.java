@@ -1,6 +1,7 @@
 package org.platanios.learn.optimization.linesearch;
 
 import org.platanios.learn.math.matrix.Vector;
+import org.platanios.learn.optimization.function.NonSmoothFunctionException;
 import org.platanios.learn.optimization.function.QuadraticFunction;
 
 /**
@@ -28,7 +29,8 @@ public final class ExactLineSearch implements LineSearch {
                                   Vector direction,
                                   Vector previousPoint,
                                   Vector previousDirection,
-                                  double previousStepSize) {
+                                  double previousStepSize)
+            throws NonSmoothFunctionException {
         return -objective.getGradient(point).inner(direction)
                 / direction.transMult(objective.getA()).inner(direction);
     }

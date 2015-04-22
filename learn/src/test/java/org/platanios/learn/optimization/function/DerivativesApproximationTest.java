@@ -11,7 +11,8 @@ import org.platanios.learn.math.matrix.Vectors;
  */
 public class DerivativesApproximationTest {
     @Test
-    public void testForwardDifferenceGradientApproximation() {
+    public void testForwardDifferenceGradientApproximation()
+            throws NonSmoothFunctionException {
         AbstractFunction function = new RosenbrockFunction();
         DerivativesApproximation derivativesApproximation =
                 new DerivativesApproximation(function, DerivativesApproximation.Method.FORWARD_DIFFERENCE);
@@ -22,7 +23,8 @@ public class DerivativesApproximationTest {
     }
 
     @Test
-    public void testCentralDifferenceGradientApproximation() {
+    public void testCentralDifferenceGradientApproximation()
+            throws NonSmoothFunctionException {
         AbstractFunction function = new RosenbrockFunction();
         DerivativesApproximation derivativesApproximation =
                 new DerivativesApproximation(function, DerivativesApproximation.Method.CENTRAL_DIFFERENCE);
@@ -33,7 +35,8 @@ public class DerivativesApproximationTest {
     }
 
     @Test
-    public void testForwardDifferenceHessianApproximation() {
+    public void testForwardDifferenceHessianApproximation()
+            throws NonSmoothFunctionException {
         AbstractFunction function = new RosenbrockFunction();
         DerivativesApproximation derivativesApproximation =
                 new DerivativesApproximation(function, DerivativesApproximation.Method.FORWARD_DIFFERENCE);
@@ -52,7 +55,8 @@ public class DerivativesApproximationTest {
     }
 
     @Test
-    public void testCentralDifferenceHessianApproximation() {
+    public void testCentralDifferenceHessianApproximation()
+            throws NonSmoothFunctionException {
         AbstractFunction function = new RosenbrockFunction();
         DerivativesApproximation derivativesApproximation =
                 new DerivativesApproximation(function, DerivativesApproximation.Method.CENTRAL_DIFFERENCE);
@@ -71,7 +75,8 @@ public class DerivativesApproximationTest {
     }
 
     @Test
-    public void testForwardDifferenceHessianApproximationGivenGradient() {
+    public void testForwardDifferenceHessianApproximationGivenGradient()
+            throws NonSmoothFunctionException {
         AbstractFunction function = new RosenbrockFunction();
         DerivativesApproximation derivativesApproximation =
                 new DerivativesApproximation(function, DerivativesApproximation.Method.FORWARD_DIFFERENCE);
@@ -90,7 +95,8 @@ public class DerivativesApproximationTest {
     }
 
     @Test
-    public void testCentralDifferenceHessianApproximationGivenGradient() {
+    public void testCentralDifferenceHessianApproximationGivenGradient()
+            throws NonSmoothFunctionException {
         AbstractFunction function = new RosenbrockFunction();
         DerivativesApproximation derivativesApproximation =
                 new DerivativesApproximation(function, DerivativesApproximation.Method.CENTRAL_DIFFERENCE);
@@ -109,7 +115,8 @@ public class DerivativesApproximationTest {
     }
 
     @Test
-    public void testForwardDifferenceHessianVectorProductApproximationGivenGradient() {
+    public void testForwardDifferenceHessianVectorProductApproximationGivenGradient()
+            throws NonSmoothFunctionException {
         AbstractFunction function = new RosenbrockFunction();
         DerivativesApproximation derivativesApproximation =
                 new DerivativesApproximation(function, DerivativesApproximation.Method.FORWARD_DIFFERENCE);

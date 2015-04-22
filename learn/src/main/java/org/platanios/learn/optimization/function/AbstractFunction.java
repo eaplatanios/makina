@@ -34,12 +34,12 @@ public abstract class AbstractFunction {
      * @param   point   The point in which to evaluate the derivatives.
      * @return          The values of the first derivatives of the function, evaluated at the given point.
      */
-    public final Vector getGradient(Vector point) {
+    public final Vector getGradient(Vector point) throws NonSmoothFunctionException {
         numberOfGradientEvaluations++;
         return computeGradient(point);
     }
 
-    protected Vector computeGradient(Vector point) {
+    protected Vector computeGradient(Vector point) throws NonSmoothFunctionException {
         if (computeGradientMethodOverridden)
             computeGradientMethodOverridden = false;
         return derivativesApproximation.approximateGradient(point);
@@ -51,12 +51,12 @@ public abstract class AbstractFunction {
      * @param   point   The point in which to evaluate the Hessian.
      * @return          The value of the Hessian matrix of the function, evaluated at the given point.
      */
-    public final Matrix getHessian(Vector point) {
+    public final Matrix getHessian(Vector point) throws NonSmoothFunctionException {
         numberOfHessianEvaluations++;
         return computeHessian(point);
     }
 
-    protected Matrix computeHessian(Vector point) {
+    protected Matrix computeHessian(Vector point) throws NonSmoothFunctionException {
         if (computeGradientMethodOverridden)
             return derivativesApproximation.approximateHessianGivenGradient(point);
         else

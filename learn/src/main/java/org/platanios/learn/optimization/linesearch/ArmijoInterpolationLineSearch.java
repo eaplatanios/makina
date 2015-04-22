@@ -3,6 +3,7 @@ package org.platanios.learn.optimization.linesearch;
 import com.google.common.base.Preconditions;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
+import org.platanios.learn.optimization.function.NonSmoothFunctionException;
 
 /**
  * Implements an interpolation based line search algorithm that returns a step size value that satisfies the Armijo
@@ -48,7 +49,8 @@ public final class ArmijoInterpolationLineSearch extends IterativeLineSearch {
      */
     @Override
     public double performLineSearch(Vector point,
-                                    Vector direction) {
+                                    Vector direction)
+            throws NonSmoothFunctionException {
         double phi0 = objective.getValue(point);
         Vector objectiveGradientAtCurrentPoint = objective.getGradient(point);
         double phiPrime0 = objectiveGradientAtCurrentPoint.inner(direction);

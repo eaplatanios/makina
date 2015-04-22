@@ -1,0 +1,118 @@
+package org.platanios.learn.optimization.function;
+
+import org.platanios.learn.math.matrix.Matrix;
+import org.platanios.learn.math.matrix.Vector;
+import org.platanios.learn.math.matrix.Vectors;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * @author Emmanouil Antonios Platanios
+ */
+public final class MaxFunction extends AbstractFunction {
+    private final int numberOfVariables;
+    private final List<int[]> functionTermVariables;
+    private final List<AbstractFunction> functionTerms;
+    private final List<Double> constantTerms;
+
+    public static class Builder {
+        private final int numberOfVariables;
+        private final List<int[]> functionTermVariables = new ArrayList<>();
+        private final List<AbstractFunction> functionTerms = new ArrayList<>();
+        private final List<Double> constantTerms = new ArrayList<>();
+
+        public Builder(int numberOfVariables) {
+            this.numberOfVariables = numberOfVariables;
+        }
+
+        public Builder addFunctionTerm(AbstractFunction functionTerm, int... termVariables) {
+            functionTermVariables.add(termVariables);
+            functionTerms.add(functionTerm);
+            return this;
+        }
+
+        public Builder addConstantTerm(double constantTerm) {
+            constantTerms.add(constantTerm);
+            return this;
+        }
+
+        public MaxFunction build() {
+            return new MaxFunction(this);
+        }
+    }
+
+    private MaxFunction(Builder builder) {
+        numberOfVariables = builder.numberOfVariables;
+        functionTermVariables = builder.functionTermVariables;
+        functionTerms = builder.functionTerms;
+        constantTerms = builder.constantTerms;
+    }
+
+    public final double getValue(Vector point, int termIndex) {
+        return functionTerms.get(termIndex).computeValue(point);
+    }
+
+    @Override
+    protected double computeValue(Vector point) {
+        double value = 0;
+        for (int term = 0; term < functionTerms.size(); term++) {
+            Vector termPoint = Vectors.build(functionTermVariables.get(term).length, point.type());
+            termPoint.set(0, functionTermVariables.get(term).length - 1, point.get(functionTermVariables.get(term)));
+            value = Math.max(value, functionTerms.get(term).computeValue(termPoint));
+        }
+        for (Double constantTerm : constantTerms)
+            value = Math.max(value, constantTerm);
+        return value;
+    }
+
+    public final Vector getGradient(Vector point, int termIndex) throws NonSmoothFunctionException {
+        return functionTerms.get(termIndex).computeGradient(point);
+    }
+
+    @Override
+    protected Vector computeGradient(Vector point) throws NonSmoothFunctionException {
+        throw new NonSmoothFunctionException("The max function is not differentiable!");
+    }
+
+    public final Matrix getHessian(Vector point, int termIndex) throws NonSmoothFunctionException {
+        return functionTerms.get(termIndex).computeHessian(point);
+    }
+
+    @Override
+    protected Matrix computeHessian(Vector point) throws NonSmoothFunctionException {
+        throw new NonSmoothFunctionException("The max function is not differentiable!");
+    }
+
+    public int getNumberOfVariables() {
+        return numberOfVariables;
+    }
+
+    public int getNumberOfTerms() {
+        return functionTerms.size();
+    }
+
+    public List<int[]> getFunctionTermVariables() {
+        return functionTermVariables;
+    }
+
+    public int[] getFunctionTermVariables(int functionTermIndex) {
+        return functionTermVariables.get(functionTermIndex);
+    }
+
+    public List<AbstractFunction> getFunctionTerms() {
+        return functionTerms;
+    }
+
+    public AbstractFunction getFunctionTerm(int functionTermIndex) {
+        return functionTerms.get(functionTermIndex);
+    }
+
+    public List<Double> getConstantTerms() {
+        return constantTerms;
+    }
+
+    public double getConstantTerm(int constantTermIndex) {
+        return constantTerms.get(constantTermIndex);
+    }
+}

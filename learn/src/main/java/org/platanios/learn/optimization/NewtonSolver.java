@@ -4,6 +4,7 @@ import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.SingularMatrixException;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
+import org.platanios.learn.optimization.function.NonSmoothFunctionException;
 import org.platanios.learn.optimization.linesearch.StepSizeInitializationMethod;
 import org.platanios.learn.optimization.linesearch.StrongWolfeInterpolationLineSearch;
 
@@ -48,14 +49,14 @@ public final class NewtonSolver extends AbstractLineSearchSolver {
      */
     @Override
     public void updateDirection() {
-        Matrix hessian = objective.getHessian(currentPoint);
-        // TODO: Check Hessian for positive definiteness and modify if necessary.
-        currentGradient = objective.getGradient(currentPoint);
         try {
+            Matrix hessian = objective.getHessian(currentPoint);
+            // TODO: Check Hessian for positive definiteness and modify if necessary.
+            currentGradient = objective.getGradient(currentPoint);
             currentDirection = hessian.solve(currentGradient).mult(-1);
         } catch (SingularMatrixException e) {
             e.printStackTrace();
-        }
+        } catch (NonSmoothFunctionException ignored) { }
     }
 
     @Override

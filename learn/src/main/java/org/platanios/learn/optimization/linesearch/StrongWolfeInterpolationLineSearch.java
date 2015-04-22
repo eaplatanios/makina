@@ -3,6 +3,7 @@ package org.platanios.learn.optimization.linesearch;
 import com.google.common.base.Preconditions;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
+import org.platanios.learn.optimization.function.NonSmoothFunctionException;
 
 /**
  * Implements an interpolation based line search algorithm that returns a step size value that satisfies the strong
@@ -58,7 +59,8 @@ public final class StrongWolfeInterpolationLineSearch extends IterativeLineSearc
      */
     @Override
     public double performLineSearch(Vector point,
-                                    Vector direction) {
+                                    Vector direction)
+            throws NonSmoothFunctionException {
         double phi0 = objective.getValue(point);
         double phiPrime0 = objective.getGradient(point).inner(direction);
         double a0 = 0;
@@ -123,7 +125,8 @@ public final class StrongWolfeInterpolationLineSearch extends IterativeLineSearc
     private double zoom(Vector point,
                         Vector direction,
                         double aLow,
-                        double aHigh) {
+                        double aHigh)
+            throws NonSmoothFunctionException {
         double phi0 = objective.getValue(point);
         double phiPrime0 = objective.getGradient(point).inner(direction);
 
@@ -184,7 +187,8 @@ public final class StrongWolfeInterpolationLineSearch extends IterativeLineSearc
     private double performCubicInterpolation(Vector point,
                                              Vector direction,
                                              double aLow,
-                                             double aHigh) {
+                                             double aHigh)
+            throws NonSmoothFunctionException {
         Vector newPointLow = point.add(direction.mult(aLow));
         Vector newPointHigh = point.add(direction.mult(aHigh));
         double phiALow = objective.getValue(newPointLow);

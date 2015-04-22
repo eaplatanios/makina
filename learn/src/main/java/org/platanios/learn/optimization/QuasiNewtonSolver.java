@@ -93,7 +93,6 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
         symmetricRankOneSkippingParameter = builder.symmetricRankOneSkippingParameter;
         identityMatrix = Matrix.generateIdentityMatrix(builder.initialPoint.size());
         currentH = identityMatrix;
-        currentGradient = objective.getGradient(currentPoint);
         s = new Vector[m];
         y = new Vector[m];
     }

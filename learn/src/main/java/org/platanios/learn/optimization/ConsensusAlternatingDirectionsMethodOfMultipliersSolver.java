@@ -4,6 +4,7 @@ import org.platanios.learn.math.matrix.*;
 import org.platanios.learn.optimization.constraint.AbstractConstraint;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.LinearFunction;
+import org.platanios.learn.optimization.function.NonSmoothFunctionException;
 import org.platanios.learn.optimization.function.SumFunction;
 
 import java.util.ArrayList;
@@ -135,25 +136,6 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         } catch (InterruptedException e) {
             logger.error("Execution was interrupted while solving the subproblems.");
         }
-//        for (int subProblemIndex = 0; subProblemIndex < objective.getNumberOfTerms(); subProblemIndex++) {
-//            int[] variableIndexes = objective.getTermVariables(subProblemIndex);
-//            final int currentSubProblemIndex = subProblemIndex;
-//            taskExecutor.submit(() -> solveSubProblem(currentSubProblemIndex, variableIndexes, variableCopiesSum));
-//        }
-//        for (int constraintIndex = 0; constraintIndex < constraints.size(); constraintIndex++) {
-//            int[] variableIndexes = constraintsVariablesIndexes.get(constraintIndex);
-//            final int currentConstraintIndex = constraintIndex;
-//            taskExecutor.submit(() -> projectOnConstraint(currentConstraintIndex, variableIndexes, variableCopiesSum));
-//        }
-//        for (int subProblemIndex = 0; subProblemIndex < objective.getNumberOfTerms(); subProblemIndex++) {
-//            int[] variableIndexes = objective.getTermVariables(subProblemIndex);
-//            solveSubProblem(subProblemIndex, variableIndexes);
-//            Vector termPoint = Vectors.build(currentPoint.size(), currentPoint.type());
-//            termPoint.set(variableIndexes,
-//                          variableCopies.get(subProblemIndex)
-//                                  .add(lagrangeMultipliers.get(subProblemIndex).div(augmentedLagrangianParameter)));
-//            variableCopiesSum.add(termPoint);
-//        }
         currentPoint = variableCopiesSum.divElementwise(variableCopiesCounts);
         for (int variableIndex = 0; variableIndex < currentPoint.size(); variableIndex++)
             if (currentPoint.get(variableIndex) < 0)
@@ -161,7 +143,9 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
             else if (currentPoint.get(variableIndex) > 1)
                 currentPoint.set(variableIndex, 1);
 //        if (checkForGradientConvergence)
-        currentGradient = objective.getGradient(currentPoint);
+        try {
+            currentGradient = objective.getGradient(currentPoint);
+        } catch (NonSmoothFunctionException ignored) { }
 //        if (checkForObjectiveConvergence)
         currentObjectiveValue = objective.getValue(currentPoint);
     }
@@ -234,7 +218,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         }
 
         @Override
-        protected Vector computeGradient(Vector point) {
+        protected Vector computeGradient(Vector point) throws NonSmoothFunctionException {
             return subProblemObjectiveFunction.getGradient(point)
                     .add(point.sub(consensusVariables)
                                  .add(lagrangeMultipliers.div(augmentedLagrangianParameter))
@@ -242,7 +226,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         }
 
         @Override
-        protected Matrix computeHessian(Vector point) {
+        protected Matrix computeHessian(Vector point) throws NonSmoothFunctionException {
             return subProblemObjectiveFunction.getHessian(point)
                     .add(Matrix.generateIdentityMatrix(point.size()).multiply(augmentedLagrangianParameter));
         }

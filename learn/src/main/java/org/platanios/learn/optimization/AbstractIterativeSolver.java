@@ -3,6 +3,7 @@ package org.platanios.learn.optimization;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.VectorNorm;
 import org.platanios.learn.optimization.function.AbstractFunction;
+import org.platanios.learn.optimization.function.NonSmoothFunctionException;
 
 import java.util.function.Function;
 
@@ -140,7 +141,11 @@ abstract class AbstractIterativeSolver implements Solver {
         additionalCustomConvergenceCriterion = builder.additionalCustomConvergenceCriterion;
         loggingLevel = builder.loggingLevel;
         currentPoint = builder.initialPoint;
-        currentGradient = objective.getGradient(currentPoint);
+        try {
+            currentGradient = objective.getGradient(currentPoint);
+        } catch (NonSmoothFunctionException e) {
+            logger.info("The objective function to optimize is non-smooth!");
+        }
         currentObjectiveValue = objective.getValue(currentPoint);
         currentIteration = 0;
     }

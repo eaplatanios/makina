@@ -2,6 +2,7 @@ package org.platanios.learn.optimization.linesearch;
 
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
+import org.platanios.learn.optimization.function.NonSmoothFunctionException;
 
 /**
  * An enumeration of all possible step size initialization methods, used for computing the initial step size value for
@@ -55,7 +56,8 @@ public enum StepSizeInitializationMethod {
                                              Vector previousPoint,
                                              Vector previousDirection,
                                              double initialStepSize,
-                                             double previousStepSize) {
+                                             double previousStepSize)
+                throws NonSmoothFunctionException {
             // Check whether the previous direction is set (if it is not it means that we are on the first iteration of
             // the optimization algorithm).
             if (previousDirection != null) {
@@ -82,7 +84,8 @@ public enum StepSizeInitializationMethod {
                                              Vector previousPoint,
                                              Vector previousDirection,
                                              double initialStepSize,
-                                             double previousStepSize) {
+                                             double previousStepSize)
+                throws NonSmoothFunctionException {
             // Check whether the previous direction is set (if it is not it means that we are on the first iteration of
             // the optimization algorithm).
             if (previousDirection != null) {
@@ -109,7 +112,8 @@ public enum StepSizeInitializationMethod {
                                              Vector previousPoint,
                                              Vector previousDirection,
                                              double initialStepSize,
-                                             double previousStepSize) {
+                                             double previousStepSize)
+                throws NonSmoothFunctionException {
             // Check whether the previous direction is set (if it is not it means that we are on the first iteration
             // of the optimization algorithm).
             if (previousDirection != null) {
@@ -141,5 +145,6 @@ public enum StepSizeInitializationMethod {
                                                   Vector previousPoint,
                                                   Vector previousDirection,
                                                   double initialStepSize,
-                                                  double previousStepSize);
+                                                  double previousStepSize)
+            throws NonSmoothFunctionException;
 }

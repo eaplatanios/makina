@@ -3,6 +3,7 @@ package org.platanios.learn.optimization.linesearch;
 import com.google.common.base.Preconditions;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
+import org.platanios.learn.optimization.function.NonSmoothFunctionException;
 
 /**
  * Implements a simple backtracking line search algorithm. This algorithm starts from some initial step size value and
@@ -40,7 +41,8 @@ public final class BacktrackingLineSearch extends IterativeLineSearch {
     /** {@inheritDoc} */
     @Override
     public double performLineSearch(Vector point,
-                                    Vector direction) {
+                                    Vector direction)
+            throws NonSmoothFunctionException {
         double objectiveValueAtCurrentPoint = objective.getValue(point);
         Vector objectiveGradientAtCurrentPoint = objective.getGradient(point);
         double currentStepSize = initialStepSize;

@@ -67,7 +67,8 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
         }
 
         // TODO: Have to do something to fix this ugly build method code.
-        public ConjugateGradientSolver buildWithChecking() throws NonPositiveDefiniteMatrixException {
+        public ConjugateGradientSolver buildWithChecking()
+                throws NonPositiveDefiniteMatrixException {
             return new ConjugateGradientSolver(this);
         }
     }
@@ -89,7 +90,8 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
         }
     }
 
-    private ConjugateGradientSolver(AbstractBuilder builder) throws NonPositiveDefiniteMatrixException {
+    private ConjugateGradientSolver(AbstractBuilder builder)
+            throws NonPositiveDefiniteMatrixException {
         super(builder);
         problemConversionMethod = builder.problemConversionMethod;
 

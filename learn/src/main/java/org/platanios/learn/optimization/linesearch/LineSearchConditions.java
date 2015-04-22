@@ -3,6 +3,7 @@ package org.platanios.learn.optimization.linesearch;
 import com.google.common.base.Preconditions;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
+import org.platanios.learn.optimization.function.NonSmoothFunctionException;
 
 /**
  * A collection of static methods that check whether a selected step size value satisfies certain conditions for the
@@ -84,7 +85,8 @@ public final class LineSearchConditions {
                                                double c2,
                                                boolean strong,
                                                double objectiveValueAtCurrentPoint,
-                                               Vector objectiveGradientAtCurrentPoint) {
+                                               Vector objectiveGradientAtCurrentPoint)
+            throws NonSmoothFunctionException {
         Preconditions.checkArgument(c1 > 0 && c1 < 1);
         Preconditions.checkArgument(c2 > c1 && c2 < 1);
 

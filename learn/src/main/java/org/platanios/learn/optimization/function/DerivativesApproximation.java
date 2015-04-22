@@ -30,11 +30,13 @@ public final class DerivativesApproximation {
         return method.approximateHessian(this, point);
     }
 
-    public Matrix approximateHessianGivenGradient(Vector point) {
+    public Matrix approximateHessianGivenGradient(Vector point)
+            throws NonSmoothFunctionException {
         return method.approximateHessianGivenGradient(this, point);
     }
 
-    public Vector approximateHessianVectorProductGivenGradient(Vector point, Vector p) {
+    public Vector approximateHessianVectorProductGivenGradient(Vector point, Vector p)
+            throws NonSmoothFunctionException {
         return method.approximateHessianVectorProductGivenGradient(this, point, p);
     }
 
@@ -92,7 +94,8 @@ public final class DerivativesApproximation {
                 return hessian;
             }
 
-            protected Matrix approximateHessianGivenGradient(DerivativesApproximation owner, Vector point) {
+            protected Matrix approximateHessianGivenGradient(DerivativesApproximation owner, Vector point)
+                    throws NonSmoothFunctionException {
                 int n = point.size();
                 Matrix hessian = new Matrix(n, n);
                 Vector ei = Vectors.dense(n, 0);
@@ -111,7 +114,8 @@ public final class DerivativesApproximation {
 
             protected Vector approximateHessianVectorProductGivenGradient(DerivativesApproximation owner,
                                                                           Vector point,
-                                                                          Vector p) {
+                                                                          Vector p)
+                    throws NonSmoothFunctionException {
                 Vector forwardGradientValue = owner.function.getGradient(point.add(p.mult(owner.epsilon)));
                 Vector currentGradientValue = owner.function.getGradient(point);
                 return forwardGradientValue.sub(currentGradientValue).mult(1 / owner.epsilon);
@@ -172,7 +176,8 @@ public final class DerivativesApproximation {
                 return hessian;
             }
 
-            protected Matrix approximateHessianGivenGradient(DerivativesApproximation owner, Vector point) {
+            protected Matrix approximateHessianGivenGradient(DerivativesApproximation owner, Vector point)
+                    throws NonSmoothFunctionException {
                 int n = point.size();
                 Matrix hessian = new Matrix(n, n);
                 Vector ei = Vectors.dense(n, 0);
@@ -192,7 +197,8 @@ public final class DerivativesApproximation {
 
             protected Vector approximateHessianVectorProductGivenGradient(DerivativesApproximation owner,
                                                                           Vector point,
-                                                                          Vector p) {
+                                                                          Vector p)
+                    throws NonSmoothFunctionException {
                 Vector forwardGradientValue = owner.function.getGradient(point.add(p.mult(owner.epsilon)));
                 Vector backwardGradientValue = owner.function.getGradient(point.sub(p.mult(owner.epsilon)));
                 return forwardGradientValue.sub(backwardGradientValue).mult(1 / (2 * owner.epsilon));
@@ -202,9 +208,9 @@ public final class DerivativesApproximation {
         protected abstract double computeEpsilon();
         protected abstract Vector approximateGradient(DerivativesApproximation owner, Vector point);
         protected abstract Matrix approximateHessian(DerivativesApproximation owner, Vector point);
-        protected abstract Matrix approximateHessianGivenGradient(DerivativesApproximation owner, Vector point);
+        protected abstract Matrix approximateHessianGivenGradient(DerivativesApproximation owner, Vector point) throws NonSmoothFunctionException;
         protected abstract Vector approximateHessianVectorProductGivenGradient(DerivativesApproximation owner,
                                                                                Vector point,
-                                                                               Vector p);
+                                                                               Vector p) throws NonSmoothFunctionException;
     }
 }

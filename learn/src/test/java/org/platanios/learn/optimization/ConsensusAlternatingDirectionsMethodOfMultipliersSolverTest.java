@@ -20,7 +20,7 @@ public class ConsensusAlternatingDirectionsMethodOfMultipliersSolverTest {
                 .addTerm(new LinearFunction(Vectors.dense(new double[]{-1}), 0), 1)
                 .build();
 
-        ConsensusAlternatingDirectionsMethodOfMultipliersSolver consensusADMMSolver =
+        ConsensusAlternatingDirectionsMethodOfMultipliersSolver consensusAlternatingDirectionsMethodOfMultipliersSolver =
                 new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder( sumFunction,
                         Vectors.dense(new double[]{0.5,0.5}))
                         .maximumNumberOfIterations(100)
@@ -30,7 +30,7 @@ public class ConsensusAlternatingDirectionsMethodOfMultipliersSolverTest {
                         .loggingLevel(5)
                         .build();
 
-        Vector result = consensusADMMSolver.solve();
+        Vector result = consensusAlternatingDirectionsMethodOfMultipliersSolver.solve();
         System.out.println(result.get(0));
         System.out.println(result.get(1));
         System.out.println('\n');
@@ -47,7 +47,7 @@ public class ConsensusAlternatingDirectionsMethodOfMultipliersSolverTest {
                 .addTerm(new LinearFunction(Vectors.dense(new double[]{1}), 0), 1)
                 .build();
 
-        ConsensusAlternatingDirectionsMethodOfMultipliersSolver consensusADMMSolver =
+        ConsensusAlternatingDirectionsMethodOfMultipliersSolver consensusAlternatingDirectionsMethodOfMultipliersSolver =
                 new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder( sumFunction,
                         Vectors.dense(new double[]{0.5,0.5}))
                         .maximumNumberOfIterations(100)
@@ -57,7 +57,7 @@ public class ConsensusAlternatingDirectionsMethodOfMultipliersSolverTest {
                         .loggingLevel(5)
                         .build();
 
-        Vector result = consensusADMMSolver.solve();
+        Vector result = consensusAlternatingDirectionsMethodOfMultipliersSolver.solve();
         System.out.println(result.get(0));
         System.out.println(result.get(1));
         System.out.println('\n');
@@ -74,7 +74,7 @@ public class ConsensusAlternatingDirectionsMethodOfMultipliersSolverTest {
                 .addTerm(new LinearFunction(Vectors.dense(new double[]{1}), 0), 1)
                 .build();
 
-        ConsensusAlternatingDirectionsMethodOfMultipliersSolver consensusADMMSolver =
+        ConsensusAlternatingDirectionsMethodOfMultipliersSolver consensusAlternatingDirectionsMethodOfMultipliersSolver =
                 new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder(sumFunction, Vectors.dense(new double[]{0.5,0.5}))
                         .addConstraint(new int[]{0, 1}, new LinearEqualityConstraint(Vectors.dense(new double[]{-1, 1}), 0.2))
                         .augmentedLagrangianParameter(1)
@@ -85,7 +85,7 @@ public class ConsensusAlternatingDirectionsMethodOfMultipliersSolverTest {
                         .loggingLevel(5)
                         .build();
 
-        Vector result = consensusADMMSolver.solve();
+        Vector result = consensusAlternatingDirectionsMethodOfMultipliersSolver.solve();
         System.out.println(result.get(0));
         System.out.println(result.get(1));
         System.out.println('\n');

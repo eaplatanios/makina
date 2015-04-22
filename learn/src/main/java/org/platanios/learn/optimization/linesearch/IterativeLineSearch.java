@@ -3,6 +3,7 @@ package org.platanios.learn.optimization.linesearch;
 import com.google.common.base.Preconditions;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.function.AbstractFunction;
+import org.platanios.learn.optimization.function.NonSmoothFunctionException;
 
 /**
  * Abstract class that all iterative line search algorithms should extend.
@@ -34,7 +35,8 @@ abstract class IterativeLineSearch implements LineSearch {
                                   Vector direction,
                                   Vector previousPoint,
                                   Vector previousDirection,
-                                  double previousStepSize) {
+                                  double previousStepSize)
+            throws NonSmoothFunctionException {
         initialStepSize = stepSizeInitializationMethod.computeInitialStepSize(objective,
                                                                               point,
                                                                               direction,
@@ -53,7 +55,7 @@ abstract class IterativeLineSearch implements LineSearch {
      * @param   direction   The direction for which we perform the line search.
      * @return              A step size value that satisfies certain criteria that depend on the algorithm choice.
      */
-    public abstract double performLineSearch(Vector point, Vector direction);
+    public abstract double performLineSearch(Vector point, Vector direction) throws NonSmoothFunctionException;
 
     /**
      * Gets the step size initialization method used by this iterative line search instance.

@@ -42,8 +42,6 @@ public final class SumFunction extends AbstractFunction {
     }
 
     public final double getValue(Vector point, int termIndex) {
-//        Vector termPoint = Vectors.build(termsVariables.get(termIndex).length, point.type());
-//        termPoint.set(0, termsVariables.get(termIndex).length - 1, point.get(termsVariables.get(termIndex)));
         return terms.get(termIndex).computeValue(point);
     }
 
@@ -58,14 +56,12 @@ public final class SumFunction extends AbstractFunction {
         return value;
     }
 
-    public final Vector getGradient(Vector point, int termIndex) {
-//        Vector termPoint = Vectors.build(termsVariables.get(termIndex).length, point.type());
-//        termPoint.set(0, termsVariables.get(termIndex).length - 1, point.get(termsVariables.get(termIndex)));
+    public final Vector getGradient(Vector point, int termIndex) throws NonSmoothFunctionException {
         return terms.get(termIndex).computeGradient(point);
     }
 
     @Override
-    protected Vector computeGradient(Vector point) {
+    protected Vector computeGradient(Vector point) throws NonSmoothFunctionException {
         Vector gradient = Vectors.build(point.size(), point.type());
         for (int term = 0; term < terms.size(); term++) {
             Vector termPoint = Vectors.build(termsVariables.get(term).length, point.type());
@@ -77,14 +73,12 @@ public final class SumFunction extends AbstractFunction {
         return gradient;
     }
 
-    public final Matrix getHessian(Vector point, int termIndex) {
-//        Vector termPoint = Vectors.build(termsVariables.get(termIndex).length, point.type());
-//        termPoint.set(0, termsVariables.get(termIndex).length - 1, point.get(termsVariables.get(termIndex)));
+    public final Matrix getHessian(Vector point, int termIndex) throws NonSmoothFunctionException {
         return terms.get(termIndex).computeHessian(point);
     }
 
     @Override
-    protected Matrix computeHessian(Vector point) {
+    protected Matrix computeHessian(Vector point) throws NonSmoothFunctionException {
         Matrix hessian = new Matrix(point.size(), point.size());
         for (int term = 0; term < terms.size(); term++) {
             Vector termPoint = Vectors.build(termsVariables.get(term).length, point.type());
