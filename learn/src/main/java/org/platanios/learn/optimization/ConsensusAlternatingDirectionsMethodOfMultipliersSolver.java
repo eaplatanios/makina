@@ -313,10 +313,8 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver imple
                                        .mult(augmentedLagrangianParameter));
         try {
             variables.set(0, variables.size() - 1, constraints.get(constraintIndex).project(consensusVariables));
-        } catch (NonSymmetricMatrixException e) {
-            logger.error("Non-symmetric matrix encountered in one of the problem constraints!");
-        } catch (NonPositiveDefiniteMatrixException e) {
-            logger.error("Non-positive-definite matrix encountered in one of the problem constraints!");
+        } catch (SingularMatrixException e) {
+            logger.error("Singular matrix encountered in one of the problem constraints!");
         }
         Vector termPoint = Vectors.build(currentPoint.size(), currentPoint.type());
         termPoint.set(variableIndexes, variables.add(multipliers.div(augmentedLagrangianParameter)));

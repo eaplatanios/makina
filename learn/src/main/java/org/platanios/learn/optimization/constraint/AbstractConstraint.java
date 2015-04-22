@@ -1,9 +1,6 @@
 package org.platanios.learn.optimization.constraint;
 
-import org.platanios.learn.math.matrix.Matrix;
-import org.platanios.learn.math.matrix.NonPositiveDefiniteMatrixException;
-import org.platanios.learn.math.matrix.NonSymmetricMatrixException;
-import org.platanios.learn.math.matrix.Vector;
+import org.platanios.learn.math.matrix.*;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -27,7 +24,7 @@ public abstract class AbstractConstraint {
     abstract protected Matrix computeJacobian(Vector point);
 
     public abstract Vector project(Vector point)
-            throws NonSymmetricMatrixException, NonPositiveDefiniteMatrixException;
+            throws SingularMatrixException;
 
     public final int getNumberOfConstraintEvaluations() {
         return numberOfConstraintEvaluations;
