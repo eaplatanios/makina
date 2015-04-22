@@ -1,7 +1,5 @@
 package org.platanios.learn.optimization;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.VectorNorm;
 import org.platanios.learn.optimization.function.AbstractFunction;
@@ -14,8 +12,6 @@ import java.util.function.Function;
  * @author Emmanouil Antonios Platanios
  */
 abstract class AbstractIterativeSolver implements Solver {
-    private static final Logger logger = LogManager.getFormatterLogger("Optimization");
-
     private final int maximumNumberOfIterations;
     private final int maximumNumberOfFunctionEvaluations;
     private final double pointChangeTolerance;
@@ -42,10 +38,6 @@ abstract class AbstractIterativeSolver implements Solver {
     Vector previousPoint;
     Vector currentGradient;
     Vector previousGradient;
-    Vector currentDirection;
-    Vector previousDirection;
-    double currentStepSize;
-    double previousStepSize;
     double currentObjectiveValue;
     double previousObjectiveValue;
 
@@ -63,8 +55,8 @@ abstract class AbstractIterativeSolver implements Solver {
         protected boolean checkForPointConvergence = true;
         protected boolean checkForObjectiveConvergence = true;
         protected boolean checkForGradientConvergence = true;
-        private Function<Vector, Boolean> additionalCustomConvergenceCriterion = currentPoint -> false;
-        private int loggingLevel = 0;
+        protected Function<Vector, Boolean> additionalCustomConvergenceCriterion = currentPoint -> false;
+        protected int loggingLevel = 0;
 
         protected AbstractBuilder(AbstractFunction objective,
                                   Vector initialPoint) {

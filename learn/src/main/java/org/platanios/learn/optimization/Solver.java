@@ -1,5 +1,7 @@
 package org.platanios.learn.optimization;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.platanios.learn.math.matrix.Vector;
 
 import java.text.DecimalFormat;
@@ -8,7 +10,8 @@ import java.text.DecimalFormat;
  * @author Emmanouil Antonios Platanios
  */
 public interface Solver {
-    static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.0000000000E0");
+    DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.0000000000E0");
+    Logger logger = LogManager.getFormatterLogger("Optimization");
 
-    public Vector solve();
+    Vector solve();
 }

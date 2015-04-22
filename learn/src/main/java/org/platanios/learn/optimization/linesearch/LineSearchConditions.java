@@ -10,7 +10,7 @@ import org.platanios.learn.optimization.function.AbstractFunction;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class LineSearchConditions {
+public final class LineSearchConditions {
     /**
      * Checks whether the Armijo condition (also known as the sufficient decrease condition) is satisfied for a given
      * objective function, point, direction and step size. The Armijo condition makes sure that the reduction in the

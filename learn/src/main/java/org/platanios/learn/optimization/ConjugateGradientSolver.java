@@ -20,11 +20,9 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
     private final ProblemConversionMethod problemConversionMethod;
     private final boolean convertedProblem;
     private final Matrix A;
-    private final Vector b;
 
-    private double beta;
+    private Vector currentDirection;
     private Vector currentY;
-    private Vector previousY;
 
     protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
             extends AbstractIterativeSolver.AbstractBuilder<T> {
@@ -96,15 +94,15 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
         problemConversionMethod = builder.problemConversionMethod;
 
         Matrix temporaryA;
-        Vector temporaryB;
+        Vector b;
         if (objective instanceof LinearLeastSquaresFunction) {
             Matrix J = ((LinearLeastSquaresFunction) objective).getJ();
             Vector y = ((LinearLeastSquaresFunction) objective).getY();
             temporaryA = J.transpose().multiply(J);
-            temporaryB = J.transpose().multiply(y);
+            b = J.transpose().multiply(y);
         } else {
             temporaryA = ((QuadraticFunction) objective).getA();
-            temporaryB = ((QuadraticFunction) objective).getB();
+            b = ((QuadraticFunction) objective).getB();
         }
 
         // Check if A is symmetric and positive definite and if it is not make the appropriate changes to the algorithm.
@@ -113,7 +111,7 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
             System.err.println("WARNING: Matrix A is not symmetric.");
             convertedProblem = true;
             A = problemConversionMethod.computeNewA(temporaryA);
-            b = problemConversionMethod.computeNewB(temporaryA, temporaryB);
+            b = problemConversionMethod.computeNewB(temporaryA, b);
             choleskyDecomposition = new CholeskyDecomposition(A);
             if (!choleskyDecomposition.isSymmetricAndPositiveDefinite()) {
                 throw new NonPositiveDefiniteMatrixException(
@@ -123,7 +121,6 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
         } else {
             convertedProblem = false;
             A = temporaryA;
-            b = temporaryB;
         }
 
         currentGradient = A.multiply(currentPoint).sub(b);
@@ -151,9 +148,8 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
     @Override
     public Vector solve() {
         currentPoint = super.solve();
-        if (convertedProblem) {
+        if (convertedProblem)
             currentPoint = problemConversionMethod.transformPoint(currentPoint);
-        }
         return currentPoint;
     }
 
@@ -161,16 +157,17 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
     public void performIterationUpdates() {
         previousPoint = currentPoint;
         previousGradient = currentGradient;
-        previousDirection = currentDirection;
-        previousY = currentY;
+        Vector previousDirection = currentDirection;
+        Vector previousY = currentY;
         // This procedure can be sped up for the linear least squares case by using Jacobian vector products.
-        currentStepSize = previousGradient.inner(previousY)
+        double currentStepSize = previousGradient.inner(previousY)
                 / previousDirection.transMult(A).inner(previousDirection);
         currentPoint = previousPoint.add(previousDirection.mult(currentStepSize));
         currentGradient = previousGradient.add(A.multiply(previousDirection).mult(currentStepSize));
         preconditioningMethod.computePreconditioningSystemSolution(this);
-        beta = currentGradient.inner(currentY) / previousGradient.inner(previousY);
-        currentDirection = currentY.mult(-1).add(previousDirection.mult(beta));
+        currentDirection = currentY
+                .mult(-1)
+                .add(previousDirection.mult(currentGradient.inner(currentY) / previousGradient.inner(previousY)));
         currentObjectiveValue = objective.getValue(currentPoint);
     }
 

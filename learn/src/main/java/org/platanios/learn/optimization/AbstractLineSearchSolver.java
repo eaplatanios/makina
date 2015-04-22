@@ -16,6 +16,10 @@ import org.platanios.learn.optimization.linesearch.StrongWolfeInterpolationLineS
  * @author Emmanouil Antonios Platanios
  */
 abstract class AbstractLineSearchSolver extends AbstractIterativeSolver {
+    Vector currentDirection;
+    Vector previousDirection;
+    double currentStepSize;
+    double previousStepSize;
     /** Default value: If quadratic or linear function it is ExactLineSearch, otherwise it is StrongWolfeLineSearch
      * with CONSERVE_FIRST_ORDER_CHANGE for the step size initialization method. */
     LineSearch lineSearch;

@@ -1,7 +1,5 @@
 package org.platanios.learn.optimization;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.platanios.learn.math.matrix.*;
 import org.platanios.learn.optimization.constraint.AbstractConstraint;
 import org.platanios.learn.optimization.function.AbstractFunction;
@@ -13,7 +11,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.Function;
 
 /**
  * TODO: The current implementation is PSL-specific and not generic at all.
@@ -21,8 +18,7 @@ import java.util.function.Function;
  *
  * @author Emmanouil Antonios Platanios
  */
-public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver implements Solver {
-    private static final Logger logger = LogManager.getFormatterLogger("Optimization");
+public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver extends AbstractIterativeSolver {
     private final List<Vector> variableCopies = new ArrayList<>();
     private final List<Vector> lagrangeMultipliers = new ArrayList<>();
 
@@ -30,62 +26,27 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver imple
 
     private final Vector variableCopiesCounts;
     private final double augmentedLagrangianParameter;
-    private final int maximumNumberOfIterations;
-    private final double pointChangeTolerance;
-    private final double objectiveChangeTolerance;
-    private final double gradientTolerance;
-    private final boolean checkForPointConvergence;
-    private final boolean checkForObjectiveConvergence;
-    private final boolean checkForGradientConvergence;
-    private final Function<Vector, Boolean> additionalCustomConvergenceCriterion;
-    private final int loggingLevel;
     private final ExecutorService taskExecutor;
-
-    private double pointChange;
-    private double objectiveChange;
-    private double gradientNorm;
-
-    private boolean pointConverged = false;
-    private boolean objectiveConverged = false;
-    private boolean gradientConverged = false;
 
     final SumFunction objective;
     final List<int[]> constraintsVariablesIndexes;
     final List<AbstractConstraint> constraints;
 
-    int currentIteration;
-    Vector currentPoint;
-    Vector previousPoint;
-    Vector currentGradient;
-    Vector previousGradient;
-    double currentObjectiveValue;
-    double previousObjectiveValue;
-
-    protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
-        protected abstract T self();
-
-        protected final SumFunction objective;
-        protected final Vector initialPoint;
-
+    protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
+            extends AbstractIterativeSolver.AbstractBuilder<T> {
         protected final List<int[]> constraintsVariablesIndexes = new ArrayList<>();
         protected final List<AbstractConstraint> constraints = new ArrayList<>();
 
         protected double augmentedLagrangianParameter = 1;
-        protected int maximumNumberOfIterations = 10000;
-        protected double pointChangeTolerance = 1e-10;
-        protected double objectiveChangeTolerance = 1e-10;
-        protected double gradientTolerance = 1e-6;
-        protected boolean checkForPointConvergence = true;
-        protected boolean checkForObjectiveConvergence = true;
-        protected boolean checkForGradientConvergence = true;
-        private Function<Vector, Boolean> additionalCustomConvergenceCriterion = currentPoint -> false;
-        private int loggingLevel = 0;
         private int numberOfThreads = Runtime.getRuntime().availableProcessors();
 
         protected AbstractBuilder(SumFunction objective,
                                   Vector initialPoint) {
-            this.objective = objective;
-            this.initialPoint = initialPoint;
+            super(objective, initialPoint);
+
+            checkForPointConvergence = false;
+            checkForObjectiveConvergence = false;
+            checkForGradientConvergence = false;
         }
 
         public T addConstraint(int[] variableIndexes, AbstractConstraint constraint) {
@@ -96,51 +57,6 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver imple
 
         public T augmentedLagrangianParameter(double augmentedLagrangianParameter) {
             this.augmentedLagrangianParameter = augmentedLagrangianParameter;
-            return self();
-        }
-
-        public T maximumNumberOfIterations(int maximumNumberOfIterations) {
-            this.maximumNumberOfIterations = maximumNumberOfIterations;
-            return self();
-        }
-
-        public T pointChangeTolerance(double pointChangeTolerance) {
-            this.pointChangeTolerance = pointChangeTolerance;
-            return self();
-        }
-
-        public T objectiveChangeTolerance(double objectiveChangeTolerance) {
-            this.objectiveChangeTolerance = objectiveChangeTolerance;
-            return self();
-        }
-
-        public T gradientTolerance(double gradientTolerance) {
-            this.gradientTolerance = gradientTolerance;
-            return self();
-        }
-
-        public T checkForPointConvergence(boolean checkForPointConvergence) {
-            this.checkForPointConvergence = checkForPointConvergence;
-            return self();
-        }
-
-        public T checkForObjectiveConvergence(boolean checkForObjectiveConvergence) {
-            this.checkForObjectiveConvergence = checkForObjectiveConvergence;
-            return self();
-        }
-
-        public T checkForGradientConvergence(boolean checkForGradientConvergence) {
-            this.checkForGradientConvergence = checkForGradientConvergence;
-            return self();
-        }
-
-        public T additionalCustomConvergenceCriterion(Function<Vector, Boolean> additionalCustomConvergenceCriterion) {
-            this.additionalCustomConvergenceCriterion = additionalCustomConvergenceCriterion;
-            return self();
-        }
-
-        public T loggingLevel(int loggingLevel) {
-            this.loggingLevel = loggingLevel;
             return self();
         }
 
@@ -166,25 +82,13 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver imple
         }
     }
 
-    private ConsensusAlternatingDirectionsMethodOfMultipliersSolver(AbstractBuilder<?> builder) {
-        objective = builder.objective;
+    private ConsensusAlternatingDirectionsMethodOfMultipliersSolver(AbstractBuilder builder) {
+        super(builder);
+        objective = (SumFunction) builder.objective;
         constraintsVariablesIndexes = builder.constraintsVariablesIndexes;
         constraints = builder.constraints;
         augmentedLagrangianParameter = builder.augmentedLagrangianParameter;
-        maximumNumberOfIterations = builder.maximumNumberOfIterations;
-        pointChangeTolerance = builder.pointChangeTolerance;
-        objectiveChangeTolerance = builder.objectiveChangeTolerance;
-        gradientTolerance = builder.gradientTolerance;
-        checkForPointConvergence = builder.checkForPointConvergence;
-        checkForObjectiveConvergence = builder.checkForObjectiveConvergence;
-        checkForGradientConvergence = builder.checkForGradientConvergence;
-        additionalCustomConvergenceCriterion = builder.additionalCustomConvergenceCriterion;
-        loggingLevel = builder.loggingLevel;
         taskExecutor = Executors.newFixedThreadPool(builder.numberOfThreads);
-        currentPoint = builder.initialPoint;
-        currentGradient = objective.getGradient(currentPoint);
-        currentObjectiveValue = objective.getValue(currentPoint);
-        currentIteration = 0;
         variableCopiesCounts = Vectors.dense(currentPoint.size());
         for (int[] variableIndexes : objective.getTermsVariables()) {
             Vector termPoint = Vectors.build(variableIndexes.length, currentPoint.type());
@@ -205,22 +109,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver imple
     }
 
     @Override
-    public Vector solve() {
-        while (!checkTerminationConditions() && !additionalCustomConvergenceCriterion.apply(currentPoint)) {
-            performIterationUpdates();
-            currentIteration++;
-            if ((loggingLevel == 1 && currentIteration % 1000 == 0)
-                    || (loggingLevel == 2 && currentIteration % 100 == 0)
-                    || (loggingLevel == 3 && currentIteration % 10 == 0)
-                    || loggingLevel > 3)
-                printIteration();
-        }
-        if (loggingLevel > 0)
-            printTerminationMessage();
-        return currentPoint;
-    }
-
-    private void performIterationUpdates() {
+    public void performIterationUpdates() {
         previousPoint = currentPoint;
         previousGradient = currentGradient;
         previousObjectiveValue = currentObjectiveValue;
@@ -288,9 +177,9 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver imple
         variables.set(0, variables.size() - 1, consensusVariables.sub(multipliers.div(augmentedLagrangianParameter)));
         if (objective.getValue(variables, subProblemIndex) > 0) {
             variables.set(0, variables.size() - 1, new NewtonSolver.Builder(new SubProblemObjectiveFunction(objective.getTerm(subProblemIndex),
-                                                                                 consensusVariables,
-                                                                                 multipliers),
-                                                 variables).build().solve());
+                                                                                                            consensusVariables,
+                                                                                                            multipliers),
+                                                                            variables).build().solve());
             if (objective.getValue(variables, subProblemIndex) < 0) {
                 variables.set(0, variables.size() - 1, ((LinearFunction) objective.getTerm(subProblemIndex))
                         .projectToHyperplane(consensusVariables));
@@ -321,59 +210,6 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver imple
         synchronized (lock) {
             variableCopiesSum.addInPlace(termPoint);
         }
-    }
-
-    public boolean checkTerminationConditions() {
-        if (currentIteration > 0) {
-            if (currentIteration >= maximumNumberOfIterations)
-                return true;
-            if (checkForPointConvergence) {
-                pointChange = currentPoint.sub(previousPoint).norm(VectorNorm.L2_FAST);
-                pointConverged = pointChange <= pointChangeTolerance;
-            }
-            if (checkForObjectiveConvergence) {
-                objectiveChange = Math.abs((previousObjectiveValue - currentObjectiveValue) / previousObjectiveValue);
-                objectiveConverged = objectiveChange <= objectiveChangeTolerance;
-            }
-            if (checkForGradientConvergence) {
-                gradientNorm = currentGradient.norm(VectorNorm.L2_FAST);
-                gradientConverged = gradientNorm <= gradientTolerance;
-            }
-            return (checkForPointConvergence && pointConverged)
-                    || (checkForObjectiveConvergence && objectiveConverged)
-                    || (checkForGradientConvergence && gradientConverged);
-        } else {
-            return false;
-        }
-    }
-
-    public void printIteration() {
-        logger.info("Iteration #: %10d | Func. Eval. #: %10d | Objective Value: %20s " +
-                            "| Objective Change: %20s | Point Change: %20s | Gradient Norm: %20s",
-                    currentIteration,
-                    objective.getNumberOfFunctionEvaluations(),
-                    DECIMAL_FORMAT.format(currentObjectiveValue),
-                    DECIMAL_FORMAT.format(objectiveChange),
-                    DECIMAL_FORMAT.format(pointChange),
-                    DECIMAL_FORMAT.format(gradientNorm));
-    }
-
-    public void printTerminationMessage() {
-        if (pointConverged)
-            logger.info("The L2 norm of the point change, %s, was below the convergence threshold of %s.",
-                        DECIMAL_FORMAT.format(pointChange),
-                        DECIMAL_FORMAT.format(pointChangeTolerance));
-        if (objectiveConverged)
-            logger.info("The relative change of the objective function value, %s, " +
-                                "was below the convergence threshold of %s.",
-                        DECIMAL_FORMAT.format(objectiveChange),
-                        DECIMAL_FORMAT.format(objectiveChangeTolerance));
-        if (gradientConverged)
-            logger.info("The gradient norm became %s, which is less than the convergence threshold of %s.",
-                        DECIMAL_FORMAT.format(gradientNorm),
-                        DECIMAL_FORMAT.format(gradientTolerance));
-        if (currentIteration >= maximumNumberOfIterations)
-            logger.info("Reached the maximum number of allowed iterations, %d.", maximumNumberOfIterations);
     }
 
     private class SubProblemObjectiveFunction extends AbstractFunction {
