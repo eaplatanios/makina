@@ -55,7 +55,7 @@ public final class MaxFunction extends AbstractFunction {
 
     @Override
     protected double computeValue(Vector point) {
-        double value = 0;
+        double value = -Double.MAX_VALUE;
         for (int term = 0; term < functionTerms.size(); term++) {
             Vector termPoint = Vectors.build(functionTermVariables.get(term).length, point.type());
             termPoint.set(0, functionTermVariables.get(term).length - 1, point.get(functionTermVariables.get(term)));
