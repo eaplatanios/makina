@@ -62,6 +62,17 @@ public final class NewtonSolver extends AbstractLineSearchSolver {
                 linearEqualityConstraint =
                         linearEqualityConstraint.append(builder.linearEqualityConstraints.get(constraintIndex));
         }
+        try {
+            currentPoint = linearEqualityConstraint.project(currentPoint);
+            currentGradient = objective.getGradient(currentPoint);
+            previousPoint = currentPoint;
+            previousGradient = currentGradient;
+        } catch (SingularMatrixException e) {
+            throw new IllegalArgumentException("The linear equality constraint matrix is singular.");
+        } catch (NonSmoothFunctionException e) {
+            throw new IllegalArgumentException("The objective function being optimized is non-smooth.");
+        }
+        currentObjectiveValue = objective.getValue(currentPoint);
     }
 
     /**

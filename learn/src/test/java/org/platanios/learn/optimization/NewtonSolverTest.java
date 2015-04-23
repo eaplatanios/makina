@@ -44,7 +44,7 @@ public class NewtonSolverTest {
     @Test
     public void testLinearEqualityConstrainedSimpleFunctionNewtonSolver() {
         NewtonSolver newtonSolver = new NewtonSolver.Builder(new SimpleFunction(),
-                                                             Vectors.dense(new double[]{1, 0.5}))
+                                                             Vectors.dense(new double[]{0, 0}))
                 .addLinearEqualityConstraint(new LinearEqualityConstraint(Vectors.dense(new double[] {1.0, 4.0}), 3))
                 .loggingLevel(5)
                 .build();
