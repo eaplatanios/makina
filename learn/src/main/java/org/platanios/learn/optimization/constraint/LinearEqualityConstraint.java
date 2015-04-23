@@ -61,6 +61,21 @@ public final class LinearEqualityConstraint extends AbstractEqualityConstraint {
         return linearSystemMatrixSingularValueDecomposition.solve(linearSystemVector).get(0, point.size() - 1);
     }
 
+    public LinearEqualityConstraint append(LinearEqualityConstraint constraint) {
+        if (A.getColumnDimension() != constraint.A.getColumnDimension())
+            throw new IllegalArgumentException(
+                    "Trying to append linear equality constraints for differently sized vector input."
+            );
+
+        Matrix newA = new Matrix(A.getRowDimension() + constraint.A.getRowDimension(), A.getColumnDimension());
+        newA.setSubMatrix(0, A.getRowDimension() - 1, 0, A.getColumnDimension() - 1, A);
+        newA.setSubMatrix(A.getRowDimension(), newA.getRowDimension() - 1, 0, A.getColumnDimension() - 1, constraint.A);
+        Vector newB = Vectors.build(b.size() + constraint.b.size(), b.type());
+        newB.set(0, b.size() - 1, b);
+        newB.set(b.size(), newB.size() - 1, constraint.b);
+        return new LinearEqualityConstraint(newA, newB);
+    }
+
     public Matrix getA() {
         return A;
     }

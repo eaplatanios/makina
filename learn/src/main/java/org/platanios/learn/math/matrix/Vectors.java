@@ -72,7 +72,7 @@ public class Vectors {
      * @param   elements    One-dimensional array of doubles.
      * @return              The new vector.
      */
-    public static DenseVector dense(double[] elements) {
+    public static DenseVector dense(double... elements) {
         return new DenseVector(elements);
     }
 

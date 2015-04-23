@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
+import org.platanios.learn.optimization.constraint.LinearEqualityConstraint;
 import org.platanios.learn.optimization.function.QuadraticFunction;
 
 /**
@@ -28,6 +29,27 @@ public class NewtonSolverTest {
                                                        Vectors.dense(new double[]{0, 0})).build();
         actualResult = newtonSolver.solve().getDenseArray();
         expectedResult = new double[] { 0, 2 };
+        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
+    }
+
+    @Test
+    public void testSimpleFunctionNewtonSolver() {
+        NewtonSolver newtonSolver = new NewtonSolver.Builder(new SimpleFunction(),
+                                                             Vectors.dense(new double[]{0,0})).build();
+        double[] actualResult = newtonSolver.solve().getDenseArray();
+        double[] expectedResult = new double[] { 2, 1 };
+        Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
+    }
+
+    @Test
+    public void testLinearEqualityConstrainedSimpleFunctionNewtonSolver() {
+        NewtonSolver newtonSolver = new NewtonSolver.Builder(new SimpleFunction(),
+                                                             Vectors.dense(new double[]{1, 0.5}))
+                .addLinearEqualityConstraint(new LinearEqualityConstraint(Vectors.dense(new double[] {1.0, 4.0}), 3))
+                .loggingLevel(5)
+                .build();
+        double[] actualResult = newtonSolver.solve().getDenseArray();
+        double[] expectedResult = new double[] { 5.0 / 3.0, 1.0 / 3.0 };
         Assert.assertArrayEquals(expectedResult, actualResult, 1e-2);
     }
 }
