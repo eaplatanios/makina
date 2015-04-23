@@ -11,7 +11,7 @@ public final class LinearEqualityConstraint extends AbstractEqualityConstraint {
     private final Matrix A;
     private final Vector b;
 
-    private QRDecomposition linearSystemMatrixSingularValueDecomposition;
+    private QRDecomposition linearSystemMatrixQRDecomposition;
 
     public LinearEqualityConstraint(Matrix A, Vector b) {
         this.A = A;
@@ -35,7 +35,7 @@ public final class LinearEqualityConstraint extends AbstractEqualityConstraint {
 
     @Override
     public Vector project(Vector point) throws SingularMatrixException {
-        if (linearSystemMatrixSingularValueDecomposition == null) {
+        if (linearSystemMatrixQRDecomposition == null) {
             Matrix linearSystemMatrix = new Matrix(A.getRowDimension() + A.getColumnDimension(),
                                              A.getRowDimension() + A.getColumnDimension());
             linearSystemMatrix.setSubMatrix(0,
@@ -53,12 +53,12 @@ public final class LinearEqualityConstraint extends AbstractEqualityConstraint {
                                       0,
                                       A.getColumnDimension() - 1,
                                       A);
-            linearSystemMatrixSingularValueDecomposition = new QRDecomposition(linearSystemMatrix);
+            linearSystemMatrixQRDecomposition = new QRDecomposition(linearSystemMatrix);
         }
         Vector linearSystemVector = Vectors.build(point.size() + A.getRowDimension(), point.type());
         linearSystemVector.set(0, point.size() - 1, point);
         linearSystemVector.set(point.size(), linearSystemVector.size() - 1, b);
-        return linearSystemMatrixSingularValueDecomposition.solve(linearSystemVector).get(0, point.size() - 1);
+        return linearSystemMatrixQRDecomposition.solve(linearSystemVector).get(0, point.size() - 1);
     }
 
     public LinearEqualityConstraint append(LinearEqualityConstraint constraint) {

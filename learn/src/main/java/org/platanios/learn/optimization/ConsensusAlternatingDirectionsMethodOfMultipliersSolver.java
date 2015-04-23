@@ -188,8 +188,6 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
 
     private void solveSubProblem(SubProblem subProblem) {
         subProblem.variables.set(
-                0,
-                subProblem.variables.size() - 1,
                 new QuasiNewtonSolver.Builder(new SubProblemObjectiveFunction(subProblem.objectiveTerm,
                                                                               subProblem.consensusVariables,
                                                                               subProblem.multipliers,
@@ -206,9 +204,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         Vector multipliers = lagrangeMultipliers.get(numberOfObjectiveTerms + constraintIndex);
         Vector consensusVariables = Vectors.build(variableIndexes.length, currentPoint.type());
         consensusVariables.set(currentPoint.get(variableIndexes));
-        multipliers.addInPlace(variables
-                                       .sub(consensusVariables)
-                                       .mult(augmentedLagrangianParameter));
+        multipliers.addInPlace(variables.sub(consensusVariables).mult(augmentedLagrangianParameter));
         try {
             variables.set(constraints.get(constraintIndex).project(consensusVariables));
         } catch (SingularMatrixException e) {

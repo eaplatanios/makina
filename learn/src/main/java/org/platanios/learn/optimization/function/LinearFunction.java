@@ -32,6 +32,17 @@ public final class LinearFunction extends AbstractFunction {
         return new Matrix(point.size(), point.size());
     }
 
+    public LinearFunction add(LinearFunction linearFunction) {
+        if (a.size() != linearFunction.a.size())
+            throw new IllegalArgumentException(
+                    "Trying to add two linear functions for differently sized vector inputs."
+            );
+
+        Vector newA = a.copy();
+        newA.addInPlace(linearFunction.a);
+        return new LinearFunction(newA, b + linearFunction.b);
+    }
+
     public Vector projectToHyperplane(Vector point) {
         return point.sub(a.mult((a.dot(point) + b) / a.dot(a)));
     }

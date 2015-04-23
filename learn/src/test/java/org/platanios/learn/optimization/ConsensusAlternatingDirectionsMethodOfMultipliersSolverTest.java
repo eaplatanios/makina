@@ -35,6 +35,29 @@ public class ConsensusAlternatingDirectionsMethodOfMultipliersSolverTest {
     }
 
     @Test
+    public void testSimpleConsensusADMM1_NewInterface() {
+        ProbabilisticSoftLogicFunction pslFunction = new ProbabilisticSoftLogicFunction.Builder(2)
+                .addRule(new int[]{0}, new int[]{2}, new boolean[]{false}, new boolean[]{false}, new int[]{2}, new double[]{1}, 1, 1)           // C -> A  =>  1 - A
+                .addRule(new int[]{1}, new int[]{0}, new boolean[]{false}, new boolean[]{false}, new int[]{}, new double[]{}, 1, 1)             // A -> B  =>  A - B
+                .addRule(new int[]{1}, new int[]{3}, new boolean[]{false}, new boolean[]{false}, new int[]{3}, new double[]{0}, 1, 1)           // D -> B  =>  -B
+                .build();
+
+        ConsensusAlternatingDirectionsMethodOfMultipliersSolver consensusAlternatingDirectionsMethodOfMultipliersSolver =
+                new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder(pslFunction,
+                                                                                    Vectors.dense(new double[]{0.5,0.5}))
+                        .subProblemSolver(SubProblemSolvers::solveProbabilisticSoftLogicSubProblem)
+                        .checkForObjectiveConvergence(false)
+                        .checkForGradientConvergence(false)
+                        .loggingLevel(5)
+                        .build();
+
+        Vector result = consensusAlternatingDirectionsMethodOfMultipliersSolver.solve();
+        System.out.println(result.get(0));
+        System.out.println(result.get(1));
+        System.out.println('\n');
+    }
+
+    @Test
     public void testSimpleConsensusADMM2() {
         ProbabilisticSoftLogicFunction pslFunction = new ProbabilisticSoftLogicFunction.Builder(2)
                 .addTerm(new int[]{0}, new double[]{-1}, 1, 1, 1)

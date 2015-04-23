@@ -39,6 +39,11 @@ public class UnsafeSerializationUtilities {
     /** The offset, in bytes, between the base memory address of a double array and its first element. */
     protected static final long DOUBLE_ARRAY_OFFSET = UNSAFE.arrayBaseOffset(double[].class);
 
+    // Suppress default constructor for noninstantiability
+    private UnsafeSerializationUtilities() {
+        throw new AssertionError();
+    }
+
     /**
      * Writes the provided boolean value to the provided output stream byte by byte.
      *

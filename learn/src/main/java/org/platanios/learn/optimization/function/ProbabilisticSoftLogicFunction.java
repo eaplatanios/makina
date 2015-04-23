@@ -1,5 +1,7 @@
 package org.platanios.learn.optimization.function;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.platanios.learn.Utilities;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
@@ -23,6 +25,76 @@ public final class ProbabilisticSoftLogicFunction extends SumFunction {
             MaxFunction.Builder maxFunctionBuilder = new MaxFunction.Builder(sumFunctionBuilder.numberOfVariables);
             maxFunctionBuilder.addConstantTerm(0);
             maxFunctionBuilder.addFunctionTerm(new LinearFunction(Vectors.dense(coefficients), constant));
+            sumFunctionBuilder.addTerm(
+                    new ProbabilisticSoftLogicSumFunctionTerm(maxFunctionBuilder.build(), power, weight),
+                    variablesIndexes
+            );
+            return this;
+        }
+
+        public Builder addRule(int[] headVariableIndexes,
+                               int[] bodyVariableIndexes,
+                               boolean[] headNegations,
+                               boolean[] bodyNegations,
+                               int[] observedVariableIndexes,
+                               double[] observedVariableValues,
+                               double power,
+                               double weight) {
+            int[] variablesIndexes = Utilities.union(headVariableIndexes, bodyVariableIndexes);
+            for (int observedVariableIndex : observedVariableIndexes)
+                variablesIndexes = ArrayUtils.removeElement(variablesIndexes, observedVariableIndex);
+            LinearFunction linearFunction = new LinearFunction(Vectors.dense(variablesIndexes.length), 1);
+            for (int headVariable = 0; headVariable < headVariableIndexes.length; headVariable++) {
+                Vector coefficients = Vectors.dense(variablesIndexes.length);
+                int observedVariableIndex =
+                        ArrayUtils.indexOf(observedVariableIndexes, headVariableIndexes[headVariable]);
+                if (headNegations[headVariable]) {
+                    if (observedVariableIndex >= 0) {
+                        linearFunction = linearFunction.add(
+                                new LinearFunction(coefficients, observedVariableValues[observedVariableIndex] - 1)
+                        );
+                    } else {
+                        coefficients.set(ArrayUtils.indexOf(variablesIndexes, headVariableIndexes[headVariable]), 1);
+                        linearFunction = linearFunction.add(new LinearFunction(coefficients, -1));
+                    }
+                } else {
+                    if (observedVariableIndex >= 0) {
+                        linearFunction = linearFunction.add(
+                                new LinearFunction(coefficients, -observedVariableValues[observedVariableIndex])
+                        );
+                    } else {
+                        coefficients.set(ArrayUtils.indexOf(variablesIndexes, headVariableIndexes[headVariable]), -1);
+                        linearFunction = linearFunction.add(new LinearFunction(coefficients, 0));
+                    }
+                }
+            }
+            for (int bodyVariable = 0; bodyVariable < bodyVariableIndexes.length; bodyVariable++) {
+                Vector coefficients = Vectors.dense(variablesIndexes.length);
+                int observedVariableIndex =
+                        ArrayUtils.indexOf(observedVariableIndexes, bodyVariableIndexes[bodyVariable]);
+                if (bodyNegations[bodyVariable]) {
+                    if (observedVariableIndex >= 0) {
+                        linearFunction = linearFunction.add(
+                                new LinearFunction(coefficients, -observedVariableValues[observedVariableIndex])
+                        );
+                    } else {
+                        coefficients.set(ArrayUtils.indexOf(variablesIndexes, bodyVariableIndexes[bodyVariable]), -1);
+                        linearFunction = linearFunction.add(new LinearFunction(coefficients, 0));
+                    }
+                } else {
+                    if (observedVariableIndex >= 0) {
+                        linearFunction = linearFunction.add(
+                                new LinearFunction(coefficients, observedVariableValues[observedVariableIndex] - 1)
+                        );
+                    } else {
+                        coefficients.set(ArrayUtils.indexOf(variablesIndexes, bodyVariableIndexes[bodyVariable]), 1);
+                        linearFunction = linearFunction.add(new LinearFunction(coefficients, -1));
+                    }
+                }
+            }
+            MaxFunction.Builder maxFunctionBuilder = new MaxFunction.Builder(sumFunctionBuilder.numberOfVariables);
+            maxFunctionBuilder.addConstantTerm(0);
+            maxFunctionBuilder.addFunctionTerm(linearFunction);
             sumFunctionBuilder.addTerm(
                     new ProbabilisticSoftLogicSumFunctionTerm(maxFunctionBuilder.build(), power, weight),
                     variablesIndexes
