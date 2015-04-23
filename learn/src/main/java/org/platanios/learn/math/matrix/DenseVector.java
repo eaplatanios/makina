@@ -210,6 +210,24 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
+    public Vector maxElementwise(double value) {
+        DenseVector resultVector = new DenseVector(size);
+        double[] resultVectorArray = resultVector.getArray();
+        for (int i = 0; i < size; i++)
+            resultVectorArray[i] = Math.max(array[i], value);
+        return resultVector;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector maxElementwiseInPlace(double value) {
+        for (int i = 0; i < size; i++)
+            array[i] = Math.max(array[i], value);
+        return this;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public Vector maxElementwise(Vector vector) {
         checkVectorSize(vector);
         DenseVector resultVector = new DenseVector(size);
@@ -236,6 +254,24 @@ public class DenseVector extends Vector {
             minValue = Math.min(minValue, array[i]);
         }
         return minValue;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector minElementwise(double value) {
+        DenseVector resultVector = new DenseVector(size);
+        double[] resultVectorArray = resultVector.getArray();
+        for (int i = 0; i < size; i++)
+            resultVectorArray[i] = Math.min(array[i], value);
+        return resultVector;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector minElementwiseInPlace(double value) {
+        for (int i = 0; i < size; i++)
+            array[i] = Math.min(array[i], value);
+        return this;
     }
 
     /** {@inheritDoc} */

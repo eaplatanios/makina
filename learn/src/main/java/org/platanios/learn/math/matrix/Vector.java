@@ -187,6 +187,21 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
     public abstract double max();
 
     /**
+     * Gets the element-wise maximum value between the elements of the current vector and the provided value.
+     *
+     * @return  A new vector holding the result of the element-wise maximum operation.
+     */
+    public abstract Vector maxElementwise(double value);
+
+    /**
+     * Sets the elements of the current vector to the element-wise maximum value between the elements of the current
+     * vector and the provided value.
+     *
+     * @return  The current vector holding the result of the element-wise maximum operation.
+     */
+    public abstract Vector maxElementwiseInPlace(double value);
+
+    /**
      * Gets the element-wise maximum value between the elements of the current vector and the elements of the provided
      * vector.
      *
@@ -208,6 +223,21 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
      * @return  The minimum value of all elements in this vector.
      */
     public abstract double min();
+
+    /**
+     * Gets the element-wise minimum value between the elements of the current vector and the provided value.
+     *
+     * @return  A new vector holding the result of the element-wise minimum operation.
+     */
+    public abstract Vector minElementwise(double value);
+
+    /**
+     * Sets the elements of the current vector to the element-wise minimum value between the elements of the current
+     * vector and the provided value.
+     *
+     * @return  The current vector holding the result of the element-wise minimum operation.
+     */
+    public abstract Vector minElementwiseInPlace(double value);
 
     /**
      * Gets the element-wise minimum value between the elements of the current vector and the elements of the provided

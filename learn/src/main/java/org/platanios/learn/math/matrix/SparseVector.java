@@ -444,6 +444,18 @@ public class SparseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
+    public Vector maxElementwise(double value) {
+        throw new UnsupportedOperationException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector maxElementwiseInPlace(double value) {
+        throw new UnsupportedOperationException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public Vector maxElementwise(Vector vector) {
         checkVectorSize(vector);
         throw new UnsupportedOperationException();
@@ -463,6 +475,18 @@ public class SparseVector extends Vector {
         for (int i = 1; i < numberOfNonzeroEntries; i++)
             minValue = Math.min(minValue, values[i]);
         return minValue;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector minElementwise(double value) {
+        throw new UnsupportedOperationException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector minElementwiseInPlace(double value) {
+        throw new UnsupportedOperationException();
     }
 
     /** {@inheritDoc} */
