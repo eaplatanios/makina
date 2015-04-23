@@ -4,29 +4,27 @@ import org.junit.Test;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
 import org.platanios.learn.optimization.constraint.LinearEqualityConstraint;
-import org.platanios.learn.optimization.function.LinearFunction;
-import org.platanios.learn.optimization.function.SumFunction;
+import org.platanios.learn.optimization.function.ProbabilisticSoftLogicFunction;
 
 
 /**
- * Created by dcard on 4/21/15.
+ * @author Emmanouil Antonios Platanios
  */
 public class ConsensusAlternatingDirectionsMethodOfMultipliersSolverTest {
     @Test
     public void testSimpleConsensusADMM1() {
-        SumFunction sumFunction = new SumFunction.Builder(2)
-                .addTerm(new LinearFunction(Vectors.dense(new double[]{-1}), 1), 0)
-                .addTerm(new LinearFunction(Vectors.dense(new double[]{1, -1}), 0), 0, 1)
-                .addTerm(new LinearFunction(Vectors.dense(new double[]{-1}), 0), 1)
+        ProbabilisticSoftLogicFunction pslFunction = new ProbabilisticSoftLogicFunction.Builder(2)
+                .addTerm(new int[]{0}, new double[]{-1}, 1, 1, 1)
+                .addTerm(new int[]{0, 1}, new double[]{1, -1}, 0, 1, 1)
+                .addTerm(new int[]{1}, new double[] {-1}, 0, 1, 1)
                 .build();
 
         ConsensusAlternatingDirectionsMethodOfMultipliersSolver consensusAlternatingDirectionsMethodOfMultipliersSolver =
-                new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder( sumFunction,
-                        Vectors.dense(new double[]{0.5,0.5}))
-                        .maximumNumberOfIterations(100)
+                new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder(pslFunction,
+                                                                                    Vectors.dense(new double[]{0.5,0.5}))
+                        .subProblemSolver(SubProblemSolvers::solveProbabilisticSoftLogicSubProblem)
                         .checkForObjectiveConvergence(false)
                         .checkForGradientConvergence(false)
-                        .checkForPointConvergence(false)
                         .loggingLevel(5)
                         .build();
 
@@ -38,22 +36,21 @@ public class ConsensusAlternatingDirectionsMethodOfMultipliersSolverTest {
 
     @Test
     public void testSimpleConsensusADMM2() {
-        SumFunction sumFunction = new SumFunction.Builder(2)
-                .addTerm(new LinearFunction(Vectors.dense(new double[]{-1}), 1), 0)
-                .addTerm(new LinearFunction(Vectors.dense(new double[]{1, -1}), 0), 0, 1)
-                .addTerm(new LinearFunction(Vectors.dense(new double[]{-1}), 0), 1)
-                .addTerm(new LinearFunction(Vectors.dense(new double[]{1}), -1), 0)
-                .addTerm(new LinearFunction(Vectors.dense(new double[]{-1, 1}), 0), 0, 1)
-                .addTerm(new LinearFunction(Vectors.dense(new double[]{1}), 0), 1)
+        ProbabilisticSoftLogicFunction pslFunction = new ProbabilisticSoftLogicFunction.Builder(2)
+                .addTerm(new int[]{0}, new double[]{-1}, 1, 1, 1)
+                .addTerm(new int[]{0, 1}, new double[]{1, -1}, 0, 1, 1)
+                .addTerm(new int[]{1}, new double[] {-1}, 0, 1, 1)
+                .addTerm(new int[]{0}, new double[]{1}, -1, 1, 1)
+                .addTerm(new int[]{0, 1}, new double[]{-1, 1}, 0, 1, 1)
+                .addTerm(new int[]{1}, new double[] {1}, 0, 1, 1)
                 .build();
 
         ConsensusAlternatingDirectionsMethodOfMultipliersSolver consensusAlternatingDirectionsMethodOfMultipliersSolver =
-                new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder( sumFunction,
-                        Vectors.dense(new double[]{0.5,0.5}))
-                        .maximumNumberOfIterations(100)
+                new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder(pslFunction,
+                                                                                    Vectors.dense(new double[]{0.5,0.5}))
+                        .subProblemSolver(SubProblemSolvers::solveProbabilisticSoftLogicSubProblem)
                         .checkForObjectiveConvergence(false)
                         .checkForGradientConvergence(false)
-                        .checkForPointConvergence(false)
                         .loggingLevel(5)
                         .build();
 
@@ -65,23 +62,22 @@ public class ConsensusAlternatingDirectionsMethodOfMultipliersSolverTest {
 
     @Test
     public void testSimpleConstrainedConsensusADMM2() {
-        SumFunction sumFunction = new SumFunction.Builder(2)
-                .addTerm(new LinearFunction(Vectors.dense(new double[]{-1}), 1), 0)
-                .addTerm(new LinearFunction(Vectors.dense(new double[]{1, -1}), 0), 0, 1)
-                .addTerm(new LinearFunction(Vectors.dense(new double[]{-1}), 0), 1)
-                .addTerm(new LinearFunction(Vectors.dense(new double[]{1}), -1), 0)
-                .addTerm(new LinearFunction(Vectors.dense(new double[]{-1, 1}), 0), 0, 1)
-                .addTerm(new LinearFunction(Vectors.dense(new double[]{1}), 0), 1)
+        ProbabilisticSoftLogicFunction pslFunction = new ProbabilisticSoftLogicFunction.Builder(2)
+                .addTerm(new int[]{0}, new double[]{-1}, 1, 1, 1)
+                .addTerm(new int[]{0, 1}, new double[]{1, -1}, 0, 1, 1)
+                .addTerm(new int[]{1}, new double[] {-1}, 0, 1, 1)
+                .addTerm(new int[]{0}, new double[]{1}, -1, 1, 1)
+                .addTerm(new int[]{0, 1}, new double[]{-1, 1}, 0, 1, 1)
+                .addTerm(new int[]{1}, new double[] {1}, 0, 1, 1)
                 .build();
 
         ConsensusAlternatingDirectionsMethodOfMultipliersSolver consensusAlternatingDirectionsMethodOfMultipliersSolver =
-                new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder(sumFunction, Vectors.dense(new double[]{0.5,0.5}))
-                        .addConstraint(new int[]{0, 1}, new LinearEqualityConstraint(Vectors.dense(new double[]{-1, 1}), 0.2))
-                        .augmentedLagrangianParameter(1)
-                        .maximumNumberOfIterations(100)
+                new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder(pslFunction,
+                                                                                    Vectors.dense(new double[]{0.5,0.5}))
+                        .addConstraint(new LinearEqualityConstraint(Vectors.dense(new double[]{-1, 1}), 0.2), 0, 1)
+                        .subProblemSolver(SubProblemSolvers::solveProbabilisticSoftLogicSubProblem)
                         .checkForObjectiveConvergence(false)
                         .checkForGradientConvergence(false)
-                        .checkForPointConvergence(false)
                         .loggingLevel(5)
                         .build();
 

@@ -90,7 +90,7 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
         }
     }
 
-    private ConjugateGradientSolver(AbstractBuilder builder)
+    private ConjugateGradientSolver(AbstractBuilder<?> builder)
             throws NonPositiveDefiniteMatrixException {
         super(builder);
         problemConversionMethod = builder.problemConversionMethod;

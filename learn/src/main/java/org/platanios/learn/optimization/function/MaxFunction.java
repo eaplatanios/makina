@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public final class MaxFunction extends AbstractFunction {
+public class MaxFunction extends AbstractFunction {
     private final int numberOfVariables;
     private final List<int[]> functionTermVariables;
     private final List<AbstractFunction> functionTerms;
@@ -24,6 +24,12 @@ public final class MaxFunction extends AbstractFunction {
 
         public Builder(int numberOfVariables) {
             this.numberOfVariables = numberOfVariables;
+        }
+
+        public Builder addFunctionTerm(AbstractFunction functionTerm) {
+            functionTermVariables.add(null);
+            functionTerms.add(functionTerm);
+            return this;
         }
 
         public Builder addFunctionTerm(AbstractFunction functionTerm, int... termVariables) {
@@ -57,9 +63,13 @@ public final class MaxFunction extends AbstractFunction {
     protected double computeValue(Vector point) {
         double value = -Double.MAX_VALUE;
         for (int term = 0; term < functionTerms.size(); term++) {
-            Vector termPoint = Vectors.build(functionTermVariables.get(term).length, point.type());
-            termPoint.set(0, functionTermVariables.get(term).length - 1, point.get(functionTermVariables.get(term)));
-            value = Math.max(value, functionTerms.get(term).computeValue(termPoint));
+            if (functionTermVariables.get(term) != null) {
+                Vector termPoint = Vectors.build(functionTermVariables.get(term).length, point.type());
+                termPoint.set(0, functionTermVariables.get(term).length - 1, point.get(functionTermVariables.get(term)));
+                value = Math.max(value, functionTerms.get(term).computeValue(termPoint));
+            } else {
+                value = Math.max(value, functionTerms.get(term).computeValue(point));
+            }
         }
         for (Double constantTerm : constantTerms)
             value = Math.max(value, constantTerm);

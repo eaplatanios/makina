@@ -13,6 +13,11 @@ import java.util.Map;
  * @author Emmanouil Antonios Platanios
  */
 public class Vectors {
+    // Suppress default constructor for noninstantiability
+    private Vectors() {
+        throw new AssertionError();
+    }
+
     /**
      * Builds a vector of the given size and type and fills it with zeros.
      *

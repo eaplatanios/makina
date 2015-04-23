@@ -10,24 +10,26 @@ import java.util.List;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public final class SumFunction extends AbstractFunction {
-    private final int numberOfVariables;
-    private final List<int[]> termsVariables;
-    private final List<AbstractFunction> terms;
+public class SumFunction extends AbstractFunction {
+    final int numberOfVariables;
+    final List<int[]> termsVariables;
+    final List<AbstractFunction> terms;
 
-    public static class Builder {
-        private final int numberOfVariables;
-        private final List<int[]> termsVariables = new ArrayList<>();
-        private final List<AbstractFunction> terms = new ArrayList<>();
+    protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
+        protected abstract T self();
 
-        public Builder(int numberOfVariables) {
+        final int numberOfVariables;
+        final List<int[]> termsVariables = new ArrayList<>();
+        final List<AbstractFunction> terms = new ArrayList<>();
+
+        protected AbstractBuilder(int numberOfVariables) {
             this.numberOfVariables = numberOfVariables;
         }
 
-        public Builder addTerm(AbstractFunction term, int... termVariables) {
+        public T addTerm(AbstractFunction term, int... termVariables) {
             termsVariables.add(termVariables);
             terms.add(term);
-            return this;
+            return self();
         }
 
         public SumFunction build() {
@@ -35,7 +37,18 @@ public final class SumFunction extends AbstractFunction {
         }
     }
 
-    private SumFunction(Builder builder) {
+    public static class Builder extends AbstractBuilder<Builder> {
+        public Builder(int numberOfVariables) {
+            super(numberOfVariables);
+        }
+
+        @Override
+        protected Builder self() {
+            return this;
+        }
+    }
+
+    protected SumFunction(AbstractBuilder<?> builder) {
         numberOfVariables = builder.numberOfVariables;
         termsVariables = builder.termsVariables;
         terms = builder.terms;
