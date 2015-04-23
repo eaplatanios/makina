@@ -190,11 +190,11 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         subProblem.variables.set(
                 0,
                 subProblem.variables.size() - 1,
-                new NewtonSolver.Builder(new SubProblemObjectiveFunction(subProblem.objectiveTerm,
-                                                                         subProblem.consensusVariables,
-                                                                         subProblem.multipliers,
-                                                                         augmentedLagrangianParameter),
-                                         subProblem.variables).build().solve()
+                new QuasiNewtonSolver.Builder(new SubProblemObjectiveFunction(subProblem.objectiveTerm,
+                                                                              subProblem.consensusVariables,
+                                                                              subProblem.multipliers,
+                                                                              augmentedLagrangianParameter),
+                                              subProblem.variables).build().solve()
         );
     }
 
@@ -260,9 +260,10 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         @Override
         protected double computeValue(Vector point) {
             return subProblemObjectiveFunction.getValue(point)
-                    + augmentedLagrangianParameter * Math.pow(point.sub(consensusVariables)
-                                                                      .add(lagrangeMultipliers.div(augmentedLagrangianParameter))
-                                                                      .norm(VectorNorm.L2_FAST), 2) / 2;
+                    + augmentedLagrangianParameter
+                    * Math.pow(point.sub(consensusVariables)
+                                       .add(lagrangeMultipliers.div(augmentedLagrangianParameter))
+                                       .norm(VectorNorm.L2_FAST), 2) / 2;
         }
 
         @Override
