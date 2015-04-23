@@ -96,7 +96,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         variableCopiesCounts = Vectors.dense(currentPoint.size());
         for (int[] variableIndexes : objective.getTermsVariables()) {
             Vector termPoint = Vectors.build(variableIndexes.length, currentPoint.type());
-            termPoint.set(0, variableIndexes.length - 1, currentPoint.get(variableIndexes));
+            termPoint.set(currentPoint.get(variableIndexes));
             variableCopies.add(termPoint);
             lagrangeMultipliers.add(Vectors.build(variableIndexes.length, currentPoint.type()));
             for (int variableIndex : variableIndexes)
@@ -104,7 +104,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         }
         for (int[] variableIndexes : constraintsVariablesIndexes) {
             Vector termPoint = Vectors.build(variableIndexes.length, currentPoint.type());
-            termPoint.set(0, variableIndexes.length - 1, currentPoint.get(variableIndexes));
+            termPoint.set(currentPoint.get(variableIndexes));
             variableCopies.add(termPoint);
             lagrangeMultipliers.add(Vectors.build(variableIndexes.length, currentPoint.type()));
             for (int variableIndex : variableIndexes)
@@ -131,7 +131,10 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
             int[] variableIndexes = constraintsVariablesIndexes.get(constraintIndex);
             final int currentConstraintIndex = constraintIndex;
             subProblemTasks.add(Executors.callable(
-                    () -> projectOnConstraint(currentConstraintIndex, numberOfObjectiveTerms, variableIndexes, variableCopiesSum)
+                    () -> processConstraint(currentConstraintIndex,
+                                            variableIndexes,
+                                            variableCopiesSum,
+                                            numberOfObjectiveTerms)
             ));
         }
         try {
@@ -157,9 +160,9 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         Vector variables = variableCopies.get(subProblemIndex);
         Vector multipliers = lagrangeMultipliers.get(subProblemIndex);
         Vector consensusVariables = Vectors.build(variableIndexes.length, currentPoint.type());
-        consensusVariables.set(0, variableIndexes.length - 1, currentPoint.get(variableIndexes));
+        consensusVariables.set(currentPoint.get(variableIndexes));
         multipliers.addInPlace(variables.sub(consensusVariables).mult(augmentedLagrangianParameter));
-        variables.set(0, variables.size() - 1, consensusVariables.sub(multipliers.div(augmentedLagrangianParameter)));
+        variables.set(consensusVariables.sub(multipliers.div(augmentedLagrangianParameter)));
         SubProblem subProblem = new SubProblem(variables,
                                                multipliers,
                                                consensusVariables,
@@ -188,16 +191,19 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         );
     }
 
-    private void projectOnConstraint(int constraintIndex, int numberOfObjectiveTerms, int[] variableIndexes, Vector variableCopiesSum) {
+    private void processConstraint(int constraintIndex,
+                                   int[] variableIndexes,
+                                   Vector variableCopiesSum,
+                                   int numberOfObjectiveTerms) {
         Vector variables = variableCopies.get(numberOfObjectiveTerms + constraintIndex);
         Vector multipliers = lagrangeMultipliers.get(numberOfObjectiveTerms + constraintIndex);
         Vector consensusVariables = Vectors.build(variableIndexes.length, currentPoint.type());
-        consensusVariables.set(0, variableIndexes.length - 1, currentPoint.get(variableIndexes));
+        consensusVariables.set(currentPoint.get(variableIndexes));
         multipliers.addInPlace(variables
                                        .sub(consensusVariables)
                                        .mult(augmentedLagrangianParameter));
         try {
-            variables.set(0, variables.size() - 1, constraints.get(constraintIndex).project(consensusVariables));
+            variables.set(constraints.get(constraintIndex).project(consensusVariables));
         } catch (SingularMatrixException e) {
             logger.error("Singular matrix encountered in one of the problem constraints!");
         }

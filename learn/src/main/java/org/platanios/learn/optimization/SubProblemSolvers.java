@@ -18,8 +18,6 @@ public final class SubProblemSolvers {
                 (ProbabilisticSoftLogicSumFunctionTerm) subProblem.objectiveTerm;
         if (objectiveTerm.getLinearFunction().getValue(subProblem.variables) > 0) {
             subProblem.variables.set(
-                    0,
-                    subProblem.variables.size() - 1,
                     new NewtonSolver.Builder(
                             new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemObjectiveFunction(
                                     objectiveTerm.getSubProblemObjectiveFunction(),
@@ -31,8 +29,6 @@ public final class SubProblemSolvers {
             );
             if (objectiveTerm.getLinearFunction().getValue(subProblem.variables) < 0) {
                 subProblem.variables.set(
-                        0,
-                        subProblem.variables.size() - 1,
                         objectiveTerm.getLinearFunction().projectToHyperplane(subProblem.consensusVariables)
                 );
             }

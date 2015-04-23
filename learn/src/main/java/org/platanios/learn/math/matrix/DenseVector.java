@@ -184,6 +184,14 @@ public class DenseVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
+    public void set(Vector vector) {
+        checkVectorSize(vector);
+        for (int i = 0; i < size; i++)
+            array[i] = vector.get(i);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void setAll(double value) {
         for (int i = 0; i < size; i++) {
             array[i] = value;

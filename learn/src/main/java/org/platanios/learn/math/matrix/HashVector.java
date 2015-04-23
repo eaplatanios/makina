@@ -186,6 +186,12 @@ public class HashVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
+    public void set(Vector vector) {
+        throw new UnsupportedOperationException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void setAll(double value) {
         if (Math.abs(value) >= epsilon) {
             for (int i = 0; i < size; i++) {

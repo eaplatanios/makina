@@ -152,7 +152,7 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
     public abstract void set(int initialIndex, int finalIndex, Vector vector);
 
     /**
-     * Sets a sub-vector of this matrix to the provided vector values.
+     * Sets a sub-vector of this vector to the provided vector values.
      *
      * @param   indexes     The indexes of the elements of this vector to be changed to values of the elements of the
      *                      provided sub-vector.
@@ -162,6 +162,15 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
      *                                              the vector (exclusive).
      */
     public abstract void set(int[] indexes, Vector vector);
+
+    /**
+     * Sets the elements of this vector to the provided vector values.
+     *
+     * @param   vector      The vector to whose values we set the values of this vector.
+     *
+     * @throws  java.lang.IllegalArgumentException  The provided vector size does not match this vector's size.
+     */
+    public abstract void set(Vector vector);
 
     /**
      * Sets the value of all of the vector elements to the provided value.

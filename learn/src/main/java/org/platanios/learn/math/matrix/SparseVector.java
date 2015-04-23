@@ -307,9 +307,19 @@ public class SparseVector extends Vector {
         if (initialIndex > finalIndex) {
             throw new IllegalArgumentException("The initial index must be smaller or equal to the final index");
         }
-        
-        if (vector.type() == VectorType.SPARSE) {
-            SparseVector sparseVector = (SparseVector)vector;
+
+        if (vector.type() == VectorType.DENSE) {
+            int foundInitialIndex = Arrays.binarySearch(indexes, initialIndex);
+            if (foundInitialIndex < 0)
+                foundInitialIndex = -foundInitialIndex - 1;
+            int foundFinalIndex = Arrays.binarySearch(indexes, finalIndex);
+            if (foundFinalIndex < 0)
+                foundFinalIndex = -foundFinalIndex - 1;
+            
+            throw new UnsupportedOperationException();
+
+        } else if (vector.type() == VectorType.SPARSE) {
+            SparseVector sparseVector = (SparseVector) vector;
         
             // Overwritten initial/final positions within this vector's indexes/values arrays
             int overwrittenInitial = Arrays.binarySearch(this.indexes, initialIndex);
@@ -358,9 +368,8 @@ public class SparseVector extends Vector {
             indexes = newIndexes;
             values = newValues;
         } else {
-	        for (int i = initialIndex; i <= finalIndex; i++) {
+	        for (int i = initialIndex; i <= finalIndex; i++)
 	            set(i, vector.get(i - initialIndex));
-	        }
         }
     }
 
@@ -374,6 +383,34 @@ public class SparseVector extends Vector {
                 );
             }
             set(indexes[i], vector.get(i));
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void set(Vector vector) {
+        checkVectorSize(vector);
+        switch (vector.type()) {
+            case DENSE:
+                numberOfNonzeroEntries = vector.size();
+                indexes = new int[numberOfNonzeroEntries];
+                values = new double[numberOfNonzeroEntries];
+                for (int i = 0; i < numberOfNonzeroEntries; i++) {
+                    indexes[i] = i;
+                    values[i] = vector.get(i);
+                }
+                break;
+            case SPARSE:
+                numberOfNonzeroEntries = ((SparseVector) vector).numberOfNonzeroEntries;
+                indexes = new int[numberOfNonzeroEntries];
+                values = new double[numberOfNonzeroEntries];
+                for (int i = 0; i < numberOfNonzeroEntries; i++) {
+                    indexes[i] = ((SparseVector) vector).indexes[i];
+                    values[i] = ((SparseVector) vector).values[i];
+                }
+                break;
+            default:
+                throw new IllegalArgumentException("The provided vector type is not supported by this operation.");
         }
     }
 
