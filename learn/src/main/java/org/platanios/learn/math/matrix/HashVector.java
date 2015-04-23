@@ -215,6 +215,20 @@ public class HashVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
+    public Vector maxElementwise(Vector vector) {
+        checkVectorSize(vector);
+        throw new UnsupportedOperationException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector maxElementwiseInPlace(Vector vector) {
+        checkVectorSize(vector);
+        throw new UnsupportedOperationException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public double min() {
         double[] values = hashMap.values().elements();
         double minValue = values[0];
@@ -222,6 +236,20 @@ public class HashVector extends Vector {
             minValue = Math.min(minValue, values[i]);
         }
         return minValue;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector minElementwise(Vector vector) {
+        checkVectorSize(vector);
+        throw new UnsupportedOperationException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector minElementwiseInPlace(Vector vector) {
+        checkVectorSize(vector);
+        throw new UnsupportedOperationException();
     }
 
     /** {@inheritDoc} */
