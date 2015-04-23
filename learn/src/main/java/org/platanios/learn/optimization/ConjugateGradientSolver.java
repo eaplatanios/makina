@@ -170,7 +170,10 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
         currentDirection = currentY
                 .mult(-1)
                 .add(previousDirection.mult(currentGradient.inner(currentY) / previousGradient.inner(previousY)));
-        currentObjectiveValue = objective.getValue(currentPoint);
+        if (checkForObjectiveConvergence || logObjectiveValue) {
+            previousObjectiveValue = currentObjectiveValue;
+            currentObjectiveValue = objective.getValue(currentPoint);
+        }
     }
 
     public enum PreconditioningMethod {

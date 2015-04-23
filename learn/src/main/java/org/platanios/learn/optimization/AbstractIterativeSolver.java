@@ -18,11 +18,7 @@ abstract class AbstractIterativeSolver implements Solver {
     private final double pointChangeTolerance;
     private final double objectiveChangeTolerance;
     private final double gradientTolerance;
-    private final boolean checkForPointConvergence;
-    private final boolean checkForObjectiveConvergence;
-    private final boolean checkForGradientConvergence;
     private final Function<Vector, Boolean> additionalCustomConvergenceCriterion;
-    private final int loggingLevel;
 
     private double pointChange;
     private double objectiveChange;
@@ -31,6 +27,13 @@ abstract class AbstractIterativeSolver implements Solver {
     private boolean pointConverged = false;
     private boolean objectiveConverged = false;
     private boolean gradientConverged = false;
+
+    final boolean checkForPointConvergence;
+    final boolean checkForObjectiveConvergence;
+    final boolean checkForGradientConvergence;
+    final int loggingLevel;
+    final boolean logObjectiveValue;
+    final boolean logGradientNorm;
 
     final AbstractFunction objective;
 
@@ -58,6 +61,8 @@ abstract class AbstractIterativeSolver implements Solver {
         protected boolean checkForGradientConvergence = true;
         protected Function<Vector, Boolean> additionalCustomConvergenceCriterion = currentPoint -> false;
         protected int loggingLevel = 0;
+        private boolean logObjectiveValue = true;
+        private boolean logGradientNorm = true;
 
         protected AbstractBuilder(AbstractFunction objective,
                                   Vector initialPoint) {
@@ -114,6 +119,16 @@ abstract class AbstractIterativeSolver implements Solver {
             this.loggingLevel = loggingLevel;
             return self();
         }
+
+        public T logObjectiveValue(boolean logObjectiveValue) {
+            this.logObjectiveValue = logObjectiveValue;
+            return self();
+        }
+
+        public T logGradientNorm(boolean logGradientNorm) {
+            this.logGradientNorm = logGradientNorm;
+            return self();
+        }
     }
 
     public static class Builder extends AbstractBuilder<Builder> {
@@ -140,11 +155,13 @@ abstract class AbstractIterativeSolver implements Solver {
         checkForGradientConvergence = builder.checkForGradientConvergence;
         additionalCustomConvergenceCriterion = builder.additionalCustomConvergenceCriterion;
         loggingLevel = builder.loggingLevel;
+        logObjectiveValue = builder.logObjectiveValue;
+        logGradientNorm = builder.logGradientNorm;
         currentPoint = builder.initialPoint;
         try {
             currentGradient = objective.getGradient(currentPoint);
         } catch (NonSmoothFunctionException e) {
-            logger.info("The objective function to optimize is non-smooth!");
+            logger.info("The objective function being optimized is non-smooth.");
         }
         currentObjectiveValue = objective.getValue(currentPoint);
         currentIteration = 0;
@@ -198,14 +215,34 @@ abstract class AbstractIterativeSolver implements Solver {
     }
 
     public void printIteration() {
-        logger.info("Iteration #: %10d | Func. Eval. #: %10d | Objective Value: %20s " +
-                            "| Objective Change: %20s | Point Change: %20s | Gradient Norm: %20s",
-                    currentIteration,
-                    objective.getNumberOfFunctionEvaluations(),
-                    DECIMAL_FORMAT.format(currentObjectiveValue),
-                    DECIMAL_FORMAT.format(objectiveChange),
-                    DECIMAL_FORMAT.format(pointChange),
-                    DECIMAL_FORMAT.format(gradientNorm));
+        if (logObjectiveValue && logGradientNorm)
+            logger.info("Iteration #: %10d | Func. Eval. #: %10d | Objective Value: %20s " +
+                                "| Objective Change: %20s | Point Change: %20s | Gradient Norm: %20s",
+                        currentIteration,
+                        objective.getNumberOfFunctionEvaluations(),
+                        DECIMAL_FORMAT.format(currentObjectiveValue),
+                        DECIMAL_FORMAT.format(objectiveChange),
+                        DECIMAL_FORMAT.format(pointChange),
+                        DECIMAL_FORMAT.format(gradientNorm));
+        else if (logObjectiveValue)
+            logger.info("Iteration #: %10d | Func. Eval. #: %10d | Objective Value: %20s " +
+                                "| Objective Change: %20s | Point Change: %20s",
+                        currentIteration,
+                        objective.getNumberOfFunctionEvaluations(),
+                        DECIMAL_FORMAT.format(currentObjectiveValue),
+                        DECIMAL_FORMAT.format(objectiveChange),
+                        DECIMAL_FORMAT.format(pointChange));
+        else if (logGradientNorm)
+            logger.info("Iteration #: %10d | Func. Eval. #: %10d | Point Change: %20s | Gradient Norm: %20s",
+                        currentIteration,
+                        objective.getNumberOfFunctionEvaluations(),
+                        DECIMAL_FORMAT.format(pointChange),
+                        DECIMAL_FORMAT.format(gradientNorm));
+        else
+            logger.info("Iteration #: %10d | Func. Eval. #: %10d | Point Change: %20s",
+                        currentIteration,
+                        objective.getNumberOfFunctionEvaluations(),
+                        DECIMAL_FORMAT.format(pointChange));
     }
 
     public void printTerminationMessage() {

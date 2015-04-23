@@ -115,8 +115,6 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
     @Override
     public void performIterationUpdates() {
         previousPoint = currentPoint;
-        previousGradient = currentGradient;
-        previousObjectiveValue = currentObjectiveValue;
         Vector variableCopiesSum = Vectors.build(currentPoint.size(), currentPoint.type());
         List<Callable<Object>> subProblemTasks = new ArrayList<>();
         for (int subProblemIndex = 0; subProblemIndex < objective.getNumberOfTerms(); subProblemIndex++) {
@@ -148,12 +146,21 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
                 currentPoint.set(variableIndex, 0);
             else if (currentPoint.get(variableIndex) > 1)
                 currentPoint.set(variableIndex, 1);
-//        if (checkForGradientConvergence)
-        try {
-            currentGradient = objective.getGradient(currentPoint);
-        } catch (NonSmoothFunctionException ignored) { }
-//        if (checkForObjectiveConvergence)
-        currentObjectiveValue = objective.getValue(currentPoint);
+        if (checkForObjectiveConvergence || logObjectiveValue) {
+            previousObjectiveValue = currentObjectiveValue;
+            currentObjectiveValue = objective.getValue(currentPoint);
+        }
+        if (checkForGradientConvergence || logGradientNorm) {
+            previousGradient = currentGradient;
+            try {
+                currentGradient = objective.getGradient(currentPoint);
+            } catch (NonSmoothFunctionException e) {
+                throw new UnsupportedOperationException(
+                        "Trying to check for gradient convergence or log the gradient norm, " +
+                                "while using a non-smooth objective function."
+                );
+            }
+        }
     }
 
     private void processSubProblem(int subProblemIndex, int[] variableIndexes, Vector variableCopiesSum) {

@@ -83,9 +83,15 @@ abstract class AbstractLineSearchSolver extends AbstractIterativeSolver {
         previousGradient = currentGradient;
         try {
             currentGradient = objective.getGradient(currentPoint);
-        } catch (NonSmoothFunctionException ignored) { }
-        previousObjectiveValue = currentObjectiveValue;
-        currentObjectiveValue = objective.getValue(currentPoint);
+        } catch (NonSmoothFunctionException e) {
+            throw new UnsupportedOperationException(
+                    "Line search methods cannot be used for optimizing non-smooth objective functions."
+            );
+        }
+        if (checkForObjectiveConvergence || logObjectiveValue) {
+            previousObjectiveValue = currentObjectiveValue;
+            currentObjectiveValue = objective.getValue(currentPoint);
+        }
     }
 
     public void updateStepSize() {
