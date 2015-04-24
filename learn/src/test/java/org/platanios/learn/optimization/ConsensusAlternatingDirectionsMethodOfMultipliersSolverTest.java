@@ -109,4 +109,31 @@ public class ConsensusAlternatingDirectionsMethodOfMultipliersSolverTest {
         System.out.println(result.get(1));
         System.out.println('\n');
     }
+
+
+    @Test
+    public void testSimpleConsensusSquaredADMM() {
+        ProbabilisticSoftLogicFunction pslFunction = new ProbabilisticSoftLogicFunction.Builder(2)
+                .addTerm(new int[]{0}, new double[]{-1}, 1, 2, 1)
+                .addTerm(new int[]{0, 1}, new double[]{1, -1}, 0, 2, 1)
+                .addTerm(new int[]{1}, new double[] {-1}, 0, 2, 1)
+                .addTerm(new int[]{0}, new double[]{1}, -1, 2, 1)
+                .addTerm(new int[]{0, 1}, new double[]{-1, 1}, 0, 2, 1)
+                .addTerm(new int[]{1}, new double[]{1}, 0, 2, 1)
+                .build();
+
+        ConsensusAlternatingDirectionsMethodOfMultipliersSolver consensusAlternatingDirectionsMethodOfMultipliersSolver =
+                new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder(pslFunction,
+                        Vectors.dense(new double[]{0.5,0.5}))
+                        .subProblemSolver(SubProblemSolvers::solveProbabilisticSoftLogicSubProblem)
+                        .checkForObjectiveConvergence(false)
+                        .checkForGradientConvergence(false)
+                        .loggingLevel(5)
+                        .build();
+
+        Vector result = consensusAlternatingDirectionsMethodOfMultipliersSolver.solve();
+        System.out.println(result.get(0));
+        System.out.println(result.get(1));
+        System.out.println('\n');
+    }
 }
