@@ -44,4 +44,18 @@ public final class StochasticGradientDescentSolver extends AbstractStochasticIte
     public void updatePoint() {
         currentPoint = previousPoint.add(currentDirection.mult(currentStepSize));
     }
+
+    @Override
+    public void handleBoxConstraints() {
+        if (lowerBound != null)
+            if (lowerBound.size() > 1)
+                currentPoint.maxElementwise(lowerBound);
+            else
+                currentPoint.maxElementwise(lowerBound.get(0));
+        if (upperBound != null)
+            if (upperBound.size() > 1)
+                currentPoint.minElementwise(upperBound);
+            else
+                currentPoint.minElementwise(upperBound.get(0));
+    }
 }

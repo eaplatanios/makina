@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.VectorNorm;
+import org.platanios.learn.math.matrix.Vectors;
 import org.platanios.learn.optimization.function.AbstractStochasticFunction;
 
 import java.util.function.Function;
@@ -42,10 +43,10 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
     private boolean pointConverged = false;
 
     final AbstractStochasticFunction objective;
+    final Vector lowerBound;
+    final Vector upperBound;
 
-    // NOTE: I made this protected so that I could modify it from a child class
-    // outside this package
-    protected Vector currentPoint;
+    Vector currentPoint;
     int currentIteration;
     Vector previousPoint;
     Vector currentGradient;
@@ -58,6 +59,8 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
         protected final AbstractStochasticFunction objective;
         protected final Vector initialPoint;
 
+        protected Vector lowerBound = null;
+        protected Vector upperBound = null;
         protected boolean sampleWithReplacement = true;
         protected int maximumNumberOfIterations = 10000;
         protected int maximumNumberOfIterationsWithNoPointChange = 1;
@@ -82,6 +85,28 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
         protected AbstractBuilder(AbstractStochasticFunction objective, Vector initialPoint) {
             this.objective = objective;
             this.initialPoint = initialPoint;
+        }
+
+        public T lowerBound(double lowerBound) {
+            this.lowerBound = Vectors.build(1, initialPoint.type());
+            this.lowerBound.setAll(lowerBound);
+            return self();
+        }
+
+        public T lowerBound(Vector lowerBound) {
+            this.lowerBound = lowerBound;
+            return self();
+        }
+
+        public T upperBound(double upperBound) {
+            this.upperBound = Vectors.build(1, initialPoint.type());
+            this.upperBound.setAll(upperBound);
+            return self();
+        }
+
+        public T upperBound(Vector upperBound) {
+            this.upperBound = upperBound;
+            return self();
         }
 
         public T sampleWithReplacement(boolean sampleWithReplacement) {
@@ -198,6 +223,8 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
 
     protected AbstractStochasticIterativeSolver(AbstractBuilder<?> builder) {
         objective = builder.objective;
+        lowerBound = builder.lowerBound;
+        upperBound = builder.upperBound;
         objective.setSampleWithReplacement(builder.sampleWithReplacement);
         maximumNumberOfIterations = builder.maximumNumberOfIterations;
         maximumNumberOfIterationsWithNoPointChange = builder.maximumNumberOfIterationsWithNoPointChange;
@@ -242,6 +269,7 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
         updateStepSize();
         previousPoint = currentPoint;
         updatePoint();
+        handleBoxConstraints();
         currentGradient = objective.getGradientEstimate(currentPoint, batchSize);
         if (useL2Regularization)
             currentGradient.addInPlace(currentPoint.mult(2 * l2RegularizationWeight));
@@ -299,4 +327,6 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
      * object has to be instantiated for holding that values.
      */
     public abstract void updatePoint();
+
+    public abstract void handleBoxConstraints();
 }
