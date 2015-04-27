@@ -40,6 +40,7 @@ public final class ProbabilisticSoftLogicFunction extends SumFunction {
                                double[] observedVariableValues,
                                double power,
                                double weight) {
+            double ruleMaximumValue = 1;
             int[] variablesIndexes = Utilities.union(headVariableIndexes, bodyVariableIndexes);
             for (int observedVariableIndex : observedVariableIndexes)
                 variablesIndexes = ArrayUtils.removeElement(variablesIndexes, observedVariableIndex);
@@ -53,6 +54,7 @@ public final class ProbabilisticSoftLogicFunction extends SumFunction {
                         linearFunction = linearFunction.add(
                                 new LinearFunction(coefficients, observedVariableValues[observedVariableIndex] - 1)
                         );
+                        ruleMaximumValue += observedVariableValues[observedVariableIndex] - 1;
                     } else {
                         coefficients.set(ArrayUtils.indexOf(variablesIndexes, headVariableIndexes[headVariable]), 1);
                         linearFunction = linearFunction.add(new LinearFunction(coefficients, -1));
@@ -62,6 +64,7 @@ public final class ProbabilisticSoftLogicFunction extends SumFunction {
                         linearFunction = linearFunction.add(
                                 new LinearFunction(coefficients, -observedVariableValues[observedVariableIndex])
                         );
+                        ruleMaximumValue -= observedVariableValues[observedVariableIndex];
                     } else {
                         coefficients.set(ArrayUtils.indexOf(variablesIndexes, headVariableIndexes[headVariable]), -1);
                         linearFunction = linearFunction.add(new LinearFunction(coefficients, 0));
@@ -77,6 +80,7 @@ public final class ProbabilisticSoftLogicFunction extends SumFunction {
                         linearFunction = linearFunction.add(
                                 new LinearFunction(coefficients, -observedVariableValues[observedVariableIndex])
                         );
+                        ruleMaximumValue -= observedVariableValues[observedVariableIndex];
                     } else {
                         coefficients.set(ArrayUtils.indexOf(variablesIndexes, bodyVariableIndexes[bodyVariable]), -1);
                         linearFunction = linearFunction.add(new LinearFunction(coefficients, 0));
@@ -86,19 +90,22 @@ public final class ProbabilisticSoftLogicFunction extends SumFunction {
                         linearFunction = linearFunction.add(
                                 new LinearFunction(coefficients, observedVariableValues[observedVariableIndex] - 1)
                         );
+                        ruleMaximumValue += observedVariableValues[observedVariableIndex] - 1;
                     } else {
                         coefficients.set(ArrayUtils.indexOf(variablesIndexes, bodyVariableIndexes[bodyVariable]), 1);
                         linearFunction = linearFunction.add(new LinearFunction(coefficients, -1));
                     }
                 }
             }
-            MaxFunction.Builder maxFunctionBuilder = new MaxFunction.Builder(sumFunctionBuilder.numberOfVariables);
-            maxFunctionBuilder.addConstantTerm(0);
-            maxFunctionBuilder.addFunctionTerm(linearFunction);
-            sumFunctionBuilder.addTerm(
-                    new ProbabilisticSoftLogicSumFunctionTerm(maxFunctionBuilder.build(), power, weight),
-                    variablesIndexes
-            );
+            if (ruleMaximumValue > 0) {
+                MaxFunction.Builder maxFunctionBuilder = new MaxFunction.Builder(sumFunctionBuilder.numberOfVariables);
+                maxFunctionBuilder.addConstantTerm(0);
+                maxFunctionBuilder.addFunctionTerm(linearFunction);
+                sumFunctionBuilder.addTerm(
+                        new ProbabilisticSoftLogicSumFunctionTerm(maxFunctionBuilder.build(), power, weight),
+                        variablesIndexes
+                );
+            }
             return this;
         }
 
