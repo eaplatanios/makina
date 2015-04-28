@@ -16,6 +16,8 @@ import org.platanios.learn.optimization.function.AbstractFunction;
  * @author Emmanouil Antonios Platanios
  */
 public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
+    private final Vector lowerBound;
+    private final Vector upperBound;
     private final Method method;
     private final double epsilon = Math.sqrt(MathUtilities.computeMachineEpsilonDouble());
     private final int numberOfDimensions;
@@ -29,10 +31,34 @@ public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
 
     protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
             extends AbstractLineSearchSolver.AbstractBuilder<T> {
+        private Vector lowerBound = null;
+        private Vector upperBound = null;
         private Method method = Method.CYCLE_AND_JOIN_ENDPOINTS;
 
         public AbstractBuilder(AbstractFunction objective, Vector initialPoint) {
             super(objective, initialPoint);
+        }
+
+        public T lowerBound(double lowerBound) {
+            this.lowerBound = Vectors.build(1, initialPoint.type());
+            this.lowerBound.setAll(lowerBound);
+            return self();
+        }
+
+        public T lowerBound(Vector lowerBound) {
+            this.lowerBound = lowerBound;
+            return self();
+        }
+
+        public T upperBound(double upperBound) {
+            this.upperBound = Vectors.build(1, initialPoint.type());
+            this.upperBound.setAll(upperBound);
+            return self();
+        }
+
+        public T upperBound(Vector upperBound) {
+            this.upperBound = upperBound;
+            return self();
         }
 
         public T method(Method method) {
@@ -63,6 +89,8 @@ public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
      */
     private CoordinateDescentSolver(AbstractBuilder<?> builder) {
         super(builder);
+        lowerBound = builder.lowerBound;
+        upperBound = builder.upperBound;
         method = builder.method;
         numberOfDimensions = builder.initialPoint.size();
         cycleStartPoint = currentPoint;
@@ -79,6 +107,16 @@ public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
     @Override
     public void updatePoint() {
         method.updatePoint(this);
+        if (lowerBound != null)
+            if (lowerBound.size() > 1)
+                currentPoint.maxElementwise(lowerBound);
+            else
+                currentPoint.maxElementwise(lowerBound.get(0));
+        if (upperBound != null)
+            if (upperBound.size() > 1)
+                currentPoint.minElementwise(upperBound);
+            else
+                currentPoint.minElementwise(upperBound.get(0));
     }
 
     /**
