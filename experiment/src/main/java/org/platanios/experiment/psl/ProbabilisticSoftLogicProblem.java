@@ -69,6 +69,8 @@ public final class ProbabilisticSoftLogicProblem {
             if (ruleMaximumValue == 0)
                 return this;
             int[] variableIndexes = Utilities.union(headPart.variableIndexes, bodyPart.variableIndexes);
+            if (variableIndexes.length == 0)
+                return this;
             LinearFunction linearFunction = new LinearFunction(Vectors.dense(variableIndexes.length), ruleMaximumValue);
             for (int headVariable = 0; headVariable < headPart.variableIndexes.length; headVariable++) {
                 Vector coefficients = Vectors.dense(variableIndexes.length);
@@ -203,7 +205,9 @@ public final class ProbabilisticSoftLogicProblem {
                         .subProblemSolver(ProbabilisticSoftLogicProblem::solveProbabilisticSoftLogicSubProblem)
                         .checkForObjectiveConvergence(false)
                         .checkForGradientConvergence(false)
-                        .loggingLevel(5);
+                        .logObjectiveValue(false)
+                        .logGradientNorm(false)
+                        .loggingLevel(3);
         for (Constraint constraint : constraints)
             solverBuilder.addConstraint(constraint.constraint, constraint.variableIndexes);
         ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver = solverBuilder.build();

@@ -451,11 +451,11 @@ public class LogicRuleParserTest {
 
             streamReader = new InputStreamReader(trustTrainStream);
             trustTrainReader = new BufferedReader(streamReader);
-            ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(trainPredicateManager, "TRUST", trustTrainReader);
+            ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(trainPredicateManager, "TRUSTS", trustTrainReader);
 
             streamReader = new InputStreamReader(trustTestStream);
             trustTestReader = new BufferedReader(streamReader);
-            ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(testPredicateManager, "TRUST", trustTestReader);
+            ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(testPredicateManager, "TRUSTS", trustTestReader);
 
         } catch (IOException|DataFormatException e) {
             fail(e.getMessage());
@@ -522,6 +522,11 @@ public class LogicRuleParserTest {
         ProbabilisticSoftLogicProblem problem = problemBuilder.build();
 
         Map<Integer, Double> result = problem.solve();
+        Map<String, Double> filteredResults = new HashMap<>();
+
+        result.keySet().stream()
+                .filter(key -> result.get(key) >  Math.sqrt(Double.MIN_VALUE))
+                .forEach(key -> filteredResults.put(trainPredicateManager.getPredicateFromId(key).toString(), result.get(key)));
 
         System.out.println(result.get(0));
         System.out.println(result.get(1));

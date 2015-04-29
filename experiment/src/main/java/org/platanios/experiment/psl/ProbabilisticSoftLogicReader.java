@@ -1,5 +1,6 @@
 package org.platanios.experiment.psl;
 
+import com.google.common.collect.Sets;
 import org.platanios.experiment.psl.parser.ComplexPredicateParser;
 import org.platanios.experiment.psl.parser.PrattParserExpression;
 
@@ -148,7 +149,7 @@ public class ProbabilisticSoftLogicReader {
             HashMap<String, HashSet<String>> argumentGroundings = new HashMap<>();
 
             // get all possible groundings for each of the named arguments in the rule
-            for (Predicate predicate : this.Head) {
+            for (Predicate predicate : Sets.union(new HashSet<>(this.Head),new HashSet<>(this.Body))) {
                 for (int i = 0; i < predicate.Arguments.size(); ++i) {
 
                     HashSet<String> groundingsForName = argumentGroundings.getOrDefault(predicate.Arguments.get(i), null);
@@ -190,7 +191,7 @@ public class ProbabilisticSoftLogicReader {
                     predicateGroundings.add(groundings.get(predicates.get(i).Arguments.get(j)));
                 }
                 Predicate lookup = new Predicate(predicates.get(i).Name, predicateGroundings, false);
-                result[i] = predicateManager.getIdForPredicate(lookup);
+                result[i] = predicateManager.getOrAddPredicate(lookup);
                 if (result[i] < 0) {
                     throw new UnsupportedOperationException("Unable to find predicate with current grounding.  Code issue.");
                 }
