@@ -60,10 +60,11 @@ public class ProbabilisticSoftLogicPredicateManager {
                 if (!Double.isNaN(observedWeight))
                     throw new UnsupportedOperationException("Current value of observedWeight mismatches weight being added");
             } else {
-                if (!Double.isNaN(observedWeight))
+                if (!Double.isNaN(observedWeight)) {
                     if (currentWeight != observedWeight) {
                         throw new UnsupportedOperationException("Current value of observedWeight mismatches weight being added");
                     }
+                }
             }
 
             return id;
