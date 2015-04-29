@@ -237,16 +237,16 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         }
     }
 
-    protected static class SubProblemObjectiveFunction extends AbstractFunction {
+    public static class SubProblemObjectiveFunction extends AbstractFunction {
         private final AbstractFunction subProblemObjectiveFunction;
         private final Vector consensusVariables;
         private final Vector lagrangeMultipliers;
         private final double augmentedLagrangianParameter;
 
-        SubProblemObjectiveFunction(AbstractFunction subProblemObjectiveFunction,
-                                    Vector consensusVariables,
-                                    Vector lagrangeMultipliers,
-                                    double augmentedLagrangianParameter) {
+        public SubProblemObjectiveFunction(AbstractFunction subProblemObjectiveFunction,
+                                           Vector consensusVariables,
+                                           Vector lagrangeMultipliers,
+                                           double augmentedLagrangianParameter) {
             this.subProblemObjectiveFunction = subProblemObjectiveFunction;
             this.consensusVariables = consensusVariables;
             this.lagrangeMultipliers = lagrangeMultipliers;
