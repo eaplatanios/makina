@@ -7,6 +7,8 @@ import org.platanios.learn.Utilities;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
+import org.platanios.learn.optimization.ConsensusAlternatingDirectionsMethodOfMultipliersSolver;
+import org.platanios.learn.optimization.NewtonSolver;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.LinearFunction;
 import org.platanios.learn.optimization.function.MaxFunction;
@@ -20,9 +22,11 @@ import java.util.HashMap;
  */
 public final class ProbabilisticSoftLogicProblem {
 
-    private ProbabilisticSoftLogicProblem(Builder builder) {
-        this.externalId2InternalId = HashBiMap.create(builder.externalId2InternalId);
-        this.function = ProbabilisticSoftLogicFunction.Builder
+    private ProbabilisticSoftLogicProblem(
+            BiMap<Integer, Integer> externalId2InternalId,
+            ProbabilisticSoftLogicFunction function) {
+        this.externalId2InternalId = HashBiMap.create(externalId2InternalId);
+        this.function = function;
     }
 
     public static class Builder {
@@ -97,26 +101,27 @@ public final class ProbabilisticSoftLogicProblem {
         }
 
         public ProbabilisticSoftLogicProblem build() {
-            return new ProbabilisticSoftLogicProblem(this);
-        }
-
-        public ProbabilisticSoftLogicFunction build() {
 
             SumFunction.Builder sumFunctionBuilder = new SumFunction.Builder(this.externalId2InternalId.size());
 
             for (FunctionContainer function : this.functions) {
 
-                MaxFunction.Builder maxFunctionBuilder = new MaxFunction.Builder(sumFunctionBuilder.numberOfVariables);
+                MaxFunction.Builder maxFunctionBuilder = new MaxFunction.Builder(this.externalId2InternalId.size());
                 maxFunctionBuilder.addConstantTerm(0);
                 maxFunctionBuilder.addFunctionTerm(function.LinearFunction);
                 sumFunctionBuilder.addTerm(
-                        new ProbabilisticSoftLogicSumFunctionTerm(maxFunctionBuilder.build(), function.Power, function.Weight),
+                        new ProbabilisticSoftLogicSumFunctionTerm(
+                                maxFunctionBuilder.build(),
+                                function.Power,
+                                function.Weight),
                         function.VariableIndices
                 );
 
             }
 
-            return new ProbabilisticSoftLogicFunction(this);
+            return new ProbabilisticSoftLogicProblem(
+                    this.externalId2InternalId,
+                    new ProbabilisticSoftLogicFunction(sumFunctionBuilder));
 
         }
 
@@ -194,7 +199,7 @@ public final class ProbabilisticSoftLogicProblem {
         private int nextInternalId = 0;
     }
 
-    private final class ProbabilisticSoftLogicFunction extends SumFunction {
+    private static final class ProbabilisticSoftLogicFunction extends SumFunction {
 
         private ProbabilisticSoftLogicFunction(SumFunction.Builder sumFunctionBuilder) {
             super(sumFunctionBuilder);
@@ -212,85 +217,110 @@ public final class ProbabilisticSoftLogicProblem {
             return ((ProbabilisticSoftLogicSumFunctionTerm) terms.get(term)).getWeight();
         }
 
-        public class ProbabilisticSoftLogicSumFunctionTerm extends AbstractFunction {
-            private final MaxFunction maxFunction;
-            private final double power;
-            private final double weight;
+    }
 
-            private ProbabilisticSoftLogicSumFunctionTerm(MaxFunction maxFunction, double power, double weight) {
-                this.maxFunction = maxFunction;
-                this.power = power;
-                this.weight = weight;
-            }
+    private static class ProbabilisticSoftLogicSubProblemObjectiveFunction extends AbstractFunction {
+        private final LinearFunction linearFunction;
+        private final double power;
+        private final double weight;
 
-            @Override
-            public double computeValue(Vector point) {
-                return weight * Math.pow(maxFunction.computeValue(point), power);
-            }
+        private ProbabilisticSoftLogicSubProblemObjectiveFunction(LinearFunction linearFunction,
+                                                                  double power,
+                                                                  double weight) {
+            this.linearFunction = linearFunction;
+            this.power = power;
+            this.weight = weight;
+        }
 
-            public MaxFunction getMaxFunction() {
-                return maxFunction;
-            }
+        @Override
+        public double computeValue(Vector point) {
+            return weight * Math.pow(linearFunction.computeValue(point), power);
+        }
 
-            public LinearFunction getLinearFunction() {
-                return (LinearFunction) maxFunction.getFunctionTerm(0);
-            }
-
-            public double getPower() {
-                return power;
-            }
-
-            public double getWeight() {
-                return weight;
-            }
-
-            public ProbabilisticSoftLogicSubProblemObjectiveFunction getSubProblemObjectiveFunction() {
-                return new ProbabilisticSoftLogicSubProblemObjectiveFunction(
-                        (LinearFunction) maxFunction.getFunctionTerm(0),
-                        power,
-                        weight
+        @Override
+        public Vector computeGradient(Vector point) {
+            if (power > 0) {
+                return linearFunction.computeGradient(point).mult(
+                        weight * power * Math.pow(linearFunction.computeValue(point), power - 1)
                 );
+            } else {
+                return Vectors.build(point.size(), point.type());
             }
         }
 
-        public class ProbabilisticSoftLogicSubProblemObjectiveFunction extends AbstractFunction {
-            private final LinearFunction linearFunction;
-            private final double power;
-            private final double weight;
-
-            private ProbabilisticSoftLogicSubProblemObjectiveFunction(LinearFunction linearFunction,
-                                                                      double power,
-                                                                      double weight) {
-                this.linearFunction = linearFunction;
-                this.power = power;
-                this.weight = weight;
+        @Override
+        public Matrix computeHessian(Vector point) {
+            if (power > 1) {
+                Vector a = linearFunction.computeGradient(point);
+                return Matrix.generateDiagonalMatrix(a.multElementwise(a).getDenseArray())
+                        .multiply(weight * power * (power - 1) * Math.pow(linearFunction.computeValue(point), power - 2));
+            } else {
+                return new Matrix(point.size(), point.size());
             }
+        }
+    }
 
-            @Override
-            public double computeValue(Vector point) {
-                return weight * Math.pow(linearFunction.computeValue(point), power);
-            }
+    private static class ProbabilisticSoftLogicSumFunctionTerm extends AbstractFunction {
+        private final MaxFunction maxFunction;
+        private final double power;
+        private final double weight;
 
-            @Override
-            public Vector computeGradient(Vector point) {
-                if (power > 0) {
-                    return linearFunction.computeGradient(point).mult(
-                            weight * power * Math.pow(linearFunction.computeValue(point), power - 1)
-                    );
-                } else {
-                    return Vectors.build(point.size(), point.type());
-                }
-            }
+        public ProbabilisticSoftLogicSumFunctionTerm(MaxFunction maxFunction, double power, double weight) {
+            this.maxFunction = maxFunction;
+            this.power = power;
+            this.weight = weight;
+        }
 
-            @Override
-            public Matrix computeHessian(Vector point) {
-                if (power > 1) {
-                    Vector a = linearFunction.computeGradient(point);
-                    return Matrix.generateDiagonalMatrix(a.multElementwise(a).getDenseArray())
-                            .multiply(weight * power * (power - 1) * Math.pow(linearFunction.computeValue(point), power - 2));
-                } else {
-                    return new Matrix(point.size(), point.size());
-                }
+        @Override
+        public double computeValue(Vector point) {
+            return weight * Math.pow(maxFunction.getValue(point), power);
+        }
+
+        public MaxFunction getMaxFunction() {
+            return maxFunction;
+        }
+
+        public LinearFunction getLinearFunction() {
+            return (LinearFunction) maxFunction.getFunctionTerm(0);
+        }
+
+        public double getPower() {
+            return power;
+        }
+
+        public double getWeight() {
+            return weight;
+        }
+
+        public ProbabilisticSoftLogicSubProblemObjectiveFunction getSubProblemObjectiveFunction() {
+            return new ProbabilisticSoftLogicSubProblemObjectiveFunction(
+                    (LinearFunction) maxFunction.getFunctionTerm(0),
+                    power,
+                    weight
+            );
+        }
+    }
+
+    public static void solveProbabilisticSoftLogicSubProblem(
+            ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblem subProblem
+    ) {
+        ProbabilisticSoftLogicSumFunctionTerm objectiveTerm =
+                (ProbabilisticSoftLogicSumFunctionTerm) subProblem.objectiveTerm;
+        if (objectiveTerm.getLinearFunction().getValue(subProblem.variables) > 0) {
+            subProblem.variables.set(
+                    new NewtonSolver.Builder(
+                            new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemObjectiveFunction(
+                                    objectiveTerm.getSubProblemObjectiveFunction(),
+                                    subProblem.consensusVariables,
+                                    subProblem.multipliers,
+                                    subProblem.augmentedLagrangianParameter
+                            ),
+                            subProblem.variables).build().solve()
+            );
+            if (objectiveTerm.getLinearFunction().getValue(subProblem.variables) < 0) {
+                subProblem.variables.set(
+                        objectiveTerm.getLinearFunction().projectToHyperplane(subProblem.consensusVariables)
+                );
             }
         }
     }
