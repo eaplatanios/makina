@@ -2,6 +2,8 @@ package org.platanios.experiment.psl;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.primitives.Booleans;
+import com.google.common.primitives.Ints;
 import org.apache.commons.lang3.ArrayUtils;
 import org.platanios.learn.Utilities;
 import org.platanios.learn.math.matrix.Matrix;
@@ -16,191 +18,207 @@ import org.platanios.learn.optimization.function.SumFunction;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
 public final class ProbabilisticSoftLogicProblem {
+    private final BiMap<Integer, Integer> externalToInternalIndexesMapping;
+    private final ProbabilisticSoftLogicFunction objectiveFunction;
 
-    private ProbabilisticSoftLogicProblem(
-            BiMap<Integer, Integer> externalId2InternalId,
-            ProbabilisticSoftLogicFunction function) {
-        this.externalId2InternalId = HashBiMap.create(externalId2InternalId);
-        this.function = function;
-    }
+    public static final class Builder {
+        private final Map<Integer, Double> observedVariableValues = new HashMap<>();
+        private final BiMap<Integer, Integer> externalToInternalIndexesMapping;
+        private final List<FunctionTerm> functionTerms = new ArrayList<>();
+        private int nextInternalIndex = 0;
 
-    public static class Builder {
-
-        public Builder(int[] observedVariableIds,
+        public Builder(int[] observedVariableIndexes,
                        double[] observedVariableValues,
-                       int expectedSize) {
-
-            if ((observedVariableIds == null) != (observedVariableValues == null)) {
-                throw new IllegalArgumentException("observedVariableIds does not match observedVariableValues");
+                       int numberOfUnobservedVariables) {
+            if ((observedVariableIndexes == null) != (observedVariableValues == null))
+                throw new IllegalArgumentException(
+                        "The provided indexes for the observed variables must much the corresponding provided values."
+                );
+            if (observedVariableIndexes != null) {
+                if (observedVariableIndexes.length != observedVariableValues.length)
+                    throw new IllegalArgumentException(
+                            "The provided indexes array for the observed variables must " +
+                                    "have the same length the corresponding provided values array."
+                    );
+                for (int i = 0; i < observedVariableIndexes.length; ++i)
+                    this.observedVariableValues.put(observedVariableIndexes[i], observedVariableValues[i]);
             }
-
-            this.observedVariableValues = new HashMap<>();
-            if (observedVariableIds != null) {
-
-                if (observedVariableIds.length != observedVariableValues.length) {
-                    throw new IllegalArgumentException("observedVariableIds does not match observedVariableValues");
-                }
-
-                for (int i = 0; i < observedVariableIds.length; ++i) {
-                    this.observedVariableValues.put(observedVariableIds[i], observedVariableValues[i]);
-                }
-            }
-
-            this.externalId2InternalId = HashBiMap.create(expectedSize);
-            this.functions = new ArrayList<>();
-
+            externalToInternalIndexesMapping = HashBiMap.create(numberOfUnobservedVariables);
         }
 
-        public ProbabilisticSoftLogicProblem.Builder addRule(int[] headVariableIds,
-                                                              int[] bodyVariableIds,
-                                                              boolean[] headNegations,
-                                                              boolean[] bodyNegations,
-                                                              double power,
-                                                              double weight) {
-
-            RulePart headPart = this.convertToInternalRepresentation(headVariableIds, headNegations, true);
-            RulePart bodyPart = this.convertToInternalRepresentation(bodyVariableIds, bodyNegations, false);
-            double ruleMaximumValue = 1 + headPart.ObservedConstant + bodyPart.ObservedConstant;
-
-            if (ruleMaximumValue == 0) {
+        public Builder addRule(int[] headVariableIndexes,
+                               int[] bodyVariableIndexes,
+                               boolean[] headNegations,
+                               boolean[] bodyNegations,
+                               double power,
+                               double weight) {
+            RulePart headPart = convertRulePartToInternalRepresentation(headVariableIndexes, headNegations, true);
+            RulePart bodyPart = convertRulePartToInternalRepresentation(bodyVariableIndexes, bodyNegations, false);
+            double ruleMaximumValue = 1 + headPart.observedConstant + bodyPart.observedConstant;
+            if (ruleMaximumValue == 0)
                 return this;
-            }
-
-            int[] variablesIndexes = Utilities.union(headPart.InternalVariableIds, bodyPart.InternalVariableIds);
-            LinearFunction linearFunction = new LinearFunction(Vectors.dense(variablesIndexes.length), ruleMaximumValue);
-
-            for (int headVariable = 0; headVariable < headPart.InternalVariableIds.length; headVariable++) {
-                Vector coefficients = Vectors.dense(variablesIndexes.length);
-                if (headPart.Negations[headVariable]) {
-                    coefficients.set(ArrayUtils.indexOf(variablesIndexes, headPart.InternalVariableIds[headVariable]), 1);
+            int[] variableIndexes = Utilities.union(headPart.variableIndexes, bodyPart.variableIndexes);
+            LinearFunction linearFunction = new LinearFunction(Vectors.dense(variableIndexes.length), ruleMaximumValue);
+            for (int headVariable = 0; headVariable < headPart.variableIndexes.length; headVariable++) {
+                Vector coefficients = Vectors.dense(variableIndexes.length);
+                if (headPart.negations[headVariable]) {
+                    coefficients.set(ArrayUtils.indexOf(variableIndexes, headPart.variableIndexes[headVariable]), 1);
                     linearFunction = linearFunction.add(new LinearFunction(coefficients, -1));
                 } else {
-                    coefficients.set(ArrayUtils.indexOf(variablesIndexes, headPart.InternalVariableIds[headVariable]), -1);
+                    coefficients.set(ArrayUtils.indexOf(variableIndexes, headPart.variableIndexes[headVariable]), -1);
                     linearFunction = linearFunction.add(new LinearFunction(coefficients, 0));
                 }
             }
-            for (int bodyVariable = 0; bodyVariable < bodyPart.InternalVariableIds.length; bodyVariable++) {
-                Vector coefficients = Vectors.dense(variablesIndexes.length);
-                if (bodyPart.Negations[bodyVariable]) {
-                    coefficients.set(ArrayUtils.indexOf(variablesIndexes, bodyPart.InternalVariableIds[bodyVariable]), -1);
+            for (int bodyVariable = 0; bodyVariable < bodyPart.variableIndexes.length; bodyVariable++) {
+                Vector coefficients = Vectors.dense(variableIndexes.length);
+                if (bodyPart.negations[bodyVariable]) {
+                    coefficients.set(ArrayUtils.indexOf(variableIndexes, bodyPart.variableIndexes[bodyVariable]), -1);
                     linearFunction = linearFunction.add(new LinearFunction(coefficients, 0));
                 } else {
-                    coefficients.set(ArrayUtils.indexOf(variablesIndexes, bodyPart.InternalVariableIds[bodyVariable]), 1);
+                    coefficients.set(ArrayUtils.indexOf(variableIndexes, bodyPart.variableIndexes[bodyVariable]), 1);
                     linearFunction = linearFunction.add(new LinearFunction(coefficients, -1));
                 }
             }
-
-            this.functions.add(new FunctionContainer(linearFunction, variablesIndexes, weight, power));
-
+            functionTerms.add(new FunctionTerm(variableIndexes, linearFunction, weight, power));
             return this;
         }
 
         public ProbabilisticSoftLogicProblem build() {
-
-            SumFunction.Builder sumFunctionBuilder = new SumFunction.Builder(this.externalId2InternalId.size());
-
-            for (FunctionContainer function : this.functions) {
-
-                MaxFunction.Builder maxFunctionBuilder = new MaxFunction.Builder(this.externalId2InternalId.size());
-                maxFunctionBuilder.addConstantTerm(0);
-                maxFunctionBuilder.addFunctionTerm(function.LinearFunction);
-                sumFunctionBuilder.addTerm(
-                        new ProbabilisticSoftLogicSumFunctionTerm(
-                                maxFunctionBuilder.build(),
-                                function.Power,
-                                function.Weight),
-                        function.VariableIndices
-                );
-
-            }
-
-            return new ProbabilisticSoftLogicProblem(
-                    this.externalId2InternalId,
-                    new ProbabilisticSoftLogicFunction(sumFunctionBuilder));
-
+            return new ProbabilisticSoftLogicProblem(this);
         }
 
-        private static class FunctionContainer {
-
-            public FunctionContainer(LinearFunction linearFunction, int[] variableIndices, double weight, double power) {
-                this.LinearFunction = linearFunction;
-                this.VariableIndices = variableIndices;
-                this.Weight = weight;
-                this.Power = power;
+        private RulePart convertRulePartToInternalRepresentation(int[] externalVariableIndexes,
+                                                                 boolean[] negations,
+                                                                 boolean isRuleHeadVariable) {
+            List<Integer> internalVariableIndexes = new ArrayList<>();
+            List<Boolean> internalVariableNegations = new ArrayList<>();
+            double observedConstant = 0;
+            for (int i = 0; i < externalVariableIndexes.length; ++i) {
+                double observedValue = observedVariableValues.getOrDefault(externalVariableIndexes[i], Double.NaN);
+                if (!Double.isNaN(observedValue)) {
+                    if (isRuleHeadVariable == negations[i])
+                        observedConstant += observedValue - 1;
+                    else
+                        observedConstant -= observedValue;
+                } else {
+                    int internalVariableIndex =
+                            externalToInternalIndexesMapping.getOrDefault(externalVariableIndexes[i], -1);
+                    if (internalVariableIndex < 0) {
+                        internalVariableIndex = nextInternalIndex++;
+                        externalToInternalIndexesMapping.put(externalVariableIndexes[i], internalVariableIndex);
+                    }
+                    internalVariableIndexes.add(internalVariableIndex);
+                    internalVariableNegations.add(negations[i]);
+                }
             }
-
-            public final double Power;
-            public final double Weight;
-            public final LinearFunction LinearFunction;
-            public final int[] VariableIndices;
-
+            return new RulePart(
+                    Ints.toArray(internalVariableIndexes),
+                    Booleans.toArray(internalVariableNegations),
+                    observedConstant
+            );
         }
 
         private static class RulePart {
+            public final int[] variableIndexes;
+            public final boolean[] negations;
+            public final double observedConstant;
 
-            public RulePart(int[] internalVariableIds, boolean[] negations, double observedConstant) {
-                this.InternalVariableIds = internalVariableIds;
-                this.Negations = negations;
-                this.ObservedConstant = observedConstant;
+            public RulePart(int[] variableIndexes,
+                            boolean[] negations,
+                            double observedConstant) {
+                this.variableIndexes = variableIndexes;
+                this.negations = negations;
+                this.observedConstant = observedConstant;
             }
-
-            public final int[] InternalVariableIds;
-            public final boolean[] Negations;
-            public final double ObservedConstant;
-
         }
 
-        private RulePart convertToInternalRepresentation(int[] externalIds, boolean[] negations, boolean isHead) {
+        private static class FunctionTerm {
+            public final LinearFunction linearFunction;
+            public final int[] variableIndexes;
+            public final double power;
+            public final double weight;
 
-            ArrayList<Integer> internalVariableIndexes = new ArrayList<>();
-            ArrayList<Boolean> internalVariableNegations = new ArrayList<>();
-            double observedConstant = 0;
-
-            for (int i = 0; i < externalIds.length; ++i) {
-
-                double observedValue = this.observedVariableValues.getOrDefault(externalIds[i], Double.NaN);
-                if (!Double.isNaN(observedValue)) {
-
-                    if (isHead == negations[i]) { // head negation or body positive
-                        observedConstant += observedValue - 1;
-                    } else {
-                        observedConstant -= observedValue;
-                    }
-
-                } else {
-                    int internalId = this.externalId2InternalId.getOrDefault(externalIds[i], -1);
-                    if (internalId < 0) {
-                        internalId = this.nextInternalId++;
-                        this.externalId2InternalId.put(externalIds[i], internalId);
-                    }
-                    internalVariableIndexes.add(internalId);
-                    internalVariableNegations.add(negations[i]);
-                }
-
+            public FunctionTerm(int[] variableIndexes,
+                                LinearFunction linearFunction,
+                                double weight,
+                                double power) {
+                this.linearFunction = linearFunction;
+                this.variableIndexes = variableIndexes;
+                this.power = power;
+                this.weight = weight;
             }
-
-            int[] internalIds = new int[internalVariableIndexes.size()];
-            boolean[] internalNegations = new boolean[internalVariableIndexes.size()];
-            for (int i = 0; i < internalVariableIndexes.size(); ++i) {
-                internalIds[i] = internalVariableIndexes.get(i);
-                internalNegations[i] = internalVariableNegations.get(i);
-            }
-            return new RulePart(internalIds, internalNegations, observedConstant);
         }
+    }
 
-        private final HashMap<Integer, Double> observedVariableValues;
-        private final BiMap<Integer, Integer> externalId2InternalId;
-        private final ArrayList<FunctionContainer> functions;
-        private int nextInternalId = 0;
+    private ProbabilisticSoftLogicProblem(Builder builder) {
+        externalToInternalIndexesMapping = HashBiMap.create(builder.externalToInternalIndexesMapping);
+        SumFunction.Builder sumFunctionBuilder = new SumFunction.Builder(externalToInternalIndexesMapping.size());
+        for (Builder.FunctionTerm function : builder.functionTerms) {
+            MaxFunction.Builder maxFunctionBuilder = new MaxFunction.Builder(externalToInternalIndexesMapping.size());
+            maxFunctionBuilder.addConstantTerm(0);
+            maxFunctionBuilder.addFunctionTerm(function.linearFunction);
+            sumFunctionBuilder.addTerm(
+                    new ProbabilisticSoftLogicSumFunctionTerm(
+                            maxFunctionBuilder.build(),
+                            function.power,
+                            function.weight),
+                    function.variableIndexes
+            );
+        }
+        objectiveFunction = new ProbabilisticSoftLogicFunction(sumFunctionBuilder);
+    }
+
+    public Map<Integer, Double> solve() {
+        ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver =
+                new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder(
+                        objectiveFunction,
+                        Vectors.dense(objectiveFunction.getNumberOfVariables())
+                )
+                        .subProblemSolver(ProbabilisticSoftLogicProblem::solveProbabilisticSoftLogicSubProblem)
+                        .checkForObjectiveConvergence(false)
+                        .checkForGradientConvergence(false)
+                        .loggingLevel(5)
+                        .build();
+        Vector solverResult = solver.solve();
+        Map<Integer, Double> inferredValues = new HashMap<>(solverResult.size());
+        for (int internalVariableIndex = 0; internalVariableIndex < solverResult.size(); internalVariableIndex++)
+            inferredValues.put(externalToInternalIndexesMapping.inverse().get(internalVariableIndex),
+                               solverResult.get(internalVariableIndex));
+        return inferredValues;
+    }
+
+    public static void solveProbabilisticSoftLogicSubProblem(
+            ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblem subProblem
+    ) {
+        ProbabilisticSoftLogicSumFunctionTerm objectiveTerm =
+                (ProbabilisticSoftLogicSumFunctionTerm) subProblem.objectiveTerm;
+        if (objectiveTerm.getLinearFunction().getValue(subProblem.variables) > 0) {
+            subProblem.variables.set(
+                    new NewtonSolver.Builder(
+                            new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemObjectiveFunction(
+                                    objectiveTerm.getSubProblemObjectiveFunction(),
+                                    subProblem.consensusVariables,
+                                    subProblem.multipliers,
+                                    subProblem.augmentedLagrangianParameter
+                            ),
+                            subProblem.variables).build().solve()
+            );
+            if (objectiveTerm.getLinearFunction().getValue(subProblem.variables) < 0) {
+                subProblem.variables.set(
+                        objectiveTerm.getLinearFunction().projectToHyperplane(subProblem.consensusVariables)
+                );
+            }
+        }
     }
 
     private static final class ProbabilisticSoftLogicFunction extends SumFunction {
-
         private ProbabilisticSoftLogicFunction(SumFunction.Builder sumFunctionBuilder) {
             super(sumFunctionBuilder);
         }
@@ -216,10 +234,9 @@ public final class ProbabilisticSoftLogicProblem {
         public double getTermWeight(int term) {
             return ((ProbabilisticSoftLogicSumFunctionTerm) terms.get(term)).getWeight();
         }
-
     }
 
-    private static class ProbabilisticSoftLogicSubProblemObjectiveFunction extends AbstractFunction {
+    private static final class ProbabilisticSoftLogicSubProblemObjectiveFunction extends AbstractFunction {
         private final LinearFunction linearFunction;
         private final double power;
         private final double weight;
@@ -252,15 +269,16 @@ public final class ProbabilisticSoftLogicProblem {
         public Matrix computeHessian(Vector point) {
             if (power > 1) {
                 Vector a = linearFunction.computeGradient(point);
-                return Matrix.generateDiagonalMatrix(a.multElementwise(a).getDenseArray())
-                        .multiply(weight * power * (power - 1) * Math.pow(linearFunction.computeValue(point), power - 2));
+                return Matrix.generateDiagonalMatrix(a.multElementwise(a).getDenseArray()).multiply(
+                        weight * power * (power - 1) * Math.pow(linearFunction.computeValue(point), power - 2)
+                );
             } else {
                 return new Matrix(point.size(), point.size());
             }
         }
     }
 
-    private static class ProbabilisticSoftLogicSumFunctionTerm extends AbstractFunction {
+    private static final class ProbabilisticSoftLogicSumFunctionTerm extends AbstractFunction {
         private final MaxFunction maxFunction;
         private final double power;
         private final double weight;
@@ -300,32 +318,4 @@ public final class ProbabilisticSoftLogicProblem {
             );
         }
     }
-
-    public static void solveProbabilisticSoftLogicSubProblem(
-            ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblem subProblem
-    ) {
-        ProbabilisticSoftLogicSumFunctionTerm objectiveTerm =
-                (ProbabilisticSoftLogicSumFunctionTerm) subProblem.objectiveTerm;
-        if (objectiveTerm.getLinearFunction().getValue(subProblem.variables) > 0) {
-            subProblem.variables.set(
-                    new NewtonSolver.Builder(
-                            new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemObjectiveFunction(
-                                    objectiveTerm.getSubProblemObjectiveFunction(),
-                                    subProblem.consensusVariables,
-                                    subProblem.multipliers,
-                                    subProblem.augmentedLagrangianParameter
-                            ),
-                            subProblem.variables).build().solve()
-            );
-            if (objectiveTerm.getLinearFunction().getValue(subProblem.variables) < 0) {
-                subProblem.variables.set(
-                        objectiveTerm.getLinearFunction().projectToHyperplane(subProblem.consensusVariables)
-                );
-            }
-        }
-    }
-
-    private final BiMap<Integer, Integer> externalId2InternalId;
-    private final ProbabilisticSoftLogicFunction function;
-
 }
