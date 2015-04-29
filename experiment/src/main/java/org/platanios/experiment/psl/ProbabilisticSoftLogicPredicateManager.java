@@ -12,27 +12,38 @@ public class ProbabilisticSoftLogicPredicateManager {
         return this.idToPredicate.getOrDefault(id, null);
     }
 
-    public double getObservedWeight(ProbabilisticSoftLogicReader.Predicate predicate) {
-        return this.getObservedWeight(getIdForPredicate(predicate));
-    }
-
     public double getObservedWeight(int id) {
         return this.observedPredicateWeights.getOrDefault(id, Double.NaN);
     }
 
-    public List<AbstractMap.SimpleEntry<Integer, Double>> getObservedIndices(int[] ... allIndices) {
+    public class IdWeights {
 
-        ArrayList<AbstractMap.SimpleEntry<Integer, Double>> result = new ArrayList<>();
-        for (int[] list : allIndices) {
-            for (int id : list) {
-                double weight = this.getObservedWeight(id);
-                if (!Double.isNaN(weight)) {
-                    result.add(new AbstractMap.SimpleEntry<Integer, Double>(id, weight));
-                }
-            }
+        public IdWeights(int[] ids, double[] weights) {
+            this.Ids = ids;
+            this.Weights = weights;
         }
 
-        return result;
+        public final int[] Ids;
+        public final double[] Weights;
+
+    }
+
+    public IdWeights getAllObservedWeights() {
+
+        int[] ids = new int[this.observedPredicateWeights.size()];
+        double[] weights = new double[this.observedPredicateWeights.size()];
+
+        Iterator<Map.Entry<Integer, Double>> entryIterator = this.observedPredicateWeights.entrySet().iterator();
+        int index = 0;
+        while (entryIterator.hasNext()) {
+            Map.Entry<Integer, Double> entry = entryIterator.next();
+            ids[index] = entry.getKey();
+            weights[index] = entry.getValue();
+            ++index;
+        }
+
+        return new IdWeights(ids, weights);
+
     }
 
     public int getOrAddPredicate(ProbabilisticSoftLogicReader.Predicate predicate) {
@@ -107,6 +118,10 @@ public class ProbabilisticSoftLogicPredicateManager {
 
         return argumentGroundingsForName.get(argumentPosition).iterator();
 
+    }
+
+    public int size() {
+        return this.predicateToId.size();
     }
 
     private int nextId = 0;

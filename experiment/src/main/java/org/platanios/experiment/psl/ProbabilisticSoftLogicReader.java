@@ -2,7 +2,6 @@ package org.platanios.experiment.psl;
 
 import org.platanios.experiment.psl.parser.ComplexPredicateParser;
 import org.platanios.experiment.psl.parser.PrattParserExpression;
-import org.platanios.learn.optimization.function.ProbabilisticSoftLogicFunction;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -98,7 +97,7 @@ public class ProbabilisticSoftLogicReader {
         }
 
         public void addGroundingsToBuilder(
-                ProbabilisticSoftLogicFunction.Builder builder,
+                ProbabilisticSoftLogicProblem.Builder builder,
                 ProbabilisticSoftLogicPredicateManager predicateManager) {
 
 //            // if this is a constraint, do nothing
@@ -132,17 +131,11 @@ public class ProbabilisticSoftLogicReader {
                 int[] bodyIds = getPredicateIds(this.Body, argumentToGrounding, predicateManager);
                 int[] headIds = getPredicateIds(this.Head, argumentToGrounding, predicateManager);
 
-                List<AbstractMap.SimpleEntry<Integer, Double>> observations = predicateManager.getObservedIndices(bodyIds, headIds);
-                int[] observedIndices = new int[observations.size()];
-                double[] observedValues = new double[observations.size()];
-
-                for ( int i = 0; i < observations.size(); ++i )
-
                 // BUG BUGBUGBUG temporarily handle constraints by setting to high weight
                 if (Double.isNaN(this.Weight)) {
-                    builder.addRule(headIds, bodyIds, headNegations, bodyNegations, observedIndices, observedValues, 1, 1000);
+                    builder.addRule(headIds, bodyIds, headNegations, bodyNegations, 1, 1000);
                 } else {
-                    builder.addRule(headIds, bodyIds, headNegations, bodyNegations, observedIndices, observedValues, this.Power, this.Weight);
+                    builder.addRule(headIds, bodyIds, headNegations, bodyNegations, this.Power, this.Weight);
                 }
 
             }
@@ -249,7 +242,6 @@ public class ProbabilisticSoftLogicReader {
 
         String line;
 
-        reader.readLine();
         int lineNumber = 0;
         boolean hasWeights = false;
         while ((line = reader.readLine()) != null) {
@@ -270,7 +262,8 @@ public class ProbabilisticSoftLogicReader {
             }
 
             ArrayList<String> currentGrounding = new ArrayList<>();
-            for (String entity : lineFields) {
+            for (int indexEntity = 0; indexEntity < 2; ++indexEntity) {
+                String entity = lineFields[indexEntity];
                 entity = entity.trim();
                 if (entity.isEmpty()) {
                     throw new DataFormatException("Empty entity on line: " + (lineNumber + 1));

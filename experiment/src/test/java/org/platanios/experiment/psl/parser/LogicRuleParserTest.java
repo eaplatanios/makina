@@ -3,11 +3,8 @@ package org.platanios.experiment.psl.parser;
 import org.junit.Test;
 import org.platanios.experiment.psl.CartesianProductIterator;
 import org.platanios.experiment.psl.ProbabilisticSoftLogicPredicateManager;
+import org.platanios.experiment.psl.ProbabilisticSoftLogicProblem;
 import org.platanios.experiment.psl.ProbabilisticSoftLogicReader;
-import org.platanios.learn.math.matrix.*;
-import org.platanios.learn.optimization.ConsensusAlternatingDirectionsMethodOfMultipliersSolver;
-import org.platanios.experiment.psl.SubProblemSolvers;
-import org.platanios.learn.optimization.function.ProbabilisticSoftLogicFunction;
 
 import java.io.*;
 import java.util.*;
@@ -75,11 +72,7 @@ public class LogicRuleParserTest {
             reader = new BufferedReader(stringReader);
             rules = ProbabilisticSoftLogicReader.readRules(reader);
 
-        } catch (IOException e) {
-            fail(e.getMessage());
-            System.out.println(e.getMessage());
-            e.printStackTrace();
-        } catch (DataFormatException e) {
+        } catch (IOException|DataFormatException e) {
             fail(e.getMessage());
             System.out.println(e.getMessage());
             e.printStackTrace();
@@ -176,11 +169,11 @@ public class LogicRuleParserTest {
                 "KNOWS",
                 reader);
 
-        } catch (IOException e) {
+        } catch (IOException|DataFormatException e) {
             fail(e.getMessage());
             System.out.println(e.getMessage());
             e.printStackTrace();
-        } catch (DataFormatException e) {
+        } catch (UnsupportedOperationException e) {
             gotFormatException = true;
         } finally {
             if (reader != null) {
@@ -274,11 +267,7 @@ public class LogicRuleParserTest {
                 "KNOWS",
                 reader);
 
-        } catch (IOException e) {
-            fail(e.getMessage());
-            System.out.println(e.getMessage());
-            e.printStackTrace();
-        } catch (DataFormatException e) {
+        } catch (IOException|DataFormatException e) {
             fail(e.getMessage());
             System.out.println(e.getMessage());
             e.printStackTrace();
@@ -371,7 +360,7 @@ public class LogicRuleParserTest {
     }
 
     @Test
-    public void testCartesionProductIterator() {
+    public void testCartesianProductIterator() {
 
         List<List<Integer>> lists =
             Arrays.asList(
@@ -468,11 +457,7 @@ public class LogicRuleParserTest {
             trustTestReader = new BufferedReader(streamReader);
             ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(testPredicateManager, "TRUST", trustTestReader);
 
-        } catch (IOException e) {
-            fail(e.getMessage());
-            System.out.println(e.getMessage());
-            e.printStackTrace();
-        } catch (DataFormatException e) {
+        } catch (IOException|DataFormatException e) {
             fail(e.getMessage());
             System.out.println(e.getMessage());
             e.printStackTrace();
@@ -519,31 +504,28 @@ public class LogicRuleParserTest {
             }
         }
 
-        ProbabilisticSoftLogicFunction pslFunction = new ProbabilisticSoftLogicFunction.Builder(2)
-                .addRule(new int[]{0}, new int[]{2}, new boolean[]{false}, new boolean[]{false}, new int[]{2}, new double[]{1}, 1, 1)           // C -> A  =>  1 - A
-                .addRule(new int[]{1}, new int[]{0}, new boolean[]{false}, new boolean[]{false}, new int[]{}, new double[]{}, 1, 1)             // A -> B  =>  A - B
-                .addRule(new int[]{1}, new int[]{3}, new boolean[]{false}, new boolean[]{false}, new int[]{3}, new double[]{0}, 1, 1)           // D -> B  =>  -B
-                .build();
+        ProbabilisticSoftLogicPredicateManager.IdWeights observedIdsAndWeights =
+                trainPredicateManager.getAllObservedWeights();
 
-        ConsensusAlternatingDirectionsMethodOfMultipliersSolver consensusAlternatingDirectionsMethodOfMultipliersSolver =
-                new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder(pslFunction,
-                        Vectors.dense(new double[]{0.5, 0.5}))
-                        .subProblemSolver(SubProblemSolvers::solveProbabilisticSoftLogicSubProblem)
-                        .checkForObjectiveConvergence(false)
-                        .checkForGradientConvergence(false)
-                        .loggingLevel(5)
-                        .build();
-
-        org.platanios.learn.math.matrix.Vector result = consensusAlternatingDirectionsMethodOfMultipliersSolver.solve();
-        System.out.println(result.get(0));
-        System.out.println(result.get(1));
-        System.out.println('\n');
+        ProbabilisticSoftLogicProblem.Builder problemBuilder =
+            new ProbabilisticSoftLogicProblem.Builder(
+                    observedIdsAndWeights.Ids,
+                    observedIdsAndWeights.Weights,
+                    trainPredicateManager.size() - observedIdsAndWeights.Ids.length);
 
         for (ProbabilisticSoftLogicReader.Rule rule : rules) {
 
-            rule.addGroundingsToBuilder();
+            rule.addGroundingsToBuilder(problemBuilder, trainPredicateManager);
 
         }
+
+        ProbabilisticSoftLogicProblem problem = problemBuilder.build();
+
+        Map<Integer, Double> result = problem.solve();
+
+        System.out.println(result.get(0));
+        System.out.println(result.get(1));
+        System.out.println('\n');
 
     }
 
