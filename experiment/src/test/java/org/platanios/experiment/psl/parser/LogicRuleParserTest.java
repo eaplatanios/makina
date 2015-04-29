@@ -6,7 +6,7 @@ import org.platanios.experiment.psl.ProbabilisticSoftLogicPredicateManager;
 import org.platanios.experiment.psl.ProbabilisticSoftLogicReader;
 import org.platanios.learn.math.matrix.*;
 import org.platanios.learn.optimization.ConsensusAlternatingDirectionsMethodOfMultipliersSolver;
-import org.platanios.learn.optimization.SubProblemSolvers;
+import org.platanios.experiment.psl.SubProblemSolvers;
 import org.platanios.learn.optimization.function.ProbabilisticSoftLogicFunction;
 
 import java.io.*;
