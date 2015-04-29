@@ -203,6 +203,7 @@ public final class ProbabilisticSoftLogicProblem {
                         Vectors.dense(objectiveFunction.getNumberOfVariables())
                 )
                         .subProblemSolver(ProbabilisticSoftLogicProblem::solveProbabilisticSoftLogicSubProblem)
+                        .checkForPointConvergence(false)
                         .checkForObjectiveConvergence(false)
                         .checkForGradientConvergence(false)
                         .logObjectiveValue(false)
