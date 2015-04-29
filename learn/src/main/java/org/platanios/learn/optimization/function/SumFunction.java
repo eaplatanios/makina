@@ -11,16 +11,16 @@ import java.util.List;
  * @author Emmanouil Antonios Platanios
  */
 public class SumFunction extends AbstractFunction {
-    final int numberOfVariables;
-    final List<int[]> termsVariables;
-    final List<AbstractFunction> terms;
+    protected final int numberOfVariables;
+    protected final List<int[]> termsVariables;
+    protected final List<AbstractFunction> terms;
 
     protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
         protected abstract T self();
 
-        final int numberOfVariables;
-        final List<int[]> termsVariables = new ArrayList<>();
-        final List<AbstractFunction> terms = new ArrayList<>();
+        protected final int numberOfVariables;
+        protected final List<int[]> termsVariables = new ArrayList<>();
+        protected final List<AbstractFunction> terms = new ArrayList<>();
 
         protected AbstractBuilder(int numberOfVariables) {
             this.numberOfVariables = numberOfVariables;
