@@ -11,6 +11,7 @@ import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
 import org.platanios.learn.optimization.ConsensusAlternatingDirectionsMethodOfMultipliersSolver;
 import org.platanios.learn.optimization.NewtonSolver;
+import org.platanios.learn.optimization.constraint.AbstractConstraint;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.LinearFunction;
 import org.platanios.learn.optimization.function.MaxFunction;
@@ -27,11 +28,14 @@ import java.util.Map;
 public final class ProbabilisticSoftLogicProblem {
     private final BiMap<Integer, Integer> externalToInternalIndexesMapping;
     private final ProbabilisticSoftLogicFunction objectiveFunction;
+    private final List<Constraint> constraints;
 
     public static final class Builder {
-        private final Map<Integer, Double> observedVariableValues = new HashMap<>();
         private final BiMap<Integer, Integer> externalToInternalIndexesMapping;
+
+        private final Map<Integer, Double> observedVariableValues = new HashMap<>();
         private final List<FunctionTerm> functionTerms = new ArrayList<>();
+        private final List<Constraint> constraints = new ArrayList<>();
         private int nextInternalIndex = 0;
 
         public Builder(int[] observedVariableIndexes,
@@ -90,6 +94,20 @@ public final class ProbabilisticSoftLogicProblem {
             return this;
         }
 
+        public Builder addConstraint(AbstractConstraint constraint, int... externalVariableIndexes) {
+            List<Integer> internalVariableIndexes = new ArrayList<>();
+            for (int externalVariableIndex : externalVariableIndexes) {
+                int internalVariableIndex = externalToInternalIndexesMapping.getOrDefault(externalVariableIndex, -1);
+                if (internalVariableIndex < 0) {
+                    internalVariableIndex = nextInternalIndex++;
+                    externalToInternalIndexesMapping.put(externalVariableIndex, internalVariableIndex);
+                }
+                internalVariableIndexes.add(internalVariableIndex);
+            }
+            constraints.add(new Constraint(constraint, Ints.toArray(internalVariableIndexes)));
+            return this;
+        }
+
         public ProbabilisticSoftLogicProblem build() {
             return new ProbabilisticSoftLogicProblem(this);
         }
@@ -126,11 +144,11 @@ public final class ProbabilisticSoftLogicProblem {
         }
 
         private static class RulePart {
-            public final int[] variableIndexes;
-            public final boolean[] negations;
-            public final double observedConstant;
+            private final int[] variableIndexes;
+            private final boolean[] negations;
+            private final double observedConstant;
 
-            public RulePart(int[] variableIndexes,
+            private RulePart(int[] variableIndexes,
                             boolean[] negations,
                             double observedConstant) {
                 this.variableIndexes = variableIndexes;
@@ -140,12 +158,12 @@ public final class ProbabilisticSoftLogicProblem {
         }
 
         private static class FunctionTerm {
-            public final LinearFunction linearFunction;
-            public final int[] variableIndexes;
-            public final double power;
-            public final double weight;
+            private final LinearFunction linearFunction;
+            private final int[] variableIndexes;
+            private final double power;
+            private final double weight;
 
-            public FunctionTerm(int[] variableIndexes,
+            private FunctionTerm(int[] variableIndexes,
                                 LinearFunction linearFunction,
                                 double weight,
                                 double power) {
@@ -173,10 +191,11 @@ public final class ProbabilisticSoftLogicProblem {
             );
         }
         objectiveFunction = new ProbabilisticSoftLogicFunction(sumFunctionBuilder);
+        constraints = builder.constraints;
     }
 
     public Map<Integer, Double> solve() {
-        ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver =
+        ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder solverBuilder =
                 new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder(
                         objectiveFunction,
                         Vectors.dense(objectiveFunction.getNumberOfVariables())
@@ -184,8 +203,10 @@ public final class ProbabilisticSoftLogicProblem {
                         .subProblemSolver(ProbabilisticSoftLogicProblem::solveProbabilisticSoftLogicSubProblem)
                         .checkForObjectiveConvergence(false)
                         .checkForGradientConvergence(false)
-                        .loggingLevel(5)
-                        .build();
+                        .loggingLevel(5);
+        for (Constraint constraint : constraints)
+            solverBuilder.addConstraint(constraint.constraint, constraint.variableIndexes);
+        ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver = solverBuilder.build();
         Vector solverResult = solver.solve();
         Map<Integer, Double> inferredValues = new HashMap<>(solverResult.size());
         for (int internalVariableIndex = 0; internalVariableIndex < solverResult.size(); internalVariableIndex++)
@@ -194,7 +215,7 @@ public final class ProbabilisticSoftLogicProblem {
         return inferredValues;
     }
 
-    public static void solveProbabilisticSoftLogicSubProblem(
+    private static void solveProbabilisticSoftLogicSubProblem(
             ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblem subProblem
     ) {
         ProbabilisticSoftLogicSumFunctionTerm objectiveTerm =
@@ -283,7 +304,7 @@ public final class ProbabilisticSoftLogicProblem {
         private final double power;
         private final double weight;
 
-        public ProbabilisticSoftLogicSumFunctionTerm(MaxFunction maxFunction, double power, double weight) {
+        private ProbabilisticSoftLogicSumFunctionTerm(MaxFunction maxFunction, double power, double weight) {
             this.maxFunction = maxFunction;
             this.power = power;
             this.weight = weight;
@@ -294,28 +315,38 @@ public final class ProbabilisticSoftLogicProblem {
             return weight * Math.pow(maxFunction.getValue(point), power);
         }
 
-        public MaxFunction getMaxFunction() {
+        private MaxFunction getMaxFunction() {
             return maxFunction;
         }
 
-        public LinearFunction getLinearFunction() {
+        private LinearFunction getLinearFunction() {
             return (LinearFunction) maxFunction.getFunctionTerm(0);
         }
 
-        public double getPower() {
+        private double getPower() {
             return power;
         }
 
-        public double getWeight() {
+        private double getWeight() {
             return weight;
         }
 
-        public ProbabilisticSoftLogicSubProblemObjectiveFunction getSubProblemObjectiveFunction() {
+        private ProbabilisticSoftLogicSubProblemObjectiveFunction getSubProblemObjectiveFunction() {
             return new ProbabilisticSoftLogicSubProblemObjectiveFunction(
                     (LinearFunction) maxFunction.getFunctionTerm(0),
                     power,
                     weight
             );
+        }
+    }
+
+    private static final class Constraint {
+        private final AbstractConstraint constraint;
+        private final int[] variableIndexes;
+
+        private Constraint(AbstractConstraint constraint, int[] variableIndexes) {
+            this.constraint = constraint;
+            this.variableIndexes = variableIndexes;
         }
     }
 }
