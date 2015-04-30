@@ -12,7 +12,10 @@ import org.platanios.learn.math.matrix.Vectors;
 import org.platanios.learn.optimization.ConsensusAlternatingDirectionsMethodOfMultipliersSolver;
 import org.platanios.learn.optimization.NewtonSolver;
 import org.platanios.learn.optimization.constraint.AbstractConstraint;
-import org.platanios.learn.optimization.function.*;
+import org.platanios.learn.optimization.function.AbstractFunction;
+import org.platanios.learn.optimization.function.LinearFunction;
+import org.platanios.learn.optimization.function.MaxFunction;
+import org.platanios.learn.optimization.function.SumFunction;
 import org.platanios.learn.optimization.linesearch.NoLineSearch;
 
 import java.util.ArrayList;
@@ -223,21 +226,78 @@ public final class ProbabilisticSoftLogicProblem {
     ) {
         ProbabilisticSoftLogicSumFunctionTerm objectiveTerm =
                 (ProbabilisticSoftLogicSumFunctionTerm) subProblem.objectiveTerm;
+        subProblem.variables.set(
+                subProblem.consensusVariables.sub(subProblem.multipliers.div(subProblem.penaltyParameter))
+        );
         if (objectiveTerm.getLinearFunction().getValue(subProblem.variables) > 0) {
-            subProblem.variables.set(
-                    new NewtonSolver.Builder(
-                            new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemObjectiveFunction(
-                                    objectiveTerm.getSubProblemObjectiveFunction(),
-                                    subProblem.consensusVariables,
-                                    subProblem.multipliers,
-                                    subProblem.augmentedLagrangianParameter
-                            ),
-                            subProblem.variables)
-                            .lineSearch(new NoLineSearch(1))
-                            .maximumNumberOfIterations(1)
-                            .build()
-                            .solve()
-            );
+            if (objectiveTerm.getPower() == 1) {
+                subProblem.variables.subInPlace(objectiveTerm.getLinearFunction().getA()
+                                                        .mult(objectiveTerm.getWeight() / subProblem.penaltyParameter));
+            } else if (objectiveTerm.getPower() == 2) {
+                double weight = objectiveTerm.getWeight();
+                double constant = objectiveTerm.getLinearFunction().getB();
+                subProblem.variables
+                        .multInPlace(subProblem.penaltyParameter)
+                        .subInPlace(objectiveTerm.getLinearFunction().getA()
+                                            .mult(2 * weight * constant));
+                if (subProblem.variables.size() == 1) {
+                    double coefficient = objectiveTerm.getLinearFunction().getA().get(0);
+                    subProblem.variables.divInPlace(2 * weight * coefficient * coefficient
+                                                            + subProblem.penaltyParameter);
+                } else if (subProblem.variables.size() == 2) {
+                    double coefficient0 = objectiveTerm.getLinearFunction().getA().get(0);
+                    double coefficient1 = objectiveTerm.getLinearFunction().getA().get(1);
+                    double a0 = 2 * weight * coefficient0 * coefficient0 + subProblem.penaltyParameter;
+                    double b1 = 2 * weight * coefficient1 * coefficient1 + subProblem.penaltyParameter;
+                    double a1b0 = 2 * weight * coefficient0 * coefficient1;
+                    subProblem.variables.set(
+                            1,
+                            (subProblem.variables.get(1) - a1b0 * subProblem.variables.get(0) / a0)
+                                    / (b1 - a1b0 * a1b0 / a0)
+                    );
+                    subProblem.variables.set(
+                            0,
+                            (subProblem.variables.get(0) - a1b0 * subProblem.variables.get(1)) / a0
+                    );
+                } else {
+                    Vector coefficients = objectiveTerm.getLinearFunction().getA();
+                    for (int i = 0; i < subProblem.variables.size(); i++) {
+                        for (int j = 0; j < i; j++) {
+                            subProblem.variables.set(i, subProblem.variables.get(i)
+                                    - 2 * weight * coefficients.get(i) * coefficients.get(j)
+                                    * subProblem.variables.get(j));
+                        }
+                        subProblem.variables.set(i, subProblem.variables.get(i)
+                                / (2 * weight * coefficients.get(i) * coefficients.get(i)
+                                + subProblem.penaltyParameter));
+                    }
+                    for (int i = subProblem.variables.size() - 1; i >= 0; i--) {
+                        for (int j = subProblem.variables.size() - 1; j > i; j--) {
+                            subProblem.variables.set(i, subProblem.variables.get(i)
+                                    - 2 * weight * coefficients.get(i) * coefficients.get(j)
+                                    * subProblem.variables.get(j));
+                        }
+                        subProblem.variables.set(i, subProblem.variables.get(i)
+                                / (2 * weight * coefficients.get(i) * coefficients.get(i)
+                                + subProblem.penaltyParameter));
+                    }
+                }
+            } else {
+                subProblem.variables.set(
+                        new NewtonSolver.Builder(
+                                new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemObjectiveFunction(
+                                        objectiveTerm.getSubProblemObjectiveFunction(),
+                                        subProblem.consensusVariables,
+                                        subProblem.multipliers,
+                                        subProblem.penaltyParameter
+                                ),
+                                subProblem.variables)
+                                .lineSearch(new NoLineSearch(1))
+                                .maximumNumberOfIterations(1)
+                                .build()
+                                .solve()
+                );
+            }
             if (objectiveTerm.getLinearFunction().getValue(subProblem.variables) < 0) {
                 subProblem.variables.set(
                         objectiveTerm.getLinearFunction().projectToHyperplane(subProblem.consensusVariables)

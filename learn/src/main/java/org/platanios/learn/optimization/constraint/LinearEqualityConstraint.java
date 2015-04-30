@@ -35,30 +35,34 @@ public final class LinearEqualityConstraint extends AbstractEqualityConstraint {
 
     @Override
     public Vector project(Vector point) throws SingularMatrixException {
-        if (linearSystemMatrixQRDecomposition == null) {
-            Matrix linearSystemMatrix = new Matrix(A.getRowDimension() + A.getColumnDimension(),
-                                             A.getRowDimension() + A.getColumnDimension());
-            linearSystemMatrix.setSubMatrix(0,
-                                      A.getColumnDimension() - 1,
-                                      0,
-                                      A.getColumnDimension() - 1,
-                                      Matrix.generateIdentityMatrix(A.getColumnDimension()));
-            linearSystemMatrix.setSubMatrix(0,
-                                      A.getColumnDimension() - 1,
-                                      A.getColumnDimension(),
-                                      linearSystemMatrix.getColumnDimension() - 1,
-                                      A.transpose());
-            linearSystemMatrix.setSubMatrix(A.getColumnDimension(),
-                                      linearSystemMatrix.getRowDimension() - 1,
-                                      0,
-                                      A.getColumnDimension() - 1,
-                                      A);
-            linearSystemMatrixQRDecomposition = new QRDecomposition(linearSystemMatrix);
+        if (computeValue(point).norm(VectorNorm.L2_FAST) > epsilon) {
+            if (linearSystemMatrixQRDecomposition == null) {
+                Matrix linearSystemMatrix = new Matrix(A.getRowDimension() + A.getColumnDimension(),
+                                                       A.getRowDimension() + A.getColumnDimension());
+                linearSystemMatrix.setSubMatrix(0,
+                                                A.getColumnDimension() - 1,
+                                                0,
+                                                A.getColumnDimension() - 1,
+                                                Matrix.generateIdentityMatrix(A.getColumnDimension()));
+                linearSystemMatrix.setSubMatrix(0,
+                                                A.getColumnDimension() - 1,
+                                                A.getColumnDimension(),
+                                                linearSystemMatrix.getColumnDimension() - 1,
+                                                A.transpose());
+                linearSystemMatrix.setSubMatrix(A.getColumnDimension(),
+                                                linearSystemMatrix.getRowDimension() - 1,
+                                                0,
+                                                A.getColumnDimension() - 1,
+                                                A);
+                linearSystemMatrixQRDecomposition = new QRDecomposition(linearSystemMatrix);
+            }
+            Vector linearSystemVector = Vectors.build(point.size() + A.getRowDimension(), point.type());
+            linearSystemVector.set(0, point.size() - 1, point);
+            linearSystemVector.set(point.size(), linearSystemVector.size() - 1, b);
+            return linearSystemMatrixQRDecomposition.solve(linearSystemVector).get(0, point.size() - 1);
+        } else {
+            return point;
         }
-        Vector linearSystemVector = Vectors.build(point.size() + A.getRowDimension(), point.type());
-        linearSystemVector.set(0, point.size() - 1, point);
-        linearSystemVector.set(point.size(), linearSystemVector.size() - 1, b);
-        return linearSystemMatrixQRDecomposition.solve(linearSystemVector).get(0, point.size() - 1);
     }
 
     public LinearEqualityConstraint append(LinearEqualityConstraint constraint) {

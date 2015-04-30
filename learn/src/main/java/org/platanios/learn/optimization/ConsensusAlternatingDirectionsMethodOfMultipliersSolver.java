@@ -290,7 +290,6 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         Vector consensusVariables = Vectors.build(variableIndexes.length, currentPoint.type());
         consensusVariables.set(currentPoint.get(variableIndexes));
         multipliers.addInPlace(variables.sub(consensusVariables).mult(penaltyParameter));
-        variables.set(consensusVariables.sub(multipliers.div(penaltyParameter)));
         SubProblem subProblem = new SubProblem(variables,
                                                multipliers,
                                                consensusVariables,
@@ -365,18 +364,18 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         public final Vector multipliers;
         public final Vector consensusVariables;
         public final AbstractFunction objectiveTerm;
-        public final double augmentedLagrangianParameter;
+        public final double penaltyParameter;
 
         public SubProblem(Vector variables,
                           Vector multipliers,
                           Vector consensusVariables,
                           AbstractFunction objectiveTerm,
-                          double augmentedLagrangianParameter) {
+                          double penaltyParameter) {
             this.variables = variables;
             this.multipliers = multipliers;
             this.consensusVariables = consensusVariables;
             this.objectiveTerm = objectiveTerm;
-            this.augmentedLagrangianParameter = augmentedLagrangianParameter;
+            this.penaltyParameter = penaltyParameter;
         }
     }
 

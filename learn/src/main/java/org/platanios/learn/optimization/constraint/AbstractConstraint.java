@@ -1,11 +1,14 @@
 package org.platanios.learn.optimization.constraint;
 
+import org.platanios.learn.math.MathUtilities;
 import org.platanios.learn.math.matrix.*;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
 public abstract class AbstractConstraint {
+    protected final double epsilon = MathUtilities.computeMachineEpsilonDouble();
+
     private int numberOfConstraintEvaluations = 0;
     private int numberOfJacobianEvaluations = 0;
 
