@@ -92,6 +92,27 @@ public enum VectorNorm {
             return Math.sqrt(l2Norm);
         }
     },
+    L2_SQUARED {
+        /** {@inheritDoc} */
+        @Override
+        public double compute(double[] nonzeroValues) {
+            double l2NormSquared = 0;
+            for (double value : nonzeroValues) {
+                l2NormSquared += value * value;
+            }
+            return l2NormSquared;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double compute(Collection<Double> nonzeroValues) {
+            double l2NormSquared = 0;
+            for (double value : nonzeroValues) {
+                l2NormSquared += value * value;
+            }
+            return l2NormSquared;
+        }
+    },
     /**
      * The \(L_\infty\) norm of this vector. Denoting a vector by \(\boldsymbol{x}\in\mathbb{R}^{n}\), its element at
      * index \(i\) by \(x_i\) and its \(L_\infty\) norm by \(\|\boldsymbol{x}\|_\infty\), we have that:
