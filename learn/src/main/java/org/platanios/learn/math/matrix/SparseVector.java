@@ -445,13 +445,31 @@ public class SparseVector extends Vector {
     /** {@inheritDoc} */
     @Override
     public Vector maxElementwise(double value) {
-        throw new UnsupportedOperationException();
+        if (Double.compare(value, 0) == 0) {
+	        int[] indexes = Arrays.copyOf(this.indexes, this.indexes.length);
+	        
+	        double[] values = new double[this.indexes.length];
+	        for (int i = 0; i < this.values.length; i++)
+	            values[i] = Math.max(0.0, this.values[i]);
+    	
+	        return new SparseVector(this.size, indexes, values);
+        } else {
+    	    throw new UnsupportedOperationException();
+        }
     }
 
     /** {@inheritDoc} */
     @Override
     public Vector maxElementwiseInPlace(double value) {
-        throw new UnsupportedOperationException();
+        if (Double.compare(value, 0) == 0) {
+	        for (int i = 0; i < this.values.length; i++) {
+	        	this.values[i] = Math.max(value, this.values[i]);
+	        }
+	        
+	        return this;
+        } else {
+    	    throw new UnsupportedOperationException();
+        }
     }
 
     /** {@inheritDoc} */
