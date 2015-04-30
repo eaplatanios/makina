@@ -21,13 +21,15 @@ import java.util.function.Consumer;
  */
 public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver extends AbstractIterativeSolver {
     private final Object lock = new Object();
-    private final double primalResidualTolerance;
-    private final double dualResidualTolerance;
-    private final boolean checkForPrimalResidualConvergence;
-    private final boolean checkForDualResidualConvergence;
-    private final boolean checkForPrimalAndDualResidualConvergence;
     private final List<Vector> variableCopies = new ArrayList<>();
     private final List<Vector> lagrangeMultipliers = new ArrayList<>();
+
+    private final double absoluteTolerance;
+    private final double relativeTolerance;
+    private final boolean checkForPrimalAndDualResidualConvergence;
+    private final Vector primalResidualSquaredTerms;
+    private final Vector primalToleranceSquaredTerms;
+    private final Vector dualToleranceSquaredTerms;
 
     private final Vector variableCopiesCounts;
     private final PenaltyParameterSettingMethod penaltyParameterSettingMethod;
@@ -43,8 +45,10 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
 
     private double penaltyParameter;
 
-    private double primalResidualSquared;
-    private double dualResidualSquared;
+    private double primalResidual;
+    private double dualResidual;
+    private double primalTolerance;
+    private double dualTolerance;
 
     private boolean primalResidualConverged = false;
     private boolean dualResidualConverged = false;
@@ -62,10 +66,8 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         protected Consumer<SubProblem> subProblemSolver = null;
         protected int numberOfThreads = Runtime.getRuntime().availableProcessors();
 
-        protected double primalResidualTolerance = 1e-5;
-        protected double dualResidualTolerance = 1e-5;
-        protected boolean checkForPrimalResidualConvergence = false;
-        protected boolean checkForDualResidualConvergence = false;
+        protected double absoluteTolerance = 1e-5;
+        protected double relativeTolerance = 1e-3;
         protected boolean checkForPrimalAndDualResidualConvergence = true;
 
         protected AbstractBuilder(SumFunction objective,
@@ -117,23 +119,13 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
             return self();
         }
 
-        public T primalResidualTolerance(double primalResidualTolerance) {
-            this.primalResidualTolerance = primalResidualTolerance;
+        public T absoluteTolerance(double absoluteTolerance) {
+            this.absoluteTolerance = absoluteTolerance;
             return self();
         }
 
-        public T dualResidualTolerance(double dualResidualTolerance) {
-            this.dualResidualTolerance = dualResidualTolerance;
-            return self();
-        }
-
-        public T checkForPrimalResidualConvergence(boolean checkForPrimalResidualConvergence) {
-            this.checkForPrimalResidualConvergence = checkForPrimalResidualConvergence;
-            return self();
-        }
-
-        public T checkForDualResidualConvergence(boolean checkForDualResidualConvergence) {
-            this.checkForDualResidualConvergence = checkForDualResidualConvergence;
+        public T relativeTolerance(double relativeTolerance) {
+            this.relativeTolerance = relativeTolerance;
             return self();
         }
 
@@ -164,11 +156,12 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         objective = (SumFunction) builder.objective;
         constraintsVariablesIndexes = builder.constraintsVariablesIndexes;
         constraints = builder.constraints;
-        primalResidualTolerance = builder.primalResidualTolerance;
-        dualResidualTolerance = builder.dualResidualTolerance;
-        checkForPrimalResidualConvergence = builder.checkForPrimalResidualConvergence;
-        checkForDualResidualConvergence = builder.checkForDualResidualConvergence;
+        absoluteTolerance = builder.absoluteTolerance;
+        relativeTolerance = builder.relativeTolerance;
         checkForPrimalAndDualResidualConvergence = builder.checkForPrimalAndDualResidualConvergence;
+        primalResidualSquaredTerms = Vectors.build(objective.getNumberOfTerms(), VectorType.DENSE);
+        primalToleranceSquaredTerms = Vectors.build(objective.getNumberOfTerms(), VectorType.DENSE);
+        dualToleranceSquaredTerms = Vectors.build(objective.getNumberOfTerms(), VectorType.DENSE);
         penaltyParameterSettingMethod = builder.penaltyParameterSettingMethod;
         mu = builder.mu;
         tauIncrement = builder.tauIncrement;
@@ -199,33 +192,17 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
     public boolean checkTerminationConditions() {
         if (super.checkTerminationConditions())
             return true;
-        if (currentIteration > 0) {
-            if (checkForPrimalResidualConvergence || checkForPrimalAndDualResidualConvergence) {
-                if (penaltyParameterSettingMethod != PenaltyParameterSettingMethod.ADAPTIVE) {
-                    primalResidualSquared = 0;
-                    for (int subProblemIndex = 0; subProblemIndex < objective.getNumberOfTerms(); subProblemIndex++) {
-                        primalResidualSquared += variableCopies.get(subProblemIndex)
-                                .sub(currentPoint.get(objective.getTermVariables(subProblemIndex)))
-                                .norm(VectorNorm.L2_SQUARED);
-                    }
-                    for (int constraintIndex = 0; constraintIndex < constraints.size(); constraintIndex++) {
-                        primalResidualSquared += variableCopies.get(objective.getNumberOfTerms() + constraintIndex)
-                                .sub(currentPoint.get(constraintsVariablesIndexes.get(constraintIndex)))
-                                .norm(VectorNorm.L2_SQUARED);
-                    }
-                }
-                primalResidualConverged = primalResidualSquared <= primalResidualTolerance;
-            }
-            if (checkForDualResidualConvergence || checkForPrimalAndDualResidualConvergence) {
-                if (penaltyParameterSettingMethod != PenaltyParameterSettingMethod.ADAPTIVE)
-                    dualResidualSquared = objective.getNumberOfTerms()
-                            * Math.pow(penaltyParameter, 2)
-                            * currentPoint.sub(previousPoint).norm(VectorNorm.L2_SQUARED);
-                dualResidualConverged = dualResidualSquared <= dualResidualTolerance;
-            }
-            return (checkForPrimalResidualConvergence && primalResidualConverged)
-                    || (checkForDualResidualConvergence && dualResidualConverged)
-                    || (checkForPrimalAndDualResidualConvergence && primalResidualConverged && dualResidualConverged);
+        if (currentIteration > 0 && checkForPrimalAndDualResidualConvergence) {
+            primalTolerance = absoluteTolerance + relativeTolerance
+                    * Math.max(Math.sqrt(primalToleranceSquaredTerms.sum()),
+                               Math.sqrt(currentPoint
+                                                 .map(x -> x * x)
+                                                 .multElementwise(variableCopiesCounts)
+                                                 .sum()));
+            dualTolerance = absoluteTolerance + relativeTolerance * Math.sqrt(dualToleranceSquaredTerms.sum());
+            primalResidualConverged = primalResidual <= primalTolerance;
+            dualResidualConverged = dualResidual <= dualTolerance;
+            return primalResidualConverged && dualResidualConverged;
         } else {
             return false;
         }
@@ -236,12 +213,12 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         super.printTerminationMessage();
         if (primalResidualConverged)
             logger.info("The L2 norm of the primal residual, %s, was below the convergence threshold of %s.",
-                        DECIMAL_FORMAT.format(primalResidualSquared),
-                        DECIMAL_FORMAT.format(primalResidualTolerance));
+                        DECIMAL_FORMAT.format(primalResidual),
+                        DECIMAL_FORMAT.format(primalTolerance));
         if (dualResidualConverged)
             logger.info("The L2 norm of the dual residual, %s, was below the convergence threshold of %s.",
-                        DECIMAL_FORMAT.format(dualResidualSquared),
-                        DECIMAL_FORMAT.format(dualResidualTolerance));
+                        DECIMAL_FORMAT.format(dualResidual),
+                        DECIMAL_FORMAT.format(dualTolerance));
     }
 
     @Override
@@ -278,22 +255,17 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
                 currentPoint.set(variableIndex, 0);
             else if (currentPoint.get(variableIndex) > 1)
                 currentPoint.set(variableIndex, 1);
-        if (penaltyParameterSettingMethod == PenaltyParameterSettingMethod.ADAPTIVE) {
-            primalResidualSquared = 0;
-            for (int subProblemIndex = 0; subProblemIndex < objective.getNumberOfTerms(); subProblemIndex++) {
-                primalResidualSquared += variableCopies.get(subProblemIndex)
-                        .sub(currentPoint.get(objective.getTermVariables(subProblemIndex)))
-                        .norm(VectorNorm.L2_SQUARED);
-            }
-            for (int constraintIndex = 0; constraintIndex < constraints.size(); constraintIndex++) {
-                primalResidualSquared += variableCopies.get(objective.getNumberOfTerms() + constraintIndex)
-                        .sub(currentPoint.get(constraintsVariablesIndexes.get(constraintIndex)))
-                        .norm(VectorNorm.L2_SQUARED);
-            }
-            dualResidualSquared = objective.getNumberOfTerms()
-                    * penaltyParameter * penaltyParameter
-                    * currentPoint.sub(previousPoint).norm(VectorNorm.L2_SQUARED);
-            penaltyParameterSettingMethod.updatePenaltyParameter(this);
+        if (penaltyParameterSettingMethod == PenaltyParameterSettingMethod.ADAPTIVE
+                || checkForPrimalAndDualResidualConvergence) {
+            primalResidual = Math.sqrt(primalResidualSquaredTerms.sum());
+            dualResidual = penaltyParameter *
+                    Math.sqrt(currentPoint
+                                      .sub(previousPoint)
+                                      .map(x -> x * x)
+                                      .multElementwise(variableCopiesCounts)
+                                      .sum());
+            if (penaltyParameterSettingMethod == PenaltyParameterSettingMethod.ADAPTIVE)
+                penaltyParameterSettingMethod.updatePenaltyParameter(this);
         }
         if (checkForObjectiveConvergence || logObjectiveValue) {
             previousObjectiveValue = currentObjectiveValue;
@@ -333,6 +305,17 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         synchronized (lock) {
             variableCopiesSum.addInPlace(termPoint);
         }
+        if (penaltyParameterSettingMethod == PenaltyParameterSettingMethod.ADAPTIVE
+                || checkForPrimalAndDualResidualConvergence) {
+            primalResidualSquaredTerms.set(subProblemIndex,
+                                           variables.sub(consensusVariables).norm(VectorNorm.L2_SQUARED));
+            if (checkForPrimalAndDualResidualConvergence) {
+                primalToleranceSquaredTerms.set(subProblemIndex,
+                                                variables.norm(VectorNorm.L2_SQUARED));
+                dualToleranceSquaredTerms.set(subProblemIndex,
+                                              multipliers.norm(VectorNorm.L2_SQUARED));
+            }
+        }
     }
 
     private void solveSubProblem(SubProblem subProblem) {
@@ -364,6 +347,17 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         synchronized (lock) {
             variableCopiesSum.addInPlace(termPoint);
         }
+        if (penaltyParameterSettingMethod == PenaltyParameterSettingMethod.ADAPTIVE
+                || checkForPrimalAndDualResidualConvergence) {
+            primalResidualSquaredTerms.set(numberOfObjectiveTerms + constraintIndex,
+                                           variables.sub(consensusVariables).norm(VectorNorm.L2_SQUARED));
+            if (checkForPrimalAndDualResidualConvergence) {
+                primalToleranceSquaredTerms.set(numberOfObjectiveTerms + constraintIndex,
+                                                variables.norm(VectorNorm.L2_SQUARED));
+                dualToleranceSquaredTerms.set(numberOfObjectiveTerms + constraintIndex,
+                                              multipliers.norm(VectorNorm.L2_SQUARED));
+            }
+        }
     }
 
     public class SubProblem {
@@ -390,24 +384,24 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         private final AbstractFunction subProblemObjectiveFunction;
         private final Vector consensusVariables;
         private final Vector lagrangeMultipliers;
-        private final double augmentedLagrangianParameter;
+        private final double penaltyParameter;
 
         public SubProblemObjectiveFunction(AbstractFunction subProblemObjectiveFunction,
                                            Vector consensusVariables,
                                            Vector lagrangeMultipliers,
-                                           double augmentedLagrangianParameter) {
+                                           double penaltyParameter) {
             this.subProblemObjectiveFunction = subProblemObjectiveFunction;
             this.consensusVariables = consensusVariables;
             this.lagrangeMultipliers = lagrangeMultipliers;
-            this.augmentedLagrangianParameter = augmentedLagrangianParameter;
+            this.penaltyParameter = penaltyParameter;
         }
 
         @Override
         protected double computeValue(Vector point) {
             return subProblemObjectiveFunction.getValue(point)
-                    + augmentedLagrangianParameter
+                    + penaltyParameter
                     * Math.pow(point.sub(consensusVariables)
-                                       .add(lagrangeMultipliers.div(augmentedLagrangianParameter))
+                                       .add(lagrangeMultipliers.div(penaltyParameter))
                                        .norm(VectorNorm.L2_FAST), 2) / 2;
         }
 
@@ -415,14 +409,14 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         protected Vector computeGradient(Vector point) throws NonSmoothFunctionException {
             return subProblemObjectiveFunction.getGradient(point)
                     .add(point.sub(consensusVariables)
-                                 .add(lagrangeMultipliers.div(augmentedLagrangianParameter))
-                                 .mult(augmentedLagrangianParameter));
+                                 .add(lagrangeMultipliers.div(penaltyParameter))
+                                 .mult(penaltyParameter));
         }
 
         @Override
         protected Matrix computeHessian(Vector point) throws NonSmoothFunctionException {
             return subProblemObjectiveFunction.getHessian(point)
-                    .add(Matrix.generateIdentityMatrix(point.size()).multiply(augmentedLagrangianParameter));
+                    .add(Matrix.generateIdentityMatrix(point.size()).multiply(penaltyParameter));
         }
     }
 
@@ -436,9 +430,9 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         ADAPTIVE {
             @Override
             public void updatePenaltyParameter(ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver) {
-                if (solver.primalResidualSquared > solver.mu * solver.mu * solver.dualResidualSquared)
+                if (solver.primalResidual > solver.mu * solver.dualResidual)
                     solver.penaltyParameter *= solver.tauIncrement;
-                else if (solver.dualResidualSquared > solver.mu * solver.mu * solver.primalResidualSquared)
+                else if (solver.dualResidual > solver.mu * solver.primalResidual)
                     solver.penaltyParameter /= solver.tauDecrement;
             }
         };

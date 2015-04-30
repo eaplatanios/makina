@@ -12,10 +12,8 @@ import org.platanios.learn.math.matrix.Vectors;
 import org.platanios.learn.optimization.ConsensusAlternatingDirectionsMethodOfMultipliersSolver;
 import org.platanios.learn.optimization.NewtonSolver;
 import org.platanios.learn.optimization.constraint.AbstractConstraint;
-import org.platanios.learn.optimization.function.AbstractFunction;
-import org.platanios.learn.optimization.function.LinearFunction;
-import org.platanios.learn.optimization.function.MaxFunction;
-import org.platanios.learn.optimization.function.SumFunction;
+import org.platanios.learn.optimization.function.*;
+import org.platanios.learn.optimization.linesearch.NoLineSearch;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -234,7 +232,11 @@ public final class ProbabilisticSoftLogicProblem {
                                     subProblem.multipliers,
                                     subProblem.augmentedLagrangianParameter
                             ),
-                            subProblem.variables).build().solve()
+                            subProblem.variables)
+                            .lineSearch(new NoLineSearch(1))
+                            .maximumNumberOfIterations(1)
+                            .build()
+                            .solve()
             );
             if (objectiveTerm.getLinearFunction().getValue(subProblem.variables) < 0) {
                 subProblem.variables.set(
@@ -295,7 +297,7 @@ public final class ProbabilisticSoftLogicProblem {
         public Matrix computeHessian(Vector point) {
             if (power > 1) {
                 Vector a = linearFunction.computeGradient(point);
-                return Matrix.generateDiagonalMatrix(a.multElementwise(a).getDenseArray()).multiply(
+                return a.outer(a).multiply(
                         weight * power * (power - 1) * Math.pow(linearFunction.computeValue(point), power - 2)
                 );
             } else {
