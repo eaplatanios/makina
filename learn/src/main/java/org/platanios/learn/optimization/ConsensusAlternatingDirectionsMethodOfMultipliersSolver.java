@@ -58,7 +58,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         protected double mu = 10;
         protected double tauIncrement = 2;
         protected double tauDecrement = 2;
-        protected double penaltyParameter = 0.01;
+        protected double penaltyParameter = 1e-4;
         protected Consumer<SubProblem> subProblemSolver = null;
         protected int numberOfThreads = Runtime.getRuntime().availableProcessors();
 

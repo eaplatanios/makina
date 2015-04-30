@@ -109,14 +109,14 @@ public final class CoordinateDescentSolver extends AbstractLineSearchSolver {
         method.updatePoint(this);
         if (lowerBound != null)
             if (lowerBound.size() > 1)
-                currentPoint.maxElementwise(lowerBound);
+                currentPoint.maxElementwiseInPlace(lowerBound);
             else
-                currentPoint.maxElementwise(lowerBound.get(0));
+                currentPoint.maxElementwiseInPlace(lowerBound.get(0));
         if (upperBound != null)
             if (upperBound.size() > 1)
-                currentPoint.minElementwise(upperBound);
+                currentPoint.minElementwiseInPlace(upperBound);
             else
-                currentPoint.minElementwise(upperBound.get(0));
+                currentPoint.minElementwiseInPlace(upperBound.get(0));
     }
 
     /**
