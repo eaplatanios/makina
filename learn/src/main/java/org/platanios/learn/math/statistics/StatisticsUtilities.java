@@ -126,4 +126,27 @@ public class StatisticsUtilities {
         shuffle(list, random);
         return new ArrayList<>(list.subList(0, numberOfSamples));
     }
+
+    public static int[] sampleWithReplacement(int[] array, double[] probabilities, int numberOfSamples) {
+        if (array.length != probabilities.length)
+            throw new IllegalArgumentException("The length of the array with the elements must match the length " +
+                                                       "of the array with the probabilities of those elements!");
+
+        double[] cumulativeDensityFunction = new double[probabilities.length];
+        cumulativeDensityFunction[0] = probabilities[0];
+        for (int index = 1; index < probabilities.length; index++)
+            cumulativeDensityFunction[index] = cumulativeDensityFunction[index - 1] + probabilities[index];
+        int[] resultArray = new int[numberOfSamples];
+        for (int index = 0; index < numberOfSamples; index++) {
+            double number = random.nextDouble();
+            int elementIndex = Arrays.binarySearch(cumulativeDensityFunction, number);
+            if (elementIndex < 0) {
+                elementIndex = -elementIndex - 1;
+                if (elementIndex == probabilities.length)
+                    elementIndex--;
+            }
+            resultArray[index] = array[elementIndex];
+        }
+        return resultArray;
+    }
 }

@@ -26,6 +26,8 @@ public final class ProbabilisticSoftLogicProblem {
     private final BiMap<Integer, Integer> externalToInternalIndexesMapping;
     private final ProbabilisticSoftLogicFunction objectiveFunction;
     private final ImmutableList<Constraint> constraints;
+    private final ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod subProblemSelectionMethod;
+    private final int numberOfSubProblemSamples;
 
     public static class Predicate {
 
@@ -498,6 +500,11 @@ public final class ProbabilisticSoftLogicProblem {
         private final ImmutableMap<Integer, Double> observedVariableValues;
         private final HashSet<FunctionTerm> functionTerms = new HashSet<>();
         private final HashSet<Constraint> constraints = new HashSet<>();
+
+        private ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod subProblemSelectionMethod =
+                ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.ALL;
+        private int numberOfSubProblemSamples = -1;
+
         private int nextInternalIndex = 0;
 
         public Builder(int[] observedVariableIndexes,
@@ -575,6 +582,16 @@ public final class ProbabilisticSoftLogicProblem {
                 internalVariableIndexes.add(internalVariableIndex);
             }
             constraints.add(new Constraint(constraint, Ints.toArray(internalVariableIndexes)));
+            return this;
+        }
+
+        public Builder subProblemSelectionMethod(ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod subProblemSelectionMethod) {
+            this.subProblemSelectionMethod = subProblemSelectionMethod;
+            return this;
+        }
+
+        public Builder numberOfSubProblemSamples(int numberOfSubProblemSamples) {
+            this.numberOfSubProblemSamples = numberOfSubProblemSamples;
             return this;
         }
 
@@ -662,6 +679,8 @@ public final class ProbabilisticSoftLogicProblem {
         }
         objectiveFunction = new ProbabilisticSoftLogicFunction(sumFunctionBuilder);
         constraints = ImmutableList.copyOf(builder.constraints);
+        subProblemSelectionMethod = builder.subProblemSelectionMethod;
+        numberOfSubProblemSamples = builder.numberOfSubProblemSamples;
     }
 
     public Map<Integer, Double> solve() {
@@ -671,6 +690,8 @@ public final class ProbabilisticSoftLogicProblem {
                         Vectors.dense(objectiveFunction.getNumberOfVariables())
                 )
                         .subProblemSolver(ProbabilisticSoftLogicProblem::solveProbabilisticSoftLogicSubProblem)
+                        .subProblemSelectionMethod(subProblemSelectionMethod)
+                        .numberOfSubProblemSamples(numberOfSubProblemSamples)
                         .checkForPointConvergence(false)
                         .checkForObjectiveConvergence(false)
                         .checkForGradientConvergence(false)

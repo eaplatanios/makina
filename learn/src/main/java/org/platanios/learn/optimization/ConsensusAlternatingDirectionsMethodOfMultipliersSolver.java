@@ -1,6 +1,8 @@
 package org.platanios.learn.optimization;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.platanios.learn.math.matrix.*;
+import org.platanios.learn.math.statistics.StatisticsUtilities;
 import org.platanios.learn.optimization.constraint.AbstractConstraint;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.NonSmoothFunctionException;
@@ -33,6 +35,8 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
 
     private final Vector variableCopiesCounts;
     private final PenaltyParameterSettingMethod penaltyParameterSettingMethod;
+    private final SubProblemSelectionMethod subProblemSelectionMethod;
+    private final int numberOfSubProblemSamples;
     private final double mu;
     private final double tauIncrement;
     private final double tauDecrement;
@@ -59,6 +63,8 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         protected final List<AbstractConstraint> constraints = new ArrayList<>();
 
         protected PenaltyParameterSettingMethod penaltyParameterSettingMethod = PenaltyParameterSettingMethod.ADAPTIVE;
+        protected SubProblemSelectionMethod subProblemSelectionMethod = SubProblemSelectionMethod.ALL;
+        protected int numberOfSubProblemSamples = -1;
         protected double mu = 10;
         protected double tauIncrement = 2;
         protected double tauDecrement = 2;
@@ -86,6 +92,23 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
 
         public T penaltyParameterSettingMethod(PenaltyParameterSettingMethod penaltyParameterSettingMethod) {
             this.penaltyParameterSettingMethod = penaltyParameterSettingMethod;
+            return self();
+        }
+
+        public T subProblemSelectionMethod(SubProblemSelectionMethod subProblemSelectionMethod) {
+            this.subProblemSelectionMethod = subProblemSelectionMethod;
+            return self();
+        }
+
+        /**
+         * Note that this parameter is not used if the sub-problem selection method is set to
+         * {@link SubProblemSelectionMethod#ALL} (which is the default setting).
+         *
+         * @param   numberOfSubProblemSamples
+         * @return
+         */
+        public T numberOfSubProblemSamples(int numberOfSubProblemSamples) {
+            this.numberOfSubProblemSamples = numberOfSubProblemSamples;
             return self();
         }
 
@@ -163,6 +186,8 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         primalToleranceSquaredTerms = Vectors.build(objective.getNumberOfTerms(), VectorType.DENSE);
         dualToleranceSquaredTerms = Vectors.build(objective.getNumberOfTerms(), VectorType.DENSE);
         penaltyParameterSettingMethod = builder.penaltyParameterSettingMethod;
+        subProblemSelectionMethod = builder.subProblemSelectionMethod;
+        numberOfSubProblemSamples = builder.numberOfSubProblemSamples;
         mu = builder.mu;
         tauIncrement = builder.tauIncrement;
         tauDecrement = builder.tauDecrement;
@@ -226,7 +251,8 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         previousPoint = currentPoint;
         Vector variableCopiesSum = Vectors.build(currentPoint.size(), currentPoint.type());
         List<Callable<Object>> subProblemTasks = new ArrayList<>();
-        for (int subProblemIndex = 0; subProblemIndex < objective.getNumberOfTerms(); subProblemIndex++) {
+        for (int subProblemIndex : subProblemSelectionMethod.selectSubProblems(this)) {
+//        for (int subProblemIndex = 0; subProblemIndex < objective.getNumberOfTerms(); subProblemIndex++) {
             int[] variableIndexes = objective.getTermVariables(subProblemIndex);
             final int currentSubProblemIndex = subProblemIndex;
             subProblemTasks.add(Executors.callable(
@@ -305,6 +331,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
             variableCopiesSum.addInPlace(termPoint);
         }
         if (penaltyParameterSettingMethod == PenaltyParameterSettingMethod.ADAPTIVE
+                || subProblemSelectionMethod == SubProblemSelectionMethod.CONSENSUS_FOCUSED_SAMPLING
                 || checkForPrimalAndDualResidualConvergence) {
             primalResidualSquaredTerms.set(subProblemIndex,
                                            variables.sub(consensusVariables).norm(VectorNorm.L2_SQUARED));
@@ -437,5 +464,46 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         };
 
         public abstract void updatePenaltyParameter(ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver);
+    }
+
+    public enum SubProblemSelectionMethod {
+        ALL {
+            @Override
+            public int[] selectSubProblems(ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver) {
+                int[] subProblemIndexes = new int[solver.objective.getNumberOfTerms()];
+                for (int index = 0; index < solver.objective.getNumberOfTerms(); index++)
+                    subProblemIndexes[index] = index;
+                return subProblemIndexes;
+            }
+        },
+        UNIFORM_SAMPLING {
+            @Override
+            public int[] selectSubProblems(ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver) {
+                Integer[] subProblemIndexes = new Integer[solver.objective.getNumberOfTerms()];
+                for (int index = 0; index < solver.objective.getNumberOfTerms(); index++)
+                    subProblemIndexes[index] = index;
+                return ArrayUtils.toPrimitive(
+                        StatisticsUtilities
+                                .sampleWithoutReplacement(subProblemIndexes, solver.numberOfSubProblemSamples)
+                );
+            }
+        },
+        CONSENSUS_FOCUSED_SAMPLING {
+            @Override
+            public int[] selectSubProblems(ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver) {
+                int[] subProblemIndexes = new int[solver.objective.getNumberOfTerms()];
+                for (int index = 0; index < solver.objective.getNumberOfTerms(); index++)
+                    subProblemIndexes[index] = index;
+                double[] probabilities = new double[solver.primalToleranceSquaredTerms.size()];
+                double normalizationConstant = solver.primalResidualSquaredTerms.sum();
+                for (int index = 0; index < solver.primalToleranceSquaredTerms.size(); index++)
+                    probabilities[index] = solver.primalToleranceSquaredTerms.get(index) / normalizationConstant;
+                return StatisticsUtilities.sampleWithReplacement(subProblemIndexes,
+                                                                 probabilities,
+                                                                 solver.numberOfSubProblemSamples);
+            }
+        };
+
+        public abstract int[] selectSubProblems(ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver);
     }
 }
