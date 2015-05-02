@@ -13,20 +13,20 @@ import java.util.function.Function;
  * @author Emmanouil Antonios Platanios
  */
 abstract class AbstractIterativeSolver implements Solver {
-    private final int maximumNumberOfIterations;
-    private final int maximumNumberOfFunctionEvaluations;
-    private final double pointChangeTolerance;
-    private final double objectiveChangeTolerance;
-    private final double gradientTolerance;
-    private final Function<Vector, Boolean> additionalCustomConvergenceCriterion;
+    final int maximumNumberOfIterations;
+    final int maximumNumberOfFunctionEvaluations;
+    final double pointChangeTolerance;
+    final double objectiveChangeTolerance;
+    final double gradientTolerance;
+    final Function<Vector, Boolean> additionalCustomConvergenceCriterion;
 
-    private double pointChange;
-    private double objectiveChange;
-    private double gradientNorm;
+    double pointChange;
+    double objectiveChange;
+    double gradientNorm;
 
-    private boolean pointConverged = false;
-    private boolean objectiveConverged = false;
-    private boolean gradientConverged = false;
+    boolean pointConverged = false;
+    boolean objectiveConverged = false;
+    boolean gradientConverged = false;
 
     final boolean checkForPointConvergence;
     final boolean checkForObjectiveConvergence;

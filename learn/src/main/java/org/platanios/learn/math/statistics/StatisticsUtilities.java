@@ -1,9 +1,6 @@
 package org.platanios.learn.math.statistics;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * A collection of static methods performing some common statistics-related operations.
@@ -127,26 +124,80 @@ public class StatisticsUtilities {
         return new ArrayList<>(list.subList(0, numberOfSamples));
     }
 
-    public static int[] sampleWithReplacement(int[] array, double[] probabilities, int numberOfSamples) {
-        if (array.length != probabilities.length)
+    /**
+     * Randomly samples a specified number of elements from an integer array without replacement, while assigning a
+     * probability proportional to the provided weight for each element of that array. This method does not modify the
+     * provided array.
+     *
+     * @param   array           The array from which we randomly sample elements.
+     * @param   weights         The weights to use for each element in the provided array.
+     * @param   numberOfSamples The number of elements to sample from the given array.
+     * @return                  A new integer array containing the sampled elements.
+     * @throws  IllegalArgumentException    The length of the array with the elements must match the length of the array
+     *                                      with the weights of those elements.
+     */
+    public static int[] sampleWithoutReplacement(int[] array, double[] weights, int numberOfSamples) {
+        if (array.length != weights.length)
             throw new IllegalArgumentException("The length of the array with the elements must match the length " +
-                                                       "of the array with the probabilities of those elements!");
+                                                       "of the array with the weights of those elements!");
 
-        double[] cumulativeDensityFunction = new double[probabilities.length];
-        cumulativeDensityFunction[0] = probabilities[0];
-        for (int index = 1; index < probabilities.length; index++)
-            cumulativeDensityFunction[index] = cumulativeDensityFunction[index - 1] + probabilities[index];
+        PriorityQueue<WeightedElement> priorityQueue = new PriorityQueue<>(
+                array.length,
+                (element1, element2) -> (int) Math.signum(element2.weight - element1.weight)
+        );
+        for (int index = 0; index < array.length; index++)
+            priorityQueue.add(new WeightedElement(array[index], Math.pow(random.nextDouble(), 1 / weights[index])));
+        int[] resultArray = new int[numberOfSamples];
+        for (int index = 0; index < numberOfSamples; index++)
+            resultArray[index] = priorityQueue.poll().element;
+        return resultArray;
+    }
+
+    /**
+     * Randomly samples a specified number of elements from an integer array with replacement, while assigning a
+     * probability proportional to the provided weight for each element of that array. This method does not modify the
+     * provided array.
+     *
+     * @param   array           The array from which we randomly sample elements.
+     * @param   weights         The weights to use for each element in the provided array.
+     * @param   numberOfSamples The number of elements to sample from the given array.
+     * @return                  A new integer array containing the sampled elements.
+     * @throws  IllegalArgumentException    The length of the array with the elements must match the length of the array
+     *                                      with the weights of those elements.
+     */
+    public static int[] sampleWithReplacement(int[] array, double[] weights, int numberOfSamples) {
+        if (array.length != weights.length)
+            throw new IllegalArgumentException("The length of the array with the elements must match the length " +
+                                                       "of the array with the weights of those elements!");
+
+        double weightsSum = weights[0];
+        for (int index = 1; index < weights.length; index++)
+            weightsSum += weights[index];
+        double[] cumulativeDensityFunction = new double[weights.length];
+        cumulativeDensityFunction[0] = weights[0] / weightsSum;
+        for (int index = 1; index < weights.length; index++)
+            cumulativeDensityFunction[index] = cumulativeDensityFunction[index - 1] + (weights[index] / weightsSum);
         int[] resultArray = new int[numberOfSamples];
         for (int index = 0; index < numberOfSamples; index++) {
             double number = random.nextDouble();
             int elementIndex = Arrays.binarySearch(cumulativeDensityFunction, number);
             if (elementIndex < 0) {
                 elementIndex = -elementIndex - 1;
-                if (elementIndex == probabilities.length)
+                if (elementIndex == weights.length)
                     elementIndex--;
             }
             resultArray[index] = array[elementIndex];
         }
         return resultArray;
+    }
+
+    private static class WeightedElement {
+        private int element;
+        private double weight;
+
+        private WeightedElement(int element, double weight) {
+            this.element = element;
+            this.weight = weight;
+        }
     }
 }
