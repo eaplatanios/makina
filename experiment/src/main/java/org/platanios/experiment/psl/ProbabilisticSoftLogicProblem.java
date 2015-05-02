@@ -248,8 +248,8 @@ public final class ProbabilisticSoftLogicProblem {
                         && this.Body.get(indexInsertion).Arguments.size() == groundingExtension.Arguments.size()) {
 
                     HashMap<String, String> extensionGroundings = new HashMap<>();
-                    for (String argument : this.Body.get(indexInsertion).Arguments) {
-                        extensionGroundings.put(argument, groundingExtension.Arguments.get(indexInsertion));
+                    for (int indexExtensionArgument = 0; indexExtensionArgument < groundingExtension.Arguments.size(); ++indexExtensionArgument) {
+                        extensionGroundings.put(this.Body.get(indexInsertion).Arguments.get(indexExtensionArgument), groundingExtension.Arguments.get(indexExtensionArgument));
                     }
 
                     String visitedKey = String.join("|", extensionGroundings.keySet());
@@ -298,7 +298,7 @@ public final class ProbabilisticSoftLogicProblem {
                             }
                         }
 
-                        if (observedBodyConstant <= 0) {
+                        if (observedBodyConstant + 1 <= 0) {
                             continue;
                         }
 
@@ -498,8 +498,8 @@ public final class ProbabilisticSoftLogicProblem {
         private final BiMap<Integer, Integer> externalToInternalIndexesMapping;
 
         private final ImmutableMap<Integer, Double> observedVariableValues;
-        private final HashSet<FunctionTerm> functionTerms = new HashSet<>();
-        private final HashSet<Constraint> constraints = new HashSet<>();
+        private final HashMap<String, FunctionTerm> functionTerms = new HashMap<>();
+        private final ArrayList<Constraint> constraints = new ArrayList<>();
 
         private ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod subProblemSelectionMethod =
                 ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.ALL;
@@ -531,6 +531,8 @@ public final class ProbabilisticSoftLogicProblem {
             this.observedVariableValues = observedVariableValueBuilder.build();
             externalToInternalIndexesMapping = HashBiMap.create(numberOfUnobservedVariables);
         }
+
+        public int getNumberOfTerms() { return this.functionTerms.size(); }
 
         Builder addRule(int[] headVariableIndexes,
                         int[] bodyVariableIndexes,
@@ -567,10 +569,12 @@ public final class ProbabilisticSoftLogicProblem {
                     linearFunction = linearFunction.add(new LinearFunction(coefficients, -1));
                 }
             }
-            functionTerms.add(new FunctionTerm(variableIndexes, linearFunction, weight, power));
+            FunctionTerm term = new FunctionTerm(variableIndexes, linearFunction, weight, power);
+            functionTerms.putIfAbsent(term.toString(), term);
             return this;
         }
 
+        // BUG BUGBUGBUG: we should handle not adding redundant rules since we handle that on rules
         public Builder addConstraint(AbstractConstraint constraint, int... externalVariableIndexes) {
             List<Integer> internalVariableIndexes = new ArrayList<>();
             for (int externalVariableIndex : externalVariableIndexes) {
@@ -645,6 +649,7 @@ public final class ProbabilisticSoftLogicProblem {
         }
 
         private static class FunctionTerm {
+
             private final LinearFunction linearFunction;
             private final int[] variableIndexes;
             private final double power;
@@ -659,13 +664,40 @@ public final class ProbabilisticSoftLogicProblem {
                 this.power = power;
                 this.weight = weight;
             }
+
+            @Override
+            public String toString() {
+                StringBuilder sb = new StringBuilder();
+                sb.append("linFunc_a:[");
+                Vector a = this.linearFunction.getA();
+                for (int iComp = 0; iComp < a.size(); ++iComp) {
+                    if (iComp > 0) {
+                        sb.append(",");
+                    }
+                    sb.append(a.get(iComp));
+                }
+                sb.append("];linFunc_b:");
+                sb.append(this.linearFunction.getB());
+                sb.append(";idx:");
+                for (int iIdx = 0; iIdx < this.variableIndexes.length; ++iIdx) {
+                    if (iIdx > 0) {
+                        sb.append(",");
+                    }
+                    sb.append(this.variableIndexes[iIdx]);
+                }
+                sb.append(";pwr:");
+                sb.append(this.power);
+                sb.append(";wt:");
+                sb.append(this.weight);
+                return sb.toString();
+            }
         }
     }
 
     private ProbabilisticSoftLogicProblem(Builder builder) {
         externalToInternalIndexesMapping = HashBiMap.create(builder.externalToInternalIndexesMapping);
         SumFunction.Builder sumFunctionBuilder = new SumFunction.Builder(externalToInternalIndexesMapping.size());
-        for (Builder.FunctionTerm function : builder.functionTerms) {
+        for (Builder.FunctionTerm function : builder.functionTerms.values()) {
             MaxFunction.Builder maxFunctionBuilder = new MaxFunction.Builder(externalToInternalIndexesMapping.size());
             maxFunctionBuilder.addConstantTerm(0);
             maxFunctionBuilder.addFunctionTerm(function.linearFunction);
@@ -903,5 +935,6 @@ public final class ProbabilisticSoftLogicProblem {
             this.constraint = constraint;
             this.variableIndexes = variableIndexes;
         }
+
     }
 }

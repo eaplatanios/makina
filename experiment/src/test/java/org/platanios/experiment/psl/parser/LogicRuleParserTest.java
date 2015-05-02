@@ -708,16 +708,29 @@ public class LogicRuleParserTest {
         // from initial observations we have:
         // K(1, 2) & K(2, 3) >> K(1, 3) --> body does not hold
         // K(2, 3) & K(3, 4) >> K(2, 4) --> body does not hold
-        // K(3, 4) & K(4, 2) >> K(3, 2) --> body holds --> new predicate K(3, 2)
+        // K(3, 4) & K(4, 2) >> K(3, 2) --> body holds --> new predicate K(3, 2)               // term 1
         // then in round 2 we have new rule:
-        // K(2, 3) & K(3, 2) >> K(2, 2) --> body does not hold
+        // K(2, 3) & K(3, 2) >> K(2, 2) --> body holds (worst case) --> new predicate K(2, 2)  // term 2
+        // K(3, 2) & K(2, 3) >> K(3, 3) --> body holds (worst case) --> new predicate K(3, 3)  // term 3
+        // then in round 3 we have:
+        // K(2, 2) & K(2, 2) >> K(2, 2)                                                        // term 4
+        // K(2, 2) & K(2, 3) >> K(2, 3)                                                        // eliminated by worst case
+        // K(1, 2) & K(2, 2) >> K(1, 2)                                                        // eliminated by worst case
+        // K(3, 2) & K(2, 2) >> K(3, 2)                                                        // term 5
+        // K(4, 2) & K(2, 2) >> K(4, 2)                                                        // eliminated by worst case
+        // K(3, 3) & K(3, 2) >> K(3, 2)                                                        // term 6
+        // K(3, 3) & K(3, 3) >> K(3, 3)                                                        // term 7
+        // K(3, 3) & K(3, 4) >> K(3, 4)                                                        // eliminated by worst case
+        // K(2, 3) & K(3, 3) >> K(2, 3)                                                        // eliminated by worst case
 
         Set<String> expected = new HashSet<>(Arrays.asList(
                 "KNOWS(1, 2)",
                 "KNOWS(2, 3)",
                 "KNOWS(3, 4)",
                 "KNOWS(4, 2)",
-                "KNOWS(3, 2)"
+                "KNOWS(3, 2)",
+                "KNOWS(2, 2)",
+                "KNOWS(3, 3)"
         ));
 
         Set<Integer> predicateIds = predicateManager.getIdsForPredicateName("KNOWS");
@@ -730,6 +743,7 @@ public class LogicRuleParserTest {
             assertTrue(expected.contains(predicate.toString()));
         }
 
+        assertTrue(builder.getNumberOfTerms() == 7);
     }
 
     @Test
