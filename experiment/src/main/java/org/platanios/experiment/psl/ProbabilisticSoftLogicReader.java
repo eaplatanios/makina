@@ -1,6 +1,8 @@
 package org.platanios.experiment.psl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
+import org.apache.commons.lang3.ArrayUtils;
 import org.platanios.experiment.psl.parser.ComplexPredicateParser;
 import org.platanios.experiment.psl.parser.PrattParserExpression;
 
@@ -19,198 +21,10 @@ public class ProbabilisticSoftLogicReader {
 
     private ProbabilisticSoftLogicReader() {}
 
-    public static class Predicate {
-
-        public Predicate(String name, List<String> arguments, boolean isNegated) {
-            this.Name = name;
-            this.Arguments = arguments;
-            this.IsNegated = isNegated;
-        }
-
-        public final String Name;
-        public final List<String> Arguments;
-        public final boolean IsNegated;
-
-        @Override
-        public String toString() {
-            StringBuilder sb = new StringBuilder();
-            if (this.IsNegated) {
-                sb.append("~");
-            }
-            sb.append(this.Name);
-            sb.append("(");
-            for (int i = 0; i < this.Arguments.size(); ++i) {
-                if (i > 0) {
-                    sb.append(", ");
-                }
-                sb.append(this.Arguments.get(i));
-            }
-            sb.append(")");
-            return sb.toString();
-        }
-
-    }
-
-    public static class Rule {
-
-        public Rule(double weight, double power, List<Predicate> head, List<Predicate> body) {
-
-            this.Weight = weight;
-            this.Power = power;
-            this.Head = head;
-            this.Body = body;
-
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder sb = new StringBuilder();
-            sb.append("{");
-            if (Double.isNaN(this.Weight)) {
-                sb.append("constraint");
-            } else {
-                sb.append(this.Weight);
-            }
-            sb.append("} ");
-            for (int i = 0; i < this.Body.size(); ++i) {
-                if (i > 0) {
-                    sb.append(" & ");
-                }
-                sb.append(this.Body.get(i).toString());
-            }
-            sb.append(" >> ");
-            for (int i = 0; i < this.Head.size(); ++i) {
-                if (i > 0) {
-                    sb.append(" | ");
-                }
-                sb.append(this.Head.get(i).toString());
-            }
-            if (!Double.isNaN(this.Weight)) {
-                sb.append(" {");
-                if (this.Power == 2) {
-                    sb.append("squared");
-                } else {
-                    sb.append(this.Power);
-                }
-                sb.append("}");
-            }
-            return sb.toString();
-        }
-
-        public void addGroundingsToBuilder(
-                ProbabilisticSoftLogicProblem.Builder builder,
-                ProbabilisticSoftLogicPredicateManager predicateManager) {
-
-//            // if this is a constraint, do nothing
-//            if (Double.isNaN(this.Weight)) {
-//                return;
-//            }
-
-            boolean[] bodyNegations = new boolean[this.Body.size()];
-            for (int i = 0; i < this.Body.size(); ++i) {
-                bodyNegations[i] = this.Body.get(i).IsNegated;
-            }
-
-            boolean[] headNegations = new boolean[this.Head.size()];
-            for (int i = 0; i < this.Head.size(); ++i) {
-                headNegations[i] = this.Head.get(i).IsNegated;
-            }
-
-            AbstractMap.SimpleEntry<List<String>, CartesianProductIterator<String>> allPossibleGroundings =
-                    getAllPossibleGroundings(predicateManager);
-            List<String> argumentNames = allPossibleGroundings.getKey();
-            CartesianProductIterator<String> groundingIterator = allPossibleGroundings.getValue();
-
-            HashMap<String, String> argumentToGrounding = new HashMap<>();
-
-            for (List<String> groundings : groundingIterator) {
-
-                for (int i = 0; i < argumentNames.size(); ++i) {
-                    argumentToGrounding.put(argumentNames.get(i), groundings.get(i));
-                }
-
-                int[] bodyIds = getPredicateIds(this.Body, argumentToGrounding, predicateManager);
-                int[] headIds = getPredicateIds(this.Head, argumentToGrounding, predicateManager);
-
-                // BUG BUGBUGBUG temporarily handle constraints by setting to high weight
-                if (Double.isNaN(this.Weight)) {
-                    builder.addRule(headIds, bodyIds, headNegations, bodyNegations, 1, 1000);
-                } else {
-                    builder.addRule(headIds, bodyIds, headNegations, bodyNegations, this.Power, this.Weight);
-                }
-
-            }
-
-        }
-
-        private AbstractMap.SimpleEntry<List<String>, CartesianProductIterator<String>> getAllPossibleGroundings(
-                ProbabilisticSoftLogicPredicateManager predicateManager) {
-
-            HashMap<String, HashSet<String>> argumentGroundings = new HashMap<>();
-
-            // get all possible groundings for each of the named arguments in the rule
-            for (Predicate predicate : Sets.union(new HashSet<>(this.Head),new HashSet<>(this.Body))) {
-                for (int i = 0; i < predicate.Arguments.size(); ++i) {
-
-                    HashSet<String> groundingsForName = argumentGroundings.getOrDefault(predicate.Arguments.get(i), null);
-                    if (groundingsForName == null) {
-                        groundingsForName = new HashSet<>();
-                        argumentGroundings.put(predicate.Arguments.get(i), groundingsForName);
-                    }
-
-                    Iterator<String> groundingIterator = predicateManager.getArgumentGroundings(predicate.Name, i);
-
-                    while (groundingIterator.hasNext()) {
-
-                        groundingsForName.add(groundingIterator.next());
-
-                    }
-
-                }
-            }
-
-            List<String> argumentNames = new ArrayList<>(argumentGroundings.keySet());
-            ArrayList<List<String>> argumentGroundingValues = new ArrayList<>();
-            for (String argumentName : argumentNames) {
-                argumentGroundingValues.add(new ArrayList<>(argumentGroundings.get(argumentName)));
-            }
-            CartesianProductIterator<String> groundingIterator = new CartesianProductIterator<>(argumentGroundingValues);
-            return new AbstractMap.SimpleEntry<>(argumentNames, groundingIterator);
-
-        }
-
-        private static int[] getPredicateIds(
-                List<Predicate> predicates,
-                HashMap<String, String> groundings,
-                ProbabilisticSoftLogicPredicateManager predicateManager) {
-
-            int[] result = new int[predicates.size()];
-            for (int i = 0; i < predicates.size(); ++i) {
-                ArrayList<String> predicateGroundings = new ArrayList<>();
-                for (int j = 0; j < predicates.get(i).Arguments.size(); ++j) {
-                    predicateGroundings.add(groundings.get(predicates.get(i).Arguments.get(j)));
-                }
-                Predicate lookup = new Predicate(predicates.get(i).Name, predicateGroundings, false);
-                result[i] = predicateManager.getOrAddPredicate(lookup);
-                if (result[i] < 0) {
-                    throw new UnsupportedOperationException("Unable to find predicate with current grounding.  Code issue.");
-                }
-            }
-
-            return result;
-        }
-
-        // NaN indicates constraint
-        public final double Weight;
-        public final double Power;
-        public final List<Predicate> Head;
-        public final List<Predicate> Body;
-
-    }
-
-    public static List<Integer> readGroundingsAndAddToManager(
+    public static void readGroundingsAndAddToManager(
             ProbabilisticSoftLogicPredicateManager predicateManager,
             String predicateName,
+            boolean isClosedPredicate,
             String filename) throws DataFormatException, IOException {
 
         BufferedReader br = null;
@@ -220,7 +34,7 @@ public class ProbabilisticSoftLogicReader {
             File file = new File(filename);
 
             br = new BufferedReader(new FileReader(file));
-            return readGroundingsAndAddToManager(predicateManager, predicateName, br);
+            readGroundingsAndAddToManager(predicateManager, predicateName, isClosedPredicate, br);
 
         } finally {
 
@@ -236,9 +50,10 @@ public class ProbabilisticSoftLogicReader {
 
     }
 
-    public static List<Integer> readGroundingsAndAddToManager(
+    public static void readGroundingsAndAddToManager(
             ProbabilisticSoftLogicPredicateManager predicateManager,
             String predicateName,
+            boolean isClosedPredicate,
             BufferedReader reader) throws DataFormatException, IOException {
 
         String line;
@@ -262,7 +77,7 @@ public class ProbabilisticSoftLogicReader {
                 throw new DataFormatException("Bad format on line: " + (lineNumber + 1));
             }
 
-            ArrayList<String> currentGrounding = new ArrayList<>();
+            ImmutableList.Builder<String> currentGrounding = ImmutableList.builder();
             for (int indexEntity = 0; indexEntity < 2; ++indexEntity) {
                 String entity = lineFields[indexEntity];
                 entity = entity.trim();
@@ -272,16 +87,21 @@ public class ProbabilisticSoftLogicReader {
                 currentGrounding.add(entity);
             }
 
-            Predicate groundedPredicate = new Predicate(predicateName, currentGrounding, false);
+            ProbabilisticSoftLogicProblem.Predicate groundedPredicate =
+                    new ProbabilisticSoftLogicProblem.Predicate(predicateName, currentGrounding.build(), false);
             predicateManager.getOrAddPredicate(groundedPredicate, weight);
+
+            ++lineNumber;
 
         }
 
-        return predicateManager.getIdsForPredicateName(predicateName);
+        if (isClosedPredicate) {
+            predicateManager.closePredicate(predicateName);
+        }
 
     }
 
-    public static ArrayList<Rule> readRules(String filename) throws DataFormatException, IOException {
+    public static ArrayList<ProbabilisticSoftLogicProblem.Rule> readRules(String filename) throws DataFormatException, IOException {
 
         BufferedReader br = null;
 
@@ -306,9 +126,9 @@ public class ProbabilisticSoftLogicReader {
 
     }
 
-    public static ArrayList<Rule> readRules(BufferedReader reader) throws DataFormatException, IOException {
+    public static ArrayList<ProbabilisticSoftLogicProblem.Rule> readRules(BufferedReader reader) throws DataFormatException, IOException {
 
-        ArrayList<Rule> result = new ArrayList<>();
+        ArrayList<ProbabilisticSoftLogicProblem.Rule> result = new ArrayList<>();
 
         String line;
 
@@ -371,7 +191,7 @@ public class ProbabilisticSoftLogicReader {
                 }
             }
 
-            Rule rule = new Rule(weight, power, flattenedHead.Predicates, flattenedBody.Predicates);
+            ProbabilisticSoftLogicProblem.Rule rule = new ProbabilisticSoftLogicProblem.Rule(weight, power, ImmutableList.copyOf(flattenedHead.Predicates), ImmutableList.copyOf(flattenedBody.Predicates));
             result.add(rule);
 
             ++lineNumber;
@@ -385,7 +205,7 @@ public class ProbabilisticSoftLogicReader {
     private static class PredicateTemplateOperatorList {
 
         public final ArrayList<ComplexPredicateParser.OperatorType> Operators = new ArrayList<>();
-        public final ArrayList<Predicate> Predicates = new ArrayList<>();
+        public final ArrayList<ProbabilisticSoftLogicProblem.Predicate> Predicates = new ArrayList<>();
 
     }
 
@@ -417,8 +237,8 @@ public class ProbabilisticSoftLogicReader {
 
             PredicateTemplateOperatorList toNegate = flattenLogicExpression(prefixExpression.Right);
             PredicateTemplateOperatorList negated = new PredicateTemplateOperatorList();
-            for (Predicate template : toNegate.Predicates) {
-                negated.Predicates.add(new Predicate(template.Name, template.Arguments, !template.IsNegated));
+            for (ProbabilisticSoftLogicProblem.Predicate template : toNegate.Predicates) {
+                negated.Predicates.add(new ProbabilisticSoftLogicProblem.Predicate(template.Name, template.Arguments, !template.IsNegated));
             }
 
             for (ComplexPredicateParser.OperatorType operator : toNegate.Operators) {
@@ -438,11 +258,11 @@ public class ProbabilisticSoftLogicReader {
 
             ComplexPredicateParser.FunctionExpression functionExpression = (ComplexPredicateParser.FunctionExpression) expression;
             String functionName = ((ComplexPredicateParser.NameExpression) functionExpression.FunctionName).Name;
-            String[] arguments = new String[functionExpression.Arguments.length];
+            ImmutableList.Builder<String> arguments = ImmutableList.builder();
             for (int i = 0; i < functionExpression.Arguments.length; ++i) {
-                arguments[i] = ((ComplexPredicateParser.NameExpression) functionExpression.Arguments[i]).Name;
+                arguments.add(((ComplexPredicateParser.NameExpression) functionExpression.Arguments[i]).Name);
             }
-            Predicate template = new Predicate(functionName, new ArrayList<>(Arrays.asList(arguments)), false);
+            ProbabilisticSoftLogicProblem.Predicate template = new ProbabilisticSoftLogicProblem.Predicate(functionName, arguments.build(), false);
             PredicateTemplateOperatorList templateList = new PredicateTemplateOperatorList();
             templateList.Predicates.add(template);
             return templateList;

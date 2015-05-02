@@ -1,7 +1,6 @@
 package org.platanios.experiment.psl;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
+import com.google.common.collect.*;
 import com.google.common.primitives.Booleans;
 import com.google.common.primitives.Ints;
 import org.apache.commons.lang3.ArrayUtils;
@@ -18,10 +17,7 @@ import org.platanios.learn.optimization.function.MaxFunction;
 import org.platanios.learn.optimization.function.SumFunction;
 import org.platanios.learn.optimization.linesearch.NoLineSearch;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -29,19 +25,485 @@ import java.util.Map;
 public final class ProbabilisticSoftLogicProblem {
     private final BiMap<Integer, Integer> externalToInternalIndexesMapping;
     private final ProbabilisticSoftLogicFunction objectiveFunction;
-    private final List<Constraint> constraints;
+    private final ImmutableList<Constraint> constraints;
+
+    public static class Predicate {
+
+        public Predicate(String name, ImmutableList<String> arguments, boolean isNegated) {
+            this.Name = name;
+            this.Arguments = arguments;
+            this.IsNegated = isNegated;
+        }
+
+        public final String Name;
+        public final ImmutableList<String> Arguments;
+        public final boolean IsNegated;
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            if (this.IsNegated) {
+                sb.append("~");
+            }
+            sb.append(this.Name);
+            sb.append("(");
+            for (int i = 0; i < this.Arguments.size(); ++i) {
+                if (i > 0) {
+                    sb.append(", ");
+                }
+                sb.append(this.Arguments.get(i));
+            }
+            sb.append(")");
+            return sb.toString();
+        }
+
+    }
+
+    public static class Rule {
+
+        private static class GroundingSource {
+
+            public GroundingSource(int indexPredicate, int indexArgument) {
+                this.IndexPredicate = indexPredicate;
+                this.IndexArgument = indexArgument;
+            }
+
+            public final int IndexPredicate;
+            public final int IndexArgument;
+
+        }
+
+        private static class ArgumentGroundingSources {
+
+            public ArgumentGroundingSources(String name, ImmutableList<GroundingSource> groundingSources) {
+                this.Name = name;
+                this.GroundingSources = groundingSources;
+            }
+
+            public final String Name;
+            public final ImmutableList<GroundingSource> GroundingSources;
+
+        }
+
+        public Rule(double weight, double power, ImmutableList<Predicate> head, ImmutableList<Predicate> body) {
+
+            ImmutableList.Builder<Predicate> orderingRemovedBody = ImmutableList.builder();
+            ImmutableList.Builder<ImmutableList<String>> orderings = ImmutableList.builder();
+            HashMap<String, ImmutableList.Builder<GroundingSource>> groundingSources = new HashMap<>();
+
+            for (Predicate predicate : head) {
+
+                if (predicate.Name.equals("#NONSYMMETRIC")) {
+                    throw new UnsupportedOperationException("Unexpected #NONSYMMETRIC keyword in head of rule");
+                }
+
+            }
+
+            for (int indexPredicate = 0; indexPredicate < body.size(); ++indexPredicate) {
+
+                Predicate predicate = body.get(indexPredicate);
+                if (predicate.Name.equals("#NONSYMMETRIC")) {
+
+                    if (predicate.IsNegated) {
+                        throw new UnsupportedOperationException("Negation attached to #NONSYMMETRIC keyword");
+                    }
+
+                    orderings.add(predicate.Arguments);
+
+                } else {
+
+                    orderingRemovedBody.add(predicate);
+                    for (int indexArgument = 0; indexArgument < predicate.Arguments.size(); ++indexArgument) {
+                        ImmutableList.Builder<GroundingSource> argGroundingSource = groundingSources.getOrDefault(predicate.Arguments.get(indexArgument), null);
+                        if (argGroundingSource == null) {
+                            argGroundingSource = ImmutableList.builder();
+                            groundingSources.put(predicate.Arguments.get(indexArgument), argGroundingSource);
+                        }
+
+                        argGroundingSource.add(new GroundingSource(indexPredicate, indexArgument));
+                    }
+
+                }
+
+            }
+
+            ImmutableList.Builder<ArgumentGroundingSources> groundingSourceBuilder = ImmutableList.builder();
+            for (Map.Entry<String, ImmutableList.Builder<GroundingSource>> entry : groundingSources.entrySet()) {
+                groundingSourceBuilder.add(new ArgumentGroundingSources(entry.getKey(), entry.getValue().build()));
+            }
+
+            this.Weight = weight;
+            this.Power = power;
+            this.Head = head;
+            this.Body = orderingRemovedBody.build();
+            this.Orderings = orderings.build();
+            this.ArgumentGroundingSources = groundingSourceBuilder.build();
+
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("{");
+            if (Double.isNaN(this.Weight)) {
+                sb.append("constraint");
+            } else {
+                sb.append(this.Weight);
+            }
+            sb.append("} ");
+            for (int i = 0; i < this.Body.size(); ++i) {
+                if (i > 0) {
+                    sb.append(" & ");
+                }
+                sb.append(this.Body.get(i).toString());
+            }
+            sb.append(" >> ");
+            for (int i = 0; i < this.Head.size(); ++i) {
+                if (i > 0) {
+                    sb.append(" | ");
+                }
+                sb.append(this.Head.get(i).toString());
+            }
+            if (!Double.isNaN(this.Weight)) {
+                sb.append(" {");
+                if (this.Power == 2) {
+                    sb.append("squared");
+                } else {
+                    sb.append(this.Power);
+                }
+                sb.append("}");
+            }
+            return sb.toString();
+        }
+
+        public static void addGroundingsToBuilderByExtension(
+                List<Rule> rules,
+                ProbabilisticSoftLogicProblem.Builder builder,
+                ProbabilisticSoftLogicPredicateManager predicateManager) {
+
+            HashSet<Integer> newPredicates = new HashSet<>();
+
+            for (String predicateName : predicateManager.getPredicateNames()) {
+                for (int id : predicateManager.getIdsForPredicateName(predicateName)) {
+                    newPredicates.add(id);
+                }
+            }
+
+            while(!newPredicates.isEmpty()) {
+
+                HashSet<Integer> currentPredicates = newPredicates;
+                newPredicates = new HashSet<>();
+
+                for (int predicateId : currentPredicates) {
+
+                    for( Rule rule : rules ) {
+
+                        rule.extendGroundingsAndAddToBuilder( predicateManager.getPredicateFromId(predicateId), builder, predicateManager, newPredicates );
+
+                    }
+
+                }
+
+            }
+
+        }
+
+        private void extendGroundingsAndAddToBuilder(
+                Predicate groundingExtension,
+                ProbabilisticSoftLogicProblem.Builder builder,
+                ProbabilisticSoftLogicPredicateManager predicateManager,
+                HashSet<Integer> newPredicates ) {
+
+            boolean[] bodyNegations = new boolean[this.Body.size()];
+            for (int i = 0; i < this.Body.size(); ++i) {
+                bodyNegations[i] = this.Body.get(i).IsNegated;
+            }
+
+            boolean[] headNegations = new boolean[this.Head.size()];
+            for (int i = 0; i < this.Head.size(); ++i) {
+                headNegations[i] = this.Head.get(i).IsNegated;
+            }
+
+            List<List<String>> allArgumentGroundings = new ArrayList<>();
+
+            for (ArgumentGroundingSources argumentGroundingSource : this.ArgumentGroundingSources) {
+
+                HashSet<String> argumentGroundings = new HashSet<>();
+                for (GroundingSource source : argumentGroundingSource.GroundingSources) {
+                    argumentGroundings.addAll(predicateManager.getArgumentGroundings(this.Body.get(source.IndexPredicate).Name, source.IndexArgument));
+                }
+
+                allArgumentGroundings.add(new ArrayList<>(argumentGroundings));
+
+            }
+
+            // iterate over possible places where we could plug in this predicate
+            HashSet<String> visitedGroundings = new HashSet<>();
+            for (int indexInsertion = 0; indexInsertion < this.Body.size(); ++indexInsertion) {
+
+                // we can plug it in here
+                if (this.Body.get(indexInsertion).Name.equals(groundingExtension.Name)
+                        && this.Body.get(indexInsertion).Arguments.size() == groundingExtension.Arguments.size()) {
+
+                    HashMap<String, String> extensionGroundings = new HashMap<>();
+                    for (String argument : this.Body.get(indexInsertion).Arguments) {
+                        extensionGroundings.put(argument, groundingExtension.Arguments.get(indexInsertion));
+                    }
+
+                    String visitedKey = String.join("|", extensionGroundings.keySet());
+                    if (!visitedGroundings.add(visitedKey)) {
+                        continue;
+                    }
+
+                    List<List<String>> argumentValuesToTry = new ArrayList<>();
+                    for (ArgumentGroundingSources sources : this.ArgumentGroundingSources) {
+                        String extensionVal = extensionGroundings.getOrDefault(sources.Name, null);
+                        if (extensionVal != null) {
+                            argumentValuesToTry.add(Arrays.asList(extensionVal));
+                        } else {
+                            HashSet<String> availableValues = new HashSet<>();
+                            for (GroundingSource source : sources.GroundingSources) {
+                                availableValues.addAll(predicateManager.getArgumentGroundings(this.Body.get(source.IndexPredicate).Name, source.IndexPredicate));
+                            }
+                            argumentValuesToTry.add(new ArrayList<>(availableValues));
+                        }
+                    }
+
+                    CartesianProductIterator<String> argumentInstanceIterator = new CartesianProductIterator<>(argumentValuesToTry);
+                    for (List<String> argumentInstance : argumentInstanceIterator) {
+
+                        HashMap<String, String> argumentToGrounding = new HashMap<>();
+                        for (int indexArgument = 0; indexArgument < this.ArgumentGroundingSources.size(); ++indexArgument) {
+                            argumentToGrounding.put(this.ArgumentGroundingSources.get(indexArgument).Name, argumentInstance.get(indexArgument));
+                        }
+
+                        if (!this.getIsGroundedOrderingAllowed(argumentToGrounding)) {
+                            continue;
+                        }
+
+                        Map.Entry<int[], boolean[]> bodyIdResult = Rule.getPredicateIds(this.Body, argumentToGrounding, predicateManager, false);
+                        // check whether the body (premise) can possibly hold
+                        // only use this expansion if it can
+                        double observedBodyConstant = 0;
+                        for (int indexBody = 0; indexBody < this.Body.size(); ++indexBody) {
+                            int bodyId = bodyIdResult.getKey()[indexBody];
+                            double observedValue = bodyId < 0 ? 0 : predicateManager.getObservedWeight(bodyId);
+                            if (!Double.isNaN(observedValue)) {
+                                if (this.Body.get(indexBody).IsNegated)
+                                    observedBodyConstant -= observedValue;
+                                else
+                                    observedBodyConstant += observedValue - 1;
+                            }
+                        }
+
+                        if (observedBodyConstant <= 0) {
+                            continue;
+                        }
+
+                        // if these have -1, it is ok.  The builder will just treat these as observed
+                        // with value 0
+                        Map.Entry<int[], boolean[]> headIdResult = Rule.getPredicateIds(this.Head, argumentToGrounding, predicateManager, true);
+                        for (int indexHead = 0; indexHead < this.Head.size(); ++indexHead) {
+                            if (headIdResult.getValue()[indexHead]) {
+                                newPredicates.add(headIdResult.getKey()[indexHead]);
+                            }
+                        }
+
+                        // BUG BUGBUGBUG temporarily handle constraints by setting to high weight
+                        if (Double.isNaN(this.Weight)) {
+                            builder.addRule(headIdResult.getKey(), bodyIdResult.getKey(), headNegations, bodyNegations, 1, 1000);
+                        } else {
+                            builder.addRule(headIdResult.getKey(), bodyIdResult.getKey(), headNegations, bodyNegations, this.Power, this.Weight);
+                        }
+
+                    }
+
+                }
+            }
+
+        }
+
+        public void addAllGroundingsToBuilder(
+                ProbabilisticSoftLogicProblem.Builder builder,
+                ProbabilisticSoftLogicPredicateManager predicateManager) {
+
+//            // if this is a constraint, do nothing
+//            if (Double.isNaN(this.Weight)) {
+//                return;
+//            }
+
+            boolean[] bodyNegations = new boolean[this.Body.size()];
+            for (int i = 0; i < this.Body.size(); ++i) {
+                bodyNegations[i] = this.Body.get(i).IsNegated;
+            }
+
+            boolean[] headNegations = new boolean[this.Head.size()];
+            for (int i = 0; i < this.Head.size(); ++i) {
+                headNegations[i] = this.Head.get(i).IsNegated;
+            }
+
+            AbstractMap.SimpleEntry<List<String>, CartesianProductIterator<String>> allPossibleGroundings =
+                    getAllPossibleGroundings(predicateManager);
+            List<String> argumentNames = allPossibleGroundings.getKey();
+            CartesianProductIterator<String> groundingIterator = allPossibleGroundings.getValue();
+
+            HashMap<String, String> argumentToGrounding = new HashMap<>();
+
+            for (List<String> groundings : groundingIterator) {
+
+                for (int i = 0; i < argumentNames.size(); ++i) {
+                    argumentToGrounding.put(argumentNames.get(i), groundings.get(i));
+                }
+
+                if (!this.getIsGroundedOrderingAllowed(argumentToGrounding)
+                        || !Rule.getIsGroundingCreationPossible(this.Body, argumentToGrounding, predicateManager)) {
+                    continue;
+                }
+
+                Map.Entry<int[], boolean[]> bodyIdResult = getPredicateIds(this.Body, argumentToGrounding, predicateManager, true);
+                Map.Entry<int[], boolean[]> headIdResult = getPredicateIds(this.Head, argumentToGrounding, predicateManager, true);
+
+                // if we get this, it means we tried to instantiate a closed predicate to
+                // a grounding which does not exist
+                if (ArrayUtils.contains(bodyIdResult.getKey(), -1) || ArrayUtils.contains(headIdResult.getKey(), -1)) {
+                    continue;
+                }
+
+                // BUG BUGBUGBUG temporarily handle constraints by setting to high weight
+                if (Double.isNaN(this.Weight)) {
+                    builder.addRule(headIdResult.getKey(), bodyIdResult.getKey(), headNegations, bodyNegations, 1, 1000);
+                } else {
+                    builder.addRule(headIdResult.getKey(), bodyIdResult.getKey(), headNegations, bodyNegations, this.Power, this.Weight);
+                }
+
+            }
+
+        }
+
+        private boolean getIsGroundedOrderingAllowed(
+                HashMap<String, String> argumentToGrounding) {
+
+            for (List<String> ordering : this.Orderings) {
+                int maxSeenId = 0;
+                for (String argument : ordering) {
+                    try {
+                        int idArgument = Integer.parseInt(argumentToGrounding.get(argument));
+                        if (idArgument <= maxSeenId) {
+                            return false;
+                        }
+                        maxSeenId = idArgument;
+                    } catch (NumberFormatException e) {
+                        throw new UnsupportedOperationException("ordering can only be imposed on numeric entities");
+                    }
+                }
+            }
+
+            return true;
+
+        }
+
+        private AbstractMap.SimpleEntry<List<String>, CartesianProductIterator<String>> getAllPossibleGroundings(
+                ProbabilisticSoftLogicPredicateManager predicateManager) {
+
+            HashSet<String> argumentGroundings = new HashSet<>();
+            HashSet<String> argumentNames = new HashSet<>();
+
+            // get all possible groundings for each of the named arguments in the rule
+            for (Predicate predicate : Sets.union(new HashSet<>(this.Head), new HashSet<>(this.Body))) {
+                for (int i = 0; i < predicate.Arguments.size(); ++i) {
+
+                    Set<String> groundingsForPredicateAtPosition = predicateManager.getArgumentGroundings(predicate.Name, i);
+                    argumentGroundings.addAll(groundingsForPredicateAtPosition);
+                    argumentNames.add(predicate.Arguments.get(i));
+
+                }
+            }
+
+            List<String> argumentNamesList = new ArrayList<>(argumentNames);
+            ArrayList<List<String>> argumentGroundingValues = new ArrayList<>();
+            for (int i = 0; i < argumentNamesList.size(); ++i) {
+                argumentGroundingValues.add(new ArrayList<>(argumentGroundings));
+            }
+            CartesianProductIterator<String> groundingIterator = new CartesianProductIterator<>(argumentGroundingValues);
+            return new AbstractMap.SimpleEntry<>(argumentNamesList, groundingIterator);
+
+        }
+
+        private static boolean getIsGroundingCreationPossible(
+                List<Predicate> predicates,
+                HashMap<String, String> groundings,
+                ProbabilisticSoftLogicPredicateManager predicateManager) {
+
+            for (int i = 0; i < predicates.size(); ++i) {
+                Predicate lookup = Rule.createGroundedPredicate(predicates.get(i), groundings);
+                int id = predicateManager.getIdForPredicate(lookup);
+                if (id < 0 && predicateManager.getIsClosedPredicate(lookup.Name)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static Map.Entry<int[], boolean[]> getPredicateIds(
+                List<Predicate> predicates,
+                HashMap<String, String> groundings,
+                ProbabilisticSoftLogicPredicateManager predicateManager,
+                boolean allowPredicateCreation) {
+
+            int[] result = new int[predicates.size()];
+            boolean[] isAdded = new boolean[predicates.size()];
+
+            for (int i = 0; i < predicates.size(); ++i) {
+                Predicate lookup = Rule.createGroundedPredicate(predicates.get(i), groundings);
+                if (predicateManager.getIsClosedPredicate(lookup.Name)) {
+                    result[i] = predicateManager.getIdForPredicate(lookup);
+                    isAdded[i] = false;
+                } else {
+                    if (allowPredicateCreation) {
+                        Map.Entry<Boolean, Integer> getAddResult = predicateManager.getOrAddPredicate(lookup);
+                        result[i] = getAddResult.getValue();
+                        isAdded[i] = getAddResult.getKey();
+                    } else {
+                        result[i] = predicateManager.getIdForPredicate(lookup);
+                        isAdded[i] = false;
+                    }
+                }
+            }
+
+            return new AbstractMap.SimpleEntry<>(result, isAdded);
+        }
+
+        private static Predicate createGroundedPredicate(Predicate template, HashMap<String, String> groundings) {
+            ImmutableList.Builder<String> predicateGroundings = ImmutableList.builder();
+            for (int j = 0; j < template.Arguments.size(); ++j) {
+                predicateGroundings.add(groundings.get(template.Arguments.get(j)));
+            }
+            return new Predicate(template.Name, predicateGroundings.build(), false);
+        }
+
+        // NaN indicates constraint
+        public final double Weight;
+        public final double Power;
+        public final ImmutableList<Predicate> Head;
+        public final ImmutableList<Predicate> Body;
+        public final ImmutableList<ImmutableList<String>> Orderings;
+        public final ImmutableList<ArgumentGroundingSources> ArgumentGroundingSources;
+
+    }
 
     public static final class Builder {
         private final BiMap<Integer, Integer> externalToInternalIndexesMapping;
 
-        private final Map<Integer, Double> observedVariableValues = new HashMap<>();
-        private final List<FunctionTerm> functionTerms = new ArrayList<>();
-        private final List<Constraint> constraints = new ArrayList<>();
+        private final ImmutableMap<Integer, Double> observedVariableValues;
+        private final HashSet<FunctionTerm> functionTerms = new HashSet<>();
+        private final HashSet<Constraint> constraints = new HashSet<>();
         private int nextInternalIndex = 0;
 
         public Builder(int[] observedVariableIndexes,
                        double[] observedVariableValues,
                        int numberOfUnobservedVariables) {
+            ImmutableMap.Builder<Integer, Double> observedVariableValueBuilder = ImmutableMap.builder();
             if ((observedVariableIndexes == null) != (observedVariableValues == null))
                 throw new IllegalArgumentException(
                         "The provided indexes for the observed variables must much the corresponding provided values."
@@ -53,17 +515,22 @@ public final class ProbabilisticSoftLogicProblem {
                                     "have the same length the corresponding provided values array."
                     );
                 for (int i = 0; i < observedVariableIndexes.length; ++i)
-                    this.observedVariableValues.put(observedVariableIndexes[i], observedVariableValues[i]);
+                    observedVariableValueBuilder.put(observedVariableIndexes[i], observedVariableValues[i]);
             }
+
+            // special case - always add -1 as an Id with observed value 0.
+            // predicates which are grounded outside of a closed set will thus have value 0
+            observedVariableValueBuilder.put(-1, 0.0);
+            this.observedVariableValues = observedVariableValueBuilder.build();
             externalToInternalIndexesMapping = HashBiMap.create(numberOfUnobservedVariables);
         }
 
-        public Builder addRule(int[] headVariableIndexes,
-                               int[] bodyVariableIndexes,
-                               boolean[] headNegations,
-                               boolean[] bodyNegations,
-                               double power,
-                               double weight) {
+        Builder addRule(int[] headVariableIndexes,
+                        int[] bodyVariableIndexes,
+                        boolean[] headNegations,
+                        boolean[] bodyNegations,
+                        double power,
+                        double weight) {
             RulePart headPart = convertRulePartToInternalRepresentation(headVariableIndexes, headNegations, true);
             RulePart bodyPart = convertRulePartToInternalRepresentation(bodyVariableIndexes, bodyNegations, false);
             double ruleMaximumValue = 1 + headPart.observedConstant + bodyPart.observedConstant;
@@ -194,7 +661,7 @@ public final class ProbabilisticSoftLogicProblem {
             );
         }
         objectiveFunction = new ProbabilisticSoftLogicFunction(sumFunctionBuilder);
-        constraints = builder.constraints;
+        constraints = ImmutableList.copyOf(builder.constraints);
     }
 
     public Map<Integer, Double> solve() {

@@ -8,7 +8,7 @@ import java.util.*;
  */
 public class ProbabilisticSoftLogicPredicateManager {
 
-    public ProbabilisticSoftLogicReader.Predicate getPredicateFromId(int id) {
+    public ProbabilisticSoftLogicProblem.Predicate getPredicateFromId(int id) {
         return this.idToPredicate.getOrDefault(id, null);
     }
 
@@ -46,11 +46,19 @@ public class ProbabilisticSoftLogicPredicateManager {
 
     }
 
-    public int getOrAddPredicate(ProbabilisticSoftLogicReader.Predicate predicate) {
+    public Set<String> getPredicateNames() {
+        return Collections.unmodifiableSet(argumentGroundings.keySet());
+    }
+
+    public Map.Entry<Boolean, Integer> getOrAddPredicate(ProbabilisticSoftLogicProblem.Predicate predicate) {
         return this.getOrAddPredicate(predicate, Double.NaN);
     }
 
-    public int getOrAddPredicate(ProbabilisticSoftLogicReader.Predicate predicate, double observedWeight) {
+    public Map.Entry<Boolean, Integer> getOrAddPredicate(ProbabilisticSoftLogicProblem.Predicate predicate, double observedWeight) {
+
+        if (this.closedPredicates.contains(predicate.Name)) {
+            throw new UnsupportedOperationException("Cannot add to a closed predicate set");
+        }
 
         int id = this.predicateToId.getOrDefault(predicate.toString(), -1);
         if (id >= 0) {
@@ -67,29 +75,33 @@ public class ProbabilisticSoftLogicPredicateManager {
                 }
             }
 
-            return id;
+            return new AbstractMap.SimpleEntry<>(false, id);
 
         }
 
-        ArrayList<Integer> groundingsForName = this.predicateNameToIds.getOrDefault(predicate.Name, null);
+        ArrayList<HashSet<String>> groundingsForName = this.argumentGroundings.getOrDefault(predicate.Name, null);
         if (groundingsForName == null) {
             groundingsForName = new ArrayList<>();
-            this.predicateNameToIds.put(predicate.Name, groundingsForName);
-        }
-        groundingsForName.add(this.nextId);
-
-        ArrayList<HashSet<String>> argumentGroundingsForName = this.argumentGroundings.getOrDefault(predicate.Name, null);
-        if (argumentGroundingsForName == null) {
-            argumentGroundingsForName = new ArrayList<>();
-            this.argumentGroundings.put(predicate.Name, argumentGroundingsForName);
+            this.argumentGroundings.put(predicate.Name, groundingsForName);
         }
 
-        for (int i = 0; i < predicate.Arguments.size(); ++i) {
-            if (i >= argumentGroundingsForName.size()) {
-                argumentGroundingsForName.add(new HashSet<>());
+        for (int indexArgument = 0; indexArgument < predicate.Arguments.size(); ++indexArgument) {
+
+            if (indexArgument >= groundingsForName.size()) {
+                groundingsForName.add(new HashSet<>());
             }
-            argumentGroundingsForName.get(i).add(predicate.Arguments.get(i));
+
+            groundingsForName.get(indexArgument).add(predicate.Arguments.get(indexArgument));
+
         }
+
+        HashSet<Integer> predicateNameIds = this.predicateNameToIds.getOrDefault(predicate.Name, null);
+        if (predicateNameIds == null) {
+            predicateNameIds = new HashSet<>();
+            this.predicateNameToIds.put(predicate.Name, predicateNameIds);
+        }
+
+        predicateNameIds.add(this.nextId);
 
         this.predicateToId.put(predicate.toString(), this.nextId);
         this.idToPredicate.put(nextId, predicate);
@@ -100,25 +112,35 @@ public class ProbabilisticSoftLogicPredicateManager {
 
         id = this.nextId++;
 
-        return id;
+        return new AbstractMap.SimpleEntry<>(true, id);
     }
 
-    public int getIdForPredicate(ProbabilisticSoftLogicReader.Predicate predicate) {
+    public int getIdForPredicate(ProbabilisticSoftLogicProblem.Predicate predicate) {
         return this.predicateToId.getOrDefault(predicate.toString(), -1);
     }
 
-    public List<Integer> getIdsForPredicateName(String predicateName) {
-        return this.predicateNameToIds.getOrDefault(predicateName, new ArrayList<Integer>());
+    public Set<Integer> getIdsForPredicateName(String predicateName) {
+        return Collections.unmodifiableSet(this.predicateNameToIds.getOrDefault(predicateName, null));
     }
 
-    public Iterator<String> getArgumentGroundings(String predicateName, int argumentPosition) {
+    public void closePredicate(String predicateName) {
+        this.closedPredicates.add(predicateName);
+    }
 
-        ArrayList<HashSet<String>> argumentGroundingsForName = this.argumentGroundings.getOrDefault(predicateName, null);
-        if (argumentGroundingsForName == null || argumentGroundingsForName.size() <= argumentPosition) {
-            return (new HashSet<String>()).iterator();
+    public boolean getIsClosedPredicate(String predicateName) {
+        return this.closedPredicates.contains(predicateName);
+    }
+
+    public Set<String> getArgumentGroundings(String predicateName, int argumentPosition) {
+
+        List<HashSet<String>> allPredicateGroundings =
+            this.argumentGroundings.getOrDefault(predicateName, null);
+
+        if (allPredicateGroundings == null || argumentPosition >= allPredicateGroundings.size()) {
+            return Collections.unmodifiableSet(new HashSet<>());
         }
 
-        return argumentGroundingsForName.get(argumentPosition).iterator();
+        return Collections.unmodifiableSet(allPredicateGroundings.get(argumentPosition));
 
     }
 
@@ -127,10 +149,16 @@ public class ProbabilisticSoftLogicPredicateManager {
     }
 
     private int nextId = 0;
+
+    private final HashSet<String> closedPredicates = new HashSet<>();
+
     private final HashMap<String, Integer> predicateToId = new HashMap<>();
-    private final HashMap<String, ArrayList<Integer>> predicateNameToIds = new HashMap<>();
+    private final HashMap<Integer, ProbabilisticSoftLogicProblem.Predicate> idToPredicate = new HashMap<>();
+
+    private final HashMap<String, HashSet<Integer>> predicateNameToIds = new HashMap<>();
+
     private final HashMap<String, ArrayList<HashSet<String>>> argumentGroundings = new HashMap<>();
-    private final HashMap<Integer, ProbabilisticSoftLogicReader.Predicate> idToPredicate = new HashMap<>();
+
     private final HashMap<Integer, Double> observedPredicateWeights = new HashMap<>();
 
 }

@@ -1,5 +1,6 @@
 package org.platanios.experiment.psl.parser;
 
+import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.platanios.experiment.psl.CartesianProductIterator;
 import org.platanios.experiment.psl.ProbabilisticSoftLogicPredicateManager;
@@ -65,7 +66,7 @@ public class LogicRuleParserTest {
 
         StringReader stringReader = new StringReader(String.join("\n", lines));
         BufferedReader reader = null;
-        List<ProbabilisticSoftLogicReader.Rule> rules = null;
+        List<ProbabilisticSoftLogicProblem.Rule> rules = null;
 
         try {
 
@@ -89,7 +90,7 @@ public class LogicRuleParserTest {
         }
 
         String expected = "{constraint} ~KNOWS(A, B) >> ~TRUSTS(A, B)";
-        ProbabilisticSoftLogicReader.Rule rule = rules.get(0);
+        ProbabilisticSoftLogicProblem.Rule rule = rules.get(0);
 
         assertEquals(expected, rule.toString());
         assertTrue("Constraint has weight", Double.isNaN(rule.Weight));
@@ -167,6 +168,7 @@ public class LogicRuleParserTest {
             ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
                 predicateManager,
                 "KNOWS",
+                true,
                 reader);
 
         } catch (IOException|DataFormatException e) {
@@ -208,6 +210,7 @@ public class LogicRuleParserTest {
             ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
                     predicateManager,
                     "KNOWS",
+                    true,
                     reader);
 
         } catch (IOException e) {
@@ -257,15 +260,17 @@ public class LogicRuleParserTest {
         stringReader = new StringReader(String.join("\n", lines));
         reader = null;
 
-        List<Integer> predicateIds = null;
+        Set<Integer> predicateIds = null;
 
         try {
 
             reader = new BufferedReader(stringReader);
-            predicateIds = ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
+            ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
                 predicateManager,
                 "KNOWS",
+                true,
                 reader);
+            predicateIds = predicateManager.getIdsForPredicateName("KNOWS");
 
         } catch (IOException|DataFormatException e) {
             fail(e.getMessage());
@@ -285,31 +290,9 @@ public class LogicRuleParserTest {
 
         assertTrue("Wrong number of ids returned", predicateIds.size() == expected.length);
 
-        List<Integer> idsAgain = predicateManager.getIdsForPredicateName("KNOWS");
-        assertTrue("Wrong number of ids when asked", idsAgain.size() == predicateIds.size());
-        for (int idAgain : idsAgain) {
-            boolean isFound = false;
-            for (int id : predicateIds) {
-                if (idAgain == id) {
-                    isFound = true;
-                    break;
-                }
-            }
-            assertTrue("returned ids and asked ids not same", isFound);
-        }
-
         for (int id : predicateIds) {
 
-            boolean isFound = false;
-            for (int idAgain : idsAgain) {
-                if (idAgain == id) {
-                    isFound = true;
-                    break;
-                }
-            }
-            assertTrue("returned ids and asked ids not same", isFound);
-
-            ProbabilisticSoftLogicReader.Predicate predicate = predicateManager.getPredicateFromId(id);
+            ProbabilisticSoftLogicProblem.Predicate predicate = predicateManager.getPredicateFromId(id);
             int idReflex = predicateManager.getIdForPredicate(predicate);
             assertEquals("Round trip failed", idReflex, id);
 
@@ -327,9 +310,8 @@ public class LogicRuleParserTest {
             assertTrue("Not all expected predicates found", expectedFound[i]);
         }
 
-        Iterator<String> firstArgIterator = predicateManager.getArgumentGroundings("KNOWS", 0);
-        while (firstArgIterator.hasNext()) {
-            String arg = firstArgIterator.next();
+        Set<String> firstArgGroundings = predicateManager.getArgumentGroundings("KNOWS", 0);
+        for (String arg : firstArgGroundings) {
             for (int i = 0; i < expectedFirstArg.length; ++i) {
                 if (arg.equals(expectedFirstArg[i])) {
                     assertTrue("Multiple first args match same arg", !expectedFirstArgFound[i]);
@@ -342,9 +324,8 @@ public class LogicRuleParserTest {
             assertTrue("Some expected first args not found", expectedFirstArgFound[i]);
         }
 
-        Iterator<String> secondArgIterator = predicateManager.getArgumentGroundings("KNOWS", 1);
-        while (secondArgIterator.hasNext()) {
-            String arg = secondArgIterator.next();
+        Set<String> secondArgGroundings = predicateManager.getArgumentGroundings("KNOWS", 1);
+        for (String arg : secondArgGroundings) {
             for (int i = 0; i < expectedSecondArg.length; ++i) {
                 if (arg.equals(expectedSecondArg[i])) {
                     assertTrue("Multiple first args match same arg", !expectedSecondArgFound[i]);
@@ -423,6 +404,335 @@ public class LogicRuleParserTest {
     }
 
     @Test
+    public void testNonSymmetric() {
+
+        ProbabilisticSoftLogicProblem.Predicate knowsAB =
+                new ProbabilisticSoftLogicProblem.Predicate("KNOWS", ImmutableList.of("A", "B"), false);
+
+        ProbabilisticSoftLogicProblem.Predicate knowsBC =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("B", "C"), false);
+
+        ProbabilisticSoftLogicProblem.Predicate knowsAC =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("A", "C"), false);
+
+        ProbabilisticSoftLogicProblem.Predicate nonSymAB =
+                new ProbabilisticSoftLogicProblem.Predicate("#NONSYMMETRIC", ImmutableList.of("A", "B"), false);
+
+        ProbabilisticSoftLogicProblem.Predicate nonSymBC =
+                new ProbabilisticSoftLogicProblem.Predicate("#NONSYMMETRIC", ImmutableList.of("B", "C"), false);
+
+        ProbabilisticSoftLogicProblem.Predicate negNonSymAB =
+                new ProbabilisticSoftLogicProblem.Predicate(nonSymAB.Name, nonSymAB.Arguments, true);
+
+        boolean isException = false;
+        try {
+            // "{1.5} KNOWS(A, B) & KNOWS(B, C) >> KNOWS(A, C) | #NONSYMMETRIC(A, B)"
+            new ProbabilisticSoftLogicProblem.Rule(1.5, 1, ImmutableList.of(knowsAC, nonSymAB), ImmutableList.of(knowsAB, knowsBC));
+        } catch (UnsupportedOperationException e) {
+            isException = true;
+        }
+
+        assertTrue("No exception for nonsymmetric in head", isException);
+
+        isException = false;
+        try {
+            // "{1.5} KNOWS(A, B) & KNOWS(B, C) & ~#NONSYMMETRIC(A, B) >> KNOWS(A, C)"
+            new ProbabilisticSoftLogicProblem.Rule(1.5, 1, ImmutableList.of(knowsAC), ImmutableList.of(knowsAB, knowsBC, negNonSymAB));
+        } catch (UnsupportedOperationException e) {
+            isException = true;
+        }
+
+        assertTrue("No exception for negative nonsymmetric", isException);
+
+        // "{1.5} KNOWS(A, B) & KNOWS(B, C) >> KNOWS(A, C)"
+        ProbabilisticSoftLogicProblem.Rule rule =
+                new ProbabilisticSoftLogicProblem.Rule(1.5, 1, ImmutableList.of(knowsAC), ImmutableList.of(knowsAB, knowsBC));
+
+        // "{1.5} KNOWS(A, B) & KNOWS(B, C) & #NONSYMMETRIC(A, B) & #NONSYMMETRIC(B, C) >> KNOWS(A, C)"
+        ProbabilisticSoftLogicProblem.Rule nonSymRule =
+                new ProbabilisticSoftLogicProblem.Rule(1.5, 1, ImmutableList.of(knowsAC), ImmutableList.of(knowsAB, knowsBC, nonSymAB, nonSymBC));
+
+        ProbabilisticSoftLogicProblem.Predicate knows12 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("1", "2"), false);
+        ProbabilisticSoftLogicProblem.Predicate knows23 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("2", "3"), false);
+        ProbabilisticSoftLogicProblem.Predicate knows34 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("3", "4"), false);
+
+        ProbabilisticSoftLogicPredicateManager predicateManager = new ProbabilisticSoftLogicPredicateManager();
+        ProbabilisticSoftLogicPredicateManager nonSymPredicateManager = new ProbabilisticSoftLogicPredicateManager();
+        predicateManager.getOrAddPredicate(knows12, 0.5);
+        nonSymPredicateManager.getOrAddPredicate(knows12, 0.5);
+        predicateManager.getOrAddPredicate(knows23, 0.1);
+        nonSymPredicateManager.getOrAddPredicate(knows23, 0.1);
+        predicateManager.getOrAddPredicate(knows34, 0.7);
+        nonSymPredicateManager.getOrAddPredicate(knows34, 0.7);
+
+        ProbabilisticSoftLogicPredicateManager.IdWeights observedIdsAndWeights =
+                predicateManager.getAllObservedWeights();
+
+        ProbabilisticSoftLogicProblem.Builder builder =
+            new ProbabilisticSoftLogicProblem.Builder(observedIdsAndWeights.Ids, observedIdsAndWeights.Weights, 100);
+
+        ProbabilisticSoftLogicProblem.Builder nonSymBuilder =
+                new ProbabilisticSoftLogicProblem.Builder(observedIdsAndWeights.Ids, observedIdsAndWeights.Weights, 100);
+
+        rule.addAllGroundingsToBuilder(builder, predicateManager);
+        nonSymRule.addAllGroundingsToBuilder(nonSymBuilder, nonSymPredicateManager);
+
+        Set<String> expectedNormal = new HashSet<>(Arrays.asList(
+            "KNOWS(1, 1)",
+            "KNOWS(1, 2)",
+            "KNOWS(1, 3)",
+            "KNOWS(1, 4)",
+            "KNOWS(2, 1)",
+            "KNOWS(2, 2)",
+            "KNOWS(2, 3)",
+            "KNOWS(2, 4)",
+            "KNOWS(3, 1)",
+            "KNOWS(3, 2)",
+            "KNOWS(3, 3)",
+            "KNOWS(3, 4)",
+            "KNOWS(4, 1)",
+            "KNOWS(4, 2)",
+            "KNOWS(4, 3)",
+            "KNOWS(4, 4)"
+        ));
+
+        Set<String> expectedNonSym = new HashSet<>(Arrays.asList(
+            "KNOWS(1, 2)",
+            "KNOWS(1, 3)",
+            "KNOWS(1, 4)",
+            "KNOWS(2, 3)",
+            "KNOWS(2, 4)",
+            "KNOWS(3, 4)"
+        ));
+
+        Set<Integer> predicateIds = predicateManager.getIdsForPredicateName("KNOWS");
+        assertTrue(predicateIds != null);
+        assertTrue(predicateIds.size() == expectedNormal.size());
+
+        Set<Integer> nonSymPredicateIds = nonSymPredicateManager.getIdsForPredicateName("KNOWS");
+        assertTrue(nonSymPredicateIds != null);
+        assertTrue(nonSymPredicateIds.size() == expectedNonSym.size());
+
+        for (int predicateId : predicateIds) {
+            ProbabilisticSoftLogicProblem.Predicate predicate = predicateManager.getPredicateFromId(predicateId);
+            assertTrue(predicate != null);
+            assertTrue(expectedNormal.contains(predicate.toString()));
+        }
+
+        for (int predicateId : nonSymPredicateIds) {
+            ProbabilisticSoftLogicProblem.Predicate predicate = nonSymPredicateManager.getPredicateFromId(predicateId);
+            assertTrue(predicate != null);
+            assertTrue(expectedNonSym.contains(predicate.toString()));
+        }
+
+    }
+
+    @Test
+    public void testClosed() {
+
+        ProbabilisticSoftLogicProblem.Predicate knowsAB =
+                new ProbabilisticSoftLogicProblem.Predicate("KNOWS", ImmutableList.of("A", "B"), false);
+
+        ProbabilisticSoftLogicProblem.Predicate knowsBC =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("B", "C"), false);
+
+        ProbabilisticSoftLogicProblem.Predicate trustsAC =
+                new ProbabilisticSoftLogicProblem.Predicate("TRUSTS", ImmutableList.of("A", "C"), false);
+
+        // "{1.5} KNOWS(A, B) & KNOWS(B, C) >> TRUSTS(A, C)"
+        ProbabilisticSoftLogicProblem.Rule rule =
+                new ProbabilisticSoftLogicProblem.Rule(1.5, 1, ImmutableList.of(trustsAC), ImmutableList.of(knowsAB, knowsBC));
+
+        ProbabilisticSoftLogicProblem.Predicate knows12 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("1", "2"), false);
+        ProbabilisticSoftLogicProblem.Predicate knows23 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("2", "3"), false);
+        ProbabilisticSoftLogicProblem.Predicate knows34 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("3", "4"), false);
+
+        ProbabilisticSoftLogicPredicateManager predicateManager = new ProbabilisticSoftLogicPredicateManager();
+        ProbabilisticSoftLogicPredicateManager closedPredicateManager = new ProbabilisticSoftLogicPredicateManager();
+        predicateManager.getOrAddPredicate(knows12, 0.5);
+        closedPredicateManager.getOrAddPredicate(knows12, 0.5);
+        predicateManager.getOrAddPredicate(knows23, 0.1);
+        closedPredicateManager.getOrAddPredicate(knows23, 0.1);
+        predicateManager.getOrAddPredicate(knows34, 0.7);
+        closedPredicateManager.getOrAddPredicate(knows34, 0.7);
+
+        closedPredicateManager.closePredicate("KNOWS");
+
+        ProbabilisticSoftLogicPredicateManager.IdWeights observedIdsAndWeights =
+                predicateManager.getAllObservedWeights();
+
+        ProbabilisticSoftLogicProblem.Builder builder =
+                new ProbabilisticSoftLogicProblem.Builder(observedIdsAndWeights.Ids, observedIdsAndWeights.Weights, 100);
+
+        ProbabilisticSoftLogicProblem.Builder closedBuilder =
+                new ProbabilisticSoftLogicProblem.Builder(observedIdsAndWeights.Ids, observedIdsAndWeights.Weights, 100);
+
+        rule.addAllGroundingsToBuilder(builder, predicateManager);
+        rule.addAllGroundingsToBuilder(closedBuilder, closedPredicateManager);
+
+        Set<String> expectedNormalKnows = new HashSet<>(Arrays.asList(
+                "KNOWS(1, 1)",
+                "KNOWS(1, 2)",
+                "KNOWS(1, 3)",
+                "KNOWS(1, 4)",
+                "KNOWS(2, 1)",
+                "KNOWS(2, 2)",
+                "KNOWS(2, 3)",
+                "KNOWS(2, 4)",
+                "KNOWS(3, 1)",
+                "KNOWS(3, 2)",
+                "KNOWS(3, 3)",
+                "KNOWS(3, 4)",
+                "KNOWS(4, 1)",
+                "KNOWS(4, 2)",
+                "KNOWS(4, 3)",
+                "KNOWS(4, 4)"
+        ));
+
+        Set<String> expectedNormalTrusts = new HashSet<>(Arrays.asList(
+                "TRUSTS(1, 1)",
+                "TRUSTS(1, 2)",
+                "TRUSTS(1, 3)",
+                "TRUSTS(1, 4)",
+                "TRUSTS(2, 1)",
+                "TRUSTS(2, 2)",
+                "TRUSTS(2, 3)",
+                "TRUSTS(2, 4)",
+                "TRUSTS(3, 1)",
+                "TRUSTS(3, 2)",
+                "TRUSTS(3, 3)",
+                "TRUSTS(3, 4)",
+                "TRUSTS(4, 1)",
+                "TRUSTS(4, 2)",
+                "TRUSTS(4, 3)",
+                "TRUSTS(4, 4)"
+        ));
+
+        Set<String> expectedClosedKnows = new HashSet<>(Arrays.asList(
+                "KNOWS(1, 2)",
+                "KNOWS(2, 3)",
+                "KNOWS(3, 4)"
+        ));
+
+        Set<String> expectedClosedTrusts = new HashSet<>(Arrays.asList(
+                "TRUSTS(1, 3)",
+                "TRUSTS(2, 4)"
+        ));
+
+        Set<Integer> predicateIdsKnows = predicateManager.getIdsForPredicateName("KNOWS");
+        assertTrue(predicateIdsKnows != null);
+        assertTrue(predicateIdsKnows.size() == expectedNormalKnows.size());
+
+        for (int predicateId : predicateIdsKnows) {
+            ProbabilisticSoftLogicProblem.Predicate predicate = predicateManager.getPredicateFromId(predicateId);
+            assertTrue(predicate != null);
+            assertTrue(expectedNormalKnows.contains(predicate.toString()));
+        }
+
+        Set<Integer> predicateIdsTrusts = predicateManager.getIdsForPredicateName("TRUSTS");
+        assertTrue(predicateIdsTrusts != null);
+        assertTrue(predicateIdsTrusts.size() == expectedNormalKnows.size());
+
+        for (int predicateId : predicateIdsTrusts) {
+            ProbabilisticSoftLogicProblem.Predicate predicate = predicateManager.getPredicateFromId(predicateId);
+            assertTrue(predicate != null);
+            assertTrue(expectedNormalTrusts.contains(predicate.toString()));
+        }
+
+        Set<Integer> closedPredicateIdsKnows = closedPredicateManager.getIdsForPredicateName("KNOWS");
+        assertTrue(closedPredicateIdsKnows != null);
+        assertTrue(closedPredicateIdsKnows.size() == expectedClosedKnows.size());
+
+        for (int predicateId : closedPredicateIdsKnows) {
+            ProbabilisticSoftLogicProblem.Predicate predicate = closedPredicateManager.getPredicateFromId(predicateId);
+            assertTrue(predicate != null);
+            assertTrue(expectedClosedKnows.contains(predicate.toString()));
+        }
+
+        Set<Integer> closedPredicateIdsTrusts = closedPredicateManager.getIdsForPredicateName("TRUSTS");
+        assertTrue(closedPredicateIdsTrusts != null);
+        assertTrue(closedPredicateIdsTrusts.size() == expectedClosedTrusts.size());
+
+        for (int predicateId : closedPredicateIdsTrusts) {
+            ProbabilisticSoftLogicProblem.Predicate predicate = closedPredicateManager.getPredicateFromId(predicateId);
+            assertTrue(predicate != null);
+            assertTrue(expectedClosedTrusts.contains(predicate.toString()));
+        }
+    }
+
+    @Test
+    public void testPredicateExpansion() {
+
+        ProbabilisticSoftLogicProblem.Predicate knowsAB =
+                new ProbabilisticSoftLogicProblem.Predicate("KNOWS", ImmutableList.of("A", "B"), false);
+
+        ProbabilisticSoftLogicProblem.Predicate knowsBC =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("B", "C"), false);
+
+        ProbabilisticSoftLogicProblem.Predicate knowsAC =
+                new ProbabilisticSoftLogicProblem.Predicate("KNOWS", ImmutableList.of("A", "C"), false);
+
+        // "{1.5} KNOWS(A, B) & KNOWS(B, C) >> KNOWS(A, C)"
+        ProbabilisticSoftLogicProblem.Rule rule =
+                new ProbabilisticSoftLogicProblem.Rule(1.5, 1, ImmutableList.of(knowsAC), ImmutableList.of(knowsAB, knowsBC));
+
+        ProbabilisticSoftLogicProblem.Predicate knows12 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("1", "2"), false);
+        ProbabilisticSoftLogicProblem.Predicate knows23 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("2", "3"), false);
+        ProbabilisticSoftLogicProblem.Predicate knows34 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("3", "4"), false);
+        ProbabilisticSoftLogicProblem.Predicate knows42 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("4", "2"), false);
+
+        ProbabilisticSoftLogicPredicateManager predicateManager = new ProbabilisticSoftLogicPredicateManager();
+        predicateManager.getOrAddPredicate(knows12, 0.5);
+        predicateManager.getOrAddPredicate(knows23, 0.1);
+        predicateManager.getOrAddPredicate(knows34, 0.7);
+        predicateManager.getOrAddPredicate(knows42, 0.9);
+
+        ProbabilisticSoftLogicPredicateManager.IdWeights observedIdsAndWeights =
+                predicateManager.getAllObservedWeights();
+
+        ProbabilisticSoftLogicProblem.Builder builder =
+                new ProbabilisticSoftLogicProblem.Builder(observedIdsAndWeights.Ids, observedIdsAndWeights.Weights, 100);
+
+        ProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilderByExtension(Arrays.asList(rule), builder, predicateManager);
+
+        // from initial observations we have:
+        // K(1, 2) & K(2, 3) >> K(1, 3) --> body does not hold
+        // K(2, 3) & K(3, 4) >> K(2, 4) --> body does not hold
+        // K(3, 4) & K(4, 2) >> K(3, 2) --> body holds --> new predicate K(3, 2)
+        // then in round 2 we have new rule:
+        // K(2, 3) & K(3, 2) >> K(2, 2) --> body does not hold
+
+        Set<String> expected = new HashSet<>(Arrays.asList(
+                "KNOWS(1, 2)",
+                "KNOWS(2, 3)",
+                "KNOWS(3, 4)",
+                "KNOWS(4, 2)",
+                "KNOWS(3, 2)"
+        ));
+
+        Set<Integer> predicateIds = predicateManager.getIdsForPredicateName("KNOWS");
+        assertTrue(predicateIds != null);
+        assertTrue(predicateIds.size() == expected.size());
+
+        for (int predicateId : predicateIds) {
+            ProbabilisticSoftLogicProblem.Predicate predicate = predicateManager.getPredicateFromId(predicateId);
+            assertTrue(predicate != null);
+            assertTrue(expected.contains(predicate.toString()));
+        }
+
+    }
+
+    @Test
     public void testEndToEnd() {
 
         InputStream modelStream = LogicRuleParserTest.class.getResourceAsStream("./model.txt");
@@ -435,7 +745,7 @@ public class LogicRuleParserTest {
         BufferedReader trustTrainReader = null;
         BufferedReader trustTestReader = null;
 
-        List<ProbabilisticSoftLogicReader.Rule> rules = null;
+        List<ProbabilisticSoftLogicProblem.Rule> rules = null;
         ProbabilisticSoftLogicPredicateManager trainPredicateManager = new ProbabilisticSoftLogicPredicateManager();
         ProbabilisticSoftLogicPredicateManager testPredicateManager = new ProbabilisticSoftLogicPredicateManager();
 
@@ -447,15 +757,15 @@ public class LogicRuleParserTest {
 
             streamReader = new InputStreamReader(knowsStream);
             knowsReader = new BufferedReader(streamReader);
-            ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(trainPredicateManager, "KNOWS", knowsReader);
+            ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(trainPredicateManager, "KNOWS", true, knowsReader);
 
             streamReader = new InputStreamReader(trustTrainStream);
             trustTrainReader = new BufferedReader(streamReader);
-            ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(trainPredicateManager, "TRUSTS", trustTrainReader);
+            ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(trainPredicateManager, "TRUSTS", false, trustTrainReader);
 
             streamReader = new InputStreamReader(trustTestStream);
             trustTestReader = new BufferedReader(streamReader);
-            ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(testPredicateManager, "TRUSTS", trustTestReader);
+            ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(testPredicateManager, "TRUSTS", false, trustTestReader);
 
         } catch (IOException|DataFormatException e) {
             fail(e.getMessage());
@@ -513,9 +823,9 @@ public class LogicRuleParserTest {
                     observedIdsAndWeights.Weights,
                     trainPredicateManager.size() - observedIdsAndWeights.Ids.length);
 
-        for (ProbabilisticSoftLogicReader.Rule rule : rules) {
+        for (ProbabilisticSoftLogicProblem.Rule rule : rules) {
 
-            rule.addGroundingsToBuilder(problemBuilder, trainPredicateManager);
+            rule.addAllGroundingsToBuilder(problemBuilder, trainPredicateManager);
 
         }
 
