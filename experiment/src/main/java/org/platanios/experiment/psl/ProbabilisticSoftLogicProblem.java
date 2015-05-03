@@ -178,10 +178,13 @@ public final class ProbabilisticSoftLogicProblem {
             return sb.toString();
         }
 
+        // allowPredicateCreation is a temporary measure
+        // to restrict the groundings to exactly what we have read
         public static void addGroundingsToBuilderByExtension(
                 List<Rule> rules,
                 ProbabilisticSoftLogicProblem.Builder builder,
-                ProbabilisticSoftLogicPredicateManager predicateManager) {
+                ProbabilisticSoftLogicPredicateManager predicateManager,
+                boolean allowPredicateCreation ) {
 
             HashSet<Integer> newPredicates = new HashSet<>();
             List<HashSet<String>> groundingsAlreadyAdded = new ArrayList<>();
@@ -209,7 +212,8 @@ public final class ProbabilisticSoftLogicProblem {
                                 builder,
                                 predicateManager,
                                 groundingsAlreadyAdded.get(indexRule),
-                                newPredicates );
+                                newPredicates,
+                                allowPredicateCreation );
 
                     }
 
@@ -224,7 +228,8 @@ public final class ProbabilisticSoftLogicProblem {
                 ProbabilisticSoftLogicProblem.Builder builder,
                 ProbabilisticSoftLogicPredicateManager predicateManager,
                 HashSet<String> groundingsAlreadyAdded,
-                HashSet<Integer> newPredicates ) {
+                HashSet<Integer> newPredicates,
+                boolean allowPredicateCreation ) {
 
             boolean[] bodyNegations = new boolean[this.Body.size()];
             for (int i = 0; i < this.Body.size(); ++i) {
@@ -317,13 +322,10 @@ public final class ProbabilisticSoftLogicProblem {
                         for (int indexBody = 0; indexBody < this.Body.size(); ++indexBody) {
                             int bodyId = bodyIdResult.getKey()[indexBody];
                             double observedValue = bodyId < 0 ? (this.Body.get(indexBody).IsNegated ? 0 : 1) : predicateManager.getObservedWeight(bodyId);
-//                            if (bodyId < 0) {
-//                                if (!predicateManager.getIsClosedPredicate(this.Body.get(indexBody).Name)
-//                                        && !this.Body.get(indexBody).IsNegated) {
-//                                    pruneGrounding = true;
-//                                    break;
-//                                }
-//                            }
+                            if (!allowPredicateCreation && bodyId < 0) {
+                                pruneGrounding = true;
+                                break;
+                            }
                             if (!Double.isNaN(observedValue) && bodyId >= 0) {
                                 if (this.Body.get(indexBody).IsNegated)
                                     observedBodyConstant -= observedValue;
@@ -335,16 +337,24 @@ public final class ProbabilisticSoftLogicProblem {
                         if (pruneGrounding || observedBodyConstant + 1 <= 0)
                             continue;
 
-                        groundingsAlreadyAdded.add(groundingString);
-
                         // if these have -1, it is ok.  The builder will just treat these as observed
                         // with value 0
-                        Map.Entry<int[], boolean[]> headIdResult = Rule.getPredicateIds(this.Head, argumentToGrounding, predicateManager, true);
+                        Map.Entry<int[], boolean[]> headIdResult = Rule.getPredicateIds(this.Head, argumentToGrounding, predicateManager, allowPredicateCreation);
                         for (int indexHead = 0; indexHead < this.Head.size(); ++indexHead) {
+                            if (!allowPredicateCreation && headIdResult.getKey()[indexHead] < 0) {
+                                pruneGrounding = true;
+                                break;
+                            }
                             if (headIdResult.getValue()[indexHead]) {
                                 newPredicates.add(headIdResult.getKey()[indexHead]);
                             }
                         }
+
+                        if (pruneGrounding) {
+                            continue;
+                        }
+
+                        groundingsAlreadyAdded.add(groundingString);
 
                         // BUG BUGBUGBUG temporarily handle constraints by setting to high weight
                         if (Double.isNaN(this.Weight)) {

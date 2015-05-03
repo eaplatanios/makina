@@ -25,6 +25,7 @@ public class ProbabilisticSoftLogicReader {
             ProbabilisticSoftLogicPredicateManager predicateManager,
             String predicateName,
             boolean isClosedPredicate,
+            boolean isIgnoreValues,
             String filename) throws DataFormatException, IOException {
 
         BufferedReader br = null;
@@ -34,7 +35,7 @@ public class ProbabilisticSoftLogicReader {
             File file = new File(filename);
 
             br = new BufferedReader(new FileReader(file));
-            readGroundingsAndAddToManager(predicateManager, predicateName, isClosedPredicate, br);
+            readGroundingsAndAddToManager(predicateManager, predicateName, isClosedPredicate, isIgnoreValues, br);
 
         } finally {
 
@@ -54,25 +55,26 @@ public class ProbabilisticSoftLogicReader {
             ProbabilisticSoftLogicPredicateManager predicateManager,
             String predicateName,
             boolean isClosedPredicate,
+            boolean isIgnoreValues,
             BufferedReader reader) throws DataFormatException, IOException {
 
         String line;
 
         int lineNumber = 0;
-        boolean hasWeights = false;
+        boolean hasValues = false;
         while ((line = reader.readLine()) != null) {
 
             String[] lineFields = line.split("\t");
             if (lineNumber == 0 && lineFields.length == 3) {
-                hasWeights = true;
+                hasValues = true;
             }
 
-            double weight = 1;
-            if (hasWeights) {
+            double value = 1;
+            if (hasValues) {
                 if (lineFields.length != 3) {
-                    throw new DataFormatException("If any line has a weight, all lines must have a weight.  Bad format on line: " + (lineNumber + 1));
+                    throw new DataFormatException("If any line has a value, all lines must have a value.  Bad format on line: " + (lineNumber + 1));
                 }
-                weight = Double.parseDouble(lineFields[2]);
+                value = Double.parseDouble(lineFields[2]);
             } else if (lineFields.length != 2) {
                 throw new DataFormatException("Bad format on line: " + (lineNumber + 1));
             }
@@ -89,7 +91,11 @@ public class ProbabilisticSoftLogicReader {
 
             ProbabilisticSoftLogicProblem.Predicate groundedPredicate =
                     new ProbabilisticSoftLogicProblem.Predicate(predicateName, currentGrounding.build(), false);
-            predicateManager.getOrAddPredicate(groundedPredicate, weight);
+            if (isIgnoreValues) {
+                predicateManager.getOrAddPredicate(groundedPredicate);
+            } else {
+                predicateManager.getOrAddPredicate(groundedPredicate, value);
+            }
 
             ++lineNumber;
 

@@ -169,6 +169,7 @@ public class LogicRuleParserTest {
                 predicateManager,
                 "KNOWS",
                 true,
+                false,
                 reader);
 
         } catch (IOException|DataFormatException e) {
@@ -211,6 +212,7 @@ public class LogicRuleParserTest {
                     predicateManager,
                     "KNOWS",
                     true,
+                    false,
                     reader);
 
         } catch (IOException e) {
@@ -269,6 +271,7 @@ public class LogicRuleParserTest {
                 predicateManager,
                 "KNOWS",
                 true,
+                false,
                 reader);
             predicateIds = predicateManager.getIdsForPredicateName("KNOWS");
 
@@ -703,7 +706,7 @@ public class LogicRuleParserTest {
         ProbabilisticSoftLogicProblem.Builder builder =
                 new ProbabilisticSoftLogicProblem.Builder(observedIdsAndWeights.Ids, observedIdsAndWeights.Weights, 100);
 
-        ProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilderByExtension(Arrays.asList(rule), builder, predicateManager);
+        ProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilderByExtension(Arrays.asList(rule), builder, predicateManager, true);
 
         // from initial observations we have:
         // K(1, 2) & K(2, 3) >> K(1, 3) --> body does not hold
@@ -746,18 +749,35 @@ public class LogicRuleParserTest {
         assertTrue(builder.getNumberOfTerms() == 7);
     }
 
+    private enum GroundingMode {
+        AllPossible,
+        ByExtension,
+        AsRead
+    }
+
     @Test
     public void testEndToEnd() {
 
-        for (int mode = 0; mode < 2; ++mode) {
+        String experimentName = "epinions_500";
 
-            boolean isAllGroundings = mode == 0;
+        for (GroundingMode groundingMode : GroundingMode.values()) {
 
-            InputStream modelStream = LogicRuleParserTest.class.getResourceAsStream("./model.txt");
-            InputStream knowsStream = LogicRuleParserTest.class.getResourceAsStream("./knows.txt");
-            InputStream trustTrainStream = LogicRuleParserTest.class.getResourceAsStream("./trust_train.txt");
-            InputStream trustTestStream = LogicRuleParserTest.class.getResourceAsStream("./trust_test.txt");
+            // for testing one mode
+            if (groundingMode != GroundingMode.AsRead) {
+                continue;
+            }
 
+            InputStream groundingStream = null;
+            if (groundingMode == GroundingMode.AsRead) {
+                groundingStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/trust_groundings.txt");
+            }
+
+            InputStream modelStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/model.txt");
+            InputStream knowsStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/knows.txt");
+            InputStream trustTrainStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/train.txt");
+            InputStream trustTestStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/test.txt");
+
+            BufferedReader groundingReader = null;
             BufferedReader modelReader = null;
             BufferedReader knowsReader = null;
             BufferedReader trustTrainReader = null;
@@ -775,15 +795,24 @@ public class LogicRuleParserTest {
 
                 streamReader = new InputStreamReader(knowsStream);
                 knowsReader = new BufferedReader(streamReader);
-                ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(trainPredicateManager, "KNOWS", isAllGroundings, knowsReader);
+                ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
+                        trainPredicateManager, "KNOWS", groundingMode == GroundingMode.AllPossible, false, knowsReader);
 
                 streamReader = new InputStreamReader(trustTrainStream);
                 trustTrainReader = new BufferedReader(streamReader);
-                ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(trainPredicateManager, "TRUSTS", false, trustTrainReader);
+                ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
+                        trainPredicateManager, "TRUSTS", false, false, trustTrainReader);
+
+                if (groundingMode == GroundingMode.AsRead) {
+                    streamReader = new InputStreamReader(groundingStream);
+                    groundingReader = new BufferedReader(streamReader);
+                    ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
+                            trainPredicateManager, "TRUSTS", false, true, groundingReader);
+                }
 
                 streamReader = new InputStreamReader(trustTestStream);
                 trustTestReader = new BufferedReader(streamReader);
-                ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(testPredicateManager, "TRUSTS", false, trustTestReader);
+                ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(testPredicateManager, "TRUSTS", false, false, trustTestReader);
 
             } catch (IOException | DataFormatException e) {
                 fail(e.getMessage());
@@ -830,7 +859,17 @@ public class LogicRuleParserTest {
                         e.printStackTrace();
                     }
                 }
-            }
+
+                if (groundingReader != null) {
+                    try {
+                        groundingReader.close();
+                    } catch (IOException e) {
+                        fail(e.getMessage());
+                        System.out.println(e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+             }
 
             ProbabilisticSoftLogicPredicateManager.IdWeights observedIdsAndWeights =
                     trainPredicateManager.getAllObservedWeights();
@@ -841,14 +880,18 @@ public class LogicRuleParserTest {
                             observedIdsAndWeights.Weights,
                             trainPredicateManager.size() - observedIdsAndWeights.Ids.length);
 
-            if (isAllGroundings) {
+            if (groundingMode == GroundingMode.AllPossible) {
                 for (ProbabilisticSoftLogicProblem.Rule rule : rules) {
 
                     rule.addAllGroundingsToBuilder(problemBuilder, trainPredicateManager);
 
                 }
             } else {
-                ProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilderByExtension(rules, problemBuilder, trainPredicateManager);
+                ProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilderByExtension(
+                        rules,
+                        problemBuilder,
+                        trainPredicateManager,
+                        groundingMode != GroundingMode.AsRead);
             }
 
             ProbabilisticSoftLogicProblem problem = problemBuilder.build();
