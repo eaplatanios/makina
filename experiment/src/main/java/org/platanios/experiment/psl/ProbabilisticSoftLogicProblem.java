@@ -184,6 +184,10 @@ public final class ProbabilisticSoftLogicProblem {
                 ProbabilisticSoftLogicPredicateManager predicateManager) {
 
             HashSet<Integer> newPredicates = new HashSet<>();
+            List<HashSet<String>> groundingsAlreadyAdded = new ArrayList<>();
+            for (int i = 0; i < rules.size(); ++i) {
+                groundingsAlreadyAdded.add(new HashSet<>());
+            }
 
             for (String predicateName : predicateManager.getPredicateNames()) {
                 for (int id : predicateManager.getIdsForPredicateName(predicateName)) {
@@ -198,9 +202,14 @@ public final class ProbabilisticSoftLogicProblem {
 
                 for (int predicateId : currentPredicates) {
 
-                    for( Rule rule : rules ) {
+                    for (int indexRule = 0; indexRule < rules.size(); ++indexRule) {
 
-                        rule.extendGroundingsAndAddToBuilder( predicateManager.getPredicateFromId(predicateId), builder, predicateManager, newPredicates );
+                        rules.get(indexRule).extendGroundingsAndAddToBuilder(
+                                predicateManager.getPredicateFromId(predicateId),
+                                builder,
+                                predicateManager,
+                                groundingsAlreadyAdded.get(indexRule),
+                                newPredicates );
 
                     }
 
@@ -214,6 +223,7 @@ public final class ProbabilisticSoftLogicProblem {
                 Predicate groundingExtension,
                 ProbabilisticSoftLogicProblem.Builder builder,
                 ProbabilisticSoftLogicPredicateManager predicateManager,
+                HashSet<String> groundingsAlreadyAdded,
                 HashSet<Integer> newPredicates ) {
 
             boolean[] bodyNegations = new boolean[this.Body.size()];
@@ -275,8 +285,24 @@ public final class ProbabilisticSoftLogicProblem {
                     for (List<String> argumentInstance : argumentInstanceIterator) {
 
                         HashMap<String, String> argumentToGrounding = new HashMap<>();
+                        StringBuilder groundingStringBuilder = new StringBuilder();
                         for (int indexArgument = 0; indexArgument < this.ArgumentGroundingSources.size(); ++indexArgument) {
                             argumentToGrounding.put(this.ArgumentGroundingSources.get(indexArgument).Name, argumentInstance.get(indexArgument));
+                            if (indexArgument > 0) {
+                                groundingStringBuilder.append(",");
+                            }
+                            groundingStringBuilder.append(this.ArgumentGroundingSources.get(indexArgument).Name);
+                            groundingStringBuilder.append(":");
+                            groundingStringBuilder.append(argumentInstance.get(indexArgument));
+                        }
+
+                        String groundingString = groundingStringBuilder.toString();
+
+                        // don't add to this unless the grounding gets added;
+                        // it could be the case that this grounding can't be added
+                        // now but can be added later
+                        if (groundingsAlreadyAdded.contains(groundingString)) {
+                            continue;
                         }
 
                         if (!this.getIsGroundedOrderingAllowed(argumentToGrounding)) {
@@ -301,6 +327,9 @@ public final class ProbabilisticSoftLogicProblem {
                         if (observedBodyConstant + 1 <= 0) {
                             continue;
                         }
+
+
+                        groundingsAlreadyAdded.add(groundingString);
 
                         // if these have -1, it is ok.  The builder will just treat these as observed
                         // with value 0
@@ -498,7 +527,8 @@ public final class ProbabilisticSoftLogicProblem {
         private final BiMap<Integer, Integer> externalToInternalIndexesMapping;
 
         private final ImmutableMap<Integer, Double> observedVariableValues;
-        private final HashMap<String, FunctionTerm> functionTerms = new HashMap<>();
+        //private final HashMap<String, FunctionTerm> functionTerms = new HashMap<>();
+        private final ArrayList<FunctionTerm> functionTerms = new ArrayList<>();
         private final ArrayList<Constraint> constraints = new ArrayList<>();
 
         private ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod subProblemSelectionMethod =
@@ -570,7 +600,8 @@ public final class ProbabilisticSoftLogicProblem {
                 }
             }
             FunctionTerm term = new FunctionTerm(variableIndexes, linearFunction, weight, power);
-            functionTerms.putIfAbsent(term.toString(), term);
+            // functionTerms.putIfAbsent(term.toString(), term);
+            functionTerms.add(term);
             return this;
         }
 
@@ -687,8 +718,6 @@ public final class ProbabilisticSoftLogicProblem {
                 }
                 sb.append(";pwr:");
                 sb.append(this.power);
-                sb.append(";wt:");
-                sb.append(this.weight);
                 return sb.toString();
             }
         }
@@ -697,7 +726,8 @@ public final class ProbabilisticSoftLogicProblem {
     private ProbabilisticSoftLogicProblem(Builder builder) {
         externalToInternalIndexesMapping = HashBiMap.create(builder.externalToInternalIndexesMapping);
         SumFunction.Builder sumFunctionBuilder = new SumFunction.Builder(externalToInternalIndexesMapping.size());
-        for (Builder.FunctionTerm function : builder.functionTerms.values()) {
+        for (Builder.FunctionTerm function : builder.functionTerms) {
+        // for (Builder.FunctionTerm function : builder.functionTerms.values()) {
             MaxFunction.Builder maxFunctionBuilder = new MaxFunction.Builder(externalToInternalIndexesMapping.size());
             maxFunctionBuilder.addConstantTerm(0);
             maxFunctionBuilder.addFunctionTerm(function.linearFunction);
