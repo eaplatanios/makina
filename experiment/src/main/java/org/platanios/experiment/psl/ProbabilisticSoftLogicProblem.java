@@ -316,11 +316,14 @@ public final class ProbabilisticSoftLogicProblem {
                         boolean pruneGrounding = false;
                         for (int indexBody = 0; indexBody < this.Body.size(); ++indexBody) {
                             int bodyId = bodyIdResult.getKey()[indexBody];
-                            if (bodyId < 0) {
-                                pruneGrounding = true;
-                                break;
-                            }
-                            double observedValue = bodyId < 0 ? 0 : predicateManager.getObservedWeight(bodyId);
+                            double observedValue = bodyId < 0 ? (this.Body.get(indexBody).IsNegated ? 0 : 1) : predicateManager.getObservedWeight(bodyId);
+//                            if (bodyId < 0) {
+//                                if (!predicateManager.getIsClosedPredicate(this.Body.get(indexBody).Name)
+//                                        && !this.Body.get(indexBody).IsNegated) {
+//                                    pruneGrounding = true;
+//                                    break;
+//                                }
+//                            }
                             if (!Double.isNaN(observedValue) && bodyId >= 0) {
                                 if (this.Body.get(indexBody).IsNegated)
                                     observedBodyConstant -= observedValue;
@@ -379,11 +382,12 @@ public final class ProbabilisticSoftLogicProblem {
             AbstractMap.SimpleEntry<List<String>, CartesianProductIterator<String>> allPossibleGroundings =
                     getAllPossibleGroundings(predicateManager);
             List<String> argumentNames = allPossibleGroundings.getKey();
-            CartesianProductIterator<String> groundingIterator = allPossibleGroundings.getValue();
+            CartesianProductIterator<String>.IteratorState groundingIterator = allPossibleGroundings.getValue().iterator();
 
             HashMap<String, String> argumentToGrounding = new HashMap<>();
 
-            for (List<String> groundings : groundingIterator) {
+            while (groundingIterator.hasNext()) {
+                List<String> groundings = groundingIterator.next();
 
                 for (int i = 0; i < argumentNames.size(); ++i) {
                     argumentToGrounding.put(argumentNames.get(i), groundings.get(i));

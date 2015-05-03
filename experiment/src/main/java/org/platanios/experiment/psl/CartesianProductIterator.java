@@ -14,13 +14,13 @@ public class CartesianProductIterator<T> implements Iterable<List<T>> {
         this.lists = lists;
     }
 
-    public Iterator<List<T>> iterator() {
+    public IteratorState iterator() {
         return new IteratorState();
     }
 
     private List<List<T>> lists;
 
-    private class IteratorState implements Iterator<List<T>> {
+    public class IteratorState implements Iterator<List<T>> {
 
         public IteratorState() {
             int virtualLengthTemp = 1;
