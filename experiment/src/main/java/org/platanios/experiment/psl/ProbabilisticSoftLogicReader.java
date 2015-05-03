@@ -136,6 +136,10 @@ public class ProbabilisticSoftLogicReader {
         while ((line = reader.readLine()) != null) {
 
             line = line.trim();
+            if (line.isEmpty()) {
+                ++lineNumber;
+                continue;
+            }
 
             if (!line.startsWith("{")) {
                 throw new DataFormatException("Expected rules of the form {weight} body >> head : no leading curly brace found at line " + (lineNumber + 1));

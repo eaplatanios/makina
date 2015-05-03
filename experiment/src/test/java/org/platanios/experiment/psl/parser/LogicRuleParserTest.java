@@ -749,9 +749,9 @@ public class LogicRuleParserTest {
     @Test
     public void testEndToEnd() {
 
-        // mode 0 is all groundings
-        // mode 1 is groundings by extension
         for (int mode = 0; mode < 2; ++mode) {
+
+            boolean isAllGroundings = mode == 0;
 
             InputStream modelStream = LogicRuleParserTest.class.getResourceAsStream("./model.txt");
             InputStream knowsStream = LogicRuleParserTest.class.getResourceAsStream("./knows.txt");
@@ -775,7 +775,7 @@ public class LogicRuleParserTest {
 
                 streamReader = new InputStreamReader(knowsStream);
                 knowsReader = new BufferedReader(streamReader);
-                ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(trainPredicateManager, "KNOWS", true, knowsReader);
+                ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(trainPredicateManager, "KNOWS", isAllGroundings, knowsReader);
 
                 streamReader = new InputStreamReader(trustTrainStream);
                 trustTrainReader = new BufferedReader(streamReader);
@@ -841,7 +841,7 @@ public class LogicRuleParserTest {
                             observedIdsAndWeights.Weights,
                             trainPredicateManager.size() - observedIdsAndWeights.Ids.length);
 
-            if (mode == 0) {
+            if (isAllGroundings) {
                 for (ProbabilisticSoftLogicProblem.Rule rule : rules) {
 
                     rule.addAllGroundingsToBuilder(problemBuilder, trainPredicateManager);
