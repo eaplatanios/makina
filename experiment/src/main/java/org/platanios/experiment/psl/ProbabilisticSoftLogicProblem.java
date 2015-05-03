@@ -200,9 +200,9 @@ public final class ProbabilisticSoftLogicProblem {
                 HashSet<Integer> currentPredicates = newPredicates;
                 newPredicates = new HashSet<>();
 
-                for (int predicateId : currentPredicates) {
+                for (int indexRule = 0; indexRule < rules.size(); ++indexRule) {
 
-                    for (int indexRule = 0; indexRule < rules.size(); ++indexRule) {
+                    for (int predicateId : currentPredicates) {
 
                         rules.get(indexRule).extendGroundingsAndAddToBuilder(
                                 predicateManager.getPredicateFromId(predicateId),
@@ -275,7 +275,7 @@ public final class ProbabilisticSoftLogicProblem {
                         } else {
                             HashSet<String> availableValues = new HashSet<>();
                             for (GroundingSource source : sources.GroundingSources) {
-                                availableValues.addAll(predicateManager.getArgumentGroundings(this.Body.get(source.IndexPredicate).Name, source.IndexPredicate));
+                                availableValues.addAll(predicateManager.getArgumentGroundings(this.Body.get(source.IndexPredicate).Name, source.IndexArgument));
                             }
                             argumentValuesToTry.add(new ArrayList<>(availableValues));
                         }
@@ -313,10 +313,15 @@ public final class ProbabilisticSoftLogicProblem {
                         // check whether the body (premise) can possibly hold
                         // only use this expansion if it can
                         double observedBodyConstant = 0;
+                        boolean pruneGrounding = false;
                         for (int indexBody = 0; indexBody < this.Body.size(); ++indexBody) {
                             int bodyId = bodyIdResult.getKey()[indexBody];
+                            if (bodyId < 0) {
+                                pruneGrounding = true;
+                                break;
+                            }
                             double observedValue = bodyId < 0 ? 0 : predicateManager.getObservedWeight(bodyId);
-                            if (!Double.isNaN(observedValue)) {
+                            if (!Double.isNaN(observedValue) && bodyId >= 0) {
                                 if (this.Body.get(indexBody).IsNegated)
                                     observedBodyConstant -= observedValue;
                                 else
@@ -324,10 +329,8 @@ public final class ProbabilisticSoftLogicProblem {
                             }
                         }
 
-                        if (observedBodyConstant + 1 <= 0) {
+                        if (pruneGrounding || observedBodyConstant + 1 <= 0)
                             continue;
-                        }
-
 
                         groundingsAlreadyAdded.add(groundingString);
 
@@ -573,7 +576,7 @@ public final class ProbabilisticSoftLogicProblem {
             RulePart headPart = convertRulePartToInternalRepresentation(headVariableIndexes, headNegations, true);
             RulePart bodyPart = convertRulePartToInternalRepresentation(bodyVariableIndexes, bodyNegations, false);
             double ruleMaximumValue = 1 + headPart.observedConstant + bodyPart.observedConstant;
-            if (ruleMaximumValue == 0)
+            if (ruleMaximumValue <= 0)
                 return this;
             int[] variableIndexes = Utilities.union(headPart.variableIndexes, bodyPart.variableIndexes);
             if (variableIndexes.length == 0)
