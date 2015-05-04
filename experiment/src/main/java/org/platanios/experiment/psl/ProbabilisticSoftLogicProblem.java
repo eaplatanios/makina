@@ -273,7 +273,7 @@ public final class ProbabilisticSoftLogicProblem {
                 newPredicates = new HashSet<>();
 
                 for (int indexRule = 0; indexRule < rules.size(); ++indexRule) {
-
+                    System.out.println("Current rule: " + indexRule);
                     for (int predicateId : currentPredicates) {
 
                         rules.get(indexRule).extendGroundingsAndAddToBuilder(
