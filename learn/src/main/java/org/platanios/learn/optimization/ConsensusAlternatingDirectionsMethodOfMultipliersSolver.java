@@ -1,6 +1,8 @@
 package org.platanios.learn.optimization;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.platanios.learn.math.matrix.*;
 import org.platanios.learn.math.statistics.StatisticsUtilities;
 import org.platanios.learn.optimization.constraint.AbstractConstraint;
@@ -463,6 +465,42 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
             this.consensusVariables = consensusVariables;
             this.lagrangeMultipliers = lagrangeMultipliers;
             this.penaltyParameter = penaltyParameter;
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other == this) {
+                return true;
+            }
+
+            if (!super.equals(other)) {
+                return false;
+            }
+
+            if (!(other instanceof SubProblemObjectiveFunction)) {
+                return false;
+            }
+
+            SubProblemObjectiveFunction rhs = (SubProblemObjectiveFunction)other;
+            return new EqualsBuilder()
+                    .append(this.consensusVariables, rhs.consensusVariables)
+                    .append(this.lagrangeMultipliers, rhs.lagrangeMultipliers)
+                    .append(this.penaltyParameter, rhs.penaltyParameter)
+                    .append(this.subProblemObjectiveFunction, rhs.subProblemObjectiveFunction)
+                    .isEquals();
+        }
+
+        @Override
+        public int hashCode() {
+
+            return new HashCodeBuilder(37, 73)
+                    .append(super.hashCode())
+                    .append(this.consensusVariables)
+                    .append(this.lagrangeMultipliers)
+                    .append(this.penaltyParameter)
+                    .append(this.subProblemObjectiveFunction)
+                    .toHashCode();
+
         }
 
         @Override

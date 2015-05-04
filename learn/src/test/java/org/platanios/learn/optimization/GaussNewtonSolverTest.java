@@ -1,5 +1,7 @@
 package org.platanios.learn.optimization;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 import org.platanios.learn.math.matrix.Matrix;
@@ -78,6 +80,34 @@ public class GaussNewtonSolverTest {
         public ExponentialLeastSquaresFunction(double[] t, double[] y) {
             this.t = t;
             this.y = y;
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other == this) {
+                return true;
+            }
+
+            if (!super.equals(other)) {
+                return false;
+            }
+
+            ExponentialLeastSquaresFunction rhs = (ExponentialLeastSquaresFunction)other;
+            return new EqualsBuilder()
+                    .append(this.t, rhs.t)
+                    .append(this.y, rhs.y)
+                    .isEquals();
+        }
+
+        @Override
+        public int hashCode() {
+
+            return new HashCodeBuilder(13, 41)
+                    .append(super.hashCode())
+                    .append(this.t)
+                    .append(this.y)
+                    .toHashCode();
+
         }
 
         @Override

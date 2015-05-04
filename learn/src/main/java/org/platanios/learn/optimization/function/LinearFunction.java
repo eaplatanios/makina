@@ -1,5 +1,7 @@
 package org.platanios.learn.optimization.function;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 
@@ -15,6 +17,41 @@ public final class LinearFunction extends AbstractFunction {
     public LinearFunction(Vector a, double b) {
         this.a = a;
         this.b = b;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+
+        if (other == this) {
+            return true;
+        }
+
+        if (!super.equals(other)) {
+            return false;
+        }
+
+        if (!(other instanceof LinearFunction)) {
+            return false;
+        }
+
+        LinearFunction rhs = (LinearFunction)other;
+
+        return new EqualsBuilder()
+                .append(this.a, rhs.a)
+                .append(this.b, rhs.b)
+                .isEquals();
+
+    }
+
+    @Override
+    public int hashCode() {
+
+        return new HashCodeBuilder(19, 23)
+                .append(super.hashCode())
+                .append(this.a)
+                .append(this.b)
+                .toHashCode();
+
     }
 
     @Override

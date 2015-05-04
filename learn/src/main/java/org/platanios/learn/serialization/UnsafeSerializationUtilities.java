@@ -177,6 +177,18 @@ public class UnsafeSerializationUtilities {
      *
      * @param   inputStream     The input stream to read the integer array from.
      * @param   size            The size of the integer array to read from the provided input stream.
+     * @return                  The integer array read from the provided input stream.
+     * @throws  IOException
+     */
+    public static int[] readIntArray(InputStream inputStream, int size) throws IOException {
+        return readIntArray(inputStream, size, Integer.MAX_VALUE);
+    }
+
+    /**
+     * Reads an integer array of a given size from the provided input stream byte by byte and returns it.
+     *
+     * @param   inputStream     The input stream to read the integer array from.
+     * @param   size            The size of the integer array to read from the provided input stream.
      * @param   bufferSize      The buffer size to use for the buffer used during the data reading.
      * @return                  The integer array read from the provided input stream.
      * @throws  IOException
@@ -185,7 +197,7 @@ public class UnsafeSerializationUtilities {
         int[] array = new int[size];
         long position = INT_ARRAY_OFFSET;
         long bytesToRead = size << 2;
-        byte[] buffer = new byte[bufferSize];
+        byte[] buffer = new byte[(int) Math.min(bytesToRead, bufferSize)];
         while (bytesToRead > 0) {
             int bytesRead = inputStream.read(buffer, 0, (int) Math.min(bufferSize, bytesToRead));
             if (bytesRead == -1 && bytesToRead > 0)
@@ -234,6 +246,18 @@ public class UnsafeSerializationUtilities {
      *
      * @param   inputStream     The input stream to read the double array from.
      * @param   size            The size of the double array to read from the provided input stream.
+     * @return                  The double array read from the provided input stream.
+     * @throws  IOException
+     */
+    public static double[] readDoubleArray(InputStream inputStream, int size) throws IOException {
+        return readDoubleArray(inputStream, size, Integer.MAX_VALUE);
+    }
+
+    /**
+     * Reads a double array of a given size from the provided input stream byte by byte and returns it.
+     *
+     * @param   inputStream     The input stream to read the double array from.
+     * @param   size            The size of the double array to read from the provided input stream.
      * @param   bufferSize      The buffer size to use for the buffer used during the data reading.
      * @return                  The double array read from the provided input stream.
      * @throws  IOException
@@ -242,7 +266,39 @@ public class UnsafeSerializationUtilities {
         double[] array = new double[size];
         long position = DOUBLE_ARRAY_OFFSET;
         long bytesToRead = size << 3;
-        byte[] buffer = new byte[bufferSize];
+        byte[] buffer = new byte[(int) Math.min(bytesToRead, bufferSize)];
+        while (bytesToRead > 0) {
+            int bytesRead = inputStream.read(buffer, 0, (int) Math.min(bufferSize, bytesToRead));
+            if (bytesRead == -1 && bytesToRead > 0)
+                throw new RuntimeException();
+            UNSAFE.copyMemory(buffer, BYTE_ARRAY_OFFSET, array, position, bytesRead);
+            position += bytesRead;
+            bytesToRead -= bytesRead;
+        }
+        return array;
+    }
+
+    public static void writeBooleanArray(OutputStream outputStream, boolean[] array) throws IOException {
+        byte[] buffer = new byte[array.length];
+        UNSAFE.copyMemory(array, BYTE_ARRAY_OFFSET, buffer, BYTE_ARRAY_OFFSET, array.length);
+        outputStream.write(buffer);
+    }
+
+    public static void writeBooleanArray(OutputStream outputStream, boolean[] array, int length) throws IOException {
+        byte[] buffer = new byte[length];
+        UNSAFE.copyMemory(array, BYTE_ARRAY_OFFSET, buffer, BYTE_ARRAY_OFFSET, length);
+        outputStream.write(buffer);
+    }
+
+    public static boolean[] readBooleanArray(InputStream inputStream, int size) throws IOException {
+        return readBooleanArray(inputStream, size, Integer.MAX_VALUE);
+    }
+
+    public static boolean[] readBooleanArray(InputStream inputStream, int size, int bufferSize) throws IOException {
+        boolean[] array = new boolean[size];
+        long position = BYTE_ARRAY_OFFSET;
+        long bytesToRead = size;
+        byte[] buffer = new byte[Math.min(size, bufferSize)];
         while (bytesToRead > 0) {
             int bytesRead = inputStream.read(buffer, 0, (int) Math.min(bufferSize, bytesToRead));
             if (bytesRead == -1 && bytesToRead > 0)

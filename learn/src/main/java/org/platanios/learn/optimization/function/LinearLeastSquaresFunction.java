@@ -1,5 +1,7 @@
 package org.platanios.learn.optimization.function;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 
@@ -15,6 +17,40 @@ public final class LinearLeastSquaresFunction extends AbstractLeastSquaresFuncti
     public LinearLeastSquaresFunction(Matrix J, Vector y) {
         this.J = J;
         this.y = y;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == this) {
+            return true;
+        }
+
+        if (!super.equals(other)) {
+            return false;
+        }
+
+        if (!(other instanceof LinearLeastSquaresFunction)) {
+            return false;
+        }
+
+        LinearLeastSquaresFunction rhs = (LinearLeastSquaresFunction)other;
+
+        return new EqualsBuilder()
+                .append(this.J, rhs.J)
+                .append(this.y, rhs.y)
+                .isEquals();
+
+    }
+
+    @Override
+    public int hashCode() {
+
+        return new HashCodeBuilder(7, 61)
+                .append(super.hashCode())
+                .append(this.J)
+                .append(this.y)
+                .toHashCode();
+
     }
 
     public Vector computeResiduals(Vector point) {

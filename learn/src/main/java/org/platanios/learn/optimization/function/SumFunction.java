@@ -1,10 +1,12 @@
 package org.platanios.learn.optimization.function;
 
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -52,6 +54,49 @@ public class SumFunction extends AbstractFunction {
         numberOfVariables = builder.numberOfVariables;
         termsVariables = builder.termsVariables;
         terms = builder.terms;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == this) {
+            return true;
+        }
+
+        if (!(other instanceof SumFunction)) {
+            return false;
+        }
+
+        SumFunction rhs = (SumFunction) other;
+
+        if (this.numberOfVariables != rhs.numberOfVariables) {
+            return false;
+        }
+
+        if (this.termsVariables.size() != rhs.termsVariables.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < this.termsVariables.size(); ++i) {
+            if (!Arrays.equals(this.termsVariables.get(i), rhs.termsVariables.get(i))) {
+                return false;
+            }
+        }
+
+        return this.terms.equals(rhs.terms);
+
+    }
+
+    @Override
+    public int hashCode() {
+
+        HashCodeBuilder codeBuilder = new HashCodeBuilder(19, 29);
+        codeBuilder.append(this.numberOfVariables);
+        for (int i = 0; i < this.termsVariables.size(); ++i) {
+            codeBuilder.append(this.termsVariables.get(i));
+        }
+        codeBuilder.append(this.terms);
+        return codeBuilder.toHashCode();
+
     }
 
     public final double getValue(Vector point, int termIndex) {

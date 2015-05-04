@@ -480,8 +480,10 @@ public class LogicRuleParserTest {
         ProbabilisticSoftLogicProblem.Builder nonSymBuilder =
                 new ProbabilisticSoftLogicProblem.Builder(observedIdsAndWeights.Ids, observedIdsAndWeights.Weights, 100);
 
-        rule.addAllGroundingsToBuilder(builder, predicateManager);
-        nonSymRule.addAllGroundingsToBuilder(nonSymBuilder, nonSymPredicateManager);
+        ProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilder(
+                Arrays.asList(rule), builder, predicateManager, ProbabilisticSoftLogicProblem.GroundingMode.AllPossible);
+        ProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilder(
+                Arrays.asList(rule), nonSymBuilder, nonSymPredicateManager, ProbabilisticSoftLogicProblem.GroundingMode.AllPossible);
 
         Set<String> expectedNormal = new HashSet<>(Arrays.asList(
             "KNOWS(1, 1)",
@@ -576,8 +578,10 @@ public class LogicRuleParserTest {
         ProbabilisticSoftLogicProblem.Builder closedBuilder =
                 new ProbabilisticSoftLogicProblem.Builder(observedIdsAndWeights.Ids, observedIdsAndWeights.Weights, 100);
 
-        rule.addAllGroundingsToBuilder(builder, predicateManager);
-        rule.addAllGroundingsToBuilder(closedBuilder, closedPredicateManager);
+        ProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilder(
+                Arrays.asList(rule), builder, predicateManager, ProbabilisticSoftLogicProblem.GroundingMode.AllPossible);
+        ProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilder(
+                Arrays.asList(rule), closedBuilder, closedPredicateManager, ProbabilisticSoftLogicProblem.GroundingMode.AllPossible);
 
         Set<String> expectedNormalKnows = new HashSet<>(Arrays.asList(
                 "KNOWS(1, 1)",
@@ -706,7 +710,7 @@ public class LogicRuleParserTest {
         ProbabilisticSoftLogicProblem.Builder builder =
                 new ProbabilisticSoftLogicProblem.Builder(observedIdsAndWeights.Ids, observedIdsAndWeights.Weights, 100);
 
-        ProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilderByExtension(Arrays.asList(rule), builder, predicateManager, true);
+        ProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilder(Arrays.asList(rule), builder, predicateManager, ProbabilisticSoftLogicProblem.GroundingMode.ByExtension);
 
         // from initial observations we have:
         // K(1, 2) & K(2, 3) >> K(1, 3) --> body does not hold
@@ -749,26 +753,83 @@ public class LogicRuleParserTest {
         assertTrue(builder.getNumberOfTerms() == 7);
     }
 
-    private enum GroundingMode {
-        AllPossible,
-        ByExtension,
-        AsRead
+    @Test
+    public void testSerialization() {
+
+        ProbabilisticSoftLogicProblem.Predicate knowsAB =
+                new ProbabilisticSoftLogicProblem.Predicate("KNOWS", ImmutableList.of("A", "B"), false);
+
+        ProbabilisticSoftLogicProblem.Predicate knowsBC =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("B", "C"), false);
+
+        ProbabilisticSoftLogicProblem.Predicate trustsAC =
+                new ProbabilisticSoftLogicProblem.Predicate("TRUSTS", ImmutableList.of("A", "C"), false);
+
+        // "{1.5} KNOWS(A, B) & KNOWS(B, C) >> TRUSTS(A, C)"
+        ProbabilisticSoftLogicProblem.Rule rule =
+                new ProbabilisticSoftLogicProblem.Rule(1.5, 1, ImmutableList.of(trustsAC), ImmutableList.of(knowsAB, knowsBC));
+
+        ProbabilisticSoftLogicProblem.Predicate knows12 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("1", "2"), false);
+        ProbabilisticSoftLogicProblem.Predicate knows23 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("2", "3"), false);
+        ProbabilisticSoftLogicProblem.Predicate knows34 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("3", "4"), false);
+
+        ProbabilisticSoftLogicPredicateManager predicateManager = new ProbabilisticSoftLogicPredicateManager();
+
+        predicateManager.getOrAddPredicate(knows12, 0.5);
+        predicateManager.getOrAddPredicate(knows23, 0.1);
+        predicateManager.getOrAddPredicate(knows34, 0.7);
+
+        ProbabilisticSoftLogicPredicateManager.IdWeights observedIdsAndWeights =
+                predicateManager.getAllObservedWeights();
+
+        ProbabilisticSoftLogicProblem.Builder builder =
+                new ProbabilisticSoftLogicProblem.Builder(observedIdsAndWeights.Ids, observedIdsAndWeights.Weights, 100);
+
+        ProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilder(Arrays.asList(rule), builder, predicateManager, ProbabilisticSoftLogicProblem.GroundingMode.AllPossible);
+
+        ProbabilisticSoftLogicProblem problem = builder.build();
+
+        ProbabilisticSoftLogicProblem deserializedProblem = null;
+
+        try {
+            ByteArrayOutputStream byteStream = new ByteArrayOutputStream(2048);
+            ProbabilisticSoftLogicProblem.ProblemSerializer.write(byteStream, Arrays.asList(rule), predicateManager, ProbabilisticSoftLogicProblem.GroundingMode.AllPossible);
+            byteStream.close();
+            byte[] bytes = byteStream.toByteArray();
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+            deserializedProblem = ProbabilisticSoftLogicProblem.ProblemSerializer.read(inputStream);
+        } catch (IOException|ClassNotFoundException e) {
+            fail(e.getMessage());
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+
+        assertTrue("Serialization round-trip not equal to initial object", problem.equals(deserializedProblem));
+
     }
 
     @Test
     public void testEndToEnd() {
 
         String experimentName = "epinions_500";
+        if (experimentName.equals("epinions_500")) {
 
-        for (GroundingMode groundingMode : GroundingMode.values()) {
+            return;
+
+        }
+
+        for (ProbabilisticSoftLogicProblem.GroundingMode groundingMode : ProbabilisticSoftLogicProblem.GroundingMode.values()) {
 
             // for testing one mode
-            if (groundingMode != GroundingMode.AsRead) {
+            if (groundingMode != ProbabilisticSoftLogicProblem.GroundingMode.AsRead) {
                 continue;
             }
 
             InputStream groundingStream = null;
-            if (groundingMode == GroundingMode.AsRead) {
+            if (groundingMode == ProbabilisticSoftLogicProblem.GroundingMode.AsRead) {
                 groundingStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/trust_groundings.txt");
             }
 
@@ -796,14 +857,14 @@ public class LogicRuleParserTest {
                 streamReader = new InputStreamReader(knowsStream);
                 knowsReader = new BufferedReader(streamReader);
                 ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
-                        trainPredicateManager, "KNOWS", groundingMode == GroundingMode.AllPossible, false, knowsReader);
+                        trainPredicateManager, "KNOWS", groundingMode == ProbabilisticSoftLogicProblem.GroundingMode.AllPossible, false, knowsReader);
 
                 streamReader = new InputStreamReader(trustTrainStream);
                 trustTrainReader = new BufferedReader(streamReader);
                 ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
                         trainPredicateManager, "TRUSTS", false, false, trustTrainReader);
 
-                if (groundingMode == GroundingMode.AsRead) {
+                if (groundingMode == ProbabilisticSoftLogicProblem.GroundingMode.AsRead) {
                     streamReader = new InputStreamReader(groundingStream);
                     groundingReader = new BufferedReader(streamReader);
                     ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
@@ -880,19 +941,11 @@ public class LogicRuleParserTest {
                             observedIdsAndWeights.Weights,
                             trainPredicateManager.size() - observedIdsAndWeights.Ids.length);
 
-            if (groundingMode == GroundingMode.AllPossible) {
-                for (ProbabilisticSoftLogicProblem.Rule rule : rules) {
-
-                    rule.addAllGroundingsToBuilder(problemBuilder, trainPredicateManager);
-
-                }
-            } else {
-                ProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilderByExtension(
-                        rules,
-                        problemBuilder,
-                        trainPredicateManager,
-                        groundingMode != GroundingMode.AsRead);
-            }
+            ProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilder(
+                    rules,
+                    problemBuilder,
+                    trainPredicateManager,
+                    groundingMode);
 
             ProbabilisticSoftLogicProblem problem = problemBuilder.build();
 

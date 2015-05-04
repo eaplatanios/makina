@@ -1,12 +1,13 @@
 package org.platanios.experiment.psl;
 
+import java.io.Serializable;
 import java.util.*;
 
 /**
  * Created by Dan on 4/26/2015.
  * Manages the ids of entities and predicates, along with some meta information
  */
-public class ProbabilisticSoftLogicPredicateManager {
+public class ProbabilisticSoftLogicPredicateManager implements Serializable {
 
     public ProbabilisticSoftLogicProblem.Predicate getPredicateFromId(int id) {
         return this.idToPredicate.getOrDefault(id, null);

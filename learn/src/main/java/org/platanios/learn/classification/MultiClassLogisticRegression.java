@@ -1,5 +1,7 @@
 package org.platanios.learn.classification;
 
+import com.sun.org.apache.xpath.internal.operations.Equals;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.platanios.learn.math.matrix.*;
 import org.platanios.learn.optimization.QuasiNewtonSolver;
 import org.platanios.learn.optimization.Solver;
@@ -139,6 +141,17 @@ public class MultiClassLogisticRegression {
      * Class implementing the likelihood function for the multi-class logistic regression model.
      */
     private class LikelihoodFunction extends AbstractFunction {
+
+        @Override
+        public boolean equals(Object other) {
+            return other == this;
+        }
+
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(this);
+        }
+
         /**
          * Computes the value of the likelihood function for the multi-class logistic regression model.
          *

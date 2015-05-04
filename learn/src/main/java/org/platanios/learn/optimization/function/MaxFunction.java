@@ -1,5 +1,8 @@
 package org.platanios.learn.optimization.function;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.math3.analysis.function.Max;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
@@ -53,6 +56,45 @@ public class MaxFunction extends AbstractFunction {
         functionTermVariables = builder.functionTermVariables;
         functionTerms = builder.functionTerms;
         constantTerms = builder.constantTerms;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+
+        if (other == this) {
+            return true;
+        }
+
+        if (!super.equals(other)) {
+            return false;
+        }
+
+        if (!(other instanceof MaxFunction)) {
+            return false;
+        }
+
+        MaxFunction rhs = (MaxFunction) other;
+
+        return new EqualsBuilder()
+                .append(this.constantTerms, rhs.constantTerms)
+                .append(this.functionTerms, rhs.functionTerms)
+                .append(this.functionTermVariables, rhs.functionTermVariables)
+                .append(this.numberOfVariables, rhs.numberOfVariables)
+                .isEquals();
+
+    }
+
+    @Override
+    public int hashCode() {
+
+        return new HashCodeBuilder(71, 29)
+                .append(super.hashCode())
+                .append(this.constantTerms)
+                .append(this.functionTerms)
+                .append(this.functionTermVariables)
+                .append(this.numberOfVariables)
+                .toHashCode();
+
     }
 
     public final double getValue(Vector point, int termIndex) {
