@@ -16,7 +16,11 @@ import org.platanios.learn.optimization.function.LinearFunction;
 import org.platanios.learn.optimization.function.MaxFunction;
 import org.platanios.learn.optimization.function.SumFunction;
 import org.platanios.learn.optimization.linesearch.NoLineSearch;
+import org.platanios.learn.serialization.UnsafeSerializationUtilities;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.*;
 
 /**
@@ -579,6 +583,32 @@ public final class ProbabilisticSoftLogicProblem {
             externalToInternalIndexesMapping = HashBiMap.create(numberOfUnobservedVariables);
         }
 
+        public void write(OutputStream outputStream) throws IOException {
+
+            UnsafeSerializationUtilities.writeInt(outputStream, this.constraints.size());
+            for (int i = 0; i < this.constraints.size(); ++i) {
+                this.constraints.get(i).write(outputStream);
+            }
+
+            UnsafeSerializationUtilities.writeInt(outputStream, this.numberOfSubProblemSamples);
+            UnsafeSerializationUtilities.writeInt(outputStream, this.nextInternalIndex);
+            UnsafeSerializationUtilities.writeInt(outputStream, this.externalToInternalIndexesMapping.size());
+            for (Map.Entry<Integer, Integer> entry : this.externalToInternalIndexesMapping.entrySet()) {
+                UnsafeSerializationUtilities.writeInt(outputStream, entry.getKey());
+                UnsafeSerializationUtilities.writeInt(outputStream, entry.getValue());
+            }
+            UnsafeSerializationUtilities.writeInt(outputStream, this.functionTerms.size());
+            for (FunctionTerm term : this.functionTerms) {
+                term.write(outputStream);
+            }
+            UnsafeSerializationUtilities.writeInt(outputStream, this.observedVariableValues.size());
+            for (Map.Entry<Integer, Double> entry : this.observedVariableValues.entrySet()) {
+                UnsafeSerializationUtilities.writeInt(outputStream, entry.getKey());
+                UnsafeSerializationUtilities.writeDouble(outputStream, entry.getValue());
+            }
+            UnsafeSerializationUtilities.writeInt(outputStream, this.subProblemSelectionMethod.ordinal());
+        }
+
         public int getNumberOfTerms() { return this.functionTerms.size(); }
 
         Builder addRule(int[] headVariableIndexes,
@@ -736,6 +766,10 @@ public final class ProbabilisticSoftLogicProblem {
                 sb.append(";pwr:");
                 sb.append(this.power);
                 return sb.toString();
+            }
+
+            public void write(OutputStream outputStream) {
+                this.linearFunction.write(outputStream);
             }
         }
     }
@@ -981,6 +1015,24 @@ public final class ProbabilisticSoftLogicProblem {
         private Constraint(AbstractConstraint constraint, int[] variableIndexes) {
             this.constraint = constraint;
             this.variableIndexes = variableIndexes;
+        }
+
+        private Constraint(InputStream inputStream) throws IOException {
+            this.constraint = AbstractConstraint.build(inputStream);
+            this.variableIndexes = new int[UnsafeSerializationUtilities.readInt(inputStream)];
+            for (int j = 0; j < this.variableIndexes.length; ++j) {
+                this.variableIndexes[j] = UnsafeSerializationUtilities.readInt(inputStream);
+            }
+        }
+
+        public void write(OutputStream outputStream) throws IOException {
+
+            this.constraint.write(outputStream, true);
+            UnsafeSerializationUtilities.writeInt(outputStream, this.variableIndexes.length);
+            for (int j = 0; j < this.variableIndexes.length; ++j) {
+                UnsafeSerializationUtilities.writeInt(outputStream, this.variableIndexes[j]);
+            }
+
         }
 
     }

@@ -2,6 +2,14 @@ package org.platanios.learn.optimization.function;
 
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
+import org.platanios.learn.math.matrix.Vectors;
+import org.platanios.learn.serialization.UnsafeSerializationUtilities;
+import sun.misc.Unsafe;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InvalidObjectException;
+import java.io.OutputStream;
 
 /**
  * A quadratic function of the form \(f(x)=a^\top x+b\).
@@ -53,5 +61,26 @@ public final class LinearFunction extends AbstractFunction {
 
     public double getB() {
         return b;
+    }
+
+    @Override
+    public void write(OutputStream outputStream, boolean includeType) throws IOException {
+        if (includeType) {
+            UnsafeSerializationUtilities.writeInt(outputStream, FunctionType.LinearFunction.ordinal());
+        }
+        this.a.write(outputStream, true);
+        UnsafeSerializationUtilities.writeDouble(outputStream, this.b);
+    }
+
+    public static LinearFunction read(InputStream inputStream, boolean includeType) throws IOException {
+        if (includeType) {
+            FunctionType functionType = FunctionType.values()[UnsafeSerializationUtilities.readInt(inputStream)];
+            if (functionType != FunctionType.LinearFunction) {
+                throw new InvalidObjectException("The stored function is of type " + functionType.name() + "!");
+            }
+        }
+        Vector a = Vectors.build(inputStream);
+        double b = UnsafeSerializationUtilities.readDouble(inputStream);
+        return new LinearFunction(a, b);
     }
 }

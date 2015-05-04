@@ -2,6 +2,11 @@ package org.platanios.learn.optimization.constraint;
 
 import org.platanios.learn.math.MathUtilities;
 import org.platanios.learn.math.matrix.*;
+import org.platanios.learn.serialization.UnsafeSerializationUtilities;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -35,5 +40,10 @@ public abstract class AbstractConstraint {
 
     public final int getNumberOfJacobianEvaluations() {
         return numberOfJacobianEvaluations;
+    }
+
+    public static AbstractConstraint build(InputStream inputStream) throws IOException {
+        ConstraintType constraintType = ConstraintType.values()[UnsafeSerializationUtilities.readInt(inputStream)];
+        return constraintType.buildConstraint(inputStream, false);
     }
 }

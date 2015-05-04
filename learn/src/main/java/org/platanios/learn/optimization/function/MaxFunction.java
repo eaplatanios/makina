@@ -3,7 +3,13 @@ package org.platanios.learn.optimization.function;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
+import org.platanios.learn.serialization.UnsafeSerializationUtilities;
+import sun.misc.Unsafe;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InvalidObjectException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,12 +24,26 @@ public class MaxFunction extends AbstractFunction {
 
     public static class Builder {
         private final int numberOfVariables;
-        private final List<int[]> functionTermVariables = new ArrayList<>();
-        private final List<AbstractFunction> functionTerms = new ArrayList<>();
-        private final List<Double> constantTerms = new ArrayList<>();
+        private final List<int[]> functionTermVariables;
+        private final List<AbstractFunction> functionTerms;
+        private final List<Double> constantTerms;
 
         public Builder(int numberOfVariables) {
             this.numberOfVariables = numberOfVariables;
+            this.functionTermVariables = new ArrayList<>();
+            this.functionTerms = new ArrayList<>();
+            this.constantTerms = new ArrayList<>();
+        }
+
+        private Builder(
+                int numberOfVariables,
+                List<AbstractFunction> functionTerms,
+                List<Double> constantTerms,
+                List<int[]> functionTermVariables) {
+            this.numberOfVariables = numberOfVariables;
+            this.functionTermVariables = functionTermVariables;
+            this.functionTerms = functionTerms;
+            this.constantTerms = constantTerms;
         }
 
         public Builder addFunctionTerm(AbstractFunction functionTerm) {
@@ -46,6 +66,42 @@ public class MaxFunction extends AbstractFunction {
         public MaxFunction build() {
             return new MaxFunction(this);
         }
+        public static MaxFunction build(InputStream inputStream, boolean includeType) throws IOException {
+            if (includeType) {
+                FunctionType functionType = FunctionType.values()[UnsafeSerializationUtilities.readInt(inputStream)];
+                if (functionType != FunctionType.MaxFunction) {
+                    throw new InvalidObjectException("The stored function is of type " + functionType.name() + "!");
+                }
+            }
+
+            int numberOfVariables = UnsafeSerializationUtilities.readInt(inputStream);
+
+            int constantTermsSize = UnsafeSerializationUtilities.readInt(inputStream);
+            ArrayList<Double> constantTerms = new ArrayList<>(constantTermsSize);
+            for (int i = 0; i < constantTermsSize; ++i) {
+                constantTerms.add(UnsafeSerializationUtilities.readDouble(inputStream));
+            }
+
+            int functionTermsSize = UnsafeSerializationUtilities.readInt(inputStream);
+            ArrayList<AbstractFunction> functionTerms = new ArrayList<>(functionTermsSize);
+            for (int i = 0; i < functionTermsSize; ++i) {
+                functionTerms.add(AbstractFunction.build(inputStream));
+            }
+
+            int functionTermVariablesSize = UnsafeSerializationUtilities.readInt(inputStream);
+            ArrayList<int[]> functionTermVariables = new ArrayList<>();
+            for (int i = 0; i < functionTermVariablesSize; ++i) {
+                int termVariablesSize = UnsafeSerializationUtilities.readInt(inputStream);
+                int[] termVariables = new int[termVariablesSize];
+                for (int j = 0; j < termVariables.length; ++j) {
+                    termVariables[j] = UnsafeSerializationUtilities.readInt(inputStream);
+                }
+                functionTermVariables.add(termVariables);
+            }
+
+            Builder builder = new Builder(numberOfVariables, functionTerms, constantTerms, functionTermVariables);
+            return builder.build();
+        }
     }
 
     private MaxFunction(Builder builder) {
@@ -53,6 +109,29 @@ public class MaxFunction extends AbstractFunction {
         functionTermVariables = builder.functionTermVariables;
         functionTerms = builder.functionTerms;
         constantTerms = builder.constantTerms;
+    }
+
+    @Override
+    public void write(OutputStream outputStream, boolean includeType) throws IOException {
+        if (includeType) {
+            UnsafeSerializationUtilities.writeInt(outputStream, FunctionType.MaxFunction.ordinal());
+        }
+        UnsafeSerializationUtilities.writeInt(outputStream, this.numberOfVariables);
+        UnsafeSerializationUtilities.writeInt(outputStream, this.constantTerms.size());
+        for(double constantTerm : this.constantTerms) {
+            UnsafeSerializationUtilities.writeDouble(outputStream, constantTerm);
+        }
+        UnsafeSerializationUtilities.writeInt(outputStream, this.functionTerms.size());
+        for (AbstractFunction term : this.functionTerms) {
+            term.write(outputStream, true);
+        }
+        UnsafeSerializationUtilities.writeInt(outputStream, this.functionTermVariables.size());
+        for (int[] termVariables : this.functionTermVariables) {
+            UnsafeSerializationUtilities.writeInt(outputStream, termVariables.length);
+            for (int variable : termVariables) {
+                UnsafeSerializationUtilities.writeInt(outputStream, variable);
+            }
+        }
     }
 
     public final double getValue(Vector point, int termIndex) {

@@ -1,9 +1,15 @@
 package org.platanios.learn.optimization.function;
 
+import org.apache.commons.math3.analysis.function.Abs;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
+import org.platanios.learn.serialization.UnsafeSerializationUtilities;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InvalidObjectException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,11 +25,22 @@ public class SumFunction extends AbstractFunction {
         protected abstract T self();
 
         protected final int numberOfVariables;
-        protected final List<int[]> termsVariables = new ArrayList<>();
-        protected final List<AbstractFunction> terms = new ArrayList<>();
+        protected final List<int[]> termsVariables;
+        protected final List<AbstractFunction> terms;
 
         protected AbstractBuilder(int numberOfVariables) {
             this.numberOfVariables = numberOfVariables;
+            this.termsVariables = new ArrayList<>();
+            this.terms = new ArrayList<>();
+        }
+
+        protected AbstractBuilder(
+                int numberOfVariables,
+                List<AbstractFunction> terms,
+                List<int[]> termsVariables) {
+            this.numberOfVariables = numberOfVariables;
+            this.termsVariables = termsVariables;
+            this.terms = terms;
         }
 
         public T addTerm(AbstractFunction term, int... termVariables) {
@@ -42,9 +59,48 @@ public class SumFunction extends AbstractFunction {
             super(numberOfVariables);
         }
 
+        private Builder(
+                int numberOfVariables,
+                List<AbstractFunction> terms,
+                List<int[]> termVariables)
+        {
+            super(numberOfVariables, terms, termVariables);
+        }
+
         @Override
         protected Builder self() {
             return this;
+        }
+
+        public static SumFunction build(InputStream inputStream, boolean includeType) throws IOException {
+            if (includeType) {
+                FunctionType functionType = FunctionType.values()[UnsafeSerializationUtilities.readInt(inputStream)];
+                if (functionType != FunctionType.SumFunction) {
+                    throw new InvalidObjectException("The stored function is of type " + functionType.name() + "!");
+                }
+            }
+
+            int numberOfVariables = UnsafeSerializationUtilities.readInt(inputStream);
+
+            int termsSize = UnsafeSerializationUtilities.readInt(inputStream);
+            ArrayList<AbstractFunction> terms = new ArrayList<>(termsSize);
+            for (int i = 0; i < termsSize; ++i) {
+                terms.add(AbstractFunction.build(inputStream));
+            }
+
+            int termsVariablesSize = UnsafeSerializationUtilities.readInt(inputStream);
+            ArrayList<int[]> termsVariables = new ArrayList<>();
+            for (int i = 0; i < termsVariablesSize; ++i) {
+                int termVariablesSize = UnsafeSerializationUtilities.readInt(inputStream);
+                int[] termVariables = new int[termVariablesSize];
+                for (int j = 0; j < termVariables.length; ++j) {
+                    termVariables[j] = UnsafeSerializationUtilities.readInt(inputStream);
+                }
+                termsVariables.add(termVariables);
+            }
+
+            Builder builder = new Builder(numberOfVariables, terms, termsVariables);
+            return builder.build();
         }
     }
 
@@ -128,4 +184,24 @@ public class SumFunction extends AbstractFunction {
     public AbstractFunction getTerm(int termIndex) {
         return terms.get(termIndex);
     }
+
+    @Override
+    public void write(OutputStream outputStream, boolean includeType) throws IOException {
+        if (includeType) {
+            UnsafeSerializationUtilities.writeInt(outputStream, FunctionType.SumFunction.ordinal());
+        }
+        UnsafeSerializationUtilities.writeInt(outputStream, this.numberOfVariables);
+        UnsafeSerializationUtilities.writeInt(outputStream, this.terms.size());
+        for (AbstractFunction term : this.terms) {
+            term.write(outputStream, true);
+        }
+        UnsafeSerializationUtilities.writeInt(outputStream, this.termsVariables.size());
+        for (int[] termVariables : this.termsVariables) {
+            UnsafeSerializationUtilities.writeInt(outputStream, termVariables.length);
+            for (int variable : termVariables) {
+                UnsafeSerializationUtilities.writeInt(outputStream, variable);
+            }
+        }
+    }
+
 }

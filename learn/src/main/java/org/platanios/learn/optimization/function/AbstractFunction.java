@@ -2,6 +2,11 @@ package org.platanios.learn.optimization.function;
 
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
+import org.platanios.learn.serialization.UnsafeSerializationUtilities;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -81,5 +86,10 @@ public abstract class AbstractFunction {
 
     public final void setDerivativesApproximationMethod(DerivativesApproximation.Method method) {
         derivativesApproximation.setMethod(method);
+    }
+
+    public static AbstractFunction build(InputStream inputStream) throws IOException {
+        FunctionType functionType = FunctionType.values()[UnsafeSerializationUtilities.readInt(inputStream)];
+        return functionType.buildFunction(inputStream, false);
     }
 }

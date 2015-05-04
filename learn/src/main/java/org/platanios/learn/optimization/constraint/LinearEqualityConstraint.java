@@ -1,6 +1,12 @@
 package org.platanios.learn.optimization.constraint;
 
 import org.platanios.learn.math.matrix.*;
+import org.platanios.learn.serialization.UnsafeSerializationUtilities;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InvalidObjectException;
+import java.io.OutputStream;
 
 /**
  * A linear equality constraint of the form \(Ax=b\).
@@ -86,5 +92,26 @@ public final class LinearEqualityConstraint extends AbstractEqualityConstraint {
 
     public Vector getB() {
         return b;
+    }
+
+    @Override
+    public void write(OutputStream outputStream, boolean includeType) throws IOException {
+        if (includeType) {
+            UnsafeSerializationUtilities.writeInt(outputStream, ConstraintType.LinearEqualityConstraint.ordinal());
+        }
+        this.A.write(outputStream);
+        this.b.write(outputStream, true);
+    }
+
+    public static LinearEqualityConstraint read(InputStream inputStream, boolean includeType) throws IOException {
+        if (includeType) {
+            ConstraintType constraintType = ConstraintType.values()[UnsafeSerializationUtilities.readInt(inputStream)];
+            if (constraintType != ConstraintType.LinearEqualityConstraint) {
+                throw new InvalidObjectException("The stored constraint is of type " + constraintType.name() + "!");
+            }
+        }
+        Matrix A = new Matrix(inputStream);
+        Vector b = Vectors.build(inputStream);
+        return new LinearEqualityConstraint(A, b);
     }
 }

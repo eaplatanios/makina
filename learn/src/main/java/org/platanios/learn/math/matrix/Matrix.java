@@ -1,7 +1,11 @@
 package org.platanios.learn.math.matrix;
 
 import org.platanios.learn.math.MathUtilities;
+import org.platanios.learn.serialization.UnsafeSerializationUtilities;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.function.Function;
 
 /**
@@ -159,6 +163,28 @@ public class Matrix {
             }
         }
     }
+
+    public Matrix(InputStream inputStream) throws IOException {
+        this.rowDimension = UnsafeSerializationUtilities.readInt(inputStream);
+        this.columnDimension = UnsafeSerializationUtilities.readInt(inputStream);
+        this.array = new double[this.rowDimension][this.columnDimension];
+        for (int i = 0; i < this.rowDimension; ++i) {
+            for (int j = 0; j < this.columnDimension; ++j) {
+                this.array[i][j] = UnsafeSerializationUtilities.readDouble(inputStream);
+            }
+        }
+    }
+
+    public void write(OutputStream outputStream) throws IOException {
+        UnsafeSerializationUtilities.writeInt(outputStream, this.rowDimension);
+        UnsafeSerializationUtilities.writeInt(outputStream, this.columnDimension);
+        for (int i = 0; i < this.rowDimension; ++i) {
+            for (int j = 0; j < this.columnDimension; ++j) {
+                UnsafeSerializationUtilities.writeDouble(outputStream, this.array[i][j]);
+            }
+        }
+    }
+
     //endregion
 
     //region Getters, Setters and Other Such Methods
