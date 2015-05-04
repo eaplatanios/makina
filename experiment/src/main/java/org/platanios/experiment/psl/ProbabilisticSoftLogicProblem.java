@@ -658,7 +658,7 @@ public final class ProbabilisticSoftLogicProblem {
 
         }
 
-        public static Map.Entry<ProbabilisticSoftLogicPredicateManager, ProbabilisticSoftLogicProblem> read(InputStream inputStream) throws IOException, ClassNotFoundException {
+        public static Map.Entry<ProbabilisticSoftLogicPredicateManager, ProbabilisticSoftLogicProblem.Builder> read(InputStream inputStream) throws IOException, ClassNotFoundException {
 
             ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
             ProbabilisticSoftLogicPredicateManager predicateManager = (ProbabilisticSoftLogicPredicateManager) objectInputStream.readObject();
@@ -674,8 +674,7 @@ public final class ProbabilisticSoftLogicProblem {
                 shouldReadRule = ProblemSerializer.readRuleAndAddToBuilder(builder, inputStream);
             }
 
-            return new AbstractMap.SimpleEntry<ProbabilisticSoftLogicPredicateManager, ProbabilisticSoftLogicProblem>(
-                    predicateManager, builder.build());
+            return new AbstractMap.SimpleEntry<>(predicateManager, builder);
 
         }
 
@@ -1094,6 +1093,7 @@ public final class ProbabilisticSoftLogicProblem {
             this.linearFunction = linearFunction;
             this.power = power;
             this.weight = weight;
+
         }
 
         @Override

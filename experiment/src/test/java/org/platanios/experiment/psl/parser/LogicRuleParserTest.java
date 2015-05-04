@@ -751,9 +751,9 @@ public class LogicRuleParserTest {
             byteStream.close();
             byte[] bytes = byteStream.toByteArray();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
-            Map.Entry<ProbabilisticSoftLogicPredicateManager, ProbabilisticSoftLogicProblem> deserialized =
+            Map.Entry<ProbabilisticSoftLogicPredicateManager, ProbabilisticSoftLogicProblem.Builder> deserialized =
                     ProbabilisticSoftLogicProblem.ProblemSerializer.read(inputStream);
-            deserializedProblem = deserialized.getValue();
+            deserializedProblem = deserialized.getValue().build();
         } catch (IOException|ClassNotFoundException e) {
             fail(e.getMessage());
             System.out.println(e.getMessage());
@@ -795,11 +795,11 @@ public class LogicRuleParserTest {
 
                 try (FileInputStream inputStream = new FileInputStream(outputStreamFile)) {
 
-                    Map.Entry<ProbabilisticSoftLogicPredicateManager, ProbabilisticSoftLogicProblem> deserialized =
+                    Map.Entry<ProbabilisticSoftLogicPredicateManager, ProbabilisticSoftLogicProblem.Builder> deserialized =
                             ProbabilisticSoftLogicProblem.ProblemSerializer.read(inputStream);
 
                     trainPredicateManager = deserialized.getKey();
-                    problem = deserialized.getValue();
+                    problem = deserialized.getValue().build();
 
                 } catch (IOException|ClassNotFoundException e) {
                     fail(e.getMessage());
