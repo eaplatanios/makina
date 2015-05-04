@@ -622,12 +622,14 @@ public final class ProbabilisticSoftLogicProblem {
     public static final class ProblemSerializer extends GroundedRuleHandler {
 
         private final OutputStream outputStream;
+        private final Builder builder;
 
-        private ProblemSerializer(OutputStream outputStream) {
+        private ProblemSerializer(OutputStream outputStream, Builder builder) {
             this.outputStream = outputStream;
+            this.builder = builder;
         }
 
-        public static void write(
+        public static Builder write(
                 OutputStream outputStream,
                 List<Rule> rules,
                 ProbabilisticSoftLogicPredicateManager predicateManager,
@@ -636,8 +638,14 @@ public final class ProbabilisticSoftLogicProblem {
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
             objectOutputStream.writeObject(predicateManager);
 
+            ProbabilisticSoftLogicPredicateManager.IdWeights observedIdsAndWeights =
+                    predicateManager.getAllObservedWeights();
+            ProbabilisticSoftLogicProblem.Builder builder =
+                new ProbabilisticSoftLogicProblem.Builder(
+                        observedIdsAndWeights.Ids, observedIdsAndWeights.Weights, predicateManager.size() - observedIdsAndWeights.Ids.length);
+
             try {
-                ProblemSerializer serializer = new ProblemSerializer(outputStream);
+                ProblemSerializer serializer = new ProblemSerializer(outputStream, builder);
                 Rule.addGroundingsToBuilder(rules, serializer, predicateManager, groundingMode);
                 serializer.addRule(new int[] {-1}, new int[] {-1}, new boolean[] {false}, new boolean[] {false}, Double.NaN, Double.NaN);
             } catch (UnsupportedOperationException e){
@@ -646,9 +654,11 @@ public final class ProbabilisticSoftLogicProblem {
                 }
             }
 
+            return builder;
+
         }
 
-        public static ProbabilisticSoftLogicProblem read(InputStream inputStream) throws IOException, ClassNotFoundException {
+        public static Map.Entry<ProbabilisticSoftLogicPredicateManager, ProbabilisticSoftLogicProblem> read(InputStream inputStream) throws IOException, ClassNotFoundException {
 
             ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
             ProbabilisticSoftLogicPredicateManager predicateManager = (ProbabilisticSoftLogicPredicateManager) objectInputStream.readObject();
@@ -664,7 +674,8 @@ public final class ProbabilisticSoftLogicProblem {
                 shouldReadRule = ProblemSerializer.readRuleAndAddToBuilder(builder, inputStream);
             }
 
-            return builder.build();
+            return new AbstractMap.SimpleEntry<ProbabilisticSoftLogicPredicateManager, ProbabilisticSoftLogicProblem>(
+                    predicateManager, builder.build());
 
         }
 
@@ -675,6 +686,8 @@ public final class ProbabilisticSoftLogicProblem {
                  boolean[] bodyNegations,
                  double power,
                  double weight) {
+
+            this.builder.addRule(headVariableIndexes, bodyVariableIndexes, headNegations, bodyNegations, power, weight);
 
             try {
                 UnsafeSerializationUtilities.writeInt(outputStream, headVariableIndexes.length);
