@@ -1,0 +1,20 @@
+{2.000000000327401} ( ( ( ( TRUSTS(A, B) & TRUSTS(B, C) ) & KNOWS(A, B) ) & KNOWS(A, C) ) & KNOWS(B, C) ) >> TRUSTS(A, C) {squared}
+{2.000000000659516} ( ( ( ( TRUSTS(A, B) & ~( TRUSTS(B, C) ) ) & KNOWS(A, B) ) & KNOWS(A, C) ) & KNOWS(B, C) ) >> ~( TRUSTS(A, C) ) {squared}
+{2.0000000002920313} ( ( ( ( ~( TRUSTS(A, B) ) & TRUSTS(B, C) ) & KNOWS(A, B) ) & KNOWS(A, C) ) & KNOWS(B, C) ) >> ~( TRUSTS(A, C) ) {squared}
+{2.0} ( ( ( ( ~( TRUSTS(A, B) ) & ~( TRUSTS(B, C) ) ) & KNOWS(A, B) ) & KNOWS(A, C) ) & KNOWS(B, C) ) >> TRUSTS(A, C) {squared}
+{2.0000000002920313} ( ( ( ( TRUSTS(A, B) & TRUSTS(C, B) ) & KNOWS(A, B) ) & KNOWS(A, C) ) & KNOWS(C, B) ) >> TRUSTS(A, C) {squared}
+{2.000000000659516} ( ( ( ( TRUSTS(A, B) & ~( TRUSTS(C, B) ) ) & KNOWS(A, B) ) & KNOWS(A, C) ) & KNOWS(C, B) ) >> ~( TRUSTS(A, C) ) {squared}
+{2.000000000327401} ( ( ( ( ~( TRUSTS(A, B) ) & TRUSTS(C, B) ) & KNOWS(A, B) ) & KNOWS(A, C) ) & KNOWS(C, B) ) >> ~( TRUSTS(A, C) ) {squared}
+{2.0} ( ( ( ( ~( TRUSTS(A, B) ) & ~( TRUSTS(C, B) ) ) & KNOWS(A, B) ) & KNOWS(A, C) ) & KNOWS(C, B) ) >> TRUSTS(A, C) {squared}
+{2.000000000659516} ( ( ( ( TRUSTS(B, A) & TRUSTS(B, C) ) & KNOWS(B, A) ) & KNOWS(A, C) ) & KNOWS(B, C) ) >> TRUSTS(A, C) {squared}
+{2.000000000327401} ( ( ( ( TRUSTS(B, A) & ~( TRUSTS(B, C) ) ) & KNOWS(B, A) ) & KNOWS(A, C) ) & KNOWS(B, C) ) >> ~( TRUSTS(A, C) ) {squared}
+{2.0000000002920313} ( ( ( ( ~( TRUSTS(B, A) ) & TRUSTS(B, C) ) & KNOWS(B, A) ) & KNOWS(A, C) ) & KNOWS(B, C) ) >> ~( TRUSTS(A, C) ) {squared}
+{2.0} ( ( ( ( ~( TRUSTS(B, A) ) & ~( TRUSTS(B, C) ) ) & KNOWS(B, A) ) & KNOWS(A, C) ) & KNOWS(B, C) ) >> TRUSTS(A, C) {squared}
+{2.0000000002342038} ( ( ( ( TRUSTS(B, A) & TRUSTS(C, B) ) & KNOWS(B, A) ) & KNOWS(A, C) ) & KNOWS(C, B) ) >> TRUSTS(A, C) {squared}
+{2.0000000002342038} ( ( ( ( TRUSTS(B, A) & ~( TRUSTS(C, B) ) ) & KNOWS(B, A) ) & KNOWS(A, C) ) & KNOWS(C, B) ) >> ~( TRUSTS(A, C) ) {squared}
+{2.0000000002342038} ( ( ( ( ~( TRUSTS(B, A) ) & TRUSTS(C, B) ) & KNOWS(B, A) ) & KNOWS(A, C) ) & KNOWS(C, B) ) >> ~( TRUSTS(A, C) ) {squared}
+{2.0} ( ( ( ( ~( TRUSTS(B, A) ) & ~( TRUSTS(C, B) ) ) & KNOWS(B, A) ) & KNOWS(A, C) ) & KNOWS(C, B) ) >> TRUSTS(A, C) {squared}
+{1.0000023741830295} ( ( TRUSTS(A, B) & KNOWS(A, B) ) & KNOWS(B, A) ) >> TRUSTS(B, A) {squared}
+{1.0000023741830295} ( ( ~( TRUSTS(A, B) ) & KNOWS(A, B) ) & KNOWS(B, A) ) >> ~( TRUSTS(B, A) ) {squared}
+{0.10107749752360473} KNOWS(A, B) >> TRUSTS(A, B) {squared}
+
