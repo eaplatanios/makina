@@ -5,9 +5,8 @@ import com.google.common.primitives.Booleans;
 import com.google.common.primitives.Ints;
 import org.apache.commons.lang3.ArrayUtils;
 import org.platanios.learn.Utilities;
-import org.platanios.learn.math.matrix.Matrix;
+import org.platanios.learn.math.matrix.*;
 import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.matrix.Vectors;
 import org.platanios.learn.optimization.ConsensusAlternatingDirectionsMethodOfMultipliersSolver;
 import org.platanios.learn.optimization.NewtonSolver;
 import org.platanios.learn.optimization.constraint.AbstractConstraint;
@@ -26,6 +25,7 @@ public final class ProbabilisticSoftLogicProblem {
     private final BiMap<Integer, Integer> externalToInternalIndexesMapping;
     private final ProbabilisticSoftLogicFunction objectiveFunction;
     private final ImmutableList<Constraint> constraints;
+    private final CholeskyDecomposition[] subProblemCholeskyFactors;
     private final ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod subProblemSelectionMethod;
     private final int numberOfSubProblemSamples;
 
@@ -760,6 +760,14 @@ public final class ProbabilisticSoftLogicProblem {
         constraints = ImmutableList.copyOf(builder.constraints);
         subProblemSelectionMethod = builder.subProblemSelectionMethod;
         numberOfSubProblemSamples = builder.numberOfSubProblemSamples;
+        subProblemCholeskyFactors = new CholeskyDecomposition[objectiveFunction.getNumberOfTerms()];
+        int temporaryIndex = 0;
+        for (AbstractFunction term : objectiveFunction.getTerms()) {
+            ProbabilisticSoftLogicSumFunctionTerm objectiveTerm = (ProbabilisticSoftLogicSumFunctionTerm) term;
+            Vector coefficients = objectiveTerm.getLinearFunction().getA();
+            subProblemCholeskyFactors[temporaryIndex++] =
+                    new CholeskyDecomposition(coefficients.outer(coefficients).multiply(2 * objectiveTerm.weight).add(Matrix.generateIdentityMatrix(coefficients.size())));
+        }
     }
 
     public Map<Integer, Double> solve() {
@@ -768,9 +776,11 @@ public final class ProbabilisticSoftLogicProblem {
                         objectiveFunction,
                         Vectors.dense(objectiveFunction.getNumberOfVariables())
                 )
-                        .subProblemSolver(ProbabilisticSoftLogicProblem::solveProbabilisticSoftLogicSubProblem)
+                        .subProblemSolver((subProblem) -> solveProbabilisticSoftLogicSubProblem(subProblem, subProblemCholeskyFactors))
                         .subProblemSelectionMethod(subProblemSelectionMethod)
                         .numberOfSubProblemSamples(numberOfSubProblemSamples)
+                        .penaltyParameter(1)
+                        .penaltyParameterSettingMethod(ConsensusAlternatingDirectionsMethodOfMultipliersSolver.PenaltyParameterSettingMethod.CONSTANT)
                         .checkForPointConvergence(false)
                         .checkForObjectiveConvergence(false)
                         .checkForGradientConvergence(false)
@@ -789,7 +799,8 @@ public final class ProbabilisticSoftLogicProblem {
     }
 
     private static void solveProbabilisticSoftLogicSubProblem(
-            ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblem subProblem
+            ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblem subProblem,
+            CholeskyDecomposition[] subProblemCholeskyFactors
     ) {
         ProbabilisticSoftLogicSumFunctionTerm objectiveTerm =
                 (ProbabilisticSoftLogicSumFunctionTerm) subProblem.objectiveTerm;
@@ -827,27 +838,43 @@ public final class ProbabilisticSoftLogicProblem {
                             (subProblem.variables.get(0) - a1b0 * subProblem.variables.get(1)) / a0
                     );
                 } else {
-                    Vector coefficients = objectiveTerm.getLinearFunction().getA();
-                    for (int i = 0; i < subProblem.variables.size(); i++) {
-                        for (int j = 0; j < i; j++) {
-                            subProblem.variables.set(i, subProblem.variables.get(i)
-                                    - 2 * weight * coefficients.get(i) * coefficients.get(j)
-                                    * subProblem.variables.get(j));
-                        }
-                        subProblem.variables.set(i, subProblem.variables.get(i)
-                                / (2 * weight * coefficients.get(i) * coefficients.get(i)
-                                + subProblem.penaltyParameter));
+//                    subProblem.variables.set(
+//                            new NewtonSolver.Builder(
+//                                    new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemObjectiveFunction(
+//                                            objectiveTerm.getSubProblemObjectiveFunction(),
+//                                            subProblem.consensusVariables,
+//                                            subProblem.multipliers,
+//                                            subProblem.penaltyParameter
+//                                    ),
+//                                    subProblem.variables)
+//                                    .lineSearch(new NoLineSearch(1))
+//                                    .maximumNumberOfIterations(1)
+//                                    .build()
+//                                    .solve()
+//                    );
+                    try {
+                        subProblem.variables.set(subProblemCholeskyFactors[subProblem.subProblemIndex].solve(subProblem.variables));
+                    } catch (NonSymmetricMatrixException|NonPositiveDefiniteMatrixException e) {
+                        System.err.println("Non-positive definite matrix!!!");
                     }
-                    for (int i = subProblem.variables.size() - 1; i >= 0; i--) {
-                        for (int j = subProblem.variables.size() - 1; j > i; j--) {
-                            subProblem.variables.set(i, subProblem.variables.get(i)
-                                    - 2 * weight * coefficients.get(i) * coefficients.get(j)
-                                    * subProblem.variables.get(j));
-                        }
-                        subProblem.variables.set(i, subProblem.variables.get(i)
-                                / (2 * weight * coefficients.get(i) * coefficients.get(i)
-                                + subProblem.penaltyParameter));
-                    }
+//                    for (int i = 0; i < subProblem.variables.size(); i++) {
+//                        for (int j = 0; j < i; j++) {
+//                            subProblem.variables.set(i, subProblem.variables.get(i)
+//                                    - subProblemCholeskyFactors[subProblem.subProblemIndex].getElement(i, j)
+//                                    * subProblem.variables.get(j));
+//                        }
+//                        subProblem.variables.set(i, subProblem.variables.get(i)
+//                                / subProblemCholeskyFactors[subProblem.subProblemIndex].getElement(i, i));
+//                    }
+//                    for (int i = subProblem.variables.size() - 1; i >= 0; i--) {
+//                        for (int j = subProblem.variables.size() - 1; j > i; j--) {
+//                            subProblem.variables.set(i, subProblem.variables.get(i)
+//                                    - subProblemCholeskyFactors[subProblem.subProblemIndex].getElement(j, i)
+//                                    * subProblem.variables.get(j));
+//                        }
+//                        subProblem.variables.set(i, subProblem.variables.get(i)
+//                                / subProblemCholeskyFactors[subProblem.subProblemIndex].getElement(i, i));
+//                    }
                 }
             } else {
                 subProblem.variables.set(

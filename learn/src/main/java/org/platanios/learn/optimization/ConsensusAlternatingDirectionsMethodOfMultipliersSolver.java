@@ -27,6 +27,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
     private final List<Vector> variableCopies = new ArrayList<>();
     private final List<Vector> lagrangeMultipliers = new ArrayList<>();
 
+    private final Vector variableCopiesCounts;
     private final int maximumNumberOfIterationsWithNoPointChange;
     private final double absoluteTolerance;
     private final double relativeTolerance;
@@ -45,7 +46,6 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
     private final List<int[]> constraintsVariablesIndexes;
     private final List<AbstractConstraint> constraints;
 
-    private Vector variableCopiesCounts;
     private Vector primalResidualSquaredTerms;
     private Vector primalToleranceSquaredTerms;
     private Vector dualToleranceSquaredTerms;
@@ -189,7 +189,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         constraintsVariablesIndexes = builder.constraintsVariablesIndexes;
         constraints = builder.constraints;
         maximumNumberOfIterationsWithNoPointChange = builder.maximumNumberOfIterationsWithNoPointChange;
-        absoluteTolerance = builder.absoluteTolerance;
+        absoluteTolerance = Math.sqrt(currentPoint.size()) * builder.absoluteTolerance;
         relativeTolerance = builder.relativeTolerance;
         checkForPrimalAndDualResidualConvergence = builder.checkForPrimalAndDualResidualConvergence;
         primalResidualSquaredTerms = Vectors.build(objective.getNumberOfTerms(), VectorType.DENSE);
@@ -259,6 +259,26 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
     }
 
     @Override
+    public void printIteration() {
+        StringBuilder stringBuilder = new StringBuilder(String.format("Iteration #: %10d", currentIteration));
+        if (logObjectiveValue)
+            stringBuilder.append(String.format(" | Objective Value: %20s | Objective Change: %20s",
+                                               DECIMAL_FORMAT.format(currentObjectiveValue),
+                                               DECIMAL_FORMAT.format(objectiveChange)));
+        if (checkForPointConvergence)
+            stringBuilder.append(String.format(" | Point Change: %20s",
+                                               DECIMAL_FORMAT.format(pointChange)));
+        if (logGradientNorm)
+            stringBuilder.append(String.format(" | Gradient Norm: %20s",
+                                               DECIMAL_FORMAT.format(gradientNorm)));
+        if (checkForPrimalAndDualResidualConvergence)
+            stringBuilder.append(String.format(" | Primal Residual: %20s | Dual Residual: %20s",
+                                               DECIMAL_FORMAT.format(primalResidual),
+                                               DECIMAL_FORMAT.format(dualResidual)));
+        logger.info(stringBuilder.toString());
+    }
+
+    @Override
     public void printTerminationMessage() {
         super.printTerminationMessage();
         if (primalResidualConverged)
@@ -278,55 +298,96 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         Arrays.sort(selectedSubProblemIndexes);
         Vector variableCopiesSum = Vectors.build(currentPoint.size(), currentPoint.type());
         List<Callable<Object>> subProblemTasks = new ArrayList<>();
+        List<Callable<Object>> residualComputationTasks = new ArrayList<>();
         int temporaryIndex = 0;
         for (int subProblemIndex = 0; subProblemIndex < objective.getNumberOfTerms(); subProblemIndex++) {
             int[] variableIndexes = objective.getTermVariables(subProblemIndex);
             final int currentSubProblemIndex = subProblemIndex;
+            Vector variables = variableCopies.get(subProblemIndex);
+            Vector multipliers = lagrangeMultipliers.get(subProblemIndex);
+            Vector consensusVariables = Vectors.build(variableIndexes.length, currentPoint.type());
+            consensusVariables.set(currentPoint.get(variableIndexes));
             final boolean solveSubProblem = temporaryIndex < selectedSubProblemIndexes.length
                     && selectedSubProblemIndexes[temporaryIndex] == subProblemIndex;
             subProblemTasks.add(Executors.callable(
                     () -> processSubProblem(currentSubProblemIndex,
                                             variableIndexes,
+                                            variables,
+                                            consensusVariables,
+                                            multipliers,
                                             variableCopiesSum,
                                             solveSubProblem)
             ));
             if (solveSubProblem)
                 temporaryIndex++;
+            if (penaltyParameterSettingMethod == PenaltyParameterSettingMethod.ADAPTIVE
+                    || checkForPrimalAndDualResidualConvergence) {
+                residualComputationTasks.add(Executors.callable(
+                        () -> computeResiduals(currentSubProblemIndex,
+                                               variables,
+                                               consensusVariables,
+                                               multipliers,
+                                               solveSubProblem)
+                ));
+            }
         }
-        final int numberOfObjectiveTerms = objective.getNumberOfTerms();
         for (int constraintIndex = 0; constraintIndex < constraints.size(); constraintIndex++) {
             int[] variableIndexes = constraintsVariablesIndexes.get(constraintIndex);
             final int currentConstraintIndex = constraintIndex;
+            int subProblemIndex = objective.getNumberOfTerms() + constraintIndex;
+            Vector variables = variableCopies.get(subProblemIndex);
+            Vector multipliers = lagrangeMultipliers.get(subProblemIndex);
+            Vector consensusVariables = Vectors.build(variableIndexes.length, currentPoint.type());
+            consensusVariables.set(currentPoint.get(variableIndexes));
             subProblemTasks.add(Executors.callable(
                     () -> processConstraint(currentConstraintIndex,
                                             variableIndexes,
+                                            variables,
+                                            consensusVariables,
+                                            multipliers,
                                             variableCopiesSum,
-                                            numberOfObjectiveTerms)
+                                            objective.getNumberOfTerms())
             ));
+            if (penaltyParameterSettingMethod == PenaltyParameterSettingMethod.ADAPTIVE
+                    || checkForPrimalAndDualResidualConvergence) {
+                residualComputationTasks.add(Executors.callable(
+                        () -> computeResiduals(subProblemIndex,
+                                               variables,
+                                               consensusVariables,
+                                               multipliers,
+                                               true)
+                ));
+            }
         }
         try {
             taskExecutor.invokeAll(subProblemTasks);
         } catch (InterruptedException e) {
-            logger.error("Execution was interrupted while solving the subproblems.");
+            logger.error("Execution was interrupted while solving the sub-problems.");
         }
-        currentPoint = variableCopiesSum.divElementwise(variableCopiesCounts);
-        for (int variableIndex = 0; variableIndex < currentPoint.size(); variableIndex++)
-            if (currentPoint.get(variableIndex) < 0)
-                currentPoint.set(variableIndex, 0);
-            else if (currentPoint.get(variableIndex) > 1)
-                currentPoint.set(variableIndex, 1);
+        currentPoint = variableCopiesSum
+                .divElementwise(variableCopiesCounts)
+                .maxElementwiseInPlace(0)
+                .minElementwiseInPlace(1);
         if (penaltyParameterSettingMethod == PenaltyParameterSettingMethod.ADAPTIVE
+                || subProblemSelectionMethod == SubProblemSelectionMethod.CONSENSUS_FOCUSED_SAMPLING
                 || checkForPrimalAndDualResidualConvergence) {
-            primalResidual = Math.sqrt(primalResidualSquaredTerms.sum());
-            dualResidual = penaltyParameter *
-                    Math.sqrt(currentPoint
-                                      .sub(previousPoint)
-                                      .map(x -> x * x)
-                                      .multElementwise(variableCopiesCounts)
-                                      .sum());
-            if (penaltyParameterSettingMethod == PenaltyParameterSettingMethod.ADAPTIVE)
-                penaltyParameterSettingMethod.updatePenaltyParameter(this);
+            try {
+                taskExecutor.invokeAll(residualComputationTasks);
+            } catch (InterruptedException e) {
+                logger.error("Execution was interrupted while computing the primal and dual residuals.");
+            }
+            if (penaltyParameterSettingMethod == PenaltyParameterSettingMethod.ADAPTIVE
+                    || checkForPrimalAndDualResidualConvergence) {
+                primalResidual = Math.sqrt(primalResidualSquaredTerms.sum());
+                dualResidual = penaltyParameter *
+                        Math.sqrt(currentPoint
+                                          .sub(previousPoint)
+                                          .map(x -> x * x)
+                                          .multElementwise(variableCopiesCounts)
+                                          .sum());
+            }
         }
+        penaltyParameterSettingMethod.updatePenaltyParameter(this); // Update the augmented Lagrangian penalty parameter
         if (checkForObjectiveConvergence || logObjectiveValue) {
             previousObjectiveValue = currentObjectiveValue;
             currentObjectiveValue = objective.getValue(currentPoint);
@@ -346,15 +407,15 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
 
     private void processSubProblem(int subProblemIndex,
                                    int[] variableIndexes,
+                                   Vector variables,
+                                   Vector consensusVariables,
+                                   Vector multipliers,
                                    Vector variableCopiesSum,
                                    boolean solve) {
-        Vector variables = variableCopies.get(subProblemIndex);
-        Vector multipliers = lagrangeMultipliers.get(subProblemIndex);
-        Vector consensusVariables = Vectors.build(variableIndexes.length, currentPoint.type());
-        consensusVariables.set(currentPoint.get(variableIndexes));
         if (solve) {
             multipliers.addInPlace(variables.sub(consensusVariables).mult(penaltyParameter));
-            SubProblem subProblem = new SubProblem(variables,
+            SubProblem subProblem = new SubProblem(subProblemIndex,
+                                                   variables,
                                                    multipliers,
                                                    consensusVariables,
                                                    objective.getTerm(subProblemIndex),
@@ -371,18 +432,6 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
                 variableCopiesSum.set(index,
                                       variableCopiesSum.get(index) + temporaryVariables.get(temporaryVariablesIndex++));
         }
-        if (penaltyParameterSettingMethod == PenaltyParameterSettingMethod.ADAPTIVE
-                || subProblemSelectionMethod == SubProblemSelectionMethod.CONSENSUS_FOCUSED_SAMPLING
-                || checkForPrimalAndDualResidualConvergence) {
-            primalResidualSquaredTerms.set(subProblemIndex,
-                                           variables.sub(consensusVariables).norm(VectorNorm.L2_SQUARED));
-            if (solve && checkForPrimalAndDualResidualConvergence) {
-                primalToleranceSquaredTerms.set(subProblemIndex,
-                                                variables.norm(VectorNorm.L2_SQUARED));
-                dualToleranceSquaredTerms.set(subProblemIndex,
-                                              multipliers.norm(VectorNorm.L2_SQUARED));
-            }
-        }
     }
 
     private void solveSubProblem(SubProblem subProblem) {
@@ -397,12 +446,11 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
 
     private void processConstraint(int constraintIndex,
                                    int[] variableIndexes,
+                                   Vector variables,
+                                   Vector consensusVariables,
+                                   Vector multipliers,
                                    Vector variableCopiesSum,
                                    int numberOfObjectiveTerms) {
-        Vector variables = variableCopies.get(numberOfObjectiveTerms + constraintIndex);
-        Vector multipliers = lagrangeMultipliers.get(numberOfObjectiveTerms + constraintIndex);
-        Vector consensusVariables = Vectors.build(variableIndexes.length, currentPoint.type());
-        consensusVariables.set(currentPoint.get(variableIndexes));
         multipliers.addInPlace(variables.sub(consensusVariables).mult(penaltyParameter));
         try {
             variables.set(constraints.get(constraintIndex).project(consensusVariables));
@@ -416,31 +464,38 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
                 variableCopiesSum.set(index,
                                       variableCopiesSum.get(index) + temporaryVariables.get(temporaryVariablesIndex++));
         }
-        if (penaltyParameterSettingMethod == PenaltyParameterSettingMethod.ADAPTIVE
-                || checkForPrimalAndDualResidualConvergence) {
-            primalResidualSquaredTerms.set(numberOfObjectiveTerms + constraintIndex,
-                                           variables.sub(consensusVariables).norm(VectorNorm.L2_SQUARED));
-            if (checkForPrimalAndDualResidualConvergence) {
-                primalToleranceSquaredTerms.set(numberOfObjectiveTerms + constraintIndex,
-                                                variables.norm(VectorNorm.L2_SQUARED));
-                dualToleranceSquaredTerms.set(numberOfObjectiveTerms + constraintIndex,
-                                              multipliers.norm(VectorNorm.L2_SQUARED));
-            }
+    }
+
+    private void computeResiduals(int subProblemIndex,
+                                  Vector variables,
+                                  Vector consensusVariables,
+                                  Vector multipliers,
+                                  boolean variablesUpdated) {
+        primalResidualSquaredTerms.set(subProblemIndex,
+                                       variables.sub(consensusVariables).norm(VectorNorm.L2_SQUARED));
+        if (variablesUpdated && checkForPrimalAndDualResidualConvergence) {
+            primalToleranceSquaredTerms.set(subProblemIndex,
+                                            variables.norm(VectorNorm.L2_SQUARED));
+            dualToleranceSquaredTerms.set(subProblemIndex,
+                                          multipliers.norm(VectorNorm.L2_SQUARED));
         }
     }
 
     public class SubProblem {
+        public final int subProblemIndex;
         public final Vector variables;
         public final Vector multipliers;
         public final Vector consensusVariables;
         public final AbstractFunction objectiveTerm;
         public final double penaltyParameter;
 
-        public SubProblem(Vector variables,
+        public SubProblem(int subProblemIndex,
+                          Vector variables,
                           Vector multipliers,
                           Vector consensusVariables,
                           AbstractFunction objectiveTerm,
                           double penaltyParameter) {
+            this.subProblemIndex = subProblemIndex;
             this.variables = variables;
             this.multipliers = multipliers;
             this.consensusVariables = consensusVariables;
