@@ -5,4 +5,5 @@ experiment/build/
 learn/build/
 *.iml
 *.class
+*.bin
 *.DS_Store

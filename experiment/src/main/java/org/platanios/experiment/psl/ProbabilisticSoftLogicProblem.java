@@ -29,7 +29,6 @@ public final class ProbabilisticSoftLogicProblem {
     private final BiMap<Integer, Integer> externalToInternalIndexesMapping;
     private final ProbabilisticSoftLogicFunction objectiveFunction;
     private final ImmutableSet<Constraint> constraints;
-    private final ImmutableList<Constraint> constraints;
     private final CholeskyDecomposition[] subProblemCholeskyFactors;
     private final ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod subProblemSelectionMethod;
     private final int numberOfSubProblemSamples;
@@ -1031,43 +1030,11 @@ public final class ProbabilisticSoftLogicProblem {
                             (subProblem.variables.get(0) - a1b0 * subProblem.variables.get(1)) / a0
                     );
                 } else {
-//                    subProblem.variables.set(
-//                            new NewtonSolver.Builder(
-//                                    new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemObjectiveFunction(
-//                                            objectiveTerm.getSubProblemObjectiveFunction(),
-//                                            subProblem.consensusVariables,
-//                                            subProblem.multipliers,
-//                                            subProblem.penaltyParameter
-//                                    ),
-//                                    subProblem.variables)
-//                                    .lineSearch(new NoLineSearch(1))
-//                                    .maximumNumberOfIterations(1)
-//                                    .build()
-//                                    .solve()
-//                    );
                     try {
                         subProblem.variables.set(subProblemCholeskyFactors[subProblem.subProblemIndex].solve(subProblem.variables));
                     } catch (NonSymmetricMatrixException|NonPositiveDefiniteMatrixException e) {
                         System.err.println("Non-positive definite matrix!!!");
                     }
-//                    for (int i = 0; i < subProblem.variables.size(); i++) {
-//                        for (int j = 0; j < i; j++) {
-//                            subProblem.variables.set(i, subProblem.variables.get(i)
-//                                    - subProblemCholeskyFactors[subProblem.subProblemIndex].getElement(i, j)
-//                                    * subProblem.variables.get(j));
-//                        }
-//                        subProblem.variables.set(i, subProblem.variables.get(i)
-//                                / subProblemCholeskyFactors[subProblem.subProblemIndex].getElement(i, i));
-//                    }
-//                    for (int i = subProblem.variables.size() - 1; i >= 0; i--) {
-//                        for (int j = subProblem.variables.size() - 1; j > i; j--) {
-//                            subProblem.variables.set(i, subProblem.variables.get(i)
-//                                    - subProblemCholeskyFactors[subProblem.subProblemIndex].getElement(j, i)
-//                                    * subProblem.variables.get(j));
-//                        }
-//                        subProblem.variables.set(i, subProblem.variables.get(i)
-//                                / subProblemCholeskyFactors[subProblem.subProblemIndex].getElement(i, i));
-//                    }
                 }
             } else {
                 subProblem.variables.set(
