@@ -29,7 +29,7 @@ public final class ProbabilisticSoftLogicProblem {
     private final BiMap<Integer, Integer> externalToInternalIndexesMapping;
     private final ProbabilisticSoftLogicFunction objectiveFunction;
     private final ImmutableSet<Constraint> constraints;
-    private final CholeskyDecomposition[] subProblemCholeskyFactors;
+    private final Map<Integer, CholeskyDecomposition> subProblemCholeskyFactors = new HashMap<>();
     private final ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod subProblemSelectionMethod;
     private final int numberOfSubProblemSamples;
 
@@ -951,13 +951,18 @@ public final class ProbabilisticSoftLogicProblem {
         constraints = ImmutableSet.copyOf(builder.constraints);
         subProblemSelectionMethod = builder.subProblemSelectionMethod;
         numberOfSubProblemSamples = builder.numberOfSubProblemSamples;
-        subProblemCholeskyFactors = new CholeskyDecomposition[objectiveFunction.getNumberOfTerms()];
-        int temporaryIndex = 0;
-        for (AbstractFunction term : objectiveFunction.getTerms()) {
-            ProbabilisticSoftLogicSumFunctionTerm objectiveTerm = (ProbabilisticSoftLogicSumFunctionTerm) term;
+        for (int subProblemIndex = 0; subProblemIndex < objectiveFunction.getNumberOfTerms(); subProblemIndex++) {
+            ProbabilisticSoftLogicSumFunctionTerm objectiveTerm =
+                    (ProbabilisticSoftLogicSumFunctionTerm) objectiveFunction.getTerm(subProblemIndex);
             Vector coefficients = objectiveTerm.getLinearFunction().getA();
-            subProblemCholeskyFactors[temporaryIndex++] =
-                    new CholeskyDecomposition(coefficients.outer(coefficients).multiply(2 * objectiveTerm.weight).add(Matrix.generateIdentityMatrix(coefficients.size())));
+            if (objectiveTerm.getPower() == 2 && coefficients.size() > 2)
+                subProblemCholeskyFactors.put(
+                        subProblemIndex,
+                        new CholeskyDecomposition(coefficients
+                                                          .outer(coefficients)
+                                                          .multiply(2 * objectiveTerm.weight)
+                                                          .add(Matrix.generateIdentityMatrix(coefficients.size())))
+                );
         }
     }
 
@@ -991,7 +996,7 @@ public final class ProbabilisticSoftLogicProblem {
 
     private static void solveProbabilisticSoftLogicSubProblem(
             ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblem subProblem,
-            CholeskyDecomposition[] subProblemCholeskyFactors
+            Map<Integer, CholeskyDecomposition> subProblemCholeskyFactors
     ) {
         ProbabilisticSoftLogicSumFunctionTerm objectiveTerm =
                 (ProbabilisticSoftLogicSumFunctionTerm) subProblem.objectiveTerm;
@@ -1030,7 +1035,7 @@ public final class ProbabilisticSoftLogicProblem {
                     );
                 } else {
                     try {
-                        subProblem.variables.set(subProblemCholeskyFactors[subProblem.subProblemIndex].solve(subProblem.variables));
+                        subProblem.variables.set(subProblemCholeskyFactors.get(subProblem.subProblemIndex).solve(subProblem.variables));
                     } catch (NonSymmetricMatrixException|NonPositiveDefiniteMatrixException e) {
                         System.err.println("Non-positive definite matrix!!!");
                     }
