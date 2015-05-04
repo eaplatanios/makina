@@ -347,8 +347,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
                                             variables,
                                             consensusVariables,
                                             multipliers,
-                                            variableCopiesSum,
-                                            objective.getNumberOfTerms())
+                                            variableCopiesSum)
             ));
             if (penaltyParameterSettingMethod == PenaltyParameterSettingMethod.ADAPTIVE
                     || checkForPrimalAndDualResidualConvergence) {
@@ -451,8 +450,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
                                    Vector variables,
                                    Vector consensusVariables,
                                    Vector multipliers,
-                                   Vector variableCopiesSum,
-                                   int numberOfObjectiveTerms) {
+                                   Vector variableCopiesSum) {
         multipliers.addInPlace(variables.sub(consensusVariables).mult(penaltyParameter));
         try {
             variables.set(constraints.get(constraintIndex).project(consensusVariables));

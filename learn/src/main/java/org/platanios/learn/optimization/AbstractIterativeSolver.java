@@ -169,6 +169,8 @@ abstract class AbstractIterativeSolver implements Solver {
 
     @Override
     public Vector solve() {
+        if (loggingLevel > 0)
+            logger.info("Optimization is starting.");
         while (!checkTerminationConditions() && !additionalCustomConvergenceCriterion.apply(currentPoint)) {
             performIterationUpdates();
             currentIteration++;
