@@ -815,11 +815,6 @@ public class LogicRuleParserTest {
     public void testEndToEnd() {
 
         String experimentName = "epinions_500";
-        if (experimentName.equals("epinions_500")) {
-
-            return;
-
-        }
 
         for (ProbabilisticSoftLogicProblem.GroundingMode groundingMode : ProbabilisticSoftLogicProblem.GroundingMode.values()) {
 
@@ -941,13 +936,45 @@ public class LogicRuleParserTest {
                             observedIdsAndWeights.Weights,
                             trainPredicateManager.size() - observedIdsAndWeights.Ids.length);
 
+            /*
             ProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilder(
                     rules,
                     problemBuilder,
                     trainPredicateManager,
                     groundingMode);
+            */
+            System.out.println("Serializing\n");
 
-            ProbabilisticSoftLogicProblem problem = problemBuilder.build();
+            FileOutputStream ostream = null;
+
+            try {
+                ostream = new FileOutputStream("/Users/dcard/Documents/Git/platanios/experiment/src/test/resources/org/platanios/experiment/psl/" + experimentName + "/problem_serialized.bin");
+
+
+                ProbabilisticSoftLogicProblem.ProblemSerializer.write(
+                        ostream,
+                        rules,
+                        trainPredicateManager,
+                        groundingMode);
+            } catch (IOException e) {
+                fail(e.getMessage());
+            } finally {
+                try {
+                    ostream.close();
+                } catch (IOException e) {
+                    fail(e.getMessage());
+                }
+            }
+
+            ProbabilisticSoftLogicProblem problem = null;
+
+            try(FileInputStream instream = new FileInputStream("/Users/dcard/Documents/Git/platanios/experiment/src/test/resources/org/platanios/experiment/psl/" + experimentName + "/problem_serialized.bin")) {
+                problem=ProbabilisticSoftLogicProblem.ProblemSerializer.read(instream);
+            } catch (IOException|ClassNotFoundException e) {
+                fail(e.getMessage());
+                System.out.println(e.getMessage());
+                e.printStackTrace();
+            }
 
             Map<Integer, Double> result = problem.solve();
             Map<String, Double> filteredResults = new HashMap<>();
@@ -956,9 +983,12 @@ public class LogicRuleParserTest {
                     .filter(key -> result.get(key) > Math.sqrt(Double.MIN_VALUE))
                     .forEach(key -> filteredResults.put(trainPredicateManager.getPredicateFromId(key).toString(), result.get(key)));
 
+
             System.out.println(result.get(0));
             System.out.println(result.get(1));
-            System.out.println('\n');
+
+            System.out.println("Done\n");
+
 
         }
 
