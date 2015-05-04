@@ -4,6 +4,8 @@ import com.google.common.collect.*;
 import com.google.common.primitives.Booleans;
 import com.google.common.primitives.Ints;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.platanios.learn.Utilities;
 import org.platanios.learn.math.matrix.*;
 import org.platanios.learn.math.matrix.Vector;
@@ -15,7 +17,9 @@ import org.platanios.learn.optimization.function.LinearFunction;
 import org.platanios.learn.optimization.function.MaxFunction;
 import org.platanios.learn.optimization.function.SumFunction;
 import org.platanios.learn.optimization.linesearch.NoLineSearch;
+import org.platanios.learn.serialization.UnsafeSerializationUtilities;
 
+import java.io.*;
 import java.util.*;
 
 /**
@@ -24,12 +28,46 @@ import java.util.*;
 public final class ProbabilisticSoftLogicProblem {
     private final BiMap<Integer, Integer> externalToInternalIndexesMapping;
     private final ProbabilisticSoftLogicFunction objectiveFunction;
+    private final ImmutableSet<Constraint> constraints;
     private final ImmutableList<Constraint> constraints;
     private final CholeskyDecomposition[] subProblemCholeskyFactors;
     private final ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod subProblemSelectionMethod;
     private final int numberOfSubProblemSamples;
 
-    public static class Predicate {
+    @Override
+    public boolean equals(Object other) {
+
+        if (!(other instanceof ProbabilisticSoftLogicProblem)) {
+            return false;
+        }
+        if (other == this) {
+            return true;
+        }
+
+        ProbabilisticSoftLogicProblem rhs = (ProbabilisticSoftLogicProblem) other;
+
+        return new EqualsBuilder()
+                .append(this.numberOfSubProblemSamples, rhs.numberOfSubProblemSamples)
+                .append(this.subProblemSelectionMethod, rhs.subProblemSelectionMethod)
+                .append(this.externalToInternalIndexesMapping, rhs.externalToInternalIndexesMapping)
+                .append(this.objectiveFunction, rhs.objectiveFunction)
+                .append(this.constraints, rhs.constraints)
+                .isEquals();
+
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 31)
+                .append(this.numberOfSubProblemSamples)
+                .append(this.subProblemSelectionMethod)
+                .append(this.externalToInternalIndexesMapping)
+                .append(this.objectiveFunction)
+                .append(this.constraints)
+                .toHashCode();
+    }
+
+    public static class Predicate implements Serializable {
 
         public Predicate(String name, ImmutableList<String> arguments, boolean isNegated) {
             this.Name = name;
@@ -59,6 +97,12 @@ public final class ProbabilisticSoftLogicProblem {
             return sb.toString();
         }
 
+    }
+
+    public enum GroundingMode {
+        AllPossible,
+        ByExtension,
+        AsRead
     }
 
     public static class Rule {
@@ -178,11 +222,37 @@ public final class ProbabilisticSoftLogicProblem {
             return sb.toString();
         }
 
+        public static void addGroundingsToBuilder(
+            List<Rule> rules,
+            ProbabilisticSoftLogicProblem.GroundedRuleHandler builder,
+            ProbabilisticSoftLogicPredicateManager predicateManager,
+            GroundingMode groundingMode) {
+
+            if (groundingMode == GroundingMode.AllPossible) {
+
+                for (ProbabilisticSoftLogicProblem.Rule rule : rules) {
+
+                    rule.addAllGroundingsToBuilder(builder, predicateManager);
+
+                }
+
+            } else {
+
+                Rule.addGroundingsToBuilderByExtension(
+                    rules,
+                    builder,
+                    predicateManager,
+                    groundingMode != GroundingMode.AsRead);
+
+            }
+
+        }
+
         // allowPredicateCreation is a temporary measure
         // to restrict the groundings to exactly what we have read
-        public static void addGroundingsToBuilderByExtension(
+        private static void addGroundingsToBuilderByExtension(
                 List<Rule> rules,
-                ProbabilisticSoftLogicProblem.Builder builder,
+                ProbabilisticSoftLogicProblem.GroundedRuleHandler builder,
                 ProbabilisticSoftLogicPredicateManager predicateManager,
                 boolean allowPredicateCreation ) {
 
@@ -225,7 +295,7 @@ public final class ProbabilisticSoftLogicProblem {
 
         private void extendGroundingsAndAddToBuilder(
                 Predicate groundingExtension,
-                ProbabilisticSoftLogicProblem.Builder builder,
+                ProbabilisticSoftLogicProblem.GroundedRuleHandler builder,
                 ProbabilisticSoftLogicPredicateManager predicateManager,
                 HashSet<String> groundingsAlreadyAdded,
                 HashSet<Integer> newPredicates,
@@ -370,8 +440,8 @@ public final class ProbabilisticSoftLogicProblem {
 
         }
 
-        public void addAllGroundingsToBuilder(
-                ProbabilisticSoftLogicProblem.Builder builder,
+        private void addAllGroundingsToBuilder(
+                ProbabilisticSoftLogicProblem.GroundedRuleHandler builder,
                 ProbabilisticSoftLogicPredicateManager predicateManager) {
 
 //            // if this is a constraint, do nothing
@@ -540,7 +610,129 @@ public final class ProbabilisticSoftLogicProblem {
 
     }
 
-    public static final class Builder {
+    public static abstract class GroundedRuleHandler {
+        abstract GroundedRuleHandler addRule(
+                int[] headVariableIndexes,
+                int[] bodyVariableIndexes,
+                boolean[] headNegations,
+                boolean[] bodyNegations,
+                double power,
+                double weight);
+    }
+
+    public static final class ProblemSerializer extends GroundedRuleHandler {
+
+        private final OutputStream outputStream;
+        private final Builder builder;
+
+        private ProblemSerializer(OutputStream outputStream, Builder builder) {
+            this.outputStream = outputStream;
+            this.builder = builder;
+        }
+
+        public static Builder write(
+                OutputStream outputStream,
+                List<Rule> rules,
+                ProbabilisticSoftLogicPredicateManager predicateManager,
+                GroundingMode groundingMode) throws IOException {
+
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+            objectOutputStream.writeObject(predicateManager);
+
+            ProbabilisticSoftLogicPredicateManager.IdWeights observedIdsAndWeights =
+                    predicateManager.getAllObservedWeights();
+            ProbabilisticSoftLogicProblem.Builder builder =
+                new ProbabilisticSoftLogicProblem.Builder(
+                        observedIdsAndWeights.Ids, observedIdsAndWeights.Weights, predicateManager.size() - observedIdsAndWeights.Ids.length);
+
+            try {
+                ProblemSerializer serializer = new ProblemSerializer(outputStream, builder);
+                Rule.addGroundingsToBuilder(rules, serializer, predicateManager, groundingMode);
+                serializer.addRule(new int[] {-1}, new int[] {-1}, new boolean[] {false}, new boolean[] {false}, Double.NaN, Double.NaN);
+            } catch (UnsupportedOperationException e){
+                if (e.getMessage() != null && e.getMessage().equals("IOException while writing rule")) {
+                    throw (IOException) e.getCause();
+                }
+            }
+
+            return builder;
+
+        }
+
+        public static Map.Entry<ProbabilisticSoftLogicPredicateManager, ProbabilisticSoftLogicProblem> read(InputStream inputStream) throws IOException, ClassNotFoundException {
+
+            ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
+            ProbabilisticSoftLogicPredicateManager predicateManager = (ProbabilisticSoftLogicPredicateManager) objectInputStream.readObject();
+
+            ProbabilisticSoftLogicPredicateManager.IdWeights observedIdsAndWeights =
+                    predicateManager.getAllObservedWeights();
+            ProbabilisticSoftLogicProblem.Builder builder =
+                    new ProbabilisticSoftLogicProblem.Builder(
+                            observedIdsAndWeights.Ids, observedIdsAndWeights.Weights, predicateManager.size() - observedIdsAndWeights.Ids.length);
+
+            boolean shouldReadRule = true;
+            while (shouldReadRule) {
+                shouldReadRule = ProblemSerializer.readRuleAndAddToBuilder(builder, inputStream);
+            }
+
+            return new AbstractMap.SimpleEntry<ProbabilisticSoftLogicPredicateManager, ProbabilisticSoftLogicProblem>(
+                    predicateManager, builder.build());
+
+        }
+
+        GroundedRuleHandler addRule(
+                 int[] headVariableIndexes,
+                 int[] bodyVariableIndexes,
+                 boolean[] headNegations,
+                 boolean[] bodyNegations,
+                 double power,
+                 double weight) {
+
+            this.builder.addRule(headVariableIndexes, bodyVariableIndexes, headNegations, bodyNegations, power, weight);
+
+            try {
+                UnsafeSerializationUtilities.writeInt(outputStream, headVariableIndexes.length);
+                UnsafeSerializationUtilities.writeIntArray(outputStream, headVariableIndexes);
+                UnsafeSerializationUtilities.writeInt(outputStream, bodyVariableIndexes.length);
+                UnsafeSerializationUtilities.writeIntArray(outputStream, bodyVariableIndexes);
+                UnsafeSerializationUtilities.writeInt(outputStream, headNegations.length);
+                UnsafeSerializationUtilities.writeBooleanArray(outputStream, headNegations);
+                UnsafeSerializationUtilities.writeInt(outputStream, bodyNegations.length);
+                UnsafeSerializationUtilities.writeBooleanArray(outputStream, bodyNegations);
+                UnsafeSerializationUtilities.writeDouble(outputStream, power);
+                UnsafeSerializationUtilities.writeDouble(outputStream, weight);
+            } catch (IOException e) {
+                throw new UnsupportedOperationException("IOException while writing rule", e);
+            }
+
+            return this;
+
+        }
+
+        private static boolean readRuleAndAddToBuilder(Builder builder, InputStream inputStream) throws IOException {
+            int headVariableIndexesLength = UnsafeSerializationUtilities.readInt(inputStream);
+            int[] headVariableIndexes = UnsafeSerializationUtilities.readIntArray(inputStream, headVariableIndexesLength);
+            int bodyVariableIndexesLength = UnsafeSerializationUtilities.readInt(inputStream);
+            int[] bodyVariableIndexes = UnsafeSerializationUtilities.readIntArray(inputStream, bodyVariableIndexesLength);
+            int headNegationsLength = UnsafeSerializationUtilities.readInt(inputStream);
+            boolean[] headNegations = UnsafeSerializationUtilities.readBooleanArray(inputStream, headNegationsLength);
+            int bodyNegationsLength = UnsafeSerializationUtilities.readInt(inputStream);
+            boolean[] bodyNegations = UnsafeSerializationUtilities.readBooleanArray(inputStream, bodyNegationsLength);
+            double power = UnsafeSerializationUtilities.readDouble(inputStream);
+            double weight = UnsafeSerializationUtilities.readDouble(inputStream);
+
+            // indicates that we have finished reading rules
+            if (headVariableIndexes[0] == -1) {
+                return false;
+            }
+
+            builder.addRule(headVariableIndexes, bodyVariableIndexes, headNegations, bodyNegations, power, weight);
+            return true;
+        }
+
+    }
+
+    public static final class Builder extends GroundedRuleHandler {
         private final BiMap<Integer, Integer> externalToInternalIndexesMapping;
 
         private final ImmutableMap<Integer, Double> observedVariableValues;
@@ -581,6 +773,7 @@ public final class ProbabilisticSoftLogicProblem {
 
         public int getNumberOfTerms() { return this.functionTerms.size(); }
 
+        @Override
         Builder addRule(int[] headVariableIndexes,
                         int[] bodyVariableIndexes,
                         boolean[] headNegations,
@@ -757,7 +950,7 @@ public final class ProbabilisticSoftLogicProblem {
             );
         }
         objectiveFunction = new ProbabilisticSoftLogicFunction(sumFunctionBuilder);
-        constraints = ImmutableList.copyOf(builder.constraints);
+        constraints = ImmutableSet.copyOf(builder.constraints);
         subProblemSelectionMethod = builder.subProblemSelectionMethod;
         numberOfSubProblemSamples = builder.numberOfSubProblemSamples;
         subProblemCholeskyFactors = new CholeskyDecomposition[objectiveFunction.getNumberOfTerms()];
@@ -932,6 +1125,43 @@ public final class ProbabilisticSoftLogicProblem {
         }
 
         @Override
+        public boolean equals(Object other) {
+
+            if (other == this) {
+                return true;
+            }
+
+            if (!super.equals(other)) {
+                return false;
+            }
+
+            if (!(other instanceof ProbabilisticSoftLogicSubProblemObjectiveFunction)) {
+                return false;
+            }
+
+            ProbabilisticSoftLogicSubProblemObjectiveFunction rhs = (ProbabilisticSoftLogicSubProblemObjectiveFunction)other;
+
+            return new EqualsBuilder()
+                    .append(this.linearFunction, rhs.linearFunction)
+                    .append(this.power, rhs.power)
+                    .append(this.weight, rhs.weight)
+                    .isEquals();
+
+        }
+
+        @Override
+        public int hashCode() {
+
+            return new HashCodeBuilder(53, 31)
+                    .append(super.hashCode())
+                    .append(this.linearFunction)
+                    .append(this.power)
+                    .append(this.weight)
+                    .toHashCode();
+
+        }
+
+        @Override
         public double computeValue(Vector point) {
             return weight * Math.pow(linearFunction.computeValue(point), power);
         }
@@ -972,6 +1202,43 @@ public final class ProbabilisticSoftLogicProblem {
         }
 
         @Override
+        public boolean equals(Object other) {
+
+            if (other == this) {
+                return true;
+            }
+
+            if (!super.equals(other)) {
+                return false;
+            }
+
+            if (!(other instanceof ProbabilisticSoftLogicSumFunctionTerm)) {
+                return false;
+            }
+
+            ProbabilisticSoftLogicSumFunctionTerm rhs = (ProbabilisticSoftLogicSumFunctionTerm)other;
+
+            return new EqualsBuilder()
+                    .append(this.maxFunction, rhs.maxFunction)
+                    .append(this.power, rhs.power)
+                    .append(this.weight, rhs.weight)
+                    .isEquals();
+
+        }
+
+        @Override
+        public int hashCode() {
+
+            return new HashCodeBuilder(67, 17)
+                    .append(super.hashCode())
+                    .append(this.maxFunction)
+                    .append(this.power)
+                    .append(this.weight)
+                    .toHashCode();
+
+        }
+
+        @Override
         public double computeValue(Vector point) {
             return weight * Math.pow(maxFunction.getValue(point), power);
         }
@@ -1008,6 +1275,31 @@ public final class ProbabilisticSoftLogicProblem {
         private Constraint(AbstractConstraint constraint, int[] variableIndexes) {
             this.constraint = constraint;
             this.variableIndexes = variableIndexes;
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if(!(other instanceof Constraint)) {
+                return false;
+            }
+
+            if (other == this) {
+                return true;
+            }
+
+            Constraint rhs = (Constraint) other;
+            return new EqualsBuilder()
+                    .append(this.constraint, rhs.constraint)
+                    .append(this.variableIndexes, rhs.variableIndexes)
+                    .isEquals();
+        }
+
+        @Override
+        public int hashCode() {
+            return new HashCodeBuilder(13, 37)
+                    .append(this.constraint)
+                    .append(this.variableIndexes)
+                    .toHashCode();
         }
 
     }

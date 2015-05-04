@@ -8,6 +8,9 @@ import org.platanios.experiment.psl.ProbabilisticSoftLogicProblem;
 import org.platanios.experiment.psl.ProbabilisticSoftLogicReader;
 
 import java.io.*;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.zip.DataFormatException;
 
@@ -64,29 +67,16 @@ public class LogicRuleParserTest {
                 "{1.1340018162428416} ( ( ( ~( ~TRUSTS(A, B) | ( TRUSTS(B, C) ) ) & KNOWS(A, B) ) & KNOWS(A, C) ) & KNOWS(B, C) ) >> ~( TRUSTS(A, C) )",
         };
 
-        StringReader stringReader = new StringReader(String.join("\n", lines));
-        BufferedReader reader = null;
         List<ProbabilisticSoftLogicProblem.Rule> rules = null;
 
-        try {
+        try (BufferedReader reader = new BufferedReader(new StringReader(String.join("\n", lines)))) {
 
-            reader = new BufferedReader(stringReader);
             rules = ProbabilisticSoftLogicReader.readRules(reader);
 
         } catch (IOException|DataFormatException e) {
             fail(e.getMessage());
             System.out.println(e.getMessage());
             e.printStackTrace();
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    fail(e.getMessage());
-                    System.out.println(e.getMessage());
-                    e.printStackTrace();
-                }
-            }
         }
 
         String expected = "{constraint} ~KNOWS(A, B) >> ~TRUSTS(A, B)";
@@ -158,13 +148,10 @@ public class LogicRuleParserTest {
         };
 
         ProbabilisticSoftLogicPredicateManager predicateManager = new ProbabilisticSoftLogicPredicateManager();
-        StringReader stringReader = new StringReader(String.join("\n", bogusLines1));
-        BufferedReader reader = null;
 
         boolean gotFormatException = false;
-        try {
+        try (BufferedReader reader = new BufferedReader(new StringReader(String.join("\n", bogusLines1)))) {
 
-            reader = new BufferedReader(stringReader);
             ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
                 predicateManager,
                 "KNOWS",
@@ -178,16 +165,6 @@ public class LogicRuleParserTest {
             e.printStackTrace();
         } catch (UnsupportedOperationException e) {
             gotFormatException = true;
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    fail(e.getMessage());
-                    System.out.println(e.getMessage());
-                    e.printStackTrace();
-                }
-            }
         }
 
         assertTrue("Didn't get format exception from bad lines", gotFormatException);
@@ -201,13 +178,10 @@ public class LogicRuleParserTest {
         };
 
         predicateManager = new ProbabilisticSoftLogicPredicateManager();
-        stringReader = new StringReader(String.join("\n", bogusLines2));
-        reader = null;
         gotFormatException = false;
 
-        try {
+        try (BufferedReader reader = new BufferedReader(new StringReader(String.join("\n", bogusLines2)))) {
 
-            reader = new BufferedReader(stringReader);
             ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
                     predicateManager,
                     "KNOWS",
@@ -221,16 +195,6 @@ public class LogicRuleParserTest {
             e.printStackTrace();
         } catch (DataFormatException e) {
             gotFormatException = true;
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    fail(e.getMessage());
-                    System.out.println(e.getMessage());
-                    e.printStackTrace();
-                }
-            }
         }
 
         assertTrue("Didn't get format exception from bad lines", gotFormatException);
@@ -259,14 +223,11 @@ public class LogicRuleParserTest {
         boolean[] expectedSecondArgFound = { false, false, false };
 
         predicateManager = new ProbabilisticSoftLogicPredicateManager();
-        stringReader = new StringReader(String.join("\n", lines));
-        reader = null;
 
         Set<Integer> predicateIds = null;
 
-        try {
+        try (BufferedReader reader = new BufferedReader(new StringReader(String.join("\n", lines)))) {
 
-            reader = new BufferedReader(stringReader);
             ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
                 predicateManager,
                 "KNOWS",
@@ -279,16 +240,6 @@ public class LogicRuleParserTest {
             fail(e.getMessage());
             System.out.println(e.getMessage());
             e.printStackTrace();
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    fail(e.getMessage());
-                    System.out.println(e.getMessage());
-                    e.printStackTrace();
-                }
-            }
         }
 
         assertTrue("Wrong number of ids returned", predicateIds.size() == expected.length);
@@ -480,8 +431,10 @@ public class LogicRuleParserTest {
         ProbabilisticSoftLogicProblem.Builder nonSymBuilder =
                 new ProbabilisticSoftLogicProblem.Builder(observedIdsAndWeights.Ids, observedIdsAndWeights.Weights, 100);
 
-        rule.addAllGroundingsToBuilder(builder, predicateManager);
-        nonSymRule.addAllGroundingsToBuilder(nonSymBuilder, nonSymPredicateManager);
+        ProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilder(
+                Arrays.asList(rule), builder, predicateManager, ProbabilisticSoftLogicProblem.GroundingMode.AllPossible);
+        ProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilder(
+                Arrays.asList(rule), nonSymBuilder, nonSymPredicateManager, ProbabilisticSoftLogicProblem.GroundingMode.AllPossible);
 
         Set<String> expectedNormal = new HashSet<>(Arrays.asList(
             "KNOWS(1, 1)",
@@ -576,8 +529,10 @@ public class LogicRuleParserTest {
         ProbabilisticSoftLogicProblem.Builder closedBuilder =
                 new ProbabilisticSoftLogicProblem.Builder(observedIdsAndWeights.Ids, observedIdsAndWeights.Weights, 100);
 
-        rule.addAllGroundingsToBuilder(builder, predicateManager);
-        rule.addAllGroundingsToBuilder(closedBuilder, closedPredicateManager);
+        ProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilder(
+                Arrays.asList(rule), builder, predicateManager, ProbabilisticSoftLogicProblem.GroundingMode.AllPossible);
+        ProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilder(
+                Arrays.asList(rule), closedBuilder, closedPredicateManager, ProbabilisticSoftLogicProblem.GroundingMode.AllPossible);
 
         Set<String> expectedNormalKnows = new HashSet<>(Arrays.asList(
                 "KNOWS(1, 1)",
@@ -706,7 +661,7 @@ public class LogicRuleParserTest {
         ProbabilisticSoftLogicProblem.Builder builder =
                 new ProbabilisticSoftLogicProblem.Builder(observedIdsAndWeights.Ids, observedIdsAndWeights.Weights, 100);
 
-        ProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilderByExtension(Arrays.asList(rule), builder, predicateManager, true);
+        ProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilder(Arrays.asList(rule), builder, predicateManager, ProbabilisticSoftLogicProblem.GroundingMode.ByExtension);
 
         // from initial observations we have:
         // K(1, 2) & K(2, 3) >> K(1, 3) --> body does not hold
@@ -749,10 +704,64 @@ public class LogicRuleParserTest {
         assertTrue(builder.getNumberOfTerms() == 7);
     }
 
-    private enum GroundingMode {
-        AllPossible,
-        ByExtension,
-        AsRead
+    @Test
+    public void testSerialization() {
+
+        ProbabilisticSoftLogicProblem.Predicate knowsAB =
+                new ProbabilisticSoftLogicProblem.Predicate("KNOWS", ImmutableList.of("A", "B"), false);
+
+        ProbabilisticSoftLogicProblem.Predicate knowsBC =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("B", "C"), false);
+
+        ProbabilisticSoftLogicProblem.Predicate trustsAC =
+                new ProbabilisticSoftLogicProblem.Predicate("TRUSTS", ImmutableList.of("A", "C"), false);
+
+        // "{1.5} KNOWS(A, B) & KNOWS(B, C) >> TRUSTS(A, C)"
+        ProbabilisticSoftLogicProblem.Rule rule =
+                new ProbabilisticSoftLogicProblem.Rule(1.5, 1, ImmutableList.of(trustsAC), ImmutableList.of(knowsAB, knowsBC));
+
+        ProbabilisticSoftLogicProblem.Predicate knows12 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("1", "2"), false);
+        ProbabilisticSoftLogicProblem.Predicate knows23 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("2", "3"), false);
+        ProbabilisticSoftLogicProblem.Predicate knows34 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("3", "4"), false);
+
+        ProbabilisticSoftLogicPredicateManager predicateManager = new ProbabilisticSoftLogicPredicateManager();
+
+        predicateManager.getOrAddPredicate(knows12, 0.5);
+        predicateManager.getOrAddPredicate(knows23, 0.1);
+        predicateManager.getOrAddPredicate(knows34, 0.7);
+
+        ProbabilisticSoftLogicPredicateManager.IdWeights observedIdsAndWeights =
+                predicateManager.getAllObservedWeights();
+
+        ProbabilisticSoftLogicProblem.Builder builder =
+                new ProbabilisticSoftLogicProblem.Builder(observedIdsAndWeights.Ids, observedIdsAndWeights.Weights, 100);
+
+        ProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilder(Arrays.asList(rule), builder, predicateManager, ProbabilisticSoftLogicProblem.GroundingMode.AllPossible);
+
+        ProbabilisticSoftLogicProblem problem = builder.build();
+
+        ProbabilisticSoftLogicProblem deserializedProblem = null;
+
+        try {
+            ByteArrayOutputStream byteStream = new ByteArrayOutputStream(2048);
+            ProbabilisticSoftLogicProblem.ProblemSerializer.write(byteStream, Arrays.asList(rule), predicateManager, ProbabilisticSoftLogicProblem.GroundingMode.AllPossible);
+            byteStream.close();
+            byte[] bytes = byteStream.toByteArray();
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+            Map.Entry<ProbabilisticSoftLogicPredicateManager, ProbabilisticSoftLogicProblem> deserialized =
+                    ProbabilisticSoftLogicProblem.ProblemSerializer.read(inputStream);
+            deserializedProblem = deserialized.getValue();
+        } catch (IOException|ClassNotFoundException e) {
+            fail(e.getMessage());
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+
+        assertTrue("Serialization round-trip not equal to initial object", problem.equals(deserializedProblem));
+
     }
 
     @Test
@@ -760,152 +769,122 @@ public class LogicRuleParserTest {
 
         String experimentName = "epinions_500";
 
-        for (GroundingMode groundingMode : GroundingMode.values()) {
+        for (ProbabilisticSoftLogicProblem.GroundingMode groundingMode : ProbabilisticSoftLogicProblem.GroundingMode.values()) {
 
             // for testing one mode
-            if (groundingMode != GroundingMode.AsRead) {
+            if (groundingMode != ProbabilisticSoftLogicProblem.GroundingMode.AsRead) {
                 continue;
             }
 
-            InputStream groundingStream = null;
-            if (groundingMode == GroundingMode.AsRead) {
-                groundingStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/trust_groundings.txt");
-            }
-
-            InputStream modelStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/model.txt");
-            InputStream knowsStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/knows.txt");
-            InputStream trustTrainStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/train.txt");
-            InputStream trustTestStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/test.txt");
-
-            BufferedReader groundingReader = null;
-            BufferedReader modelReader = null;
-            BufferedReader knowsReader = null;
-            BufferedReader trustTrainReader = null;
-            BufferedReader trustTestReader = null;
-
-            List<ProbabilisticSoftLogicProblem.Rule> rules = null;
-            ProbabilisticSoftLogicPredicateManager trainPredicateManager = new ProbabilisticSoftLogicPredicateManager();
-            ProbabilisticSoftLogicPredicateManager testPredicateManager = new ProbabilisticSoftLogicPredicateManager();
-
+            String outputStreamName = null;
             try {
-
-                InputStreamReader streamReader = new InputStreamReader(modelStream);
-                modelReader = new BufferedReader(streamReader);
-                rules = ProbabilisticSoftLogicReader.readRules(modelReader);
-
-                streamReader = new InputStreamReader(knowsStream);
-                knowsReader = new BufferedReader(streamReader);
-                ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
-                        trainPredicateManager, "KNOWS", groundingMode == GroundingMode.AllPossible, false, knowsReader);
-
-                streamReader = new InputStreamReader(trustTrainStream);
-                trustTrainReader = new BufferedReader(streamReader);
-                ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
-                        trainPredicateManager, "TRUSTS", false, false, trustTrainReader);
-
-                if (groundingMode == GroundingMode.AsRead) {
-                    streamReader = new InputStreamReader(groundingStream);
-                    groundingReader = new BufferedReader(streamReader);
-                    ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
-                            trainPredicateManager, "TRUSTS", false, true, groundingReader);
-                }
-
-                streamReader = new InputStreamReader(trustTestStream);
-                trustTestReader = new BufferedReader(streamReader);
-                ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(testPredicateManager, "TRUSTS", false, false, trustTestReader);
-
-            } catch (IOException | DataFormatException e) {
+                Path knowsPath = Paths.get(this.getClass().getResource("../" + experimentName + "/knows.txt").toURI());
+                outputStreamName = Paths.get(knowsPath.getParent().toString(), "problem_serialized.bin").toString();
+            } catch (URISyntaxException e) {
                 fail(e.getMessage());
                 System.out.println(e.getMessage());
                 e.printStackTrace();
-            } finally {
-
-                if (modelReader != null) {
-                    try {
-                        modelReader.close();
-                    } catch (IOException e) {
-                        fail(e.getMessage());
-                        System.out.println(e.getMessage());
-                        e.printStackTrace();
-                    }
-                }
-
-                if (knowsReader != null) {
-                    try {
-                        knowsReader.close();
-                    } catch (IOException e) {
-                        fail(e.getMessage());
-                        System.out.println(e.getMessage());
-                        e.printStackTrace();
-                    }
-                }
-
-                if (trustTrainReader != null) {
-                    try {
-                        trustTrainReader.close();
-                    } catch (IOException e) {
-                        fail(e.getMessage());
-                        System.out.println(e.getMessage());
-                        e.printStackTrace();
-                    }
-                }
-
-                if (trustTestReader != null) {
-                    try {
-                        trustTestReader.close();
-                    } catch (IOException e) {
-                        fail(e.getMessage());
-                        System.out.println(e.getMessage());
-                        e.printStackTrace();
-                    }
-                }
-
-                if (groundingReader != null) {
-                    try {
-                        groundingReader.close();
-                    } catch (IOException e) {
-                        fail(e.getMessage());
-                        System.out.println(e.getMessage());
-                        e.printStackTrace();
-                    }
-                }
-             }
-
-            ProbabilisticSoftLogicPredicateManager.IdWeights observedIdsAndWeights =
-                    trainPredicateManager.getAllObservedWeights();
-
-            ProbabilisticSoftLogicProblem.Builder problemBuilder =
-                    new ProbabilisticSoftLogicProblem.Builder(
-                            observedIdsAndWeights.Ids,
-                            observedIdsAndWeights.Weights,
-                            trainPredicateManager.size() - observedIdsAndWeights.Ids.length);
-
-            if (groundingMode == GroundingMode.AllPossible) {
-                for (ProbabilisticSoftLogicProblem.Rule rule : rules) {
-
-                    rule.addAllGroundingsToBuilder(problemBuilder, trainPredicateManager);
-
-                }
-            } else {
-                ProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilderByExtension(
-                        rules,
-                        problemBuilder,
-                        trainPredicateManager,
-                        groundingMode != GroundingMode.AsRead);
+                return;
             }
 
-            ProbabilisticSoftLogicProblem problem = problemBuilder.build();
+
+            File outputStreamFile = new File(outputStreamName);
+            ProbabilisticSoftLogicProblem problem = null;
+            ProbabilisticSoftLogicPredicateManager trainPredicateManager = null;
+            if (outputStreamFile.exists()) {
+
+                try (FileInputStream inputStream = new FileInputStream(outputStreamFile)) {
+
+                    Map.Entry<ProbabilisticSoftLogicPredicateManager, ProbabilisticSoftLogicProblem> deserialized =
+                            ProbabilisticSoftLogicProblem.ProblemSerializer.read(inputStream);
+
+                    trainPredicateManager = deserialized.getKey();
+                    problem = deserialized.getValue();
+
+                } catch (IOException|ClassNotFoundException e) {
+                    fail(e.getMessage());
+                    System.out.println(e.getMessage());
+                    e.printStackTrace();
+                }
+
+            } else {
+
+                InputStream groundingStream = null;
+                if (groundingMode == ProbabilisticSoftLogicProblem.GroundingMode.AsRead) {
+                    groundingStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/trust_groundings.txt");
+                }
+
+                InputStream modelStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/model.txt");
+                InputStream knowsStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/knows.txt");
+                InputStream trustTrainStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/train.txt");
+                InputStream trustTestStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/test.txt");
+
+                List<ProbabilisticSoftLogicProblem.Rule> rules = null;
+                trainPredicateManager = new ProbabilisticSoftLogicPredicateManager();
+                ProbabilisticSoftLogicPredicateManager testPredicateManager = new ProbabilisticSoftLogicPredicateManager();
+
+                try (
+                        BufferedReader groundingReader = groundingStream == null ? null : new BufferedReader(new InputStreamReader(groundingStream));
+                        BufferedReader modelReader = new BufferedReader(new InputStreamReader(modelStream));
+                        BufferedReader knowsReader = new BufferedReader(new InputStreamReader(knowsStream));
+                        BufferedReader trustTrainReader = new BufferedReader(new InputStreamReader(trustTrainStream));
+                        BufferedReader trustTestReader = trustTestStream == null ? null : new BufferedReader(new InputStreamReader(trustTestStream))) {
+
+                    rules = ProbabilisticSoftLogicReader.readRules(modelReader);
+
+                    ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
+                            trainPredicateManager, "KNOWS", groundingMode == ProbabilisticSoftLogicProblem.GroundingMode.AllPossible, false, knowsReader);
+
+                    ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
+                            trainPredicateManager, "TRUSTS", false, false, trustTrainReader);
+
+                    if (groundingMode == ProbabilisticSoftLogicProblem.GroundingMode.AsRead) {
+                        ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
+                                trainPredicateManager, "TRUSTS", false, true, groundingReader);
+                    }
+
+                    ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(testPredicateManager, "TRUSTS", false, false, trustTestReader);
+
+                } catch (IOException | DataFormatException e) {
+                    fail(e.getMessage());
+                    System.out.println(e.getMessage());
+                    e.printStackTrace();
+                }
+
+                try (FileOutputStream outputStream = new FileOutputStream(outputStreamFile)) {
+
+                    ProbabilisticSoftLogicProblem.Builder problemBuilder =
+                            ProbabilisticSoftLogicProblem.ProblemSerializer.write(
+                                    outputStream,
+                                    rules,
+                                    trainPredicateManager,
+                                    groundingMode);
+
+                    problem = problemBuilder.build();
+
+                } catch (IOException e) {
+                    fail(e.getMessage());
+                    System.out.println(e.getMessage());
+                    e.printStackTrace();
+                }
+
+            }
 
             Map<Integer, Double> result = problem.solve();
             Map<String, Double> filteredResults = new HashMap<>();
 
+            // to make compiler happy that this is effectively final
+            ProbabilisticSoftLogicPredicateManager temp = trainPredicateManager;
+
             result.keySet().stream()
                     .filter(key -> result.get(key) > Math.sqrt(Double.MIN_VALUE))
-                    .forEach(key -> filteredResults.put(trainPredicateManager.getPredicateFromId(key).toString(), result.get(key)));
+                    .forEach(key -> filteredResults.put(temp.getPredicateFromId(key).toString(), result.get(key)));
+
 
             System.out.println(result.get(0));
             System.out.println(result.get(1));
-            System.out.println('\n');
+
+            System.out.println("Done\n");
 
         }
 

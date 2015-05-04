@@ -226,6 +226,21 @@ abstract class AbstractTrainableLogisticRegression
             trainingDataIterator = trainingDataSet.iterator();
         }
 
+        @Override
+        public boolean equals(Object other) {
+            // should we iterator the trainingDataSet here? instead of just checking identity?
+            if (other == this) {
+                return true;
+            }
+
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(this);
+        }
+
         /**
          * Computes the value of the likelihood function for the binary logistic regression model.
          *

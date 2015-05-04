@@ -1,5 +1,8 @@
 package org.platanios.learn.optimization.function;
 
+import com.sun.org.apache.xpath.internal.operations.Equals;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.platanios.learn.math.MathUtilities;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Matrix;
@@ -20,6 +23,25 @@ public final class DerivativesApproximation {
         this.function = function;
         this.method = method;
         epsilon = method.computeEpsilon();
+    }
+
+    // used by AbstractFunction within the equals method to check whether
+    // the approximation used by one function is equal to another
+    // without engaging in mutual recursion - i.e. this should check
+    // equality on everything other than the function
+    public boolean sameApprox(DerivativesApproximation rhs) {
+        return new EqualsBuilder()
+                .append(this.epsilon, rhs.epsilon)
+                .append(this.method, rhs.method)
+                .isEquals();
+    }
+
+    // used by AbstractFunction to get a hashCode without engaging in mutual recursion
+    public int approxCode() {
+        return new HashCodeBuilder(37, 47)
+                .append(this.epsilon)
+                .append(this.method)
+                .toHashCode();
     }
 
     public Vector approximateGradient(Vector point) {
