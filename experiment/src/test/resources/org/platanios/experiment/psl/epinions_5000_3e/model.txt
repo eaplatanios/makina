@@ -1,4 +1,3 @@
-Model:
 {2.0} ( ( ( ( TRUSTS(A, B) & TRUSTS(B, C) ) & KNOWS(A, B) ) & KNOWS(A, C) ) & KNOWS(B, C) ) >> TRUSTS(A, C) {squared}
 {2.0} ( ( ( ( TRUSTS(A, B) & ~( TRUSTS(B, C) ) ) & KNOWS(A, B) ) & KNOWS(A, C) ) & KNOWS(B, C) ) >> ~( TRUSTS(A, C) ) {squared}
 {2.0} ( ( ( ( ~( TRUSTS(A, B) ) & TRUSTS(B, C) ) & KNOWS(A, B) ) & KNOWS(A, C) ) & KNOWS(B, C) ) >> ~( TRUSTS(A, C) ) {squared}
