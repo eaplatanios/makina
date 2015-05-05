@@ -38,7 +38,7 @@ abstract class AbstractIterativeSolver implements Solver {
     final AbstractFunction objective;
 
     int currentIteration;
-    Vector currentPoint;
+    public Vector currentPoint;
     Vector previousPoint;
     Vector currentGradient;
     Vector previousGradient;

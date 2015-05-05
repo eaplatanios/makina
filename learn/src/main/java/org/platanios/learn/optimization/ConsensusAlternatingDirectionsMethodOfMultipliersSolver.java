@@ -38,7 +38,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
 
     private final PenaltyParameterSettingMethod penaltyParameterSettingMethod;
     private final SubProblemSelectionMethod subProblemSelectionMethod;
-    private final int numberOfSubProblemSamples;
+    public final int numberOfSubProblemSamples;
     private final double mu;
     private final double tauIncrement;
     private final double tauDecrement;
