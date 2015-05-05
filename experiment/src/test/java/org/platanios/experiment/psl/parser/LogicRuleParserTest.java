@@ -14,9 +14,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.zip.DataFormatException;
 
-import static junit.framework.TestCase.fail;
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertTrue;
+import static junit.framework.TestCase.*;
 
 
 /**
@@ -767,7 +765,7 @@ public class LogicRuleParserTest {
     @Test
     public void testEndToEnd() {
 
-        String experimentName = "epinions_200";
+        String experimentName = "epinions_500";
 
         for (ProbabilisticSoftLogicProblem.GroundingMode groundingMode : ProbabilisticSoftLogicProblem.GroundingMode.values()) {
 
@@ -789,7 +787,7 @@ public class LogicRuleParserTest {
 
 
             File outputStreamFile = new File(outputStreamName);
-            ProbabilisticSoftLogicProblem problem = null;
+            ProbabilisticSoftLogicProblem.Builder problemBuilder = null;
             ProbabilisticSoftLogicPredicateManager trainPredicateManager = null;
             if (outputStreamFile.exists()) {
 
@@ -799,7 +797,7 @@ public class LogicRuleParserTest {
                             ProbabilisticSoftLogicProblem.ProblemSerializer.read(inputStream);
 
                     trainPredicateManager = deserialized.getKey();
-                    problem = deserialized.getValue().build();
+                    problemBuilder = deserialized.getValue();
 
                 } catch (IOException|ClassNotFoundException e) {
                     fail(e.getMessage());
@@ -853,14 +851,12 @@ public class LogicRuleParserTest {
 
                 try (FileOutputStream outputStream = new FileOutputStream(outputStreamFile)) {
 
-                    ProbabilisticSoftLogicProblem.Builder problemBuilder =
+                    problemBuilder =
                             ProbabilisticSoftLogicProblem.ProblemSerializer.write(
                                     outputStream,
                                     rules,
                                     trainPredicateManager,
                                     groundingMode);
-
-                    problem = problemBuilder.build();
 
                 } catch (IOException e) {
                     fail(e.getMessage());
@@ -869,6 +865,11 @@ public class LogicRuleParserTest {
                 }
 
             }
+
+            ProbabilisticSoftLogicProblem problem = problemBuilder
+//                    .subProblemSelectionMethod(ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.UNIFORM_SAMPLING)
+//                    .numberOfSubProblemSamples(8)
+                    .build();
 
             Map<Integer, Double> result = problem.solve();
             Map<String, Double> filteredResults = new HashMap<>();
