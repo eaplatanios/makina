@@ -43,6 +43,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
     private final double tauIncrement;
     private final double tauDecrement;
     private final Consumer<SubProblem> subProblemSolver;
+    private final SubProblemSelector subProblemSelector;
     private final ExecutorService taskExecutor;
 
     private final SumFunction objective;
@@ -80,6 +81,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         protected double tauDecrement = 2;
         protected double penaltyParameter = 1e-4;
         protected Consumer<SubProblem> subProblemSolver = null;
+        protected SubProblemSelector subProblemSelector = null;
         protected int numberOfThreads = Runtime.getRuntime().availableProcessors();
 
         protected AbstractBuilder(SumFunction objective,
@@ -121,11 +123,6 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
             return self();
         }
 
-        public T subProblemSelectionMethod(SubProblemSelectionMethod subProblemSelectionMethod) {
-            this.subProblemSelectionMethod = subProblemSelectionMethod;
-            return self();
-        }
-
         /**
          * Note that this parameter is not used if the sub-problem selection method is set to
          * {@link SubProblemSelectionMethod#ALL} (which is the default setting). If a high sub-sampling ratio is used,
@@ -164,6 +161,19 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
             return self();
         }
 
+        public T subProblemSelectionMethod(SubProblemSelectionMethod subProblemSelectionMethod) {
+            this.subProblemSelectionMethod = subProblemSelectionMethod;
+            return self();
+        }
+
+        public T subProblemSelector(SubProblemSelector subProblemSelector) {
+            if (subProblemSelector != null) {
+                this.subProblemSelectionMethod = SubProblemSelectionMethod.CUSTOM;
+            }
+            this.subProblemSelector = subProblemSelector;
+            return self();
+        }
+
         public T numberOfThreads(int numberOfThreads) {
             this.numberOfThreads = numberOfThreads;
             return self();
@@ -198,6 +208,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         primalResidualSquaredTerms = Vectors.build(objective.getNumberOfTerms(), VectorType.DENSE);
         penaltyParameterSettingMethod = builder.penaltyParameterSettingMethod;
         subProblemSelectionMethod = builder.subProblemSelectionMethod;
+        subProblemSelector = builder.subProblemSelector;
         numberOfSubProblemSamples = builder.numberOfSubProblemSamples;
         mu = builder.mu;
         tauIncrement = builder.tauIncrement;
@@ -441,6 +452,10 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         }
     }
 
+    public int getNumberOfTerms() {
+        return this.objective.getNumberOfTerms();
+    }
+
     private void processSubProblem(int subProblemIndex,
                                    int[] variableIndexes,
                                    Vector variables,
@@ -634,7 +649,11 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         public abstract void updatePenaltyParameter(ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver);
     }
 
-    public enum SubProblemSelectionMethod {
+    public interface SubProblemSelector {
+        int[] selectSubProblems(ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver);
+    }
+
+    public enum SubProblemSelectionMethod implements SubProblemSelector {
         ALL {
             @Override
             public int[] selectSubProblems(ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver) {
@@ -664,14 +683,21 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
                         indexes[index] = index;
                     return StatisticsUtilities
                             .sampleWithoutReplacement(indexes,
-                                                      solver.primalResidualSquaredTerms.getDenseArray(),
-                                                      solver.numberOfSubProblemSamples);
+                                    solver.primalResidualSquaredTerms.getDenseArray(),
+                                    solver.numberOfSubProblemSamples);
                 } else {
                     return UNIFORM_SAMPLING.selectSubProblems(solver);
                 }
             }
+        },
+        CUSTOM {
+            @Override
+            public int[] selectSubProblems(ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver) {
+                return solver.subProblemSelector.selectSubProblems(solver);
+            }
         };
 
         public abstract int[] selectSubProblems(ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver);
+
     }
 }

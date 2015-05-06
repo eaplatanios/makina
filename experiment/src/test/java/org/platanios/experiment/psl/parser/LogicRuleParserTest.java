@@ -2,10 +2,7 @@ package org.platanios.experiment.psl.parser;
 
 import com.google.common.collect.ImmutableList;
 import org.junit.Test;
-import org.platanios.experiment.psl.CartesianProductIterator;
-import org.platanios.experiment.psl.ProbabilisticSoftLogicPredicateManager;
-import org.platanios.experiment.psl.ProbabilisticSoftLogicProblem;
-import org.platanios.experiment.psl.ProbabilisticSoftLogicReader;
+import org.platanios.experiment.psl.*;
 import org.platanios.learn.optimization.ConsensusAlternatingDirectionsMethodOfMultipliersSolver;
 
 import java.io.*;
@@ -850,7 +847,10 @@ public class LogicRuleParserTest {
                     e.printStackTrace();
                 }
 
-                try (FileOutputStream outputStream = new FileOutputStream(outputStreamFile)) {
+                FileOutputStream outputStream = null;
+                try {
+
+                    outputStream = new FileOutputStream(outputStreamFile);
 
                     problemBuilder =
                             ProbabilisticSoftLogicProblem.ProblemSerializer.write(
@@ -859,7 +859,15 @@ public class LogicRuleParserTest {
                                     trainPredicateManager,
                                     groundingMode);
 
-                } catch (IOException e) {
+                    outputStream.close();
+
+                } catch (Exception e) {
+                    if (outputStream != null) {
+                        try {
+                            outputStream.close();
+                        } catch(IOException e2) {}
+                        outputStreamFile.delete();
+                    }
                     fail(e.getMessage());
                     System.out.println(e.getMessage());
                     e.printStackTrace();
@@ -867,12 +875,44 @@ public class LogicRuleParserTest {
 
             }
 
-            ProbabilisticSoftLogicProblem problem = problemBuilder
-                    .subProblemSelectionMethod(ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.UNIFORM_SAMPLING)
-                    .numberOfSubProblemSamples(8)
-                    .build();
+            ProbabilisticSoftLogicProblem problem = problemBuilder.build();
 
-            Map<Integer, Double> result = problem.solve();
+            Random random = new Random();
+
+            RandomWalkSampler.Builder<String> randomWalkSamplerBuilder =
+                    new RandomWalkSampler.Builder<>(
+                            problem.getExternalPredicateIdsToTerms(),
+                            problem.getInternalToExternalIds(),
+                            problem.getTermPredicateIdGetter(),
+                            0.25 * 0.2, // restart probability (1/4 of the step probability)
+                            0.8,  // sample probability
+                            random);
+
+            trainPredicateManager.addEdgesToRandomWalkSampler(randomWalkSamplerBuilder);
+
+            // add some random seeds
+            List<String> entities = new ArrayList<>(trainPredicateManager.getAllEntities());
+            for (int iSeed = 0; iSeed < 100; ++iSeed) {
+                String entity = entities.get(random.nextInt(entities.size()));
+                randomWalkSamplerBuilder.addOriginEntity(entity);
+            }
+
+            RandomWalkSampler<String> randomWalkSampler = randomWalkSamplerBuilder.build();
+
+            Map<Integer, Double> result =
+                    problem.solve(
+                            ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.CUSTOM,
+                            randomWalkSampler, // sub problem selector (sampler)
+                            8); // number of subproblem samples
+
+//            Map<Integer, Double> result =
+//                    problem.solve(
+//                            //ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.UNIFORM_SAMPLING,
+//                            //null, // sub problem selector (sampler)
+//                            //8 // number of subproblem samples
+//                    );
+
+
             Map<String, Double> filteredResults = new HashMap<>();
 
             // to make compiler happy that this is effectively final

@@ -30,8 +30,7 @@ public final class ProbabilisticSoftLogicProblem {
     private final ProbabilisticSoftLogicFunction objectiveFunction;
     private final ImmutableSet<Constraint> constraints;
     private final Map<Integer, CholeskyDecomposition> subProblemCholeskyFactors = new HashMap<>();
-    private final ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod subProblemSelectionMethod;
-    private final int numberOfSubProblemSamples;
+    private final Map<Integer, List<Integer>> externalPredicateIdToTerms;
 
     @Override
     public boolean equals(Object other) {
@@ -46,11 +45,11 @@ public final class ProbabilisticSoftLogicProblem {
         ProbabilisticSoftLogicProblem rhs = (ProbabilisticSoftLogicProblem) other;
 
         return new EqualsBuilder()
-                .append(this.numberOfSubProblemSamples, rhs.numberOfSubProblemSamples)
-                .append(this.subProblemSelectionMethod, rhs.subProblemSelectionMethod)
                 .append(this.externalToInternalIndexesMapping, rhs.externalToInternalIndexesMapping)
                 .append(this.objectiveFunction, rhs.objectiveFunction)
                 .append(this.constraints, rhs.constraints)
+                .append(this.subProblemCholeskyFactors, rhs.subProblemCholeskyFactors)
+                .append(this.externalPredicateIdToTerms, rhs.externalPredicateIdToTerms)
                 .isEquals();
 
     }
@@ -58,11 +57,11 @@ public final class ProbabilisticSoftLogicProblem {
     @Override
     public int hashCode() {
         return new HashCodeBuilder(17, 31)
-                .append(this.numberOfSubProblemSamples)
-                .append(this.subProblemSelectionMethod)
                 .append(this.externalToInternalIndexesMapping)
                 .append(this.objectiveFunction)
                 .append(this.constraints)
+                .append(this.subProblemCholeskyFactors)
+                .append(this.externalPredicateIdToTerms)
                 .toHashCode();
     }
 
@@ -77,6 +76,36 @@ public final class ProbabilisticSoftLogicProblem {
         public final String Name;
         public final ImmutableList<String> Arguments;
         public final boolean IsNegated;
+
+        @Override
+        public boolean equals(Object other) {
+            if (other == this) {
+                return true;
+            }
+
+            if (!(other instanceof Predicate)) {
+                return false;
+            }
+
+            Predicate rhs = (Predicate)other;
+
+            return new EqualsBuilder()
+                .append(this.Name, rhs.Name)
+                .append(this.Arguments, rhs.Arguments)
+                .append(this.IsNegated, rhs.IsNegated)
+                .isEquals();
+        }
+
+        @Override
+        public int hashCode() {
+
+            return new HashCodeBuilder(17, 31)
+                    .append(this.Name)
+                    .append(this.Arguments)
+                    .append(this.IsNegated)
+                    .toHashCode();
+
+        }
 
         @Override
         public String toString() {
@@ -467,7 +496,6 @@ public final class ProbabilisticSoftLogicProblem {
                         }
 
                     }
-
                 }
             }
 
@@ -837,51 +865,55 @@ public final class ProbabilisticSoftLogicProblem {
     public static final class Builder extends GroundedRuleHandler {
         private final BiMap<Integer, Integer> externalToInternalIndexesMapping;
 
-        private final ImmutableMap<Integer, Double> observedVariableValues;
+        private final Map<Integer, Double> observedVariableValues;
         //private final HashMap<String, FunctionTerm> functionTerms = new HashMap<>();
-        private final ArrayList<FunctionTerm> functionTerms = new ArrayList<>();
-        private final ArrayList<Constraint> constraints = new ArrayList<>();
-
-        private ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod subProblemSelectionMethod =
-                ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.ALL;
-        private int numberOfSubProblemSamples = -1;
+        private final List<FunctionTerm> functionTerms = new ArrayList<>();
+        private final List<Constraint> constraints = new ArrayList<>();
+        private final Map<Integer, List<Integer>> externalPredicateIdToTerms;
 
         private int nextInternalIndex = 0;
 
-        public Builder(int[] observedVariableIndexes,
-                       double[] observedVariableValues,
-                       int numberOfUnobservedVariables) {
+        public Builder(
+                int[] observedVariableIndexes,
+                double[] observedVariableValues,
+                int numberOfUnobservedVariables) {
+
             ImmutableMap.Builder<Integer, Double> observedVariableValueBuilder = ImmutableMap.builder();
-            if ((observedVariableIndexes == null) != (observedVariableValues == null))
+            if ((observedVariableIndexes == null) != (observedVariableValues == null)) {
                 throw new IllegalArgumentException(
                         "The provided indexes for the observed variables must much the corresponding provided values."
                 );
+            }
             if (observedVariableIndexes != null) {
-                if (observedVariableIndexes.length != observedVariableValues.length)
+                if (observedVariableIndexes.length != observedVariableValues.length) {
                     throw new IllegalArgumentException(
                             "The provided indexes array for the observed variables must " +
                                     "have the same length the corresponding provided values array."
                     );
-                for (int i = 0; i < observedVariableIndexes.length; ++i)
+                }
+                for (int i = 0; i < observedVariableIndexes.length; ++i) {
                     observedVariableValueBuilder.put(observedVariableIndexes[i], observedVariableValues[i]);
+                }
             }
 
             // special case - always add -1 as an Id with observed value 0.
             // predicates which are grounded outside of a closed set will thus have value 0
             observedVariableValueBuilder.put(-1, 0.0);
             this.observedVariableValues = observedVariableValueBuilder.build();
-            externalToInternalIndexesMapping = HashBiMap.create(numberOfUnobservedVariables);
+            this.externalToInternalIndexesMapping = HashBiMap.create(numberOfUnobservedVariables);
+            this.externalPredicateIdToTerms = new HashMap<>(numberOfUnobservedVariables + observedVariableIndexes.length, 1);
         }
 
         public int getNumberOfTerms() { return this.functionTerms.size(); }
 
         @Override
-        Builder addRule(int[] headVariableIndexes,
-                        int[] bodyVariableIndexes,
-                        boolean[] headNegations,
-                        boolean[] bodyNegations,
-                        double power,
-                        double weight) {
+        Builder addRule(
+                int[] headVariableIndexes,
+                int[] bodyVariableIndexes,
+                boolean[] headNegations,
+                boolean[] bodyNegations,
+                double power,
+                double weight) {
             RulePart headPart = convertRulePartToInternalRepresentation(headVariableIndexes, headNegations, true);
             RulePart bodyPart = convertRulePartToInternalRepresentation(bodyVariableIndexes, bodyNegations, false);
             double ruleMaximumValue = 1 + headPart.observedConstant + bodyPart.observedConstant;
@@ -890,6 +922,7 @@ public final class ProbabilisticSoftLogicProblem {
             int[] variableIndexes = Utilities.union(headPart.variableIndexes, bodyPart.variableIndexes);
             if (variableIndexes.length == 0)
                 return this;
+            int indexTerm = this.functionTerms.size();
             LinearFunction linearFunction = new LinearFunction(Vectors.dense(variableIndexes.length), ruleMaximumValue);
             for (int headVariable = 0; headVariable < headPart.variableIndexes.length; headVariable++) {
                 Vector coefficients = Vectors.dense(variableIndexes.length);
@@ -902,6 +935,12 @@ public final class ProbabilisticSoftLogicProblem {
                 }
             }
             for (int bodyVariable = 0; bodyVariable < bodyPart.variableIndexes.length; bodyVariable++) {
+                List<Integer> predicateTermIndices = this.externalPredicateIdToTerms.getOrDefault(bodyPart.variableIndexes[bodyVariable], null);
+                if (predicateTermIndices == null) {
+                    predicateTermIndices = new ArrayList<>(200);
+                    this.externalPredicateIdToTerms.put(bodyPart.variableIndexes[bodyVariable], predicateTermIndices);
+                }
+                predicateTermIndices.add(indexTerm);
                 Vector coefficients = Vectors.dense(variableIndexes.length);
                 if (bodyPart.negations[bodyVariable]) {
                     coefficients.set(ArrayUtils.indexOf(variableIndexes, bodyPart.variableIndexes[bodyVariable]), -1);
@@ -911,6 +950,24 @@ public final class ProbabilisticSoftLogicProblem {
                     linearFunction = linearFunction.add(new LinearFunction(coefficients, -1));
                 }
             }
+
+            for (int headVariable = 0; headVariable < headVariableIndexes.length; ++headVariable) {
+                List<Integer> predicateTermIndices = this.externalPredicateIdToTerms.getOrDefault(headVariableIndexes[headVariable], null);
+                if (predicateTermIndices == null) {
+                    predicateTermIndices = new ArrayList<>(200);
+                    this.externalPredicateIdToTerms.put(headVariableIndexes[headVariable], predicateTermIndices);
+                }
+                predicateTermIndices.add(indexTerm);
+            }
+            for (int bodyVariable = 0; bodyVariable < bodyVariableIndexes.length; ++bodyVariable) {
+                List<Integer> predicateTermIndices = this.externalPredicateIdToTerms.getOrDefault(bodyVariableIndexes[bodyVariable], null);
+                if (predicateTermIndices == null) {
+                    predicateTermIndices = new ArrayList<>(200);
+                    this.externalPredicateIdToTerms.put(bodyVariableIndexes[bodyVariable], predicateTermIndices);
+                }
+                predicateTermIndices.add(indexTerm);
+            }
+
             FunctionTerm term = new FunctionTerm(variableIndexes, linearFunction, weight, power);
             // functionTerms.putIfAbsent(term.toString(), term);
             functionTerms.add(term);
@@ -929,16 +986,6 @@ public final class ProbabilisticSoftLogicProblem {
                 internalVariableIndexes.add(internalVariableIndex);
             }
             constraints.add(new Constraint(constraint, Ints.toArray(internalVariableIndexes)));
-            return this;
-        }
-
-        public Builder subProblemSelectionMethod(ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod subProblemSelectionMethod) {
-            this.subProblemSelectionMethod = subProblemSelectionMethod;
-            return this;
-        }
-
-        public Builder numberOfSubProblemSamples(int numberOfSubProblemSamples) {
-            this.numberOfSubProblemSamples = numberOfSubProblemSamples;
             return this;
         }
 
@@ -1036,7 +1083,7 @@ public final class ProbabilisticSoftLogicProblem {
     }
 
     private ProbabilisticSoftLogicProblem(Builder builder) {
-        externalToInternalIndexesMapping = HashBiMap.create(builder.externalToInternalIndexesMapping);
+        this.externalToInternalIndexesMapping = builder.externalToInternalIndexesMapping;
         SumFunction.Builder sumFunctionBuilder = new SumFunction.Builder(externalToInternalIndexesMapping.size());
         for (Builder.FunctionTerm function : builder.functionTerms) {
         // for (Builder.FunctionTerm function : builder.functionTerms.values()) {
@@ -1051,10 +1098,11 @@ public final class ProbabilisticSoftLogicProblem {
                     function.variableIndexes
             );
         }
-        objectiveFunction = new ProbabilisticSoftLogicFunction(sumFunctionBuilder);
-        constraints = ImmutableSet.copyOf(builder.constraints);
-        subProblemSelectionMethod = builder.subProblemSelectionMethod;
-        numberOfSubProblemSamples = builder.numberOfSubProblemSamples;
+        this.objectiveFunction = new ProbabilisticSoftLogicFunction(sumFunctionBuilder);
+        this.constraints = ImmutableSet.copyOf(builder.constraints);
+
+        this.externalPredicateIdToTerms = builder.externalPredicateIdToTerms;
+
         for (int subProblemIndex = 0; subProblemIndex < objectiveFunction.getNumberOfTerms(); subProblemIndex++) {
             ProbabilisticSoftLogicSumFunctionTerm objectiveTerm =
                     (ProbabilisticSoftLogicSumFunctionTerm) objectiveFunction.getTerm(subProblemIndex);
@@ -1071,13 +1119,21 @@ public final class ProbabilisticSoftLogicProblem {
     }
 
     public Map<Integer, Double> solve() {
+        return this.solve(ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.ALL, null, -1);
+    }
+
+    public Map<Integer, Double> solve(
+        ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod subProblemSelectionMethod,
+        ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelector subProblemSelector,
+        int numberOfSubProblemSamples) {
         ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder solverBuilder =
                 new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder(
                         objectiveFunction,
                         Vectors.dense(objectiveFunction.getNumberOfVariables())
                 )
                         .subProblemSolver((subProblem) -> solveProbabilisticSoftLogicSubProblem(subProblem, subProblemCholeskyFactors))
-                        .subProblemSelectionMethod(subProblemSelectionMethod)
+                        .subProblemSelector(subProblemSelector)
+                        .subProblemSelectionMethod(subProblemSelectionMethod) // if this is not CUSTOM, it will override the subProblemSelector
                         .numberOfSubProblemSamples(numberOfSubProblemSamples)
                         .penaltyParameter(1)
                         .penaltyParameterSettingMethod(ConsensusAlternatingDirectionsMethodOfMultipliersSolver.PenaltyParameterSettingMethod.CONSTANT)
@@ -1094,7 +1150,7 @@ public final class ProbabilisticSoftLogicProblem {
         Map<Integer, Double> inferredValues = new HashMap<>(solverResult.size());
         for (int internalVariableIndex = 0; internalVariableIndex < solverResult.size(); internalVariableIndex++)
             inferredValues.put(externalToInternalIndexesMapping.inverse().get(internalVariableIndex),
-                               solverResult.get(internalVariableIndex));
+                    solverResult.get(internalVariableIndex));
         return inferredValues;
     }
 
@@ -1168,9 +1224,35 @@ public final class ProbabilisticSoftLogicProblem {
         }
     }
 
+    public Map<Integer, Integer> getExternalToInternalIds() {
+        return Collections.unmodifiableMap(this.externalToInternalIndexesMapping);
+    }
+
+    public Map<Integer, Integer> getInternalToExternalIds() {
+        return Collections.unmodifiableMap(this.externalToInternalIndexesMapping.inverse());
+    }
+
+    public Map<Integer, List<Integer>> getExternalPredicateIdsToTerms() {
+        return Collections.unmodifiableMap(this.externalPredicateIdToTerms);
+    }
+
+    public RandomWalkSampler.TermPredicateIdGetter getTermPredicateIdGetter() {
+        return new RandomWalkSampler.TermPredicateIdGetter() {
+            @Override
+            public int[] getInternalPredicateIds(int term) {
+                return ProbabilisticSoftLogicProblem.this.objectiveFunction.getTermIndices(term);
+            }
+        };
+    }
+
     private static final class ProbabilisticSoftLogicFunction extends SumFunction {
         private ProbabilisticSoftLogicFunction(SumFunction.Builder sumFunctionBuilder) {
             super(sumFunctionBuilder);
+        }
+
+        // dangerous, should return unmodifiable collection
+        public int[] getTermIndices(int term) {
+            return this.termsVariables.get(term);
         }
 
         public LinearFunction getTermLinearFunction(int term) {
@@ -1184,6 +1266,7 @@ public final class ProbabilisticSoftLogicProblem {
         public double getTermWeight(int term) {
             return ((ProbabilisticSoftLogicSumFunctionTerm) terms.get(term)).getWeight();
         }
+
     }
 
     private static final class ProbabilisticSoftLogicSubProblemObjectiveFunction extends AbstractFunction {

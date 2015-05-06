@@ -167,6 +167,10 @@ abstract class AbstractIterativeSolver implements Solver {
         currentIteration = 0;
     }
 
+    public int getCurrentIteration() {
+        return this.currentIteration;
+    }
+
     @Override
     public Vector solve() {
         if (loggingLevel > 0)
