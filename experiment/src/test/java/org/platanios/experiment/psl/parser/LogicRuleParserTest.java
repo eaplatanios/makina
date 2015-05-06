@@ -6,6 +6,7 @@ import org.platanios.experiment.psl.CartesianProductIterator;
 import org.platanios.experiment.psl.ProbabilisticSoftLogicPredicateManager;
 import org.platanios.experiment.psl.ProbabilisticSoftLogicProblem;
 import org.platanios.experiment.psl.ProbabilisticSoftLogicReader;
+import org.platanios.learn.optimization.ConsensusAlternatingDirectionsMethodOfMultipliersSolver;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -765,7 +766,7 @@ public class LogicRuleParserTest {
     @Test
     public void testEndToEnd() {
 
-        String experimentName = "epinions_30";
+        String experimentName = "epinions_200";
 
         for (ProbabilisticSoftLogicProblem.GroundingMode groundingMode : ProbabilisticSoftLogicProblem.GroundingMode.values()) {
 
@@ -867,8 +868,8 @@ public class LogicRuleParserTest {
             }
 
             ProbabilisticSoftLogicProblem problem = problemBuilder
-//                    .subProblemSelectionMethod(ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.UNIFORM_SAMPLING)
-//                    .numberOfSubProblemSamples(8)
+                    .subProblemSelectionMethod(ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.UNIFORM_SAMPLING)
+                    .numberOfSubProblemSamples(8)
                     .build();
 
             Map<Integer, Double> result = problem.solve();
@@ -896,7 +897,7 @@ public class LogicRuleParserTest {
     @Test
     public void testPregroundRules() {
 
-        String experimentName = "nell_500_5e";
+        String experimentName = "epinions_30";
 
         for (ProbabilisticSoftLogicProblem.GroundingMode groundingMode : ProbabilisticSoftLogicProblem.GroundingMode.values()) {
 
@@ -921,7 +922,10 @@ public class LogicRuleParserTest {
             File outputStreamFile = new File(outputStreamName);
             ProbabilisticSoftLogicProblem.Builder problemBuilder = null;
             ProbabilisticSoftLogicPredicateManager trainPredicateManager = null;
-            if (outputStreamFile.exists()) {
+
+            // Don't look for serialized file
+            if (false) {
+            //if (outputStreamFile.exists()) {
 
                 try (FileInputStream inputStream = new FileInputStream(outputStreamFile)) {
 
@@ -1017,8 +1021,8 @@ public class LogicRuleParserTest {
 
 
             ProbabilisticSoftLogicProblem problem = problemBuilder
-//                    .subProblemSelectionMethod(ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.UNIFORM_SAMPLING)
-//                    .numberOfSubProblemSamples(8)
+                    //.subProblemSelectionMethod(ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.UNIFORM_SAMPLING)
+                    //.numberOfSubProblemSamples(100)
                     .build();
 
 
