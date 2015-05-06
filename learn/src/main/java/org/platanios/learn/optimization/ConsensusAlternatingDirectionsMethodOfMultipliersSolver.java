@@ -395,7 +395,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
                                                    .toArray(new Integer[affectedConsensusVariables.size()]));
             currentPoint.set(affectedConsensusVariablesIndexes,
                              variableCopiesSum.get(affectedConsensusVariablesIndexes)
-                                     .divElementwise(variableCopiesCounts).get(affectedConsensusVariablesIndexes)
+                                     .divElementwise(variableCopiesCounts.get(affectedConsensusVariablesIndexes))
                                      .maxElementwiseInPlace(0)
                                      .minElementwiseInPlace(1));
         } else {
