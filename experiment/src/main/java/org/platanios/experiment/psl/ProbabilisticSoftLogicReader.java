@@ -147,6 +147,12 @@ public class ProbabilisticSoftLogicReader {
                 continue;
             }
 
+            // DBC: Avoid having to remove the first line of the model file every time
+            if (line.equals("Model:")) {
+                ++lineNumber;
+                continue;
+            }
+
             if (!line.startsWith("{")) {
                 throw new DataFormatException("Expected rules of the form {weight} body >> head : no leading curly brace found at line " + (lineNumber + 1));
             }
@@ -157,6 +163,13 @@ public class ProbabilisticSoftLogicReader {
             }
 
             String weightOrConstraint = line.substring(1, indexEndCurly);
+
+            // DBC: Deal with the "W=" included in the rule weight in the pre-grounded rules
+            int indexW = weightOrConstraint.indexOf("W=");
+            if (indexW >= 0) {
+                weightOrConstraint = weightOrConstraint.substring(2);
+            }
+
             double weight = Double.NaN;
             if (!weightOrConstraint.equals("constraint")) {
                 weight = Double.parseDouble(weightOrConstraint);
@@ -180,12 +193,22 @@ public class ProbabilisticSoftLogicReader {
 
             String ruleString = line.substring(indexEndCurly + 1);
             String[] headBodyArr = ruleString.split(">>");
-            if (headBodyArr.length != 2) {
-                throw new DataFormatException("Expected rules of the form {weight} body >> head : number of head/body parts is wrong at line " + (lineNumber + 1));
-            }
 
-            PrattParserExpression headExpression = ComplexPredicateParser.parseRule(headBodyArr[1]);
-            PrattParserExpression bodyExpression = ComplexPredicateParser.parseRule(headBodyArr[0]);
+            // DBC: modified to deal with pre-groudned rules, which only have a head (and no '>>')
+            PrattParserExpression headExpression = null;
+            PrattParserExpression bodyExpression = null;
+
+            if (headBodyArr.length == 1) {
+                headExpression = ComplexPredicateParser.parseRule(headBodyArr[0]);
+            }
+            else if (headBodyArr.length == 2) {
+                headExpression = ComplexPredicateParser.parseRule(headBodyArr[1]);
+                bodyExpression = ComplexPredicateParser.parseRule(headBodyArr[0]);
+            }
+            else {
+                throw new DataFormatException("Expected rules of the form {weight} body >> head (or body only): number of head/body parts is wrong at line " + (lineNumber + 1));
+                //throw new DataFormatException("Expected rules of the form {weight} body >> head : number of head/body parts is wrong at line " + (lineNumber + 1));
+            }
 
             PredicateTemplateOperatorList flattenedHead = flattenLogicExpression(headExpression);
             for (ComplexPredicateParser.OperatorType operator : flattenedHead.Operators) {
@@ -194,15 +217,25 @@ public class ProbabilisticSoftLogicReader {
                 }
             }
 
-            PredicateTemplateOperatorList flattenedBody = flattenLogicExpression(bodyExpression);
-            for (ComplexPredicateParser.OperatorType operator : flattenedBody.Operators) {
-                if (operator != ComplexPredicateParser.OperatorType.CONJUNCTION) {
-                    throw new UnsupportedOperationException("Only conjunctions are allowed in the body of a rule");
+            PredicateTemplateOperatorList flattenedBody = null;
+            if (headBodyArr.length > 1) {
+                flattenedBody = flattenLogicExpression(bodyExpression);
+                for (ComplexPredicateParser.OperatorType operator : flattenedBody.Operators) {
+                    if (operator != ComplexPredicateParser.OperatorType.CONJUNCTION) {
+                        throw new UnsupportedOperationException("Only conjunctions are allowed in the body of a rule");
+                    }
                 }
             }
 
-            ProbabilisticSoftLogicProblem.Rule rule = new ProbabilisticSoftLogicProblem.Rule(weight, power, ImmutableList.copyOf(flattenedHead.Predicates), ImmutableList.copyOf(flattenedBody.Predicates));
-            result.add(rule);
+            if (headBodyArr.length == 1) {
+                // DBC: Create a rule with only a head (messes up the name, but that's okay)
+                ProbabilisticSoftLogicProblem.Rule rule = new ProbabilisticSoftLogicProblem.Rule(weight, power, ImmutableList.copyOf(flattenedHead.Predicates));
+                result.add(rule);
+            }
+            else if (headBodyArr.length == 2) {
+                ProbabilisticSoftLogicProblem.Rule rule = new ProbabilisticSoftLogicProblem.Rule(weight, power, ImmutableList.copyOf(flattenedHead.Predicates), ImmutableList.copyOf(flattenedBody.Predicates));
+                result.add(rule);
+            }
 
             ++lineNumber;
 

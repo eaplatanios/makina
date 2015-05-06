@@ -186,6 +186,40 @@ public final class ProbabilisticSoftLogicProblem {
 
         }
 
+
+        // DBC: Added this Rule to conveniently read in pre-grounded rules (which only have heads)
+        public Rule(double weight, double power, ImmutableList<Predicate> head) {
+
+            ImmutableList.Builder<Predicate> orderingRemovedBody = ImmutableList.builder();
+            ImmutableList.Builder<ImmutableList<String>> orderings = ImmutableList.builder();
+            HashMap<String, ImmutableList.Builder<GroundingSource>> groundingSources = new HashMap<>();
+
+            for (Predicate predicate : head) {
+
+                if (predicate.Name.equals("#NONSYMMETRIC")) {
+                    throw new UnsupportedOperationException("Unexpected #NONSYMMETRIC keyword in head of rule");
+                }
+
+            }
+
+            ImmutableList.Builder<ArgumentGroundingSources> groundingSourceBuilder = ImmutableList.builder();
+            for (Map.Entry<String, ImmutableList.Builder<GroundingSource>> entry : groundingSources.entrySet()) {
+                groundingSourceBuilder.add(new ArgumentGroundingSources(entry.getKey(), entry.getValue().build()));
+            }
+
+            this.Weight = weight;
+            this.Power = power;
+            this.Head = head;
+            //this.Body = orderingRemovedBody.build();
+            //this.Orderings = orderings.build();
+            //this.ArgumentGroundingSources = groundingSourceBuilder.build();
+            this.Body = null;
+            this.Orderings = null;
+            this.ArgumentGroundingSources = null;
+        }
+
+
+
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
@@ -618,6 +652,76 @@ public final class ProbabilisticSoftLogicProblem {
                 double power,
                 double weight);
     }
+
+
+    // DBC: Added this class to use pre-grounded rules to generate a PSL program builder (based on ProblemSerializer)
+    public static final class PregroundRuleHandler extends GroundedRuleHandler {
+
+        private final Builder builder;
+
+        private PregroundRuleHandler(Builder builder) {
+            this.builder = builder;
+        }
+
+        public static Builder createBuilder(
+                    List<Rule> rules,
+                    ProbabilisticSoftLogicPredicateManager predicateManager,
+                    List<ProbabilisticSoftLogicProblem.Rule> groundRules) {
+
+            ProbabilisticSoftLogicPredicateManager.IdWeights observedIdsAndWeights =
+                    predicateManager.getAllObservedWeights();
+
+            ProbabilisticSoftLogicProblem.Builder builder =
+                    new ProbabilisticSoftLogicProblem.Builder(
+                            observedIdsAndWeights.Ids, observedIdsAndWeights.Weights, predicateManager.size() - observedIdsAndWeights.Ids.length);
+
+
+            PregroundRuleHandler pregroundRuleHandler = new PregroundRuleHandler(builder);
+            for (Rule rule : groundRules) {
+                int [] headVariableIndexes = new int[rule.Head.size()];
+                boolean [] headNegations= new boolean[rule.Head.size()];
+                int i = 0;
+                for (Predicate pred : rule.Head) {
+                    // the pre-grounded rules will sometimes be negated; need to un-negate to look-up
+                    Predicate unNegated = null;
+                    if (pred.IsNegated) {
+                        unNegated = new Predicate(pred.Name, pred.Arguments, false);
+                    }
+                    else {
+                        unNegated = pred;
+                    }
+
+                    int temp = predicateManager.getIdForPredicate(unNegated);
+
+                    headVariableIndexes[i] = temp;
+                    headNegations[i] = pred.IsNegated;
+                    i++;
+                }
+                pregroundRuleHandler.addRule(headVariableIndexes, new int[0], headNegations, new boolean[0], rule.Power, rule.Weight);
+            }
+            pregroundRuleHandler.addRule(new int[] {-1}, new int[] {-1}, new boolean[] {false}, new boolean[] {false}, Double.NaN, Double.NaN);
+
+            return builder;
+
+        }
+
+        GroundedRuleHandler addRule(
+                int[] headVariableIndexes,
+                int[] bodyVariableIndexes,
+                boolean[] headNegations,
+                boolean[] bodyNegations,
+                double power,
+                double weight) {
+
+            this.builder.addRule(headVariableIndexes, bodyVariableIndexes, headNegations, bodyNegations, power, weight);
+
+            return this;
+
+        }
+
+    }
+
+
 
     public static final class ProblemSerializer extends GroundedRuleHandler {
 
