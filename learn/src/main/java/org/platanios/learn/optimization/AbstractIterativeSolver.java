@@ -53,7 +53,7 @@ abstract class AbstractIterativeSolver implements Solver {
 
         protected int maximumNumberOfIterations = 10000;
         protected int maximumNumberOfFunctionEvaluations = 1000000;
-        protected double pointChangeTolerance = 1e-10;
+        protected double pointChangeTolerance = 1e-5; // 1e-10
         protected double objectiveChangeTolerance = 1e-10;
         protected double gradientTolerance = 1e-6;
         protected boolean checkForPointConvergence = true;
@@ -187,14 +187,14 @@ abstract class AbstractIterativeSolver implements Solver {
 
     public boolean checkTerminationConditions() {
         if (currentIteration > 0) {
-            if (currentIteration >= maximumNumberOfIterations)
-                return true;
-            if (objective.getNumberOfFunctionEvaluations() >= maximumNumberOfFunctionEvaluations)
-                return true;
             if (checkForPointConvergence) {
                 pointChange = currentPoint.sub(previousPoint).norm(VectorNorm.L2_FAST);
                 pointConverged = pointChange <= pointChangeTolerance;
             }
+            if (currentIteration >= maximumNumberOfIterations)
+                return true;
+            if (objective.getNumberOfFunctionEvaluations() >= maximumNumberOfFunctionEvaluations)
+                return true;
             if (checkForObjectiveConvergence) {
                 objectiveChange = Math.abs((previousObjectiveValue - currentObjectiveValue) / previousObjectiveValue);
                 objectiveConverged = objectiveChange <= objectiveChangeTolerance;
