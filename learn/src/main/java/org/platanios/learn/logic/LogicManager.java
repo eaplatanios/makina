@@ -21,7 +21,7 @@ public class LogicManager<T, R> {
     private final Map<Long, Variable<T>> variables = new HashMap<>();
     private final Map<Long, List<T>> variableValues = new HashMap<>();
     private final Map<Long, Predicate<T>> predicates = new HashMap<>();
-    private final Map<Long, Map<List<T>, GroundedPredicate<T, R>>> predicateGroundings = new HashMap<>();
+    private final Map<Long, Map<List<T>, GroundedPredicate<T, R>>> groundedPredicates = new HashMap<>();
     private final List<Long> closedPredicateIdentifiers = new ArrayList<>();
 
     private long newVariableTypeIdentifier = 0;
@@ -71,7 +71,7 @@ public class LogicManager<T, R> {
     public Predicate<T> addPredicate(String name, List<VariableType<T>> argumentTypes, boolean closed) {
         Predicate<T> predicate = new Predicate<>(newPredicateIdentifier, argumentTypes).setName(name);
         predicates.put(newPredicateIdentifier, predicate);
-        predicateGroundings.put(newPredicateIdentifier, new HashMap<>());
+        groundedPredicates.put(newPredicateIdentifier, new HashMap<>());
         if (closed)
             closedPredicateIdentifiers.add(newPredicateIdentifier);
         newPredicateIdentifier++;
@@ -83,12 +83,12 @@ public class LogicManager<T, R> {
     }
 
     public GroundedPredicate<T, R> addGroundedPredicate(Predicate<T> predicate, List<T> argumentAssignments, R value) {
-        if (!predicateGroundings.containsKey(predicate.getIdentifier()))
+        if (!groundedPredicates.containsKey(predicate.getIdentifier()))
             throw new IllegalArgumentException("The provided predicate identifier does not match any of the " +
                                                        "predicates currently stored in this logic manager.");
-        if (predicateGroundings.get(predicate.getIdentifier()).containsKey(argumentAssignments)) {
+        if (groundedPredicates.get(predicate.getIdentifier()).containsKey(argumentAssignments)) {
             GroundedPredicate<T, R> groundedPredicate =
-                    predicateGroundings.get(predicate.getIdentifier()).get(argumentAssignments);
+                    groundedPredicates.get(predicate.getIdentifier()).get(argumentAssignments);
             if (!groundedPredicate.getValue().equals(value))
                 throw new IllegalArgumentException("A grounding for the predicate corresponding to the provided " +
                                                            "identifier and for the provided argument assignments has " +
@@ -102,29 +102,40 @@ public class LogicManager<T, R> {
                                                                                 predicate,
                                                                                 argumentAssignments,
                                                                                 value);
-            predicateGroundings.get(predicate.getIdentifier()).put(argumentAssignments, groundedPredicate);
+            groundedPredicates.get(predicate.getIdentifier()).put(argumentAssignments, groundedPredicate);
             return groundedPredicate;
         }
     }
 
-    public boolean predicateGroundingExists(Predicate<T> predicate, List<T> argumentAssignments) {
-        if (!predicateGroundings.containsKey(predicate.getIdentifier()))
+    public boolean groundedPredicateExists(Predicate<T> predicate, List<T> argumentAssignments) {
+        if (!groundedPredicates.containsKey(predicate.getIdentifier()))
             throw new IllegalArgumentException("The provided predicate identifier does not match any of the " +
                                                        "predicates currently stored in this logic manager.");
 
-        return predicateGroundings.get(predicate.getIdentifier()).containsKey(argumentAssignments);
+        return groundedPredicates.get(predicate.getIdentifier()).containsKey(argumentAssignments);
+    }
+
+    public int getNumberOfGroundedPredicates() {
+        return getGroundedPredicates().size();
+    }
+
+    public List<GroundedPredicate<T, R>> getGroundedPredicates() {
+        List<GroundedPredicate<T, R>> groundedPredicates = new ArrayList<>();
+        for (Map<List<T>, GroundedPredicate<T, R>> groundedPredicatesSet : this.groundedPredicates.values())
+            groundedPredicates.addAll(groundedPredicatesSet.values().stream().collect(Collectors.toList()));
+        return groundedPredicates;
     }
 
     public GroundedPredicate<T, R> getGroundedPredicate(Predicate<T> predicate, List<T> argumentAssignments) {
-        if (!predicateGroundings.containsKey(predicate.getIdentifier()))
+        if (!groundedPredicates.containsKey(predicate.getIdentifier()))
             throw new IllegalArgumentException("The provided predicate identifier does not match any of the " +
                                                        "predicates currently stored in this logic manager.");
-        if (!predicateGroundings.get(predicate.getIdentifier()).containsKey(argumentAssignments))
+        if (!groundedPredicates.get(predicate.getIdentifier()).containsKey(argumentAssignments))
             throw new IllegalArgumentException("A grounding for the predicate corresponding to the provided " +
                                                        "identifier and for the provided argument assignments has " +
                                                        "not been added to this logic manager.");
 
-        return predicateGroundings.get(predicate.getIdentifier()).get(argumentAssignments);
+        return groundedPredicates.get(predicate.getIdentifier()).get(argumentAssignments);
     }
 
     public Variable<T> getVariable(long identifier) {
@@ -179,14 +190,14 @@ public class LogicManager<T, R> {
      * @return
      */
     public R getPredicateAssignmentTruthValue(Predicate<T> predicate, List<T> argumentAssignments) {
-        if (!predicateGroundings.containsKey(predicate.getIdentifier()))
+        if (!groundedPredicates.containsKey(predicate.getIdentifier()))
             throw new IllegalArgumentException("The provided predicate identifier does not match any of the " +
                                                        "predicates currently stored in this logic manager.");
-        if (!predicateGroundings.get(predicate.getIdentifier()).containsKey(argumentAssignments))
+        if (!groundedPredicates.get(predicate.getIdentifier()).containsKey(argumentAssignments))
             if (closedPredicateIdentifiers.contains(predicate.getIdentifier()))
                 return logic.falseValue();
             else
                 return null;
-        return predicateGroundings.get(predicate.getIdentifier()).get(argumentAssignments).getValue();
+        return groundedPredicates.get(predicate.getIdentifier()).get(argumentAssignments).getValue();
     }
 }

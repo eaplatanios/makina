@@ -830,14 +830,25 @@ public final class ProbabilisticSoftLogicProblem {
 
             ProbabilisticSoftLogicPredicateManager.IdWeights observedIdsAndWeights =
                     predicateManager.getAllObservedWeights();
+
+            int[] observedIndexes = new int[logicManager.getNumberOfGroundedPredicates()];
+            double[] observedWeights = new double[logicManager.getNumberOfGroundedPredicates()];
+            for (int index = 0; index < logicManager.getNumberOfGroundedPredicates(); index++) {
+                observedIndexes[index] = (int) logicManager.getGroundedPredicates().get(index).getIdentifier();
+                observedWeights[index] = (double) logicManager.getGroundedPredicates().get(index).getValue();
+            }
+
+//            ProbabilisticSoftLogicProblem.Builder builder =
+//                new ProbabilisticSoftLogicProblem.Builder(
+//                        observedIdsAndWeights.Ids, observedIdsAndWeights.Weights, predicateManager.size() - observedIdsAndWeights.Ids.length);
+
             ProbabilisticSoftLogicProblem.Builder builder =
-                new ProbabilisticSoftLogicProblem.Builder(
-                        observedIdsAndWeights.Ids, observedIdsAndWeights.Weights, predicateManager.size() - observedIdsAndWeights.Ids.length);
+                    new ProbabilisticSoftLogicProblem.Builder(observedIndexes, observedWeights, predicateManager.size() - observedIdsAndWeights.Ids.length);
 
             try {
                 ProblemSerializer serializer = new ProblemSerializer(outputStream, builder);
                 Rule.addGroundingsToBuilder(rules, serializer, predicateManager, logicManager, variableType, groundingMode);
-                serializer.addRule(new int[] {-1}, new int[] {-1}, new boolean[] {false}, new boolean[] {false}, Double.NaN, Double.NaN);
+//                serializer.addRule(new int[] {-1}, new int[] {-1}, new boolean[] {false}, new boolean[] {false}, Double.NaN, Double.NaN);
             } catch (UnsupportedOperationException e){
                 if (e.getMessage() != null && e.getMessage().equals("IOException while writing rule")) {
                     throw (IOException) e.getCause();
@@ -956,7 +967,7 @@ public final class ProbabilisticSoftLogicProblem {
 
             // special case - always add -1 as an Id with observed value 0.
             // predicates which are grounded outside of a closed set will thus have value 0
-            observedVariableValueBuilder.put(-1, 0.0);
+//            observedVariableValueBuilder.put(-1, 0.0);
             this.observedVariableValues = observedVariableValueBuilder.build();
             this.externalToInternalIndexesMapping = HashBiMap.create(numberOfUnobservedVariables);
             this.externalPredicateIdToTerms = new HashMap<>(numberOfUnobservedVariables + observedVariableIndexes.length, 1);

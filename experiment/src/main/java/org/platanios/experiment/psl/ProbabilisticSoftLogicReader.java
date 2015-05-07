@@ -104,10 +104,18 @@ public class ProbabilisticSoftLogicReader {
             }
 
             Predicate<Integer> predicate = logicManager.getPredicate(predicateName);
-            logicManager.addGroundedPredicate(
-                    predicate,
-                    currentGrounding.build().stream().map(Integer::parseInt).collect(Collectors.toList())
-            );
+            if (isIgnoreValues) {
+                logicManager.addGroundedPredicate(
+                        predicate,
+                        currentGrounding.build().stream().map(Integer::parseInt).collect(Collectors.toList())
+                );
+            } else {
+                logicManager.addGroundedPredicate(
+                        predicate,
+                        currentGrounding.build().stream().map(Integer::parseInt).collect(Collectors.toList()),
+                        value
+                );
+            }
 
             ++lineNumber;
 

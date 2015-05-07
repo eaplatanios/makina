@@ -88,9 +88,11 @@ public class ExhaustiveGrounding<T, R> {
                     truthValue = formula.evaluate(logicManager, variableAssignments);
                 else
                     truthValue = ((Negation<T>) formula).getFormula().evaluate(logicManager, variableAssignments);
-                if (truthValue == null)
+                if (truthValue == null) {
+                    if (formula instanceof Negation) // This is the important thing that PSL is doing while considering only the body variables.
+                        continue;
                     disjunctionComponents.add(logicManager.logic().falseValue());
-                else if (formula instanceof Atom)
+                } else if (formula instanceof Atom)
                     disjunctionComponents.add(truthValue);
                 else
                     disjunctionComponents.add(logicManager.logic().negation(truthValue));
@@ -107,8 +109,8 @@ public class ExhaustiveGrounding<T, R> {
                     candidateVariableGrounding = new ArrayList<>();
                     for (Variable<T> variable : formula.getOrderedVariables())
                         candidateVariableGrounding.add(variableAssignments.get(variable));
-                    if (logicManager.predicateGroundingExists(predicate,
-                                                              candidateVariableGrounding)) {
+                    if (logicManager.groundedPredicateExists(predicate,
+                                                             candidateVariableGrounding)) {
                         groundedPredicate = logicManager.getGroundedPredicate(
                                 predicate,
                                 candidateVariableGrounding
@@ -116,7 +118,7 @@ public class ExhaustiveGrounding<T, R> {
                     } else {
                         groundedPredicate = logicManager.addGroundedPredicate(
                                 predicate,
-                                candidateVariableGrounding
+                                candidateVariableGrounding //, logicManager.logic().falseValue()
                         );
                     }
                     candidateGroundedPredicates.get(candidateIndex).add(groundedPredicate);

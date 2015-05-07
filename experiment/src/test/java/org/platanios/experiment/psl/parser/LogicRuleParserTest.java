@@ -1,6 +1,5 @@
 package org.platanios.experiment.psl.parser;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Test;
 import org.platanios.experiment.psl.CartesianProductIterator;
 import org.platanios.experiment.psl.ProbabilisticSoftLogicPredicateManager;
@@ -12,9 +11,11 @@ import org.platanios.learn.logic.formula.VariableType;
 
 import java.io.*;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Stream;
 import java.util.zip.DataFormatException;
 
 import static junit.framework.TestCase.*;
@@ -768,7 +769,7 @@ public class LogicRuleParserTest {
     @Test
     public void testEndToEnd() {
 
-        String experimentName = "epinions_300_4e";
+        String experimentName = "uci_trust";
 
         for (ProbabilisticSoftLogicProblem.GroundingMode groundingMode : ProbabilisticSoftLogicProblem.GroundingMode.values()) {
 
@@ -794,11 +795,26 @@ public class LogicRuleParserTest {
             ProbabilisticSoftLogicPredicateManager trainPredicateManager = null;
             LogicManager<Integer, Double> logicManager = new LogicManager<>(new LukasiewiczLogic());
             VariableType<Integer> personType = logicManager.addVariableType("{person}", Integer.class);
-            List<Integer> personValues = Arrays.asList(ArrayUtils.toObject(new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}));
-            logicManager.addVariable("A", personValues, personType);
-            logicManager.addVariable("B", personValues, personType);
-            logicManager.addVariable("C", personValues, personType);
-            logicManager.addVariable("D", personValues, personType);
+
+            Set<Integer> personValues = new HashSet<>();
+            try {
+                Stream<String> lines = Files.lines(Paths.get(LogicRuleParserTest.class.getResource("../" + experimentName + "/knows.txt").getPath()));
+                lines.forEach(line -> {
+                    String[] lineParts = line.split("\t");
+                    for (String linePart : lineParts)
+                        personValues.add(Integer.parseInt(linePart.trim()));
+                });
+                lines = Files.lines(Paths.get(LogicRuleParserTest.class.getResource("../" + experimentName + "/train.txt").getPath()));
+                lines.forEach(line -> {
+                    String[] lineParts = line.split("\t");
+                    for (int partIndex = 0; partIndex < lineParts.length - 1; partIndex++)
+                        personValues.add(Integer.parseInt(lineParts[partIndex].trim()));
+                });
+            } catch (IOException ignored) { }
+            logicManager.addVariable("A", new ArrayList<Integer>(personValues), personType);
+            logicManager.addVariable("B", new ArrayList<Integer>(personValues), personType);
+            logicManager.addVariable("C", new ArrayList<Integer>(personValues), personType);
+            logicManager.addVariable("D", new ArrayList<Integer>(personValues), personType);
 
             if (false) { // (outputStreamFile.exists()) {
 
@@ -858,7 +874,7 @@ public class LogicRuleParserTest {
                                 trainPredicateManager, logicManager, personType, "TRUSTS", false, true, groundingReader);
                     }
 
-                    ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(testPredicateManager, logicManager, personType, "TRUSTS", false, false, trustTestReader);
+//                    ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(testPredicateManager, logicManager, personType, "TRUSTS", false, false, trustTestReader);
 
                 } catch (IOException | DataFormatException e) {
                     fail(e.getMessage());
