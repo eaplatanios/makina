@@ -238,6 +238,11 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
     @Override
     public boolean checkTerminationConditions() {
         if (super.checkTerminationConditions()) {
+            if (currentIteration >= maximumNumberOfIterations
+                    || objective.getNumberOfFunctionEvaluations() >= maximumNumberOfFunctionEvaluations) {
+                pointChange = currentPoint.sub(previousPoint).norm(VectorNorm.L2_FAST);
+                pointConverged = pointChange <= pointChangeTolerance;
+            }
             if (checkForPointConvergence && pointConverged) {
                 if ((checkForObjectiveConvergence && objectiveConverged)
                         || (checkForGradientConvergence && gradientConverged)) {

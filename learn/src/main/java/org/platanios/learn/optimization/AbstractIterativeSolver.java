@@ -191,14 +191,14 @@ abstract class AbstractIterativeSolver implements Solver {
 
     public boolean checkTerminationConditions() {
         if (currentIteration > 0) {
-            if (checkForPointConvergence) {
-                pointChange = currentPoint.sub(previousPoint).norm(VectorNorm.L2_FAST);
-                pointConverged = pointChange <= pointChangeTolerance;
-            }
             if (currentIteration >= maximumNumberOfIterations)
                 return true;
             if (objective.getNumberOfFunctionEvaluations() >= maximumNumberOfFunctionEvaluations)
                 return true;
+            if (checkForPointConvergence) {
+                pointChange = currentPoint.sub(previousPoint).norm(VectorNorm.L2_FAST);
+                pointConverged = pointChange <= pointChangeTolerance;
+            }
             if (checkForObjectiveConvergence) {
                 objectiveChange = Math.abs((previousObjectiveValue - currentObjectiveValue) / previousObjectiveValue);
                 objectiveConverged = objectiveChange <= objectiveChangeTolerance;
