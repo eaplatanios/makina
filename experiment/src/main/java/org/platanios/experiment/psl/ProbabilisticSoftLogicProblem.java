@@ -7,10 +7,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.platanios.learn.Utilities;
-import org.platanios.learn.logic.LogicManager;
-import org.platanios.learn.logic.formula.*;
-import org.platanios.learn.logic.grounding.ExhaustiveGrounding;
-import org.platanios.learn.logic.grounding.GroundedPredicate;
 import org.platanios.learn.math.matrix.*;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.ConsensusAlternatingDirectionsMethodOfMultipliersSolver;
@@ -25,7 +21,6 @@ import org.platanios.learn.serialization.UnsafeSerializationUtilities;
 
 import java.io.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -95,10 +90,10 @@ public final class ProbabilisticSoftLogicProblem {
             Predicate rhs = (Predicate)other;
 
             return new EqualsBuilder()
-                .append(this.Name, rhs.Name)
-                .append(this.Arguments, rhs.Arguments)
-                .append(this.IsNegated, rhs.IsNegated)
-                .isEquals();
+                    .append(this.Name, rhs.Name)
+                    .append(this.Arguments, rhs.Arguments)
+                    .append(this.IsNegated, rhs.IsNegated)
+                    .isEquals();
         }
 
         @Override
@@ -134,7 +129,6 @@ public final class ProbabilisticSoftLogicProblem {
 
     public enum GroundingMode {
         AllPossible,
-        NewAllPossible,
         ByExtension,
         AsRead
     }
@@ -291,12 +285,10 @@ public final class ProbabilisticSoftLogicProblem {
         }
 
         public static void addGroundingsToBuilder(
-            List<Rule> rules,
-            ProbabilisticSoftLogicProblem.GroundedRuleHandler builder,
-            ProbabilisticSoftLogicPredicateManager predicateManager,
-            LogicManager<Integer, Double> logicManager,
-            VariableType<Integer> variableType,
-            GroundingMode groundingMode) {
+                List<Rule> rules,
+                ProbabilisticSoftLogicProblem.GroundedRuleHandler builder,
+                ProbabilisticSoftLogicPredicateManager predicateManager,
+                GroundingMode groundingMode) {
 
             if (groundingMode == GroundingMode.AllPossible) {
 
@@ -305,10 +297,7 @@ public final class ProbabilisticSoftLogicProblem {
                     rule.addAllGroundingsToBuilder(builder, predicateManager);
 
                 }
-            } else if (groundingMode == GroundingMode.NewAllPossible) {
-                for (ProbabilisticSoftLogicProblem.Rule rule : rules) {
-                    rule.addAllGroundingsToBuilder(builder, logicManager, variableType);
-                }
+
             } else {
 
                 Rule.addGroundingsToBuilderByExtension(
@@ -512,49 +501,6 @@ public final class ProbabilisticSoftLogicProblem {
 
         }
 
-        private void addAllGroundingsToBuilder(ProbabilisticSoftLogicProblem.GroundedRuleHandler builder,
-                                               LogicManager<Integer, Double> logicManager,
-                                               VariableType<Integer> variableType) {
-            List<Formula<Integer>> disjunctionComponents = new ArrayList<>();
-            boolean[] bodyNegations = new boolean[this.Body.size()];
-            for (int i = 0; i < this.Body.size(); ++i) {
-                bodyNegations[i] = this.Body.get(i).IsNegated;
-                org.platanios.learn.logic.formula.Predicate<Integer> predicate = logicManager.getPredicate(this.Body.get(i).Name);
-                List<Variable<Integer>> predicateArguments = this.Body.get(i).Arguments.stream().map(logicManager::getVariable).collect(Collectors.toList());
-                if (this.Body.get(i).IsNegated)
-                    disjunctionComponents.add(new Atom<>(predicate, predicateArguments));
-                else
-                    disjunctionComponents.add(new Negation<>(new Atom<>(predicate, predicateArguments)));
-            }
-            boolean[] headNegations = new boolean[this.Head.size()];
-            for (int i = 0; i < this.Head.size(); ++i) {
-                headNegations[i] = this.Head.get(i).IsNegated;
-                org.platanios.learn.logic.formula.Predicate<Integer> predicate = logicManager.getPredicate(this.Head.get(i).Name);
-                List<Variable<Integer>> predicateArguments = this.Head.get(i).Arguments.stream().map(logicManager::getVariable).collect(Collectors.toList());
-                if (this.Head.get(i).IsNegated)
-                    disjunctionComponents.add(new Negation<>(new Atom<>(predicate, predicateArguments)));
-                else
-                    disjunctionComponents.add(new Atom<>(predicate, predicateArguments));
-            }
-            Formula<Integer> ruleFormula = new Disjunction<>(disjunctionComponents);
-            ExhaustiveGrounding<Integer, Double> exhaustiveGrounding = new ExhaustiveGrounding<>(logicManager);
-            exhaustiveGrounding.ground(ruleFormula);
-            List<List<GroundedPredicate<Integer, Double>>> predicateGroundings = exhaustiveGrounding.getGroundedPredicates();
-            for (List<GroundedPredicate<Integer, Double>> groundedRulePredicates : predicateGroundings) {
-                int[] bodyVariableIndexes = new int[this.Body.size()];
-                for (int i = 0; i < this.Body.size(); ++i)
-                    bodyVariableIndexes[i] = (int) groundedRulePredicates.get(i).getIdentifier();
-                int[] headVariableIndexes = new int[this.Head.size()];
-                for (int i = 0; i < this.Head.size(); ++i)
-                    headVariableIndexes[i] = (int) groundedRulePredicates.get(this.Body.size() + i).getIdentifier();
-                if (Double.isNaN(this.Weight)) {
-                    builder.addRule(headVariableIndexes, bodyVariableIndexes, headNegations, bodyNegations, 1, 1000);
-                } else {
-                    builder.addRule(headVariableIndexes, bodyVariableIndexes, headNegations, bodyNegations, this.Power, this.Weight);
-                }
-            }
-        }
-
         private void addAllGroundingsToBuilder(
                 ProbabilisticSoftLogicProblem.GroundedRuleHandler builder,
                 ProbabilisticSoftLogicPredicateManager predicateManager) {
@@ -746,11 +692,9 @@ public final class ProbabilisticSoftLogicProblem {
         }
 
         public static Builder createBuilder(
-                    List<Rule> rules,
-                    ProbabilisticSoftLogicPredicateManager predicateManager,
-                    LogicManager<Integer, Double> logicManager,
-                    VariableType<Integer> variableType,
-                    List<ProbabilisticSoftLogicProblem.Rule> groundRules) {
+                List<Rule> rules,
+                ProbabilisticSoftLogicPredicateManager predicateManager,
+                List<ProbabilisticSoftLogicProblem.Rule> groundRules) {
 
             ProbabilisticSoftLogicPredicateManager.IdWeights observedIdsAndWeights =
                     predicateManager.getAllObservedWeights();
@@ -821,8 +765,6 @@ public final class ProbabilisticSoftLogicProblem {
                 OutputStream outputStream,
                 List<Rule> rules,
                 ProbabilisticSoftLogicPredicateManager predicateManager,
-                LogicManager<Integer, Double> logicManager,
-                VariableType<Integer> variableType,
                 GroundingMode groundingMode) throws IOException {
 
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
@@ -830,25 +772,14 @@ public final class ProbabilisticSoftLogicProblem {
 
             ProbabilisticSoftLogicPredicateManager.IdWeights observedIdsAndWeights =
                     predicateManager.getAllObservedWeights();
-
-            int[] observedIndexes = new int[logicManager.getNumberOfGroundedPredicates()];
-            double[] observedWeights = new double[logicManager.getNumberOfGroundedPredicates()];
-            for (int index = 0; index < logicManager.getNumberOfGroundedPredicates(); index++) {
-                observedIndexes[index] = (int) logicManager.getGroundedPredicates().get(index).getIdentifier();
-                observedWeights[index] = (double) logicManager.getGroundedPredicates().get(index).getValue();
-            }
-
-//            ProbabilisticSoftLogicProblem.Builder builder =
-//                new ProbabilisticSoftLogicProblem.Builder(
-//                        observedIdsAndWeights.Ids, observedIdsAndWeights.Weights, predicateManager.size() - observedIdsAndWeights.Ids.length);
-
             ProbabilisticSoftLogicProblem.Builder builder =
-                    new ProbabilisticSoftLogicProblem.Builder(observedIndexes, observedWeights, predicateManager.size() - observedIdsAndWeights.Ids.length);
+                    new ProbabilisticSoftLogicProblem.Builder(
+                            observedIdsAndWeights.Ids, observedIdsAndWeights.Weights, predicateManager.size() - observedIdsAndWeights.Ids.length);
 
             try {
                 ProblemSerializer serializer = new ProblemSerializer(outputStream, builder);
-                Rule.addGroundingsToBuilder(rules, serializer, predicateManager, logicManager, variableType, groundingMode);
-//                serializer.addRule(new int[] {-1}, new int[] {-1}, new boolean[] {false}, new boolean[] {false}, Double.NaN, Double.NaN);
+                Rule.addGroundingsToBuilder(rules, serializer, predicateManager, groundingMode);
+                serializer.addRule(new int[] {-1}, new int[] {-1}, new boolean[] {false}, new boolean[] {false}, Double.NaN, Double.NaN);
             } catch (UnsupportedOperationException e){
                 if (e.getMessage() != null && e.getMessage().equals("IOException while writing rule")) {
                     throw (IOException) e.getCause();
@@ -880,12 +811,12 @@ public final class ProbabilisticSoftLogicProblem {
         }
 
         GroundedRuleHandler addRule(
-                 int[] headVariableIndexes,
-                 int[] bodyVariableIndexes,
-                 boolean[] headNegations,
-                 boolean[] bodyNegations,
-                 double power,
-                 double weight) {
+                int[] headVariableIndexes,
+                int[] bodyVariableIndexes,
+                boolean[] headNegations,
+                boolean[] bodyNegations,
+                double power,
+                double weight) {
 
             this.builder.addRule(headVariableIndexes, bodyVariableIndexes, headNegations, bodyNegations, power, weight);
 
@@ -967,7 +898,7 @@ public final class ProbabilisticSoftLogicProblem {
 
             // special case - always add -1 as an Id with observed value 0.
             // predicates which are grounded outside of a closed set will thus have value 0
-//            observedVariableValueBuilder.put(-1, 0.0);
+            observedVariableValueBuilder.put(-1, 0.0);
             this.observedVariableValues = observedVariableValueBuilder.build();
             this.externalToInternalIndexesMapping = HashBiMap.create(numberOfUnobservedVariables);
             this.externalPredicateIdToTerms = new HashMap<>(numberOfUnobservedVariables + observedVariableIndexes.length, 1);
@@ -1099,8 +1030,8 @@ public final class ProbabilisticSoftLogicProblem {
             private final double observedConstant;
 
             private RulePart(int[] variableIndexes,
-                            boolean[] negations,
-                            double observedConstant) {
+                             boolean[] negations,
+                             double observedConstant) {
                 this.variableIndexes = variableIndexes;
                 this.negations = negations;
                 this.observedConstant = observedConstant;
@@ -1115,9 +1046,9 @@ public final class ProbabilisticSoftLogicProblem {
             private final double weight;
 
             private FunctionTerm(int[] variableIndexes,
-                                LinearFunction linearFunction,
-                                double weight,
-                                double power) {
+                                 LinearFunction linearFunction,
+                                 double weight,
+                                 double power) {
                 this.linearFunction = linearFunction;
                 this.variableIndexes = variableIndexes;
                 this.power = power;
@@ -1155,7 +1086,7 @@ public final class ProbabilisticSoftLogicProblem {
         this.externalToInternalIndexesMapping = builder.externalToInternalIndexesMapping;
         SumFunction.Builder sumFunctionBuilder = new SumFunction.Builder(externalToInternalIndexesMapping.size());
         for (Builder.FunctionTerm function : builder.functionTerms) {
-        // for (Builder.FunctionTerm function : builder.functionTerms.values()) {
+            // for (Builder.FunctionTerm function : builder.functionTerms.values()) {
             MaxFunction.Builder maxFunctionBuilder = new MaxFunction.Builder(externalToInternalIndexesMapping.size());
             maxFunctionBuilder.addConstantTerm(0);
             maxFunctionBuilder.addFunctionTerm(function.linearFunction);
@@ -1192,9 +1123,9 @@ public final class ProbabilisticSoftLogicProblem {
     }
 
     public Map<Integer, Double> solve(
-        ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod subProblemSelectionMethod,
-        ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelector subProblemSelector,
-        int numberOfSubProblemSamples) {
+            ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod subProblemSelectionMethod,
+            ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelector subProblemSelector,
+            int numberOfSubProblemSamples) {
         ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder solverBuilder =
                 new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder(
                         objectiveFunction,
@@ -1219,7 +1150,7 @@ public final class ProbabilisticSoftLogicProblem {
         Map<Integer, Double> inferredValues = new HashMap<>(solverResult.size());
         for (int internalVariableIndex = 0; internalVariableIndex < solverResult.size(); internalVariableIndex++)
             inferredValues.put(externalToInternalIndexesMapping.inverse().get(internalVariableIndex),
-                    solverResult.get(internalVariableIndex));
+                               solverResult.get(internalVariableIndex));
         return inferredValues;
     }
 

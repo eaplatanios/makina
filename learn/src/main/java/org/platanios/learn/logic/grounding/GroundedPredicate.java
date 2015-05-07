@@ -47,4 +47,19 @@ public class GroundedPredicate<T, R> {
     public R getValue() {
         return value;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (predicate.getName() != null)
+            stringBuilder.append(predicate.getName()).append("(");
+        else
+            stringBuilder.append(predicate.getIdentifier()).append("(");
+        for (int argumentIndex = 0; argumentIndex < predicateArgumentsAssignment.size(); argumentIndex++) {
+            stringBuilder.append(predicateArgumentsAssignment.get(argumentIndex).toString());
+            if (argumentIndex != predicateArgumentsAssignment.size() - 1)
+                stringBuilder.append(", ");
+        }
+        return stringBuilder.append(")").toString();
+    }
 }

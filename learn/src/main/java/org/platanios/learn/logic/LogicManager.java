@@ -22,6 +22,7 @@ public class LogicManager<T, R> {
     private final Map<Long, List<T>> variableValues = new HashMap<>();
     private final Map<Long, Predicate<T>> predicates = new HashMap<>();
     private final Map<Long, Map<List<T>, GroundedPredicate<T, R>>> groundedPredicates = new HashMap<>();
+    private final Map<Long, GroundedPredicate<T, R>> groundedPredicatesMap = new HashMap<>();
     private final List<Long> closedPredicateIdentifiers = new ArrayList<>();
 
     private long newVariableTypeIdentifier = 0;
@@ -102,6 +103,7 @@ public class LogicManager<T, R> {
                                                                                 predicate,
                                                                                 argumentAssignments,
                                                                                 value);
+            groundedPredicatesMap.put(groundedPredicate.getIdentifier(), groundedPredicate);
             groundedPredicates.get(predicate.getIdentifier()).put(argumentAssignments, groundedPredicate);
             return groundedPredicate;
         }
@@ -115,6 +117,7 @@ public class LogicManager<T, R> {
         return groundedPredicates.get(predicate.getIdentifier()).containsKey(argumentAssignments);
     }
 
+    // TODO: Maybe change return type to long?
     public int getNumberOfGroundedPredicates() {
         return getGroundedPredicates().size();
     }
@@ -124,6 +127,11 @@ public class LogicManager<T, R> {
         for (Map<List<T>, GroundedPredicate<T, R>> groundedPredicatesSet : this.groundedPredicates.values())
             groundedPredicates.addAll(groundedPredicatesSet.values().stream().collect(Collectors.toList()));
         return groundedPredicates;
+    }
+
+    // TODO: Fix the way in which the grounded predicates are stored in this manager.
+    public GroundedPredicate<T, R> getGroundedPredicate(long identifier) {
+        return groundedPredicatesMap.get(identifier);
     }
 
     public GroundedPredicate<T, R> getGroundedPredicate(Predicate<T> predicate, List<T> argumentAssignments) {
@@ -136,6 +144,11 @@ public class LogicManager<T, R> {
                                                        "not been added to this logic manager.");
 
         return groundedPredicates.get(predicate.getIdentifier()).get(argumentAssignments);
+    }
+
+    // TODO: Maybe change return type to long?
+    public int getNumberOfVariables() {
+        return variables.keySet().size();
     }
 
     public Variable<T> getVariable(long identifier) {
