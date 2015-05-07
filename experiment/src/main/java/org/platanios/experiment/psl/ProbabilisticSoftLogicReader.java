@@ -1,16 +1,18 @@
 package org.platanios.experiment.psl;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Sets;
-import org.apache.commons.lang3.ArrayUtils;
 import org.platanios.experiment.psl.parser.ComplexPredicateParser;
 import org.platanios.experiment.psl.parser.PrattParserExpression;
+import org.platanios.learn.logic.LogicManager;
+import org.platanios.learn.logic.formula.Predicate;
+import org.platanios.learn.logic.formula.VariableType;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
 
 /**
@@ -23,6 +25,8 @@ public class ProbabilisticSoftLogicReader {
 
     public static void readGroundingsAndAddToManager(
             ProbabilisticSoftLogicPredicateManager predicateManager,
+            LogicManager<Integer, Double> logicManager,
+            VariableType<Integer> variableType,
             String predicateName,
             boolean isClosedPredicate,
             boolean isIgnoreValues,
@@ -35,7 +39,7 @@ public class ProbabilisticSoftLogicReader {
             File file = new File(filename);
 
             br = new BufferedReader(new FileReader(file));
-            readGroundingsAndAddToManager(predicateManager, predicateName, isClosedPredicate, isIgnoreValues, br);
+            readGroundingsAndAddToManager(predicateManager, logicManager, variableType, predicateName, isClosedPredicate, isIgnoreValues, br);
 
         } finally {
 
@@ -53,6 +57,8 @@ public class ProbabilisticSoftLogicReader {
 
     public static void readGroundingsAndAddToManager(
             ProbabilisticSoftLogicPredicateManager predicateManager,
+            LogicManager<Integer, Double> logicManager,
+            VariableType<Integer> variableType,
             String predicateName,
             boolean isClosedPredicate,
             boolean isIgnoreValues,
@@ -96,6 +102,12 @@ public class ProbabilisticSoftLogicReader {
             } else {
                 predicateManager.getOrAddPredicate(groundedPredicate, value);
             }
+
+            Predicate<Integer> predicate = logicManager.getPredicate(predicateName);
+            logicManager.addGroundedPredicate(
+                    predicate,
+                    currentGrounding.build().stream().map(Integer::parseInt).collect(Collectors.toList())
+            );
 
             ++lineNumber;
 

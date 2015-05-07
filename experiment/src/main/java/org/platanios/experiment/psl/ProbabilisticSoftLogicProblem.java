@@ -7,6 +7,10 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.platanios.learn.Utilities;
+import org.platanios.learn.logic.LogicManager;
+import org.platanios.learn.logic.formula.*;
+import org.platanios.learn.logic.grounding.ExhaustiveGrounding;
+import org.platanios.learn.logic.grounding.GroundedPredicate;
 import org.platanios.learn.math.matrix.*;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.ConsensusAlternatingDirectionsMethodOfMultipliersSolver;
@@ -21,6 +25,7 @@ import org.platanios.learn.serialization.UnsafeSerializationUtilities;
 
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -129,6 +134,7 @@ public final class ProbabilisticSoftLogicProblem {
 
     public enum GroundingMode {
         AllPossible,
+        NewAllPossible,
         ByExtension,
         AsRead
     }
@@ -288,6 +294,8 @@ public final class ProbabilisticSoftLogicProblem {
             List<Rule> rules,
             ProbabilisticSoftLogicProblem.GroundedRuleHandler builder,
             ProbabilisticSoftLogicPredicateManager predicateManager,
+            LogicManager<Integer, Double> logicManager,
+            VariableType<Integer> variableType,
             GroundingMode groundingMode) {
 
             if (groundingMode == GroundingMode.AllPossible) {
@@ -297,14 +305,17 @@ public final class ProbabilisticSoftLogicProblem {
                     rule.addAllGroundingsToBuilder(builder, predicateManager);
 
                 }
-
+            } else if (groundingMode == GroundingMode.NewAllPossible) {
+                for (ProbabilisticSoftLogicProblem.Rule rule : rules) {
+                    rule.addAllGroundingsToBuilder(builder, logicManager, variableType);
+                }
             } else {
 
                 Rule.addGroundingsToBuilderByExtension(
-                    rules,
-                    builder,
-                    predicateManager,
-                    groundingMode != GroundingMode.AsRead);
+                        rules,
+                        builder,
+                        predicateManager,
+                        groundingMode != GroundingMode.AsRead);
 
             }
 
@@ -501,6 +512,49 @@ public final class ProbabilisticSoftLogicProblem {
 
         }
 
+        private void addAllGroundingsToBuilder(ProbabilisticSoftLogicProblem.GroundedRuleHandler builder,
+                                               LogicManager<Integer, Double> logicManager,
+                                               VariableType<Integer> variableType) {
+            List<Formula<Integer>> disjunctionComponents = new ArrayList<>();
+            boolean[] bodyNegations = new boolean[this.Body.size()];
+            for (int i = 0; i < this.Body.size(); ++i) {
+                bodyNegations[i] = this.Body.get(i).IsNegated;
+                org.platanios.learn.logic.formula.Predicate<Integer> predicate = logicManager.getPredicate(this.Body.get(i).Name);
+                List<Variable<Integer>> predicateArguments = this.Body.get(i).Arguments.stream().map(logicManager::getVariable).collect(Collectors.toList());
+                if (this.Body.get(i).IsNegated)
+                    disjunctionComponents.add(new Atom<>(predicate, predicateArguments));
+                else
+                    disjunctionComponents.add(new Negation<>(new Atom<>(predicate, predicateArguments)));
+            }
+            boolean[] headNegations = new boolean[this.Head.size()];
+            for (int i = 0; i < this.Head.size(); ++i) {
+                headNegations[i] = this.Head.get(i).IsNegated;
+                org.platanios.learn.logic.formula.Predicate<Integer> predicate = logicManager.getPredicate(this.Head.get(i).Name);
+                List<Variable<Integer>> predicateArguments = this.Head.get(i).Arguments.stream().map(logicManager::getVariable).collect(Collectors.toList());
+                if (this.Head.get(i).IsNegated)
+                    disjunctionComponents.add(new Negation<>(new Atom<>(predicate, predicateArguments)));
+                else
+                    disjunctionComponents.add(new Atom<>(predicate, predicateArguments));
+            }
+            Formula<Integer> ruleFormula = new Disjunction<>(disjunctionComponents);
+            ExhaustiveGrounding<Integer, Double> exhaustiveGrounding = new ExhaustiveGrounding<>(logicManager);
+            exhaustiveGrounding.ground(ruleFormula);
+            List<List<GroundedPredicate<Integer, Double>>> predicateGroundings = exhaustiveGrounding.getGroundedPredicates();
+            for (List<GroundedPredicate<Integer, Double>> groundedRulePredicates : predicateGroundings) {
+                int[] bodyVariableIndexes = new int[this.Body.size()];
+                for (int i = 0; i < this.Body.size(); ++i)
+                    bodyVariableIndexes[i] = (int) groundedRulePredicates.get(i).getIdentifier();
+                int[] headVariableIndexes = new int[this.Head.size()];
+                for (int i = 0; i < this.Head.size(); ++i)
+                    headVariableIndexes[i] = (int) groundedRulePredicates.get(this.Body.size() + i).getIdentifier();
+                if (Double.isNaN(this.Weight)) {
+                    builder.addRule(headVariableIndexes, bodyVariableIndexes, headNegations, bodyNegations, 1, 1000);
+                } else {
+                    builder.addRule(headVariableIndexes, bodyVariableIndexes, headNegations, bodyNegations, this.Power, this.Weight);
+                }
+            }
+        }
+
         private void addAllGroundingsToBuilder(
                 ProbabilisticSoftLogicProblem.GroundedRuleHandler builder,
                 ProbabilisticSoftLogicPredicateManager predicateManager) {
@@ -694,6 +748,8 @@ public final class ProbabilisticSoftLogicProblem {
         public static Builder createBuilder(
                     List<Rule> rules,
                     ProbabilisticSoftLogicPredicateManager predicateManager,
+                    LogicManager<Integer, Double> logicManager,
+                    VariableType<Integer> variableType,
                     List<ProbabilisticSoftLogicProblem.Rule> groundRules) {
 
             ProbabilisticSoftLogicPredicateManager.IdWeights observedIdsAndWeights =
@@ -765,6 +821,8 @@ public final class ProbabilisticSoftLogicProblem {
                 OutputStream outputStream,
                 List<Rule> rules,
                 ProbabilisticSoftLogicPredicateManager predicateManager,
+                LogicManager<Integer, Double> logicManager,
+                VariableType<Integer> variableType,
                 GroundingMode groundingMode) throws IOException {
 
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
@@ -778,7 +836,7 @@ public final class ProbabilisticSoftLogicProblem {
 
             try {
                 ProblemSerializer serializer = new ProblemSerializer(outputStream, builder);
-                Rule.addGroundingsToBuilder(rules, serializer, predicateManager, groundingMode);
+                Rule.addGroundingsToBuilder(rules, serializer, predicateManager, logicManager, variableType, groundingMode);
                 serializer.addRule(new int[] {-1}, new int[] {-1}, new boolean[] {false}, new boolean[] {false}, Double.NaN, Double.NaN);
             } catch (UnsupportedOperationException e){
                 if (e.getMessage() != null && e.getMessage().equals("IOException while writing rule")) {
