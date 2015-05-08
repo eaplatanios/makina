@@ -3,7 +3,10 @@ package org.platanios.experiment.psl.parser;
 import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.platanios.experiment.psl.*;
+import org.platanios.learn.math.matrix.Vectors;
 import org.platanios.learn.optimization.ConsensusAlternatingDirectionsMethodOfMultipliersSolver;
+import org.platanios.learn.optimization.function.AbstractFunction;
+import org.platanios.learn.optimization.function.SumFunction;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -69,7 +72,7 @@ public class LogicRuleParserTest {
 
             rules = ProbabilisticSoftLogicReader.readRules(reader);
 
-        } catch (IOException|DataFormatException e) {
+        } catch (IOException | DataFormatException e) {
             fail(e.getMessage());
             System.out.println(e.getMessage());
             e.printStackTrace();
@@ -155,7 +158,7 @@ public class LogicRuleParserTest {
                     false,
                     reader);
 
-        } catch (IOException|DataFormatException e) {
+        } catch (IOException | DataFormatException e) {
             fail(e.getMessage());
             System.out.println(e.getMessage());
             e.printStackTrace();
@@ -210,13 +213,13 @@ public class LogicRuleParserTest {
                 "KNOWS(2, 4)"
         };
 
-        boolean[] expectedFound = { false, false, false, false };
-        double[] expectedWeights = { 1, 5, 1, 0 };
+        boolean[] expectedFound = {false, false, false, false};
+        double[] expectedWeights = {1, 5, 1, 0};
 
-        String[] expectedFirstArg = { "1", "2", "3" };
-        boolean[] expectedFirstArgFound = { false, false, false };
-        String[] expectedSecondArg = { "2", "3", "4" };
-        boolean[] expectedSecondArgFound = { false, false, false };
+        String[] expectedFirstArg = {"1", "2", "3"};
+        boolean[] expectedFirstArgFound = {false, false, false};
+        String[] expectedSecondArg = {"2", "3", "4"};
+        boolean[] expectedSecondArgFound = {false, false, false};
 
         predicateManager = new ProbabilisticSoftLogicPredicateManager();
 
@@ -232,7 +235,7 @@ public class LogicRuleParserTest {
                     reader);
             predicateIds = predicateManager.getIdsForPredicateName("KNOWS");
 
-        } catch (IOException|DataFormatException e) {
+        } catch (IOException | DataFormatException e) {
             fail(e.getMessage());
             System.out.println(e.getMessage());
             e.printStackTrace();
@@ -318,7 +321,7 @@ public class LogicRuleParserTest {
 
         ArrayList<List<Integer>> result = new ArrayList<>();
         CartesianProductIterator<Integer> cartesianProduct = new CartesianProductIterator<>(lists);
-        for ( List<Integer> combination : cartesianProduct ) {
+        for (List<Integer> combination : cartesianProduct) {
             result.add(combination);
         }
 
@@ -328,7 +331,7 @@ public class LogicRuleParserTest {
             public int compare(List<Integer> l1, List<Integer> l2) {
                 if (l1.size() < l2.size()) {
                     return -1;
-                } else if(l1.size() > l2.size()) {
+                } else if (l1.size() > l2.size()) {
                     return 1;
                 }
                 for (int i = 0; i < l1.size(); ++i) {
@@ -750,13 +753,131 @@ public class LogicRuleParserTest {
             Map.Entry<ProbabilisticSoftLogicPredicateManager, ProbabilisticSoftLogicProblem.Builder> deserialized =
                     ProbabilisticSoftLogicProblem.ProblemSerializer.read(inputStream);
             deserializedProblem = deserialized.getValue().build();
-        } catch (IOException|ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             fail(e.getMessage());
             System.out.println(e.getMessage());
             e.printStackTrace();
         }
 
         assertTrue("Serialization round-trip not equal to initial object", problem.equals(deserializedProblem));
+
+    }
+
+    @Test
+    public void testRandomWalk() {
+
+        ProbabilisticSoftLogicProblem.Predicate knowsAB =
+                new ProbabilisticSoftLogicProblem.Predicate("KNOWS", ImmutableList.of("A", "B"), false);
+
+        ProbabilisticSoftLogicProblem.Predicate knowsBC =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("B", "C"), false);
+
+        ProbabilisticSoftLogicProblem.Predicate knowsAC =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("A", "C"), false);
+
+        // "{1.5} KNOWS(A, B) & KNOWS(B, C) >> KNOWS(A, C)"
+        ProbabilisticSoftLogicProblem.Rule rule =
+                new ProbabilisticSoftLogicProblem.Rule(1.5, 1, ImmutableList.of(knowsAC), ImmutableList.of(knowsAB, knowsBC));
+
+        ProbabilisticSoftLogicProblem.Predicate knows12 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("1", "2"), false);
+        ProbabilisticSoftLogicProblem.Predicate knows17 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("1", "7"), false);
+        ProbabilisticSoftLogicProblem.Predicate knows19 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("1", "9"), false);
+        ProbabilisticSoftLogicProblem.Predicate knows72 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("7", "2"), false);
+        ProbabilisticSoftLogicProblem.Predicate knows78 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("7", "8"), false);
+        ProbabilisticSoftLogicProblem.Predicate knows810 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("8", "10"), false);
+        ProbabilisticSoftLogicProblem.Predicate knows23 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("2", "3"), false);
+        ProbabilisticSoftLogicProblem.Predicate knows34 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("3", "4"), false);
+
+        ProbabilisticSoftLogicPredicateManager predicateManager = new ProbabilisticSoftLogicPredicateManager();
+
+        predicateManager.getOrAddPredicate(knows12, 0.5);
+        predicateManager.getOrAddPredicate(knows23, 0.1);
+        predicateManager.getOrAddPredicate(knows34, 0.7);
+        predicateManager.getOrAddPredicate(knows17, 0.8);
+        predicateManager.getOrAddPredicate(knows19, 0.8);
+        predicateManager.getOrAddPredicate(knows72, 0.8);
+        predicateManager.getOrAddPredicate(knows78, 0.8);
+        predicateManager.getOrAddPredicate(knows810, 0.8);
+
+        ProbabilisticSoftLogicPredicateManager.IdWeights observedIdsAndWeights =
+                predicateManager.getAllObservedWeights();
+
+        ProbabilisticSoftLogicProblem.Builder builder =
+                new ProbabilisticSoftLogicProblem.Builder(observedIdsAndWeights.Ids, observedIdsAndWeights.Weights, 100);
+
+        ProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilder(Arrays.asList(rule), builder, predicateManager, ProbabilisticSoftLogicProblem.GroundingMode.AllPossible);
+
+        ProbabilisticSoftLogicProblem problem = builder.build();
+        Map<Integer, Integer> internalToExternalIds = problem.getInternalToExternalIds();
+
+        Random random = new Random();
+
+        RandomWalkSampler.TermPredicateIdGetter predicateIdGetter = problem.getTermPredicateIdGetter();
+
+        RandomWalkSampler.Builder<String> randomWalkSamplerBuilder =
+                new RandomWalkSampler.Builder<>(
+                        problem.getExternalPredicateIdsToTerms(),
+                        problem.getInternalToExternalIds(),
+                        predicateIdGetter,
+                        0.25, // restart probability
+                        1,  // sample probability
+                        random);
+
+        predicateManager.addEdgesToRandomWalkSampler(randomWalkSamplerBuilder);
+
+        // add some seeds
+        randomWalkSamplerBuilder.addOriginEntity("1");
+
+        RandomWalkSampler<String> randomWalkSampler = randomWalkSamplerBuilder.build();
+
+        SumFunction objectiveFunction = problem.testOnly_GetObectiveFunction();
+
+        ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder solverBuilder =
+                new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder(
+                        objectiveFunction,
+                        Vectors.dense(problem.getNumberOfVariablesInSolver())
+                )
+                        .subProblemSelector(randomWalkSampler)
+                        .subProblemSelectionMethod(ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.CUSTOM) // if this is not CUSTOM, it will override the subProblemSelector
+                        .numberOfSubProblemSamples(4)
+                        .penaltyParameter(1)
+                        ;
+
+        ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver = solverBuilder.build();
+
+        Map<Integer, Double> result =
+                problem.solve(
+                        ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.CUSTOM,
+                        randomWalkSampler, // sub problem selector (sampler)
+                        100); // number of subproblem samples
+
+
+        for (int i = 0; i < 100; ++i) {
+            int[] selectedProblems = randomWalkSampler.selectSubProblems(solver);
+            for (int iSubProblem = 0; iSubProblem < selectedProblems.length; ++iSubProblem) {
+                int term = selectedProblems[iSubProblem];
+
+                int[] internalPredicateIds = predicateIdGetter.getInternalPredicateIds(term);
+                for (int j = 0; j < internalPredicateIds.length; ++j) {
+                    ProbabilisticSoftLogicProblem.Predicate predicate =
+                            predicateManager.getPredicateFromId(internalToExternalIds.get(internalPredicateIds[j]));
+                    if (j > 0) {
+                        System.out.print(' ');
+                    }
+                    System.out.print(predicate.toString());
+                }
+                System.out.println();
+            }
+            System.out.println();
+        }
 
     }
 
@@ -884,8 +1005,8 @@ public class LogicRuleParserTest {
                             problem.getExternalPredicateIdsToTerms(),
                             problem.getInternalToExternalIds(),
                             problem.getTermPredicateIdGetter(),
-                            0.25 * 0.2, // restart probability (1/4 of the step probability)
-                            0.8,  // sample probability
+                            0.01, // restart probability
+                            1,  // sample probability
                             random);
 
             trainPredicateManager.addEdgesToRandomWalkSampler(randomWalkSamplerBuilder);
@@ -903,7 +1024,7 @@ public class LogicRuleParserTest {
                     problem.solve(
                             ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.CUSTOM,
                             randomWalkSampler, // sub problem selector (sampler)
-                            8); // number of subproblem samples
+                            100); // number of subproblem samples
 
 //            Map<Integer, Double> result =
 //                    problem.solve(

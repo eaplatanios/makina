@@ -1118,6 +1118,10 @@ public final class ProbabilisticSoftLogicProblem {
         }
     }
 
+    public SumFunction testOnly_GetObectiveFunction() {
+        return this.objectiveFunction;
+    }
+
     public Map<Integer, Double> solve() {
         return this.solve(ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.ALL, null, -1);
     }
@@ -1140,7 +1144,7 @@ public final class ProbabilisticSoftLogicProblem {
                         .checkForPointConvergence(false)
                         .checkForObjectiveConvergence(false)
                         .checkForGradientConvergence(false)
-                        .logObjectiveValue(false)
+                        .logObjectiveValue(true)
                         .logGradientNorm(false)
                         .loggingLevel(3);
         for (Constraint constraint : constraints)
@@ -1222,6 +1226,10 @@ public final class ProbabilisticSoftLogicProblem {
                 );
             }
         }
+    }
+
+    public int getNumberOfVariablesInSolver() {
+        return this.objectiveFunction.getNumberOfVariables();
     }
 
     public Map<Integer, Integer> getExternalToInternalIds() {

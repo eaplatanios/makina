@@ -12,6 +12,7 @@ public class RandomWalkSampler<T> implements ConsensusAlternatingDirectionsMetho
 
     private final Map<T, GraphEdges> entityToGraph;
     private final List<T> graphSampleOrigins;
+    private final List<Integer> graphSampleCursorOriginIndices;
     private final List<GraphEdges> graphSampleCursor;
     private final Random random;
     private final double restartProbability;
@@ -27,8 +28,8 @@ public class RandomWalkSampler<T> implements ConsensusAlternatingDirectionsMetho
         this.random = builder.random;
         this.entityToGraph = builder.entityToGraph;
         this.graphSampleOrigins = builder.originEntities;
-        this.graphSampleCursor = new ArrayList<>(this.graphSampleOrigins.size());
-        this.graphSampleOrigins.forEach((entity) -> this.graphSampleCursor.add(this.entityToGraph.get(entity)));
+        this.graphSampleCursor = new ArrayList<>();
+        this.graphSampleCursorOriginIndices = new ArrayList<>();
         this.restartProbability = builder.restartProbability;
         this.sampleProbablity = builder.sampleProbability;
         this.predicateInformation = builder.predicateInformation;
@@ -39,6 +40,13 @@ public class RandomWalkSampler<T> implements ConsensusAlternatingDirectionsMetho
     }
 
     public int[] selectSubProblems(ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver) {
+
+        // choose which seed to start each cursor from
+        for (int iCursor = this.graphSampleCursorOriginIndices.size(); iCursor < solver.numberOfSubProblemSamples; ++iCursor) {
+            int iSeed = random.nextInt(this.graphSampleOrigins.size());
+            this.graphSampleCursorOriginIndices.add(iSeed);
+            this.graphSampleCursor.add(this.entityToGraph.get(this.graphSampleOrigins.get(iSeed)));
+        }
 
         if (solver.getCurrentIteration() > 0) {
             for (int predicateId : predicateIdsToUpdate) {
@@ -55,19 +63,17 @@ public class RandomWalkSampler<T> implements ConsensusAlternatingDirectionsMetho
 
         for (int i = 0; i < solver.numberOfSubProblemSamples; ++i) {
 
-            int iSeed = random.nextInt(this.graphSampleCursor.size());
-
             boolean isSampled = false;
             for (int sampleAttempt = 0; sampleAttempt < maxSampleAttempts && !isSampled; ++sampleAttempt) {
-                // first choose whether to restart, sample or step
-                double rand = this.random.nextDouble();
-                if (rand < this.restartProbability) {
-                    this.graphSampleCursor.set(iSeed, this.entityToGraph.get(this.graphSampleOrigins.get(iSeed)));
+                // first choose whether to restart
+                double randRestart = this.random.nextDouble();
+                if (randRestart < this.restartProbability) {
+                    this.graphSampleCursor.set(i, this.entityToGraph.get(this.graphSampleOrigins.get(this.graphSampleCursorOriginIndices.get(i))));
                 } else {
-                    boolean isSampleOnStep = rand < (this.restartProbability + this.sampleProbablity);
-                    Map.Entry<Integer, GraphEdges> step = this.graphSampleCursor.get(iSeed).step();
+                    boolean isSampleOnStep = this.random.nextDouble() < this.sampleProbablity;
+                    Map.Entry<Integer, GraphEdges> step = this.graphSampleCursor.get(i).step();
                     if (step != null) { // step can be null for nodes with no outgoing edges, keep looping so there is a chance to restart
-                        this.graphSampleCursor.set(iSeed, step.getValue());
+                        this.graphSampleCursor.set(i, step.getValue());
                         if (isSampleOnStep) {
                             int predicateId = step.getKey();
                             List<Integer> terms = this.predicateInformation.get(predicateId).Terms;
@@ -85,11 +91,17 @@ public class RandomWalkSampler<T> implements ConsensusAlternatingDirectionsMetho
                 }
             }
 
+
+
             if (!isSampled) {// this could happen if we are in a bad part of the graph that has observed edges everywhere
 
                 // remove this seed since it seems bad
-                this.graphSampleOrigins.remove(iSeed);
-                this.graphSampleCursor.remove(iSeed);
+                this.graphSampleOrigins.remove(this.graphSampleCursorOriginIndices.get(i));
+
+                int iSeed = random.nextInt(this.graphSampleOrigins.size());
+                this.graphSampleCursorOriginIndices.set(i, iSeed);
+                this.graphSampleCursor.set(i, this.entityToGraph.get(this.graphSampleOrigins.get(iSeed)));
+
                 sampledSubProblems[i] = this.random.nextInt(solver.getNumberOfTerms());
 
             }
@@ -181,10 +193,6 @@ public class RandomWalkSampler<T> implements ConsensusAlternatingDirectionsMetho
 
             this.restartProbability = restartProbability;
             this.sampleProbability = sampleProbability;
-
-            if (this.sampleProbability + this.restartProbability >= 1) {
-                throw new UnsupportedOperationException("Sample Probability + Restart Probability must be less than 1");
-            }
 
             this.internalToExternalIds = internalToExternalIds;
             this.predicateIdGetter = predicateIdGetter;
