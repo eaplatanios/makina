@@ -119,7 +119,7 @@ public class LogicManager<T, R> {
 
     // TODO: Maybe change return type to long?
     public int getNumberOfGroundedPredicates() {
-        return getGroundedPredicates().size();
+        return groundedPredicatesMap.size();
     }
 
     public List<GroundedPredicate<T, R>> getGroundedPredicates() {

@@ -14,9 +14,8 @@ import org.platanios.learn.logic.LogicManager;
 import org.platanios.learn.logic.formula.Disjunction;
 import org.platanios.learn.logic.formula.Formula;
 import org.platanios.learn.logic.formula.Negation;
-import org.platanios.learn.logic.grounding.ExhaustiveGrounding;
+import org.platanios.learn.logic.grounding.LazyGrounding;
 import org.platanios.learn.logic.grounding.GroundedPredicate;
-import org.platanios.learn.logic.grounding.Grounding;
 import org.platanios.learn.math.matrix.*;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.ConsensusAlternatingDirectionsMethodOfMultipliersSolver;
@@ -120,39 +119,57 @@ public final class FastProbabilisticSoftLogicProblem {
                 List<Rule> rules,
                 Builder builder,
                 LogicManager<Integer, Double> logicManager) {
-
-            for (Rule rule : rules)
-                rule.addAllGroundingsToBuilder(builder, logicManager);
-        }
-
-        private void addAllGroundingsToBuilder(Builder builder,
-                                               LogicManager<Integer, Double> logicManager) {
-            List<Formula<Integer>> disjunctionComponents = new ArrayList<>();
-            boolean[] bodyNegations = new boolean[bodyParts.size()];
-            for (int i = 0; i < bodyParts.size(); ++i) {
-                bodyNegations[i] = bodyParts.get(i) instanceof Negation;
-                disjunctionComponents.add(new Negation<>(bodyParts.get(i)));
+            Set<LazyGrounding<Integer, Double>.ActivatedGroundedPredicate<Integer>> activatedGroundedPredicates = new HashSet<>();
+            int previousTotalNumberOfRules = 0;
+            int currentTotalNumberOfRules = -1;
+            Map<Rule, List<List<GroundedPredicate<Integer, Double>>>> groundedRules = new HashMap<>();
+            while (previousTotalNumberOfRules != currentTotalNumberOfRules) {
+                previousTotalNumberOfRules = currentTotalNumberOfRules;
+                currentTotalNumberOfRules = 0;
+                for (Rule rule : rules) {
+                    List<Formula<Integer>> disjunctionComponents = new ArrayList<>();
+                    boolean[] bodyNegations = new boolean[rule.bodyParts.size()];
+                    for (int i = 0; i < rule.bodyParts.size(); ++i) {
+                        bodyNegations[i] = rule.bodyParts.get(i) instanceof Negation;
+                        disjunctionComponents.add(new Negation<>(rule.bodyParts.get(i)));
+                    }
+                    boolean[] headNegations = new boolean[rule.headParts.size()];
+                    for (int i = 0; i < rule.headParts.size(); ++i) {
+                        headNegations[i] = rule.headParts.get(i) instanceof Negation;
+                        disjunctionComponents.add(rule.headParts.get(i));
+                    }
+                    Formula<Integer> ruleFormula = new Disjunction<>(disjunctionComponents);
+                    LazyGrounding<Integer, Double> exhaustiveGrounding = new LazyGrounding<>(logicManager, activatedGroundedPredicates);
+                    exhaustiveGrounding.ground(ruleFormula);
+                    Set<LazyGrounding<Integer, Double>.ActivatedGroundedPredicate<Integer>> newActivatedGroundedPredicates = exhaustiveGrounding.getActivatedGroundedPredicates();
+                    groundedRules.put(rule, exhaustiveGrounding.getGroundedPredicates());
+                    currentTotalNumberOfRules += groundedRules.get(rule).size();
+                    System.out.println("Generated " + groundedRules.get(rule).size() + " groundings for rule " + rule.toString());
+                    activatedGroundedPredicates.addAll(newActivatedGroundedPredicates);
+                }
             }
-            boolean[] headNegations = new boolean[headParts.size()];
-            for (int i = 0; i < headParts.size(); ++i) {
-                headNegations[i] = headParts.get(i) instanceof Negation;
-                disjunctionComponents.add(headParts.get(i));
-            }
-            Formula<Integer> ruleFormula = new Disjunction<>(disjunctionComponents);
-            Grounding<Integer, Double> exhaustiveGrounding = new ExhaustiveGrounding<>(logicManager);
-            exhaustiveGrounding.ground(ruleFormula);
-            List<List<GroundedPredicate<Integer, Double>>> predicateGroundings = exhaustiveGrounding.getGroundedPredicates();
-            for (List<GroundedPredicate<Integer, Double>> groundedRulePredicates : predicateGroundings) {
-                int[] bodyVariableIndexes = new int[bodyParts.size()];
-                for (int i = 0; i < bodyParts.size(); ++i)
-                    bodyVariableIndexes[i] = (int) groundedRulePredicates.get(i).getIdentifier();
-                int[] headVariableIndexes = new int[headParts.size()];
-                for (int i = 0; i < headParts.size(); ++i)
-                    headVariableIndexes[i] = (int) groundedRulePredicates.get(bodyParts.size() + i).getIdentifier();
-                if (Double.isNaN(this.weight))
-                    builder.addRule(headVariableIndexes, bodyVariableIndexes, headNegations, bodyNegations, 1, 1000);
-                else
-                    builder.addRule(headVariableIndexes, bodyVariableIndexes, headNegations, bodyNegations, this.power, this.weight);
+            for (Rule rule : rules) {
+                List<List<GroundedPredicate<Integer, Double>>> predicateGroundings = groundedRules.get(rule);
+                boolean[] bodyNegations = new boolean[rule.bodyParts.size()];
+                for (int i = 0; i < rule.bodyParts.size(); ++i)
+                    bodyNegations[i] = rule.bodyParts.get(i) instanceof Negation;
+                boolean[] headNegations = new boolean[rule.headParts.size()];
+                for (int i = 0; i < rule.headParts.size(); ++i)
+                    headNegations[i] = rule.headParts.get(i) instanceof Negation;
+                for (List<GroundedPredicate<Integer, Double>> groundedRulePredicates : predicateGroundings) {
+                    if (rule.bodyParts.size() + rule.headParts.size() == 0)
+                        continue;
+                    int[] bodyVariableIndexes = new int[rule.bodyParts.size()];
+                    for (int i = 0; i < rule.bodyParts.size(); ++i)
+                        bodyVariableIndexes[i] = (int) groundedRulePredicates.get(i).getIdentifier();
+                    int[] headVariableIndexes = new int[rule.headParts.size()];
+                    for (int i = 0; i < rule.headParts.size(); ++i)
+                        headVariableIndexes[i] = (int) groundedRulePredicates.get(rule.bodyParts.size() + i).getIdentifier();
+                    if (Double.isNaN(rule.weight))
+                        builder.addRule(headVariableIndexes, bodyVariableIndexes, headNegations, bodyNegations, 1, 1000);
+                    else
+                        builder.addRule(headVariableIndexes, bodyVariableIndexes, headNegations, bodyNegations, rule.power, rule.weight);
+                }
             }
         }
 

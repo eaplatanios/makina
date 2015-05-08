@@ -15,10 +15,13 @@ import java.util.stream.Collectors;
 public abstract class Grounding<T, R> {
     final LogicManager<T, R> logicManager;
 
+    int numberOfComponents = 0;
+
     List<R> groundingTruthValues = new ArrayList<>();
     List<Variable<T>> groundedVariables = new ArrayList<>();
     List<List<T>> partialVariableGroundings = new ArrayList<>();
     List<List<GroundedPredicate<T, R>>> groundedPredicates = new ArrayList<>();
+    List<Boolean> ruleUnobservedVariableIndicators = new ArrayList<>();
     R currentPredicateTruthValue;
 
     public Grounding(LogicManager<T, R> logicManager) {
@@ -27,11 +30,22 @@ public abstract class Grounding<T, R> {
     }
 
     public void ground(Formula<T> formula) {
+        numberOfComponents = ((Disjunction<T>) formula).getNumberOfComponents();
         ground(formula.toDisjunctiveNormalForm(), 0);
+        List<List<T>> filteredPartialVariableGroundings = new ArrayList<>();
+        List<List<GroundedPredicate<T, R>>> filteredGroundedPredicates = new ArrayList<>();
+        for (int groundedRuleIndex = 0; groundedRuleIndex < groundedPredicates.size(); groundedRuleIndex++) {
+            if (ruleUnobservedVariableIndicators.get(groundedRuleIndex)) {
+                filteredPartialVariableGroundings.add(partialVariableGroundings.get(groundedRuleIndex));
+                filteredGroundedPredicates.add(groundedPredicates.get(groundedRuleIndex));
+            }
+        }
+        partialVariableGroundings = filteredPartialVariableGroundings;
+        groundedPredicates = filteredGroundedPredicates;
     }
 
     @SuppressWarnings("unchecked")
-    private void ground(Formula<T> formula, int callNumber) {
+    void ground(Formula<T> formula, int callNumber) {
         if (callNumber != 0 && partialVariableGroundings.size() == 0)
             return;
         if (formula instanceof Atom || formula instanceof Negation) {
@@ -43,12 +57,14 @@ public abstract class Grounding<T, R> {
             List<R> candidateGroundingTruthValues = new ArrayList<>(groundingTruthValues);
             List<List<T>> candidateVariableGroundings = new ArrayList<>(partialVariableGroundings);
             List<List<GroundedPredicate<T, R>>> candidateGroundedPredicates = new ArrayList<>(groundedPredicates);
+            List<Boolean> candidateRuleUnobservedVariableIndicators = new ArrayList<>(ruleUnobservedVariableIndicators);
             argumentVariables.stream()
                     .filter(argumentVariable -> !groundedVariables.contains(argumentVariable))
                     .forEach(argumentVariable -> {
                         candidateGroundingTruthValues.clear();
                         candidateVariableGroundings.clear();
                         candidateGroundedPredicates.clear();
+                        candidateRuleUnobservedVariableIndicators.clear();
                         newGroundedVariables.add(argumentVariable);
                         if (partialVariableGroundings.size() > 0) {
                             for (int index = 0; index < partialVariableGroundings.size(); index++) {
@@ -58,6 +74,7 @@ public abstract class Grounding<T, R> {
                                     candidateGroundingTruthValues.add(groundingTruthValues.get(index));
                                     candidateVariableGroundings.add(variableGrounding);
                                     candidateGroundedPredicates.add(new ArrayList<>(groundedPredicates.get(index)));
+                                    candidateRuleUnobservedVariableIndicators.add(ruleUnobservedVariableIndicators.get(index));
                                 }
                             }
                         } else {
@@ -67,17 +84,20 @@ public abstract class Grounding<T, R> {
                                 candidateGroundingTruthValues.add(logicManager.logic().falseValue());
                                 candidateVariableGroundings.add(variableGrounding);
                                 candidateGroundedPredicates.add(new ArrayList<>());
+                                candidateRuleUnobservedVariableIndicators.add(false);
                             }
                         }
                         groundingTruthValues = new ArrayList<>(candidateGroundingTruthValues);
                         partialVariableGroundings = new ArrayList<>(candidateVariableGroundings);
                         groundedPredicates = new ArrayList<>(candidateGroundedPredicates);
+                        ruleUnobservedVariableIndicators = new ArrayList<>(candidateRuleUnobservedVariableIndicators);
                     });
             List<R> truthValues = new ArrayList<>(groundingTruthValues);
             groundedVariables = newGroundedVariables;
             groundingTruthValues = new ArrayList<>();
             partialVariableGroundings = new ArrayList<>();
             groundedPredicates = new ArrayList<>();
+            ruleUnobservedVariableIndicators = new ArrayList<>();
             for (int candidateIndex = 0; candidateIndex < candidateGroundedPredicates.size(); candidateIndex++) {
                 List<T> candidateVariableGrounding = candidateVariableGroundings.get(candidateIndex);
                 Map<Variable<T>, T> variableAssignments = new HashMap<>();
@@ -88,9 +108,8 @@ public abstract class Grounding<T, R> {
                 if (formula instanceof Atom)
                     currentPredicateTruthValue = formula.evaluate(logicManager, variableAssignments);
                 else
-                    currentPredicateTruthValue =
-                            ((Negation<T>) formula).getFormula().evaluate(logicManager, variableAssignments);
-                if (!pruneGroundingAndSetCurrentPredicateTruthValue(formula, disjunctionComponentsSoFar)) {
+                    currentPredicateTruthValue = ((Negation<T>) formula).getFormula().evaluate(logicManager, variableAssignments);
+                if (!pruneGroundingAndSetCurrentPredicateTruthValue(formula, variableAssignments, disjunctionComponentsSoFar)) {
                     groundingTruthValues.add(currentPredicateTruthValue);
                     partialVariableGroundings.add(candidateVariableGrounding);
                     GroundedPredicate<T, R> groundedPredicate;
@@ -102,6 +121,7 @@ public abstract class Grounding<T, R> {
                     candidateVariableGrounding = new ArrayList<>();
                     for (Variable<T> variable : formula.getOrderedVariables())
                         candidateVariableGrounding.add(variableAssignments.get(variable));
+                    boolean unobservedVariable = candidateRuleUnobservedVariableIndicators.get(candidateIndex);
                     if (logicManager.groundedPredicateExists(predicate,
                                                              candidateVariableGrounding)) {
                         groundedPredicate = logicManager.getGroundedPredicate(
@@ -111,11 +131,13 @@ public abstract class Grounding<T, R> {
                     } else {
                         groundedPredicate = logicManager.addGroundedPredicate(
                                 predicate,
-                                candidateVariableGrounding //, logicManager.logic().falseValue()
+                                candidateVariableGrounding
                         );
                     }
                     candidateGroundedPredicates.get(candidateIndex).add(groundedPredicate);
                     groundedPredicates.add(candidateGroundedPredicates.get(candidateIndex));
+                    ruleUnobservedVariableIndicators.add(unobservedVariable | groundedPredicate.getValue() == null);
+                    onGroundedPredicateAddition(candidateGroundedPredicates.get(candidateIndex));
                 }
             }
         } else if (formula instanceof Conjunction) {
@@ -156,7 +178,12 @@ public abstract class Grounding<T, R> {
     }
 
     abstract boolean pruneGroundingAndSetCurrentPredicateTruthValue(Formula<T> formula,
+                                                                    Map<Variable<T>, T> variableAssignments,
                                                                     List<R> disjunctionComponentsSoFar);
+
+    void onGroundedPredicateAddition(List<GroundedPredicate<T, R>> groundedPredicate) {
+
+    }
 
     public List<List<GroundedPredicate<T, R>>> getGroundedPredicates() {
         return groundedPredicates;

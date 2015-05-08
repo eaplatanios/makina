@@ -25,7 +25,7 @@ import static junit.framework.TestCase.fail;
 public class FastLogicRuleParserTest {
     @Test
     public void testFastEndToEnd() {
-        String experimentName = "uci_trust";
+        String experimentName = "epinions_200";
 
         LogicManager<Integer, Double> logicManager = new LogicManager<>(new LukasiewiczLogic());
         VariableType<Integer> personType = logicManager.addVariableType("{person}", Integer.class);
@@ -88,6 +88,7 @@ public class FastLogicRuleParserTest {
             observedIndexes[index] = (int) logicManager.getGroundedPredicates().get(index).getIdentifier();
             observedWeights[index] = (double) logicManager.getGroundedPredicates().get(index).getValue();
         }
+
         FastProbabilisticSoftLogicProblem.Builder problemBuilder =
                 new FastProbabilisticSoftLogicProblem.Builder(observedIndexes, observedWeights, logicManager.getNumberOfVariables());
         FastProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilder(rules, problemBuilder, logicManager);
@@ -95,12 +96,17 @@ public class FastLogicRuleParserTest {
         FastProbabilisticSoftLogicProblem problem = problemBuilder.build();
         Map<Integer, Double> result = problem.solve();
 
-
         Map<String, Double> filteredResults = new HashMap<>();
 
         result.keySet().stream()
                 .filter(key -> result.get(key) > Math.sqrt(Double.MIN_VALUE))
                 .forEach(key -> filteredResults.put(logicManager.getGroundedPredicate(key).toString(), result.get(key)));
+
+        long numberOfActivatedGroundings = result.keySet().stream().filter(key -> result.get(key) > 0.01).count();
+
+        result.keySet().stream()
+                .filter(key -> result.get(key) > 0.01)
+                .forEach(key -> logicManager.getGroundedPredicate(key).setValue(result.get(key)));
 
         System.out.println(result.get(0));
         System.out.println(result.get(1));

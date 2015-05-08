@@ -11,7 +11,8 @@ public class GroundedPredicate<T, R> {
     private final long identifier;
     private final Predicate<T> predicate;
     private final List<T> predicateArgumentsAssignment;
-    private final R value;
+
+    private R value;
 
     public GroundedPredicate(long identifier,
                              Predicate<T> predicate,
@@ -42,6 +43,10 @@ public class GroundedPredicate<T, R> {
 
     public List<T> getPredicateArgumentsAssignment() {
         return predicateArgumentsAssignment;
+    }
+
+    public void setValue(R value) {
+        this.value = value;
     }
 
     public R getValue() {
