@@ -1,6 +1,8 @@
 package org.platanios.experiment.psl;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.platanios.learn.optimization.ConsensusAlternatingDirectionsMethodOfMultipliersSolver;
 
 import java.util.*;
@@ -22,6 +24,12 @@ public class RandomWalkSampler<T> implements ConsensusAlternatingDirectionsMetho
     private HashSet<Integer> predicateIdsToUpdate;
     private final TermPredicateIdGetter predicateIdGetter;
     private static final int maxSampleAttempts = 20;
+    private final boolean logSampleCounts;
+    private int[] sampleCounts;
+    private static final Logger logger = LogManager.getLogger("Classification / Training");
+    // for debugging
+    public ProbabilisticSoftLogicPredicateManager predicateManager = null;
+    public Map<Integer, ProbabilisticSoftLogicProblem.Rule> termToRule = null;
 
     private RandomWalkSampler(Builder builder) {
 
@@ -36,6 +44,8 @@ public class RandomWalkSampler<T> implements ConsensusAlternatingDirectionsMetho
         this.internalToExternalIds = builder.internalToExternalIds;
         this.predicateIdGetter = builder.predicateIdGetter;
         this.predicateIdsToUpdate = new HashSet<>();
+        this.logSampleCounts = builder.logSampleCounts;
+        this.sampleCounts = null;
 
     }
 
@@ -49,6 +59,42 @@ public class RandomWalkSampler<T> implements ConsensusAlternatingDirectionsMetho
         }
 
         if (solver.getCurrentIteration() > 0) {
+
+            if (solver.getCurrentIteration() == 5000) {
+                // get the top 100
+                PriorityQueue<Map.Entry<Integer, Integer>> priorityQueue = new PriorityQueue<>(
+                        this.sampleCounts.length,
+                        (element1, element2) -> (int) Math.signum(element2.getValue() - element1.getValue())
+                );
+
+                for (int indexCount = 0; indexCount < this.sampleCounts.length; ++indexCount) {
+                    priorityQueue.add(new AbstractMap.SimpleEntry<>(indexCount, this.sampleCounts[indexCount]));
+                }
+
+                for (int indexCount = 0; indexCount < 100; ++indexCount) {
+
+                    Map.Entry<Integer, Integer> sampleCount = priorityQueue.poll();
+                    int[] subProblemPredicateIds = this.predicateIdGetter.getInternalPredicateIds(sampleCount.getKey());
+                    StringBuilder sb = new StringBuilder();
+                    for (int predicateId : subProblemPredicateIds) {
+                        int externalId = this.internalToExternalIds.get(predicateId);
+                        if (predicateManager != null) {
+                            ProbabilisticSoftLogicProblem.Predicate predicate = predicateManager.getPredicateFromId(externalId);
+                            sb.append(predicate.toString());
+                        } else {
+                            sb.append(externalId);
+                        }
+                        sb.append(" ");
+                    }
+                    sb.append(";");
+                    if (this.termToRule != null) {
+                        ProbabilisticSoftLogicProblem.Rule rule = this.termToRule.get(sampleCount.getKey());
+                        sb.append(rule.toString());
+                    }
+                    logger.info("RankedSample" + indexCount + " (" + sampleCount.getKey() + ", " + sampleCount.getValue() + "): " + sb.toString());
+                }
+            }
+
             for (int predicateId : predicateIdsToUpdate) {
                 double value = solver.currentPoint.get(predicateId);
                 int externalId = this.internalToExternalIds.get(predicateId);
@@ -81,6 +127,12 @@ public class RandomWalkSampler<T> implements ConsensusAlternatingDirectionsMetho
                                 int indexIntoTerms = random.nextInt(terms.size());
                                 sampledSubProblems[i] = terms.get(indexIntoTerms);
                                 int[] subProblemPredicateIds = this.predicateIdGetter.getInternalPredicateIds(sampledSubProblems[i]);
+                                if (this.logSampleCounts) {
+                                    if (this.sampleCounts == null) {
+                                        this.sampleCounts = new int[solver.getNumberOfTerms()];
+                                    }
+                                    ++this.sampleCounts[sampledSubProblems[i]];
+                                }
                                 for (int subProblemPredicateId : subProblemPredicateIds) {
                                     this.predicateIdsToUpdate.add(subProblemPredicateId);
                                 }
@@ -90,8 +142,6 @@ public class RandomWalkSampler<T> implements ConsensusAlternatingDirectionsMetho
                     }
                 }
             }
-
-
 
             if (!isSampled) {// this could happen if we are in a bad part of the graph that has observed edges everywhere
 
@@ -181,6 +231,7 @@ public class RandomWalkSampler<T> implements ConsensusAlternatingDirectionsMetho
         private Map<Integer, Integer> internalToExternalIds;
         private Map<Integer, PredicateInformation> predicateInformation;
         private TermPredicateIdGetter predicateIdGetter;
+        public boolean logSampleCounts;
 
         public Builder(
                 Map<Integer, List<Integer>> predicateIdToTerms,

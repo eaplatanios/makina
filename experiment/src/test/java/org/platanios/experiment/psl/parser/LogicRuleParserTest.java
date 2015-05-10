@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.platanios.experiment.psl.*;
 import org.platanios.learn.math.matrix.Vectors;
+import org.platanios.learn.math.statistics.StatisticsUtilities;
 import org.platanios.learn.optimization.ConsensusAlternatingDirectionsMethodOfMultipliersSolver;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.SumFunction;
@@ -907,8 +908,9 @@ public class LogicRuleParserTest {
 
             File outputStreamFile = new File(outputStreamName);
             ProbabilisticSoftLogicProblem.Builder problemBuilder = null;
+            Map<Integer, ProbabilisticSoftLogicProblem.Rule> termToRule = null;
             ProbabilisticSoftLogicPredicateManager trainPredicateManager = null;
-            if (outputStreamFile.exists()) {
+            if (false) {// outputStreamFile.exists()) {
 
                 try (FileInputStream inputStream = new FileInputStream(outputStreamFile)) {
 
@@ -973,12 +975,15 @@ public class LogicRuleParserTest {
 
                     outputStream = new FileOutputStream(outputStreamFile);
 
-                    problemBuilder =
+                    Map.Entry<ProbabilisticSoftLogicProblem.Builder, Map<Integer, ProbabilisticSoftLogicProblem.Rule>> builderAndTermToRule =
                             ProbabilisticSoftLogicProblem.ProblemSerializer.write(
                                     outputStream,
                                     rules,
                                     trainPredicateManager,
                                     groundingMode);
+
+                    problemBuilder = builderAndTermToRule.getKey();
+                    termToRule = builderAndTermToRule.getValue();
 
                     outputStream.close();
 
@@ -1006,19 +1011,23 @@ public class LogicRuleParserTest {
                             problem.getInternalToExternalIds(),
                             problem.getTermPredicateIdGetter(),
                             0.01, // restart probability
-                            1,  // sample probability
+                            0.01,  // sample probability
                             random);
 
             trainPredicateManager.addEdgesToRandomWalkSampler(randomWalkSamplerBuilder);
 
             // add some random seeds
             List<String> entities = new ArrayList<>(trainPredicateManager.getAllEntities());
-            for (int iSeed = 0; iSeed < 100; ++iSeed) {
-                String entity = entities.get(random.nextInt(entities.size()));
-                randomWalkSamplerBuilder.addOriginEntity(entity);
+            List<String> seeds = StatisticsUtilities.sampleWithoutReplacement(entities, Math.min(1000, entities.size()));
+            for (String seed : seeds) {
+                randomWalkSamplerBuilder.addOriginEntity(seed);
             }
 
+            randomWalkSamplerBuilder.logSampleCounts = true;
+
             RandomWalkSampler<String> randomWalkSampler = randomWalkSamplerBuilder.build();
+            randomWalkSampler.predicateManager = trainPredicateManager;
+            randomWalkSampler.termToRule = termToRule;
 
             Map<Integer, Double> result =
                     problem.solve(

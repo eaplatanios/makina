@@ -284,7 +284,7 @@ public final class ProbabilisticSoftLogicProblem {
             return sb.toString();
         }
 
-        public static void addGroundingsToBuilder(
+        public static Map<Integer, Rule> addGroundingsToBuilder(
                 List<Rule> rules,
                 ProbabilisticSoftLogicProblem.GroundedRuleHandler builder,
                 ProbabilisticSoftLogicPredicateManager predicateManager,
@@ -292,15 +292,21 @@ public final class ProbabilisticSoftLogicProblem {
 
             if (groundingMode == GroundingMode.AllPossible) {
 
+                Map<Integer, Rule> termToRule = new HashMap<>();
                 for (ProbabilisticSoftLogicProblem.Rule rule : rules) {
 
-                    rule.addAllGroundingsToBuilder(builder, predicateManager);
+                    List<Integer> terms = rule.addAllGroundingsToBuilder(builder, predicateManager);
+                    for (int term : terms) {
+                        termToRule.put(term, rule);
+                    }
 
                 }
 
+                return termToRule;
+
             } else {
 
-                Rule.addGroundingsToBuilderByExtension(
+                return Rule.addGroundingsToBuilderByExtension(
                         rules,
                         builder,
                         predicateManager,
@@ -312,12 +318,13 @@ public final class ProbabilisticSoftLogicProblem {
 
         // allowPredicateCreation is a temporary measure
         // to restrict the groundings to exactly what we have read
-        private static void addGroundingsToBuilderByExtension(
+        private static Map<Integer, Rule> addGroundingsToBuilderByExtension(
                 List<Rule> rules,
                 ProbabilisticSoftLogicProblem.GroundedRuleHandler builder,
                 ProbabilisticSoftLogicPredicateManager predicateManager,
                 boolean allowPredicateCreation ) {
 
+            HashMap<Integer, Rule> termToRule = new HashMap<>();
             HashSet<Integer> newPredicates = new HashSet<>();
             List<HashSet<String>> groundingsAlreadyAdded = new ArrayList<>();
             for (int i = 0; i < rules.size(); ++i) {
@@ -339,7 +346,7 @@ public final class ProbabilisticSoftLogicProblem {
                     System.out.println("Current rule: " + indexRule);
                     for (int predicateId : currentPredicates) {
 
-                        rules.get(indexRule).extendGroundingsAndAddToBuilder(
+                        List<Integer> addedTerms = rules.get(indexRule).extendGroundingsAndAddToBuilder(
                                 predicateManager.getPredicateFromId(predicateId),
                                 builder,
                                 predicateManager,
@@ -347,21 +354,28 @@ public final class ProbabilisticSoftLogicProblem {
                                 newPredicates,
                                 allowPredicateCreation );
 
+                        for (int term : addedTerms) {
+                            termToRule.put(term, rules.get(indexRule));
+                        }
+
                     }
 
                 }
 
             }
 
+            return termToRule;
         }
 
-        private void extendGroundingsAndAddToBuilder(
+        private List<Integer> extendGroundingsAndAddToBuilder(
                 Predicate groundingExtension,
                 ProbabilisticSoftLogicProblem.GroundedRuleHandler builder,
                 ProbabilisticSoftLogicPredicateManager predicateManager,
                 HashSet<String> groundingsAlreadyAdded,
                 HashSet<Integer> newPredicates,
                 boolean allowPredicateCreation ) {
+
+            List<Integer> termIds = new ArrayList<>();
 
             boolean[] bodyNegations = new boolean[this.Body.size()];
             for (int i = 0; i < this.Body.size(); ++i) {
@@ -489,19 +503,25 @@ public final class ProbabilisticSoftLogicProblem {
                         groundingsAlreadyAdded.add(groundingString);
 
                         // BUG BUGBUGBUG temporarily handle constraints by setting to high weight
+                        int indexTerm = -1;
                         if (Double.isNaN(this.Weight)) {
-                            builder.addRule(headIdResult.getKey(), bodyIdResult.getKey(), headNegations, bodyNegations, 1, 1000);
+                            indexTerm = builder.addRule(headIdResult.getKey(), bodyIdResult.getKey(), headNegations, bodyNegations, 1, 1000);
                         } else {
-                            builder.addRule(headIdResult.getKey(), bodyIdResult.getKey(), headNegations, bodyNegations, this.Power, this.Weight);
+                            indexTerm = builder.addRule(headIdResult.getKey(), bodyIdResult.getKey(), headNegations, bodyNegations, this.Power, this.Weight);
+                        }
+
+                        if (indexTerm >= 0) {
+                            termIds.add(indexTerm);
                         }
 
                     }
                 }
             }
 
+            return termIds;
         }
 
-        private void addAllGroundingsToBuilder(
+        private List<Integer> addAllGroundingsToBuilder(
                 ProbabilisticSoftLogicProblem.GroundedRuleHandler builder,
                 ProbabilisticSoftLogicPredicateManager predicateManager) {
 
@@ -509,6 +529,8 @@ public final class ProbabilisticSoftLogicProblem {
 //            if (Double.isNaN(this.Weight)) {
 //                return;
 //            }
+
+            List<Integer> terms = new ArrayList<>();
 
             boolean[] bodyNegations = new boolean[this.Body.size()];
             for (int i = 0; i < this.Body.size(); ++i) {
@@ -549,13 +571,20 @@ public final class ProbabilisticSoftLogicProblem {
                 }
 
                 // BUG BUGBUGBUG temporarily handle constraints by setting to high weight
+                int indexTerm = -1;
                 if (Double.isNaN(this.Weight)) {
-                    builder.addRule(headIdResult.getKey(), bodyIdResult.getKey(), headNegations, bodyNegations, 1, 1000);
+                    indexTerm = builder.addRule(headIdResult.getKey(), bodyIdResult.getKey(), headNegations, bodyNegations, 1, 1000);
                 } else {
-                    builder.addRule(headIdResult.getKey(), bodyIdResult.getKey(), headNegations, bodyNegations, this.Power, this.Weight);
+                    indexTerm = builder.addRule(headIdResult.getKey(), bodyIdResult.getKey(), headNegations, bodyNegations, this.Power, this.Weight);
+                }
+
+                if (indexTerm >= 0) {
+                    terms.add(indexTerm);
                 }
 
             }
+
+            return terms;
 
         }
 
@@ -672,7 +701,7 @@ public final class ProbabilisticSoftLogicProblem {
     }
 
     public static abstract class GroundedRuleHandler {
-        abstract GroundedRuleHandler addRule(
+        abstract int addRule(
                 int[] headVariableIndexes,
                 int[] bodyVariableIndexes,
                 boolean[] headNegations,
@@ -733,7 +762,7 @@ public final class ProbabilisticSoftLogicProblem {
 
         }
 
-        GroundedRuleHandler addRule(
+        int addRule(
                 int[] headVariableIndexes,
                 int[] bodyVariableIndexes,
                 boolean[] headNegations,
@@ -741,9 +770,7 @@ public final class ProbabilisticSoftLogicProblem {
                 double power,
                 double weight) {
 
-            this.builder.addRule(headVariableIndexes, bodyVariableIndexes, headNegations, bodyNegations, power, weight);
-
-            return this;
+            return this.builder.addRule(headVariableIndexes, bodyVariableIndexes, headNegations, bodyNegations, power, weight);
 
         }
 
@@ -761,7 +788,7 @@ public final class ProbabilisticSoftLogicProblem {
             this.builder = builder;
         }
 
-        public static Builder write(
+        public static Map.Entry<Builder, Map<Integer, Rule>> write(
                 OutputStream outputStream,
                 List<Rule> rules,
                 ProbabilisticSoftLogicPredicateManager predicateManager,
@@ -776,9 +803,11 @@ public final class ProbabilisticSoftLogicProblem {
                     new ProbabilisticSoftLogicProblem.Builder(
                             observedIdsAndWeights.Ids, observedIdsAndWeights.Weights, predicateManager.size() - observedIdsAndWeights.Ids.length);
 
+            Map<Integer, Rule> termToRule = null;
+
             try {
                 ProblemSerializer serializer = new ProblemSerializer(outputStream, builder);
-                Rule.addGroundingsToBuilder(rules, serializer, predicateManager, groundingMode);
+                termToRule = Rule.addGroundingsToBuilder(rules, serializer, predicateManager, groundingMode);
                 serializer.addRule(new int[] {-1}, new int[] {-1}, new boolean[] {false}, new boolean[] {false}, Double.NaN, Double.NaN);
             } catch (UnsupportedOperationException e){
                 if (e.getMessage() != null && e.getMessage().equals("IOException while writing rule")) {
@@ -786,7 +815,7 @@ public final class ProbabilisticSoftLogicProblem {
                 }
             }
 
-            return builder;
+            return new AbstractMap.SimpleEntry<>(builder, termToRule);
 
         }
 
@@ -810,7 +839,7 @@ public final class ProbabilisticSoftLogicProblem {
 
         }
 
-        GroundedRuleHandler addRule(
+        int addRule(
                 int[] headVariableIndexes,
                 int[] bodyVariableIndexes,
                 boolean[] headNegations,
@@ -818,24 +847,25 @@ public final class ProbabilisticSoftLogicProblem {
                 double power,
                 double weight) {
 
-            this.builder.addRule(headVariableIndexes, bodyVariableIndexes, headNegations, bodyNegations, power, weight);
-
-            try {
-                UnsafeSerializationUtilities.writeInt(outputStream, headVariableIndexes.length);
-                UnsafeSerializationUtilities.writeIntArray(outputStream, headVariableIndexes);
-                UnsafeSerializationUtilities.writeInt(outputStream, bodyVariableIndexes.length);
-                UnsafeSerializationUtilities.writeIntArray(outputStream, bodyVariableIndexes);
-                UnsafeSerializationUtilities.writeInt(outputStream, headNegations.length);
-                UnsafeSerializationUtilities.writeBooleanArray(outputStream, headNegations);
-                UnsafeSerializationUtilities.writeInt(outputStream, bodyNegations.length);
-                UnsafeSerializationUtilities.writeBooleanArray(outputStream, bodyNegations);
-                UnsafeSerializationUtilities.writeDouble(outputStream, power);
-                UnsafeSerializationUtilities.writeDouble(outputStream, weight);
-            } catch (IOException e) {
-                throw new UnsupportedOperationException("IOException while writing rule", e);
+            int indexTerm = this.builder.addRule(headVariableIndexes, bodyVariableIndexes, headNegations, bodyNegations, power, weight);
+            if (indexTerm >= 0) {
+                try {
+                    UnsafeSerializationUtilities.writeInt(outputStream, headVariableIndexes.length);
+                    UnsafeSerializationUtilities.writeIntArray(outputStream, headVariableIndexes);
+                    UnsafeSerializationUtilities.writeInt(outputStream, bodyVariableIndexes.length);
+                    UnsafeSerializationUtilities.writeIntArray(outputStream, bodyVariableIndexes);
+                    UnsafeSerializationUtilities.writeInt(outputStream, headNegations.length);
+                    UnsafeSerializationUtilities.writeBooleanArray(outputStream, headNegations);
+                    UnsafeSerializationUtilities.writeInt(outputStream, bodyNegations.length);
+                    UnsafeSerializationUtilities.writeBooleanArray(outputStream, bodyNegations);
+                    UnsafeSerializationUtilities.writeDouble(outputStream, power);
+                    UnsafeSerializationUtilities.writeDouble(outputStream, weight);
+                } catch (IOException e) {
+                    throw new UnsupportedOperationException("IOException while writing rule", e);
+                }
             }
 
-            return this;
+            return indexTerm;
 
         }
 
@@ -907,7 +937,7 @@ public final class ProbabilisticSoftLogicProblem {
         public int getNumberOfTerms() { return this.functionTerms.size(); }
 
         @Override
-        Builder addRule(
+        int addRule(
                 int[] headVariableIndexes,
                 int[] bodyVariableIndexes,
                 boolean[] headNegations,
@@ -918,10 +948,10 @@ public final class ProbabilisticSoftLogicProblem {
             RulePart bodyPart = convertRulePartToInternalRepresentation(bodyVariableIndexes, bodyNegations, false);
             double ruleMaximumValue = 1 + headPart.observedConstant + bodyPart.observedConstant;
             if (ruleMaximumValue <= 0)
-                return this;
+                return -1;
             int[] variableIndexes = Utilities.union(headPart.variableIndexes, bodyPart.variableIndexes);
             if (variableIndexes.length == 0)
-                return this;
+                return -1;
             int indexTerm = this.functionTerms.size();
             LinearFunction linearFunction = new LinearFunction(Vectors.dense(variableIndexes.length), ruleMaximumValue);
             for (int headVariable = 0; headVariable < headPart.variableIndexes.length; headVariable++) {
@@ -971,7 +1001,7 @@ public final class ProbabilisticSoftLogicProblem {
             FunctionTerm term = new FunctionTerm(variableIndexes, linearFunction, weight, power);
             // functionTerms.putIfAbsent(term.toString(), term);
             functionTerms.add(term);
-            return this;
+            return functionTerms.size();
         }
 
         // BUG BUGBUGBUG: we should handle not adding redundant rules since we handle that on rules

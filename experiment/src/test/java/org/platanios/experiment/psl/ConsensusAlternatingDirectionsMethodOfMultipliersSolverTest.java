@@ -12,13 +12,13 @@ import java.util.Map;
 public class ConsensusAlternatingDirectionsMethodOfMultipliersSolverTest {
     @Test
     public void testSimpleConsensusADMM1() {
-        ProbabilisticSoftLogicProblem pslProblem = new ProbabilisticSoftLogicProblem.Builder(new int[]{1, 3},
+        ProbabilisticSoftLogicProblem.Builder pslProblemBuilder = new ProbabilisticSoftLogicProblem.Builder(new int[]{1, 3},
                                                                                              new double[]{1, 0},
-                                                                                             2)
-                .addRule(new int[]{0}, new int[]{1}, new boolean[]{false}, new boolean[]{false}, 1, 1)
-                .addRule(new int[]{2}, new int[]{0}, new boolean[]{false}, new boolean[]{false}, 1, 1)
-                .addRule(new int[]{2}, new int[]{3}, new boolean[]{false}, new boolean[]{false}, 1, 1)
-                .build();
+                                                                                             2);
+        pslProblemBuilder.addRule(new int[]{0}, new int[]{1}, new boolean[]{false}, new boolean[]{false}, 1, 1);
+        pslProblemBuilder.addRule(new int[]{2}, new int[]{0}, new boolean[]{false}, new boolean[]{false}, 1, 1);
+        pslProblemBuilder.addRule(new int[]{2}, new int[]{3}, new boolean[]{false}, new boolean[]{false}, 1, 1);
+        ProbabilisticSoftLogicProblem pslProblem = pslProblemBuilder.build();
         Map<Integer, Double> result = pslProblem.solve();
         System.out.println(result.get(0));
         System.out.println(result.get(2));
@@ -27,17 +27,17 @@ public class ConsensusAlternatingDirectionsMethodOfMultipliersSolverTest {
 
     @Test
     public void testSimpleConstrainedConsensusADMM2() {
-        ProbabilisticSoftLogicProblem pslProblem = new ProbabilisticSoftLogicProblem.Builder(new int[]{1, 3},
+        ProbabilisticSoftLogicProblem.Builder pslProblemBuilder = new ProbabilisticSoftLogicProblem.Builder(new int[]{1, 3},
                                                                                              new double[]{1, 0},
-                                                                                             2)
-                .addRule(new int[]{0}, new int[]{1}, new boolean[]{false}, new boolean[]{false}, 1, 1)
-                .addRule(new int[]{2}, new int[]{0}, new boolean[]{false}, new boolean[]{false}, 1, 1)
-                .addRule(new int[]{2}, new int[]{3}, new boolean[]{false}, new boolean[]{false}, 1, 1)
-                .addRule(new int[]{0}, new int[]{1}, new boolean[]{true}, new boolean[]{true}, 1, 1)
-                .addRule(new int[]{2}, new int[]{0}, new boolean[]{true}, new boolean[]{true}, 1, 1)
-                .addRule(new int[]{2}, new int[]{3}, new boolean[]{true}, new boolean[]{true}, 1, 1)
-                .addConstraint(new LinearEqualityConstraint(Vectors.dense(new double[]{-1, 1}), 0.2), 0, 2)
-                .build();
+                                                                                             2);
+        pslProblemBuilder.addRule(new int[]{0}, new int[]{1}, new boolean[]{false}, new boolean[]{false}, 1, 1);
+        pslProblemBuilder.addRule(new int[]{2}, new int[]{0}, new boolean[]{false}, new boolean[]{false}, 1, 1);
+        pslProblemBuilder.addRule(new int[]{2}, new int[]{3}, new boolean[]{false}, new boolean[]{false}, 1, 1);
+        pslProblemBuilder.addRule(new int[]{0}, new int[]{1}, new boolean[]{true}, new boolean[]{true}, 1, 1);
+        pslProblemBuilder.addRule(new int[]{2}, new int[]{0}, new boolean[]{true}, new boolean[]{true}, 1, 1);
+        pslProblemBuilder.addRule(new int[]{2}, new int[]{3}, new boolean[]{true}, new boolean[]{true}, 1, 1);
+        pslProblemBuilder.addConstraint(new LinearEqualityConstraint(Vectors.dense(new double[]{-1, 1}), 0.2), 0, 2);
+        ProbabilisticSoftLogicProblem pslProblem = pslProblemBuilder.build();
         Map<Integer, Double> result = pslProblem.solve();
         System.out.println(result.get(0));
         System.out.println(result.get(2));
