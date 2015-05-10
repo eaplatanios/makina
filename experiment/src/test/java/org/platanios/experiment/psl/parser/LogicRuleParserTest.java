@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.platanios.experiment.psl.*;
 import org.platanios.learn.math.matrix.Vectors;
+import org.platanios.learn.math.statistics.StatisticsUtilities;
 import org.platanios.learn.optimization.ConsensusAlternatingDirectionsMethodOfMultipliersSolver;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.SumFunction;
@@ -1013,9 +1014,9 @@ public class LogicRuleParserTest {
 
             // add some random seeds
             List<String> entities = new ArrayList<>(trainPredicateManager.getAllEntities());
-            for (int iSeed = 0; iSeed < 100; ++iSeed) {
-                String entity = entities.get(random.nextInt(entities.size()));
-                randomWalkSamplerBuilder.addOriginEntity(entity);
+            List<String> seeds = StatisticsUtilities.sampleWithoutReplacement(entities, Math.min(1000, entities.size()));
+            for (String seed : seeds) {
+                randomWalkSamplerBuilder.addOriginEntity(seed);
             }
 
             RandomWalkSampler<String> randomWalkSampler = randomWalkSamplerBuilder.build();
