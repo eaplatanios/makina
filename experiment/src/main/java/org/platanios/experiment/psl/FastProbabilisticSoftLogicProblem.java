@@ -6,16 +6,15 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Booleans;
 import com.google.common.primitives.Ints;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.platanios.learn.Utilities;
 import org.platanios.learn.logic.LogicManager;
 import org.platanios.learn.logic.formula.Disjunction;
 import org.platanios.learn.logic.formula.Formula;
 import org.platanios.learn.logic.formula.Negation;
-import org.platanios.learn.logic.grounding.LazyGrounding;
+import org.platanios.learn.logic.grounding.ExhaustiveGrounding;
 import org.platanios.learn.logic.grounding.GroundedPredicate;
+import org.platanios.learn.logic.grounding.Grounding;
 import org.platanios.learn.math.matrix.*;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.ConsensusAlternatingDirectionsMethodOfMultipliersSolver;
@@ -119,56 +118,39 @@ public final class FastProbabilisticSoftLogicProblem {
                 List<Rule> rules,
                 Builder builder,
                 LogicManager<Integer, Double> logicManager) {
-            Set<LazyGrounding<Integer, Double>.ActivatedGroundedPredicate<Integer>> activatedGroundedPredicates = new HashSet<>();
-            int previousTotalNumberOfRules = 0;
-            int currentTotalNumberOfRules = -1;
-            Map<Rule, List<List<GroundedPredicate<Integer, Double>>>> groundedRules = new HashMap<>();
-            while (previousTotalNumberOfRules != currentTotalNumberOfRules) {
-                previousTotalNumberOfRules = currentTotalNumberOfRules;
-                currentTotalNumberOfRules = 0;
-                for (Rule rule : rules) {
-                    List<Formula<Integer>> disjunctionComponents = new ArrayList<>();
-                    boolean[] bodyNegations = new boolean[rule.bodyParts.size()];
-                    for (int i = 0; i < rule.bodyParts.size(); ++i) {
-                        bodyNegations[i] = rule.bodyParts.get(i) instanceof Negation;
-                        disjunctionComponents.add(new Negation<>(rule.bodyParts.get(i)));
-                    }
-                    boolean[] headNegations = new boolean[rule.headParts.size()];
-                    for (int i = 0; i < rule.headParts.size(); ++i) {
-                        headNegations[i] = rule.headParts.get(i) instanceof Negation;
-                        disjunctionComponents.add(rule.headParts.get(i));
-                    }
-                    Formula<Integer> ruleFormula = new Disjunction<>(disjunctionComponents);
-                    LazyGrounding<Integer, Double> exhaustiveGrounding = new LazyGrounding<>(logicManager, activatedGroundedPredicates);
-                    exhaustiveGrounding.ground(ruleFormula);
-                    Set<LazyGrounding<Integer, Double>.ActivatedGroundedPredicate<Integer>> newActivatedGroundedPredicates = exhaustiveGrounding.getActivatedGroundedPredicates();
-                    groundedRules.put(rule, exhaustiveGrounding.getGroundedPredicates());
-                    currentTotalNumberOfRules += groundedRules.get(rule).size();
-                    System.out.println("Generated " + groundedRules.get(rule).size() + " groundings for rule " + rule.toString());
-                    activatedGroundedPredicates.addAll(newActivatedGroundedPredicates);
-                }
-            }
+            List<Formula<Integer>> ruleFormulas = new ArrayList<>();
             for (Rule rule : rules) {
-                List<List<GroundedPredicate<Integer, Double>>> predicateGroundings = groundedRules.get(rule);
-                boolean[] bodyNegations = new boolean[rule.bodyParts.size()];
+                List<Formula<Integer>> disjunctionComponents = new ArrayList<>();
                 for (int i = 0; i < rule.bodyParts.size(); ++i)
-                    bodyNegations[i] = rule.bodyParts.get(i) instanceof Negation;
-                boolean[] headNegations = new boolean[rule.headParts.size()];
-                for (int i = 0; i < rule.headParts.size(); ++i)
-                    headNegations[i] = rule.headParts.get(i) instanceof Negation;
-                for (List<GroundedPredicate<Integer, Double>> groundedRulePredicates : predicateGroundings) {
-                    if (rule.bodyParts.size() + rule.headParts.size() == 0)
-                        continue;
-                    int[] bodyVariableIndexes = new int[rule.bodyParts.size()];
-                    for (int i = 0; i < rule.bodyParts.size(); ++i)
-                        bodyVariableIndexes[i] = (int) groundedRulePredicates.get(i).getIdentifier();
-                    int[] headVariableIndexes = new int[rule.headParts.size()];
-                    for (int i = 0; i < rule.headParts.size(); ++i)
-                        headVariableIndexes[i] = (int) groundedRulePredicates.get(rule.bodyParts.size() + i).getIdentifier();
-                    if (Double.isNaN(rule.weight))
-                        builder.addRule(headVariableIndexes, bodyVariableIndexes, headNegations, bodyNegations, 1, 1000);
+                    if (rule.bodyParts.get(i) instanceof Negation)
+                        disjunctionComponents.add(((Negation<Integer>) rule.bodyParts.get(i)).getFormula());
                     else
-                        builder.addRule(headVariableIndexes, bodyVariableIndexes, headNegations, bodyNegations, rule.power, rule.weight);
+                        disjunctionComponents.add(new Negation<>(rule.bodyParts.get(i)));
+                for (int i = 0; i < rule.headParts.size(); ++i)
+                    disjunctionComponents.add(rule.headParts.get(i));
+                ruleFormulas.add(new Disjunction<>(disjunctionComponents));
+            }
+            Grounding<Integer, Double> grounding = new ExhaustiveGrounding<>(logicManager);
+            grounding.ground(ruleFormulas);
+            Map<Integer, Set<List<GroundedPredicate<Integer, Double>>>> groundedRules = new HashMap<>();
+            for (int ruleIndex = 0; ruleIndex < rules.size(); ruleIndex++)
+                groundedRules.put(ruleIndex, grounding.getGroundedFormulas().get(ruleIndex));
+            for (int ruleIndex = 0; ruleIndex < rules.size(); ruleIndex++) {
+                Set<List<GroundedPredicate<Integer, Double>>> predicateGroundings = groundedRules.get(ruleIndex);
+                Disjunction<Integer> ruleFormula = ((Disjunction<Integer>) ruleFormulas.get(ruleIndex));
+                boolean[] variableNegations = new boolean[ruleFormula.getNumberOfComponents()];
+                for (int i = 0; i < ruleFormula.getNumberOfComponents(); ++i)
+                    variableNegations[i] = ruleFormula.getComponent(i) instanceof Negation;
+                if (variableNegations.length != 0) {
+                    for (List<GroundedPredicate<Integer, Double>> groundedRulePredicates : predicateGroundings) {
+                        int[] variableIndexes = new int[ruleFormula.getNumberOfComponents()];
+                        for (int i = 0; i < ruleFormula.getNumberOfComponents(); ++i)
+                            variableIndexes[i] = (int) groundedRulePredicates.get(i).getIdentifier();
+                        if (Double.isNaN(rules.get(ruleIndex).weight))
+                            builder.addRule(variableIndexes, variableNegations, 1, 1000);
+                        else
+                            builder.addRule(variableIndexes, variableNegations, rules.get(ruleIndex).power, rules.get(ruleIndex).weight);
+                    }
                 }
             }
         }
@@ -225,67 +207,43 @@ public final class FastProbabilisticSoftLogicProblem {
         public int getNumberOfTerms() { return this.functionTerms.size(); }
 
         Builder addRule(
-                int[] headVariableIndexes,
-                int[] bodyVariableIndexes,
-                boolean[] headNegations,
-                boolean[] bodyNegations,
+                int[] variableIndexes,
+                boolean[] variableNegations,
                 double power,
                 double weight) {
-            RulePart headPart = convertRulePartToInternalRepresentation(headVariableIndexes, headNegations, true);
-            RulePart bodyPart = convertRulePartToInternalRepresentation(bodyVariableIndexes, bodyNegations, false);
-            double ruleMaximumValue = 1 + headPart.observedConstant + bodyPart.observedConstant;
+            RulePart internalRepresentation = convertRulePartToInternalRepresentation(variableIndexes, variableNegations);
+            double ruleMaximumValue = 1 + internalRepresentation.observedConstant;
             if (ruleMaximumValue <= 0)
                 return this;
-            int[] variableIndexes = Utilities.union(headPart.variableIndexes, bodyPart.variableIndexes);
-            if (variableIndexes.length == 0)
+            if (internalRepresentation.variableIndexes.length == 0)
                 return this;
             int indexTerm = this.functionTerms.size();
-            LinearFunction linearFunction = new LinearFunction(Vectors.dense(variableIndexes.length), ruleMaximumValue);
-            for (int headVariable = 0; headVariable < headPart.variableIndexes.length; headVariable++) {
-                Vector coefficients = Vectors.dense(variableIndexes.length);
-                if (headPart.negations[headVariable]) {
-                    coefficients.set(ArrayUtils.indexOf(variableIndexes, headPart.variableIndexes[headVariable]), 1);
+            LinearFunction linearFunction = new LinearFunction(Vectors.dense(internalRepresentation.variableIndexes.length), ruleMaximumValue);
+            for (int variable = 0; variable < internalRepresentation.variableIndexes.length; variable++) {
+                List<Integer> predicateTermIndices = this.externalPredicateIdToTerms.getOrDefault(internalRepresentation.variableIndexes[variable], null);
+                if (predicateTermIndices == null) {
+                    predicateTermIndices = new ArrayList<>(200);
+                    this.externalPredicateIdToTerms.put(internalRepresentation.variableIndexes[variable], predicateTermIndices);
+                }
+                predicateTermIndices.add(indexTerm);
+                Vector coefficients = Vectors.dense(internalRepresentation.variableIndexes.length);
+                if (internalRepresentation.negations[variable]) {
+                    coefficients.set(variable, 1);
                     linearFunction = linearFunction.add(new LinearFunction(coefficients, -1));
                 } else {
-                    coefficients.set(ArrayUtils.indexOf(variableIndexes, headPart.variableIndexes[headVariable]), -1);
+                    coefficients.set(variable, -1);
                     linearFunction = linearFunction.add(new LinearFunction(coefficients, 0));
                 }
             }
-            for (int bodyVariable = 0; bodyVariable < bodyPart.variableIndexes.length; bodyVariable++) {
-                List<Integer> predicateTermIndices = this.externalPredicateIdToTerms.getOrDefault(bodyPart.variableIndexes[bodyVariable], null);
+            for (int variable = 0; variable < variableIndexes.length; ++variable) {
+                List<Integer> predicateTermIndices = this.externalPredicateIdToTerms.getOrDefault(variableIndexes[variable], null);
                 if (predicateTermIndices == null) {
                     predicateTermIndices = new ArrayList<>(200);
-                    this.externalPredicateIdToTerms.put(bodyPart.variableIndexes[bodyVariable], predicateTermIndices);
-                }
-                predicateTermIndices.add(indexTerm);
-                Vector coefficients = Vectors.dense(variableIndexes.length);
-                if (bodyPart.negations[bodyVariable]) {
-                    coefficients.set(ArrayUtils.indexOf(variableIndexes, bodyPart.variableIndexes[bodyVariable]), -1);
-                    linearFunction = linearFunction.add(new LinearFunction(coefficients, 0));
-                } else {
-                    coefficients.set(ArrayUtils.indexOf(variableIndexes, bodyPart.variableIndexes[bodyVariable]), 1);
-                    linearFunction = linearFunction.add(new LinearFunction(coefficients, -1));
-                }
-            }
-
-            for (int headVariable = 0; headVariable < headVariableIndexes.length; ++headVariable) {
-                List<Integer> predicateTermIndices = this.externalPredicateIdToTerms.getOrDefault(headVariableIndexes[headVariable], null);
-                if (predicateTermIndices == null) {
-                    predicateTermIndices = new ArrayList<>(200);
-                    this.externalPredicateIdToTerms.put(headVariableIndexes[headVariable], predicateTermIndices);
+                    this.externalPredicateIdToTerms.put(variableIndexes[variable], predicateTermIndices);
                 }
                 predicateTermIndices.add(indexTerm);
             }
-            for (int bodyVariable = 0; bodyVariable < bodyVariableIndexes.length; ++bodyVariable) {
-                List<Integer> predicateTermIndices = this.externalPredicateIdToTerms.getOrDefault(bodyVariableIndexes[bodyVariable], null);
-                if (predicateTermIndices == null) {
-                    predicateTermIndices = new ArrayList<>(200);
-                    this.externalPredicateIdToTerms.put(bodyVariableIndexes[bodyVariable], predicateTermIndices);
-                }
-                predicateTermIndices.add(indexTerm);
-            }
-
-            FunctionTerm term = new FunctionTerm(variableIndexes, linearFunction, weight, power);
+            FunctionTerm term = new FunctionTerm(internalRepresentation.variableIndexes, linearFunction, weight, power);
             // functionTerms.putIfAbsent(term.toString(), term);
             functionTerms.add(term);
             return this;
@@ -311,15 +269,14 @@ public final class FastProbabilisticSoftLogicProblem {
         }
 
         private RulePart convertRulePartToInternalRepresentation(int[] externalVariableIndexes,
-                                                                 boolean[] negations,
-                                                                 boolean isRuleHeadVariable) {
+                                                                 boolean[] negations) {
             List<Integer> internalVariableIndexes = new ArrayList<>();
             List<Boolean> internalVariableNegations = new ArrayList<>();
             double observedConstant = 0;
             for (int i = 0; i < externalVariableIndexes.length; ++i) {
                 double observedValue = observedVariableValues.getOrDefault(externalVariableIndexes[i], Double.NaN);
                 if (!Double.isNaN(observedValue)) {
-                    if (isRuleHeadVariable == negations[i])
+                    if (negations[i])
                         observedConstant += observedValue - 1;
                     else
                         observedConstant -= observedValue;
