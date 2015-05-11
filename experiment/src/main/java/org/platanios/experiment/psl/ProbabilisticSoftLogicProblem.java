@@ -917,8 +917,8 @@ public final class ProbabilisticSoftLogicProblem {
             RulePart headPart = convertRulePartToInternalRepresentation(headVariableIndexes, headNegations, true);
             RulePart bodyPart = convertRulePartToInternalRepresentation(bodyVariableIndexes, bodyNegations, false);
             double ruleMaximumValue = 1 + headPart.observedConstant + bodyPart.observedConstant;
-            if (ruleMaximumValue <= 0)
-                return this;
+            //if (ruleMaximumValue <= 0)
+            //    return this;
             int[] variableIndexes = Utilities.union(headPart.variableIndexes, bodyPart.variableIndexes);
             if (variableIndexes.length == 0)
                 return this;
@@ -935,12 +935,6 @@ public final class ProbabilisticSoftLogicProblem {
                 }
             }
             for (int bodyVariable = 0; bodyVariable < bodyPart.variableIndexes.length; bodyVariable++) {
-                List<Integer> predicateTermIndices = this.externalPredicateIdToTerms.getOrDefault(bodyPart.variableIndexes[bodyVariable], null);
-                if (predicateTermIndices == null) {
-                    predicateTermIndices = new ArrayList<>(200);
-                    this.externalPredicateIdToTerms.put(bodyPart.variableIndexes[bodyVariable], predicateTermIndices);
-                }
-                predicateTermIndices.add(indexTerm);
                 Vector coefficients = Vectors.dense(variableIndexes.length);
                 if (bodyPart.negations[bodyVariable]) {
                     coefficients.set(ArrayUtils.indexOf(variableIndexes, bodyPart.variableIndexes[bodyVariable]), -1);
@@ -951,6 +945,22 @@ public final class ProbabilisticSoftLogicProblem {
                 }
             }
 
+            for (int externalId : headPart.droppedExternalIds) {
+                List<Integer> predicateTermIndices = this.externalPredicateIdToTerms.getOrDefault(externalId, null);
+                if (predicateTermIndices == null) {
+                    predicateTermIndices = new ArrayList<>(200);
+                    this.externalPredicateIdToTerms.put(externalId, predicateTermIndices);
+                }
+                predicateTermIndices.add(indexTerm);
+            }
+            for (int externalId : bodyPart.droppedExternalIds) {
+                List<Integer> predicateTermIndices = this.externalPredicateIdToTerms.getOrDefault(externalId, null);
+                if (predicateTermIndices == null) {
+                    predicateTermIndices = new ArrayList<>(200);
+                    this.externalPredicateIdToTerms.put(externalId, predicateTermIndices);
+                }
+                predicateTermIndices.add(indexTerm);
+            }
             for (int headVariable = 0; headVariable < headVariableIndexes.length; ++headVariable) {
                 List<Integer> predicateTermIndices = this.externalPredicateIdToTerms.getOrDefault(headVariableIndexes[headVariable], null);
                 if (predicateTermIndices == null) {
@@ -999,9 +1009,11 @@ public final class ProbabilisticSoftLogicProblem {
             List<Integer> internalVariableIndexes = new ArrayList<>();
             List<Boolean> internalVariableNegations = new ArrayList<>();
             double observedConstant = 0;
+            ArrayList<Integer> droppedExternalIds = new ArrayList<>();
             for (int i = 0; i < externalVariableIndexes.length; ++i) {
                 double observedValue = observedVariableValues.getOrDefault(externalVariableIndexes[i], Double.NaN);
                 if (!Double.isNaN(observedValue)) {
+                    droppedExternalIds.add(externalVariableIndexes[i]);
                     if (isRuleHeadVariable == negations[i])
                         observedConstant += observedValue - 1;
                     else
@@ -1020,21 +1032,25 @@ public final class ProbabilisticSoftLogicProblem {
             return new RulePart(
                     Ints.toArray(internalVariableIndexes),
                     Booleans.toArray(internalVariableNegations),
-                    observedConstant
+                    observedConstant,
+                    droppedExternalIds
             );
         }
 
         private static class RulePart {
+            private final List<Integer> droppedExternalIds;
             private final int[] variableIndexes;
             private final boolean[] negations;
             private final double observedConstant;
 
             private RulePart(int[] variableIndexes,
                              boolean[] negations,
-                             double observedConstant) {
+                             double observedConstant,
+                             List<Integer> droppedExternalIds) {
                 this.variableIndexes = variableIndexes;
                 this.negations = negations;
                 this.observedConstant = observedConstant;
+                this.droppedExternalIds = droppedExternalIds;
             }
         }
 
@@ -1118,6 +1134,10 @@ public final class ProbabilisticSoftLogicProblem {
         }
     }
 
+    public SumFunction testOnly_GetObectiveFunction() {
+        return this.objectiveFunction;
+    }
+
     public Map<Integer, Double> solve() {
         return this.solve(ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.ALL, null, -1);
     }
@@ -1137,22 +1157,114 @@ public final class ProbabilisticSoftLogicProblem {
                         .numberOfSubProblemSamples(numberOfSubProblemSamples)
                         .penaltyParameter(1)
                         .penaltyParameterSettingMethod(ConsensusAlternatingDirectionsMethodOfMultipliersSolver.PenaltyParameterSettingMethod.CONSTANT)
+                        .checkForPrimalAndDualResidualConvergence(true)
                         .checkForPointConvergence(false)
                         .checkForObjectiveConvergence(false)
                         .checkForGradientConvergence(false)
-                        .logObjectiveValue(false)
+                        .logObjectiveValue(true)
                         .logGradientNorm(false)
+                        .logPredictionChanges(true)
                         .loggingLevel(3);
         for (Constraint constraint : constraints)
             solverBuilder.addConstraint(constraint.constraint, constraint.variableIndexes);
         ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver = solverBuilder.build();
+
         Vector solverResult = solver.solve();
+
         Map<Integer, Double> inferredValues = new HashMap<>(solverResult.size());
         for (int internalVariableIndex = 0; internalVariableIndex < solverResult.size(); internalVariableIndex++)
             inferredValues.put(externalToInternalIndexesMapping.inverse().get(internalVariableIndex),
                                solverResult.get(internalVariableIndex));
         return inferredValues;
     }
+
+
+    public Map.Entry<ConsensusAlternatingDirectionsMethodOfMultipliersSolver, Map<Integer, Double>> preWarmStartSolve(
+            ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod subProblemSelectionMethod,
+            ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelector subProblemSelector,
+            int numberOfSubProblemSamples) {
+
+        ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder solverBuilder =
+                new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder(
+                        objectiveFunction,
+                        Vectors.dense(objectiveFunction.getNumberOfVariables())
+                )
+                        .subProblemSolver((subProblem) -> solveProbabilisticSoftLogicSubProblem(subProblem, subProblemCholeskyFactors))
+                        .subProblemSelector(subProblemSelector)
+                        .subProblemSelectionMethod(subProblemSelectionMethod) // if this is not CUSTOM, it will override the subProblemSelector
+                        .numberOfSubProblemSamples(numberOfSubProblemSamples)
+                        .penaltyParameter(1)
+                        .penaltyParameterSettingMethod(ConsensusAlternatingDirectionsMethodOfMultipliersSolver.PenaltyParameterSettingMethod.CONSTANT)
+                        .checkForPointConvergence(false)
+                        .checkForObjectiveConvergence(false)
+                        .checkForGradientConvergence(false)
+                        .logObjectiveValue(true)
+                        .logGradientNorm(false)
+                        .loggingLevel(4);
+        for (Constraint constraint : constraints)
+            solverBuilder.addConstraint(constraint.constraint, constraint.variableIndexes);
+
+        ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver = solverBuilder.build();
+
+        Vector solverResult = solver.solve();
+
+
+        Map<Integer, Double> inferredValues = new HashMap<>(solverResult.size());
+        for (int internalVariableIndex = 0; internalVariableIndex < solverResult.size(); internalVariableIndex++)
+            inferredValues.put(externalToInternalIndexesMapping.inverse().get(internalVariableIndex),
+                    solverResult.get(internalVariableIndex));
+
+        Map.Entry<ConsensusAlternatingDirectionsMethodOfMultipliersSolver, Map<Integer, Double>> returnObject = new AbstractMap.SimpleEntry<ConsensusAlternatingDirectionsMethodOfMultipliersSolver, Map<Integer, Double>>(solver, inferredValues);
+
+        return returnObject;
+    }
+
+    public Map.Entry<ConsensusAlternatingDirectionsMethodOfMultipliersSolver, Map<Integer, Double>> warmStartSolve(
+            ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod subProblemSelectionMethod,
+            ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelector subProblemSelector,
+            int numberOfSubProblemSamples,
+            ConsensusAlternatingDirectionsMethodOfMultipliersSolver oldSolver) {
+
+        Vector warmStartValues = Vectors.build(oldSolver.getCurrentPoint().size(), oldSolver.getCurrentPoint().type());
+        warmStartValues.set(oldSolver.getCurrentPoint());
+
+        ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder solverBuilder =
+                new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder(
+                        objectiveFunction,
+                        warmStartValues
+                )
+                        .subProblemSolver((subProblem) -> solveProbabilisticSoftLogicSubProblem(subProblem, subProblemCholeskyFactors))
+                        .subProblemSelector(subProblemSelector)
+                        .subProblemSelectionMethod(subProblemSelectionMethod) // if this is not CUSTOM, it will override the subProblemSelector
+                        .numberOfSubProblemSamples(numberOfSubProblemSamples)
+                        .penaltyParameter(1)
+                        .penaltyParameterSettingMethod(ConsensusAlternatingDirectionsMethodOfMultipliersSolver.PenaltyParameterSettingMethod.CONSTANT)
+                        .checkForPointConvergence(false)
+                        .checkForObjectiveConvergence(false)
+                        .checkForGradientConvergence(false)
+                        .checkForPrimalAndDualResidualConvergence(true)
+                        .logObjectiveValue(true)
+                        .logGradientNorm(false)
+                        .loggingLevel(4);
+        for (Constraint constraint : constraints)
+            solverBuilder.addConstraint(constraint.constraint, constraint.variableIndexes);
+
+        ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver = solverBuilder.build();
+
+        solver.lagrangeMultipliers = oldSolver.lagrangeMultipliers;
+
+        Vector solverResult = solver.solve();
+
+        Map<Integer, Double> inferredValues = new HashMap<>(solverResult.size());
+        for (int internalVariableIndex = 0; internalVariableIndex < solverResult.size(); internalVariableIndex++)
+            inferredValues.put(externalToInternalIndexesMapping.inverse().get(internalVariableIndex),
+                    solverResult.get(internalVariableIndex));
+
+        Map.Entry<ConsensusAlternatingDirectionsMethodOfMultipliersSolver, Map<Integer, Double>> returnObject = new AbstractMap.SimpleEntry<ConsensusAlternatingDirectionsMethodOfMultipliersSolver, Map<Integer, Double>>(solver, inferredValues);
+
+        return returnObject;
+    }
+
 
     private static void solveProbabilisticSoftLogicSubProblem(
             ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblem subProblem,
@@ -1222,6 +1334,10 @@ public final class ProbabilisticSoftLogicProblem {
                 );
             }
         }
+    }
+
+    public int getNumberOfVariablesInSolver() {
+        return this.objectiveFunction.getNumberOfVariables();
     }
 
     public Map<Integer, Integer> getExternalToInternalIds() {

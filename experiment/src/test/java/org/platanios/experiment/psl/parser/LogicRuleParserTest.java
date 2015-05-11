@@ -3,7 +3,10 @@ package org.platanios.experiment.psl.parser;
 import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.platanios.experiment.psl.*;
+import org.platanios.learn.math.matrix.Vectors;
+import org.platanios.learn.math.statistics.StatisticsUtilities;
 import org.platanios.learn.optimization.ConsensusAlternatingDirectionsMethodOfMultipliersSolver;
+import org.platanios.learn.optimization.function.SumFunction;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -11,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.zip.DataFormatException;
+import java.util.regex.*;
 
 import static junit.framework.TestCase.*;
 
@@ -69,7 +73,7 @@ public class LogicRuleParserTest {
 
             rules = ProbabilisticSoftLogicReader.readRules(reader);
 
-        } catch (IOException|DataFormatException e) {
+        } catch (IOException | DataFormatException e) {
             fail(e.getMessage());
             System.out.println(e.getMessage());
             e.printStackTrace();
@@ -155,7 +159,7 @@ public class LogicRuleParserTest {
                     false,
                     reader);
 
-        } catch (IOException|DataFormatException e) {
+        } catch (IOException | DataFormatException e) {
             fail(e.getMessage());
             System.out.println(e.getMessage());
             e.printStackTrace();
@@ -210,13 +214,13 @@ public class LogicRuleParserTest {
                 "KNOWS(2, 4)"
         };
 
-        boolean[] expectedFound = { false, false, false, false };
-        double[] expectedWeights = { 1, 5, 1, 0 };
+        boolean[] expectedFound = {false, false, false, false};
+        double[] expectedWeights = {1, 5, 1, 0};
 
-        String[] expectedFirstArg = { "1", "2", "3" };
-        boolean[] expectedFirstArgFound = { false, false, false };
-        String[] expectedSecondArg = { "2", "3", "4" };
-        boolean[] expectedSecondArgFound = { false, false, false };
+        String[] expectedFirstArg = {"1", "2", "3"};
+        boolean[] expectedFirstArgFound = {false, false, false};
+        String[] expectedSecondArg = {"2", "3", "4"};
+        boolean[] expectedSecondArgFound = {false, false, false};
 
         predicateManager = new ProbabilisticSoftLogicPredicateManager();
 
@@ -232,7 +236,7 @@ public class LogicRuleParserTest {
                     reader);
             predicateIds = predicateManager.getIdsForPredicateName("KNOWS");
 
-        } catch (IOException|DataFormatException e) {
+        } catch (IOException | DataFormatException e) {
             fail(e.getMessage());
             System.out.println(e.getMessage());
             e.printStackTrace();
@@ -318,7 +322,7 @@ public class LogicRuleParserTest {
 
         ArrayList<List<Integer>> result = new ArrayList<>();
         CartesianProductIterator<Integer> cartesianProduct = new CartesianProductIterator<>(lists);
-        for ( List<Integer> combination : cartesianProduct ) {
+        for (List<Integer> combination : cartesianProduct) {
             result.add(combination);
         }
 
@@ -328,7 +332,7 @@ public class LogicRuleParserTest {
             public int compare(List<Integer> l1, List<Integer> l2) {
                 if (l1.size() < l2.size()) {
                     return -1;
-                } else if(l1.size() > l2.size()) {
+                } else if (l1.size() > l2.size()) {
                     return 1;
                 }
                 for (int i = 0; i < l1.size(); ++i) {
@@ -750,13 +754,131 @@ public class LogicRuleParserTest {
             Map.Entry<ProbabilisticSoftLogicPredicateManager, ProbabilisticSoftLogicProblem.Builder> deserialized =
                     ProbabilisticSoftLogicProblem.ProblemSerializer.read(inputStream);
             deserializedProblem = deserialized.getValue().build();
-        } catch (IOException|ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             fail(e.getMessage());
             System.out.println(e.getMessage());
             e.printStackTrace();
         }
 
         assertTrue("Serialization round-trip not equal to initial object", problem.equals(deserializedProblem));
+
+    }
+
+    @Test
+    public void testRandomWalk() {
+
+        ProbabilisticSoftLogicProblem.Predicate knowsAB =
+                new ProbabilisticSoftLogicProblem.Predicate("KNOWS", ImmutableList.of("A", "B"), false);
+
+        ProbabilisticSoftLogicProblem.Predicate knowsBC =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("B", "C"), false);
+
+        ProbabilisticSoftLogicProblem.Predicate knowsAC =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("A", "C"), false);
+
+        // "{1.5} KNOWS(A, B) & KNOWS(B, C) >> KNOWS(A, C)"
+        ProbabilisticSoftLogicProblem.Rule rule =
+                new ProbabilisticSoftLogicProblem.Rule(1.5, 1, ImmutableList.of(knowsAC), ImmutableList.of(knowsAB, knowsBC));
+
+        ProbabilisticSoftLogicProblem.Predicate knows12 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("1", "2"), false);
+        ProbabilisticSoftLogicProblem.Predicate knows17 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("1", "7"), false);
+        ProbabilisticSoftLogicProblem.Predicate knows19 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("1", "9"), false);
+        ProbabilisticSoftLogicProblem.Predicate knows72 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("7", "2"), false);
+        ProbabilisticSoftLogicProblem.Predicate knows78 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("7", "8"), false);
+        ProbabilisticSoftLogicProblem.Predicate knows810 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("8", "10"), false);
+        ProbabilisticSoftLogicProblem.Predicate knows23 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("2", "3"), false);
+        ProbabilisticSoftLogicProblem.Predicate knows34 =
+                new ProbabilisticSoftLogicProblem.Predicate(knowsAB.Name, ImmutableList.of("3", "4"), false);
+
+        ProbabilisticSoftLogicPredicateManager predicateManager = new ProbabilisticSoftLogicPredicateManager();
+
+        predicateManager.getOrAddPredicate(knows12, 0.5);
+        predicateManager.getOrAddPredicate(knows23, 0.1);
+        predicateManager.getOrAddPredicate(knows34, 0.7);
+        predicateManager.getOrAddPredicate(knows17, 0.8);
+        predicateManager.getOrAddPredicate(knows19, 0.8);
+        predicateManager.getOrAddPredicate(knows72, 0.8);
+        predicateManager.getOrAddPredicate(knows78, 0.8);
+        predicateManager.getOrAddPredicate(knows810, 0.8);
+
+        ProbabilisticSoftLogicPredicateManager.IdWeights observedIdsAndWeights =
+                predicateManager.getAllObservedWeights();
+
+        ProbabilisticSoftLogicProblem.Builder builder =
+                new ProbabilisticSoftLogicProblem.Builder(observedIdsAndWeights.Ids, observedIdsAndWeights.Weights, 100);
+
+        ProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilder(Arrays.asList(rule), builder, predicateManager, ProbabilisticSoftLogicProblem.GroundingMode.AllPossible);
+
+        ProbabilisticSoftLogicProblem problem = builder.build();
+        Map<Integer, Integer> internalToExternalIds = problem.getInternalToExternalIds();
+
+        Random random = new Random();
+
+        RandomWalkSampler.TermPredicateIdGetter predicateIdGetter = problem.getTermPredicateIdGetter();
+
+        RandomWalkSampler.Builder<String> randomWalkSamplerBuilder =
+                new RandomWalkSampler.Builder<>(
+                        problem.getExternalPredicateIdsToTerms(),
+                        problem.getInternalToExternalIds(),
+                        predicateIdGetter,
+                        0.25, // restart probability
+                        1,  // sample probability
+                        random);
+
+        predicateManager.addEdgesToRandomWalkSampler(randomWalkSamplerBuilder);
+
+        // add some seeds
+        randomWalkSamplerBuilder.addOriginEntity("1");
+
+        RandomWalkSampler<String> randomWalkSampler = randomWalkSamplerBuilder.build();
+
+        SumFunction objectiveFunction = problem.testOnly_GetObectiveFunction();
+
+        ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder solverBuilder =
+                new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder(
+                        objectiveFunction,
+                        Vectors.dense(problem.getNumberOfVariablesInSolver())
+                )
+                        .subProblemSelector(randomWalkSampler)
+                        .subProblemSelectionMethod(ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.CUSTOM) // if this is not CUSTOM, it will override the subProblemSelector
+                        .numberOfSubProblemSamples(4)
+                        .penaltyParameter(1)
+                        ;
+
+        ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver = solverBuilder.build();
+
+        Map<Integer, Double> result =
+                problem.solve(
+                        ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.CUSTOM,
+                        randomWalkSampler, // sub problem selector (sampler)
+                        100); // number of subproblem samples
+
+
+        for (int i = 0; i < 100; ++i) {
+            int[] selectedProblems = randomWalkSampler.selectSubProblems(solver);
+            for (int iSubProblem = 0; iSubProblem < selectedProblems.length; ++iSubProblem) {
+                int term = selectedProblems[iSubProblem];
+
+                int[] internalPredicateIds = predicateIdGetter.getInternalPredicateIds(term);
+                for (int j = 0; j < internalPredicateIds.length; ++j) {
+                    ProbabilisticSoftLogicProblem.Predicate predicate =
+                            predicateManager.getPredicateFromId(internalToExternalIds.get(internalPredicateIds[j]));
+                    if (j > 0) {
+                        System.out.print(' ');
+                    }
+                    System.out.print(predicate.toString());
+                }
+                System.out.println();
+            }
+            System.out.println();
+        }
 
     }
 
@@ -884,17 +1006,17 @@ public class LogicRuleParserTest {
                             problem.getExternalPredicateIdsToTerms(),
                             problem.getInternalToExternalIds(),
                             problem.getTermPredicateIdGetter(),
-                            0.25 * 0.2, // restart probability (1/4 of the step probability)
-                            0.8,  // sample probability
+                            0.01, // restart probability
+                            1,  // sample probability
                             random);
 
             trainPredicateManager.addEdgesToRandomWalkSampler(randomWalkSamplerBuilder);
 
             // add some random seeds
             List<String> entities = new ArrayList<>(trainPredicateManager.getAllEntities());
-            for (int iSeed = 0; iSeed < 100; ++iSeed) {
-                String entity = entities.get(random.nextInt(entities.size()));
-                randomWalkSamplerBuilder.addOriginEntity(entity);
+            List<String> seeds = StatisticsUtilities.sampleWithoutReplacement(entities, Math.min(1000, entities.size()));
+            for (String seed : seeds) {
+                randomWalkSamplerBuilder.addOriginEntity(seed);
             }
 
             RandomWalkSampler<String> randomWalkSampler = randomWalkSamplerBuilder.build();
@@ -903,7 +1025,7 @@ public class LogicRuleParserTest {
                     problem.solve(
                             ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.CUSTOM,
                             randomWalkSampler, // sub problem selector (sampler)
-                            8); // number of subproblem samples
+                            100); // number of subproblem samples
 
 //            Map<Integer, Double> result =
 //                    problem.solve(
@@ -1022,11 +1144,10 @@ public class LogicRuleParserTest {
                     }
 
                     ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(testPredicateManager, "TRUSTS", false, false, trustTestReader);
-
                     // DBC: Use the model parser to parse the pre-grounded rules
                     groundRules = ProbabilisticSoftLogicReader.readRules(groundRuleReader);
 
-                    // DBC: Creata a problem builder using the pre-grounded rules
+                    // DBC: Create a problem builder using the pre-grounded rules
                     problemBuilder = ProbabilisticSoftLogicProblem.PregroundRuleHandler.createBuilder(
                             rules,
                             trainPredicateManager,
@@ -1066,7 +1187,11 @@ public class LogicRuleParserTest {
                     .build();
 
 
-            Map<Integer, Double> result = problem.solve();
+            Map<Integer, Double> result = problem.solve(
+                    ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.UNIFORM_SAMPLING,
+                    null,
+                    10
+            );
             Map<String, Double> filteredResults = new HashMap<>();
 
             // to make compiler happy that this is effectively final
@@ -1078,12 +1203,273 @@ public class LogicRuleParserTest {
 
 
 
-            Iterator it = filteredResults.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry pair = (Map.Entry)it.next();
-                System.out.println(pair.getKey() + " = " + pair.getValue());
-                it.remove(); // avoids a ConcurrentModificationException
+            System.out.println("Done\n");
+
+        }
+
+    }
+
+    // DBC: Added test to do pre-grounded rules, from PSL (based on testEndToEnd)
+    @Test
+    public void testPregroundRulesWithWarmStart() {
+
+        String experimentName = "epinions_200_3e";
+
+        for (ProbabilisticSoftLogicProblem.GroundingMode groundingMode : ProbabilisticSoftLogicProblem.GroundingMode.values()) {
+
+            // for testing one mode
+            if (groundingMode != ProbabilisticSoftLogicProblem.GroundingMode.AsRead) {
+                continue;
             }
+
+            String outputStreamName = null;
+            try {
+                Path knowsPath = Paths.get(this.getClass().getResource("../" + experimentName + "/knows.txt").toURI());
+                outputStreamName = Paths.get(knowsPath.getParent().toString(), "problem_serialized.bin").toString();
+            } catch (URISyntaxException e) {
+                fail(e.getMessage());
+                System.out.println(e.getMessage());
+                e.printStackTrace();
+                return;
+            }
+
+            // DBC: Not really doing the serialization thing yet, but I'll leave it here for now
+            File outputStreamFile = new File(outputStreamName);
+            ProbabilisticSoftLogicProblem.Builder problemBuilder = null;
+            ProbabilisticSoftLogicProblem.Builder problemBuilder2 = null;
+            ProbabilisticSoftLogicPredicateManager trainPredicateManager = null;
+            ProbabilisticSoftLogicPredicateManager train2PredicateManager = null;
+
+            // Don't look for serialized file
+            if (false) {
+                //if (outputStreamFile.exists()) {
+
+                try (FileInputStream inputStream = new FileInputStream(outputStreamFile)) {
+
+                    Map.Entry<ProbabilisticSoftLogicPredicateManager, ProbabilisticSoftLogicProblem.Builder> deserialized =
+                            ProbabilisticSoftLogicProblem.ProblemSerializer.read(inputStream);
+
+                    trainPredicateManager = deserialized.getKey();
+                    problemBuilder = deserialized.getValue();
+
+                } catch (IOException|ClassNotFoundException e) {
+                    fail(e.getMessage());
+                    System.out.println(e.getMessage());
+                    e.printStackTrace();
+                }
+
+            } else {
+
+                InputStream groundingStream = null;
+                InputStream grounding2Stream = null;
+                if (groundingMode == ProbabilisticSoftLogicProblem.GroundingMode.AsRead) {
+                    groundingStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/trust_groundings.txt");
+                    grounding2Stream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/trust_groundings.txt");
+                }
+
+                InputStream modelStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/model.txt");
+                InputStream knowsStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/knows.txt");
+                InputStream knows2Stream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/knows.txt");
+                InputStream trustTrainStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/train.txt");
+                InputStream trustTrain2Stream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/train_perturbed.txt");
+                // DBC: The rules file contains all grounded rules
+                InputStream groundRuleStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/rules.txt");
+
+                List<ProbabilisticSoftLogicProblem.Rule> rules = null;
+                List<ProbabilisticSoftLogicProblem.Rule> groundRules = null;
+                trainPredicateManager = new ProbabilisticSoftLogicPredicateManager();
+                train2PredicateManager = new ProbabilisticSoftLogicPredicateManager();
+
+                try (
+                        BufferedReader groundingReader = groundingStream == null ? null : new BufferedReader(new InputStreamReader(groundingStream));
+                        BufferedReader modelReader = new BufferedReader(new InputStreamReader(modelStream));
+                        BufferedReader knowsReader = new BufferedReader(new InputStreamReader(knowsStream));
+                        BufferedReader trustTrainReader = new BufferedReader(new InputStreamReader(trustTrainStream));
+                        BufferedReader groundRuleReader = new BufferedReader(new InputStreamReader(groundRuleStream))) {
+
+                    rules = ProbabilisticSoftLogicReader.readRules(modelReader);
+
+                    ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
+                            trainPredicateManager, "KNOWS", groundingMode == ProbabilisticSoftLogicProblem.GroundingMode.AllPossible, false, knowsReader);
+
+                    ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
+                            trainPredicateManager, "TRUSTS", false, false, trustTrainReader);
+
+                    if (groundingMode == ProbabilisticSoftLogicProblem.GroundingMode.AsRead) {
+                        ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
+                                trainPredicateManager, "TRUSTS", false, true, groundingReader);
+                    }
+
+                    // DBC: Use the model parser to parse the pre-grounded rules
+                    groundRules = ProbabilisticSoftLogicReader.readRules(groundRuleReader);
+
+                } catch (IOException | DataFormatException e) {
+                    fail(e.getMessage());
+                    System.out.println(e.getMessage());
+                    e.printStackTrace();
+                }
+
+                try (
+                        BufferedReader grounding2Reader = groundingStream == null ? null : new BufferedReader(new InputStreamReader(grounding2Stream));
+                        BufferedReader knows2Reader = new BufferedReader(new InputStreamReader(knows2Stream));
+                        BufferedReader trustTrain2Reader = new BufferedReader(new InputStreamReader(trustTrain2Stream))
+                ) {
+                    ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
+                            train2PredicateManager, "KNOWS", groundingMode == ProbabilisticSoftLogicProblem.GroundingMode.AllPossible, false, knows2Reader);
+
+                    ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
+                            train2PredicateManager, "TRUSTS", false, false, trustTrain2Reader);
+
+                    if (groundingMode == ProbabilisticSoftLogicProblem.GroundingMode.AsRead) {
+                        ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
+                                train2PredicateManager, "TRUSTS", false, true, grounding2Reader);
+                    }
+
+                } catch (IOException | DataFormatException e) {
+                    fail(e.getMessage());
+                    System.out.println(e.getMessage());
+                    e.printStackTrace();
+                }
+
+                // DBC: Creata a problem builder using the pre-grounded rules
+                problemBuilder = ProbabilisticSoftLogicProblem.PregroundRuleHandler.createBuilder(
+                        rules,
+                        trainPredicateManager,
+                        groundRules);
+
+                problemBuilder2 = ProbabilisticSoftLogicProblem.PregroundRuleHandler.createBuilder(
+                        rules,
+                        train2PredicateManager,
+                        groundRules);
+
+            }
+
+
+            ProbabilisticSoftLogicProblem problem = problemBuilder.build();
+            ProbabilisticSoftLogicProblem problem2 = problemBuilder2.build();
+
+            Map.Entry<ConsensusAlternatingDirectionsMethodOfMultipliersSolver, Map<Integer, Double>> resultPair = problem.preWarmStartSolve(
+                    ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.ALL, null, -1);
+
+            ConsensusAlternatingDirectionsMethodOfMultipliersSolver oldSolver = resultPair.getKey();
+            Map<Integer, Double> result = resultPair.getValue();
+
+            Random random = new Random();
+
+            RandomWalkSampler.Builder<String> randomWalkSamplerBuilder =
+                    new RandomWalkSampler.Builder<>(
+                            problem2.getExternalPredicateIdsToTerms(),
+                            problem2.getInternalToExternalIds(),
+                            problem2.getTermPredicateIdGetter(),
+                            .95, // restart probability
+                            .005,  // sample probability
+                            random);
+
+            trainPredicateManager.addEdgesToRandomWalkSampler(randomWalkSamplerBuilder);
+
+            // 28242->1883 was updated
+            randomWalkSamplerBuilder.addOriginEntity("28242");
+            randomWalkSamplerBuilder.addOriginEntity("26");
+            randomWalkSamplerBuilder.addOriginEntity("162");
+            randomWalkSamplerBuilder.addOriginEntity("1028");
+            randomWalkSamplerBuilder.addOriginEntity("1683");
+            randomWalkSamplerBuilder.addOriginEntity("1883");
+            randomWalkSamplerBuilder.addOriginEntity("1896");
+            randomWalkSamplerBuilder.addOriginEntity("3206");
+            randomWalkSamplerBuilder.addOriginEntity("5562");
+            randomWalkSamplerBuilder.addOriginEntity("27776");
+            randomWalkSamplerBuilder.addOriginEntity("28525");
+
+            RandomBipartiteWalkSampler.Builder bipartiteWalkSamplerBuilder =
+                    new RandomBipartiteWalkSampler.Builder(
+                            problem2.getExternalPredicateIdsToTerms(),
+                            problem2.getInternalToExternalIds(),
+                            problem2.getTermPredicateIdGetter(),
+                            .25,
+                            .25,
+                            new Random());
+
+            bipartiteWalkSamplerBuilder.addOriginPredicate(train2PredicateManager.getIdForPredicate(
+                    new ProbabilisticSoftLogicProblem.Predicate("TRUSTS", ImmutableList.of("28242", "26"), false)));
+            bipartiteWalkSamplerBuilder.addOriginPredicate(train2PredicateManager.getIdForPredicate(
+                    new ProbabilisticSoftLogicProblem.Predicate("TRUSTS", ImmutableList.of("28242", "162"), false)));
+            bipartiteWalkSamplerBuilder.addOriginPredicate(train2PredicateManager.getIdForPredicate(
+                    new ProbabilisticSoftLogicProblem.Predicate("TRUSTS", ImmutableList.of("28242", "1028"), false)));
+            bipartiteWalkSamplerBuilder.addOriginPredicate(train2PredicateManager.getIdForPredicate(
+                    new ProbabilisticSoftLogicProblem.Predicate("TRUSTS", ImmutableList.of("28242", "1683"), false)));
+            bipartiteWalkSamplerBuilder.addOriginPredicate(train2PredicateManager.getIdForPredicate(
+                    new ProbabilisticSoftLogicProblem.Predicate("TRUSTS", ImmutableList.of("28242", "1883"), false)));
+            bipartiteWalkSamplerBuilder.addOriginPredicate(train2PredicateManager.getIdForPredicate(
+                    new ProbabilisticSoftLogicProblem.Predicate("TRUSTS", ImmutableList.of("28242", "1896"), false)));
+            bipartiteWalkSamplerBuilder.addOriginPredicate(train2PredicateManager.getIdForPredicate(
+                    new ProbabilisticSoftLogicProblem.Predicate("TRUSTS", ImmutableList.of("28242", "3206"), false)));
+            bipartiteWalkSamplerBuilder.addOriginPredicate(train2PredicateManager.getIdForPredicate(
+                    new ProbabilisticSoftLogicProblem.Predicate("TRUSTS", ImmutableList.of("28242", "5562"), false)));
+            bipartiteWalkSamplerBuilder.addOriginPredicate(train2PredicateManager.getIdForPredicate(
+                    new ProbabilisticSoftLogicProblem.Predicate("TRUSTS", ImmutableList.of("28242", "27776"), false)));
+            bipartiteWalkSamplerBuilder.addOriginPredicate(train2PredicateManager.getIdForPredicate(
+                    new ProbabilisticSoftLogicProblem.Predicate("TRUSTS", ImmutableList.of("28242", "28525"), false)));
+
+            RandomWalkSampler<String> randomWalkSampler = randomWalkSamplerBuilder.build();
+            RandomBipartiteWalkSampler bipartiteWalkSampler = bipartiteWalkSamplerBuilder.build();
+
+            /*
+            Map.Entry<ConsensusAlternatingDirectionsMethodOfMultipliersSolver, Map<Integer, Double>> resultPair2 = problem2.warmStartSolve(
+                    ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.ALL, // ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.CUSTOM,
+                    null, //randomWalkSampler,
+                    -1, //100,
+                    oldSolver);
+            */
+
+            Map.Entry<ConsensusAlternatingDirectionsMethodOfMultipliersSolver, Map<Integer, Double>> resultPair2 = problem2.warmStartSolve(
+                    ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.CUSTOM,
+                    bipartiteWalkSampler, //randomWalkSampler,
+                    100,
+                    oldSolver);
+
+            Map<Integer, Double> result2 = resultPair2.getValue();
+            Map<String, Double> filteredResults = new HashMap<>();
+
+            // to make compiler happy that this is effectively final
+            ProbabilisticSoftLogicPredicateManager temp = trainPredicateManager;
+
+            result2.keySet().stream()
+                    .filter(key -> result.get(key) > Math.sqrt(Double.MIN_VALUE))
+                    .forEach(key -> filteredResults.put(temp.getPredicateFromId(key).toString(), result.get(key)));
+
+            // DBC: Write the filtered results to a file.
+            String resultStreamName = null;
+            try {
+                Path resultPath = Paths.get(this.getClass().getResource("../" + experimentName + "/").toURI());
+                resultStreamName = Paths.get(resultPath.toString(), "results.txt").toString();
+            } catch (URISyntaxException e) {
+                fail(e.getMessage());
+                System.out.println(e.getMessage());
+                e.printStackTrace();
+                return;
+            }
+
+            //File resultStreamFile = new File(resultStreamName);
+            try (PrintWriter writer = new PrintWriter(resultStreamName, "UTF-8");) {
+
+                Pattern p = Pattern.compile("(.*)\\((\\d+), (\\d+)\\)");
+
+                Iterator it = filteredResults.entrySet().iterator();
+                while (it.hasNext()) {
+                    Map.Entry pair = (Map.Entry) it.next();
+                    System.out.println(pair.getKey() + " = " + pair.getValue());
+                    String gPred = (String) pair.getKey();
+                    Matcher m = p.matcher(gPred);
+                    m.find();
+                    writer.println(m.group(2) + '\t' + m.group(3) + '\t' + pair.getValue());
+                    it.remove(); // avoids a ConcurrentModificationException
+                }
+            } catch (IOException e) {
+                fail(e.getMessage());
+                System.out.println(e.getMessage());
+                e.printStackTrace();
+            }
+
 
 
             System.out.println("Done\n");
@@ -1091,5 +1477,7 @@ public class LogicRuleParserTest {
         }
 
     }
+
+
 
 }

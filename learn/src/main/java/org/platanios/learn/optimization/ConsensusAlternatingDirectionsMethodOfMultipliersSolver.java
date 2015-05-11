@@ -27,8 +27,10 @@ import java.util.function.Consumer;
 public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver extends AbstractIterativeSolver {
     private final Object lock = new Object();
     private final List<Vector> variableCopies = new ArrayList<>();
-    private final List<Vector> lagrangeMultipliers = new ArrayList<>();
-    private final Vector variableCopiesSum = Vectors.build(currentPoint.size(), currentPoint.type());
+    // BUG BUGBUGBUG: Hacks to enable warm starts
+    public List<Vector> lagrangeMultipliers = new ArrayList<>();
+    private Vector variableCopiesSum = Vectors.build(currentPoint.size(), currentPoint.type());
+    public Vector getCurrentPoint() { return currentPoint; }
 
     private final Vector variableCopiesCounts;
     private final int maximumNumberOfIterationsWithNoPointChange;
@@ -57,6 +59,11 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
     private double primalTolerance;
     private double dualTolerance;
 
+    private boolean logPredictionChanges;
+    private int nChangedPredictions = 0;
+    private int nTotalChangedPredictions = 0;
+    private double totalSqChangePredictions = 0;
+
     private int numberOfIterationsWithNoPointChange = 0;
     private boolean primalResidualConverged = false;
     private boolean dualResidualConverged = false;
@@ -70,8 +77,10 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
 
         protected int maximumNumberOfIterationsWithNoPointChange = 1;
         protected double absoluteTolerance = 1e-5;
-        protected double relativeTolerance = 1e-3;
+        protected double relativeTolerance = 1e-4;
         protected boolean checkForPrimalAndDualResidualConvergence = true;
+
+        protected boolean logPredictionChanges = false;
 
         protected PenaltyParameterSettingMethod penaltyParameterSettingMethod = PenaltyParameterSettingMethod.ADAPTIVE;
         protected SubProblemSelectionMethod subProblemSelectionMethod = SubProblemSelectionMethod.ALL;
@@ -100,6 +109,12 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
 
         public T maximumNumberOfIterationsWithNoPointChange(int maximumNumberOfIterationsWithNoPointChange) {
             this.maximumNumberOfIterationsWithNoPointChange = maximumNumberOfIterationsWithNoPointChange;
+            return self();
+        }
+
+
+        public T logPredictionChanges(boolean logPredictionChanges) {
+            this.logPredictionChanges = logPredictionChanges;
             return self();
         }
 
@@ -233,10 +248,15 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
             for (int variableIndex : variableIndexes)
                 variableCopiesCounts.set(variableIndex, variableCopiesCounts.get(variableIndex) + 1);
         }
+        variableCopiesSum = currentPoint.multElementwise(variableCopiesCounts);
+        logPredictionChanges = builder.logPredictionChanges;
     }
 
     @Override
     public boolean checkTerminationConditions() {
+        if (currentIteration >= maximumNumberOfIterations) {
+            return true;
+        }
         if (super.checkTerminationConditions()) {
             if (currentIteration >= maximumNumberOfIterations
                     || objective.getNumberOfFunctionEvaluations() >= maximumNumberOfFunctionEvaluations) {
@@ -289,11 +309,15 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
                                                DECIMAL_FORMAT.format(pointChange)));
         if (logGradientNorm)
             stringBuilder.append(String.format(" | Gradient Norm: %20s",
-                                               DECIMAL_FORMAT.format(gradientNorm)));
+                    DECIMAL_FORMAT.format(gradientNorm)));
         if (checkForPrimalAndDualResidualConvergence)
             stringBuilder.append(String.format(" | Primal Residual: %20s | Dual Residual: %20s",
-                                               DECIMAL_FORMAT.format(primalResidual),
-                                               DECIMAL_FORMAT.format(dualResidual)));
+                    DECIMAL_FORMAT.format(primalResidual),
+                    DECIMAL_FORMAT.format(dualResidual)));
+        if (logPredictionChanges)
+            stringBuilder.append(String.format(" | nTotalChangedPredictions: %5s | nTotalSqChange: %20s",
+                DECIMAL_FORMAT.format(nTotalChangedPredictions),
+                DECIMAL_FORMAT.format(totalSqChangePredictions)));
         logger.info(stringBuilder.toString());
     }
 
@@ -454,6 +478,16 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
                                 "while using a non-smooth objective function."
                 );
             }
+        }
+
+        nChangedPredictions = 0;
+        int nVars = currentPoint.size();
+        for (int i = 0; i < nVars; i++) {
+            if (Math.round(currentPoint.get(i)) - Math.round(previousPoint.get(i)) != 0) {
+                nChangedPredictions++;
+                nTotalChangedPredictions++;
+            }
+            totalSqChangePredictions += Math.pow(currentPoint.get(i) - previousPoint.get(i),2);
         }
     }
 

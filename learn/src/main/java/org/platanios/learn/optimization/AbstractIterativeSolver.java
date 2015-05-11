@@ -51,7 +51,7 @@ abstract class AbstractIterativeSolver implements Solver {
         protected final AbstractFunction objective;
         protected final Vector initialPoint;
 
-        protected int maximumNumberOfIterations = 10000;
+        protected int maximumNumberOfIterations = 1000;
         protected int maximumNumberOfFunctionEvaluations = 1000000;
         protected double pointChangeTolerance = 1e-5; // 1e-10
         protected double objectiveChangeTolerance = 1e-10;

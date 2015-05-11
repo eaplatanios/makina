@@ -49,6 +49,7 @@ public class FastLogicRuleParserTest {
         logicManager.addVariable("B", new ArrayList<>(personValues), personType);
         logicManager.addVariable("C", new ArrayList<>(personValues), personType);
         logicManager.addVariable("D", new ArrayList<>(personValues), personType);
+        logicManager.addVariable("E", new ArrayList<>(personValues), personType);
         List<VariableType<Integer>> argumentTypes = new ArrayList<>(2);
         argumentTypes.add(personType);
         argumentTypes.add(personType);
