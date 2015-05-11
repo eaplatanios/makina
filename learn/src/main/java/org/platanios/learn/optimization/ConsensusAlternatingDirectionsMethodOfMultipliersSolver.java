@@ -315,7 +315,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
                     DECIMAL_FORMAT.format(primalResidual),
                     DECIMAL_FORMAT.format(dualResidual)));
         if (logPredictionChanges)
-            stringBuilder.append(String.format(" | nTotalChangedPredictions: %5 | nTotalSqChange: %20s",
+            stringBuilder.append(String.format(" | nTotalChangedPredictions: %5s | nTotalSqChange: %20s",
                 DECIMAL_FORMAT.format(nTotalChangedPredictions),
                 DECIMAL_FORMAT.format(totalSqChangePredictions)));
         logger.info(stringBuilder.toString());
