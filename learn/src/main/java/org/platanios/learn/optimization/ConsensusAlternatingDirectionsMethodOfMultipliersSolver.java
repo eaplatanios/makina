@@ -259,10 +259,8 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         }
         if (super.checkTerminationConditions()) {
             if (currentIteration >= maximumNumberOfIterations
-                    || objective.getNumberOfFunctionEvaluations() >= maximumNumberOfFunctionEvaluations) {
-                pointChange = currentPoint.sub(previousPoint).norm(VectorNorm.L2_FAST);
-                pointConverged = pointChange <= pointChangeTolerance;
-            }
+                    || objective.getNumberOfFunctionEvaluations() >= maximumNumberOfFunctionEvaluations)
+                return true;
             if (checkForPointConvergence && pointConverged) {
                 if ((checkForObjectiveConvergence && objectiveConverged)
                         || (checkForGradientConvergence && gradientConverged)) {
