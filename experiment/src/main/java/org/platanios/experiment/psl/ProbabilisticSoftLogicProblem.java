@@ -1163,7 +1163,8 @@ public final class ProbabilisticSoftLogicProblem {
                         .checkForGradientConvergence(false)
                         .logObjectiveValue(true)
                         .logGradientNorm(false)
-                        .loggingLevel(1);
+                        .logPredictionChanges(true)
+                        .loggingLevel(3);
         for (Constraint constraint : constraints)
             solverBuilder.addConstraint(constraint.constraint, constraint.variableIndexes);
         ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver = solverBuilder.build();
