@@ -935,12 +935,6 @@ public final class ProbabilisticSoftLogicProblem {
                 }
             }
             for (int bodyVariable = 0; bodyVariable < bodyPart.variableIndexes.length; bodyVariable++) {
-                List<Integer> predicateTermIndices = this.externalPredicateIdToTerms.getOrDefault(bodyPart.variableIndexes[bodyVariable], null);
-                if (predicateTermIndices == null) {
-                    predicateTermIndices = new ArrayList<>(200);
-                    this.externalPredicateIdToTerms.put(bodyPart.variableIndexes[bodyVariable], predicateTermIndices);
-                }
-                predicateTermIndices.add(indexTerm);
                 Vector coefficients = Vectors.dense(variableIndexes.length);
                 if (bodyPart.negations[bodyVariable]) {
                     coefficients.set(ArrayUtils.indexOf(variableIndexes, bodyPart.variableIndexes[bodyVariable]), -1);
@@ -951,6 +945,22 @@ public final class ProbabilisticSoftLogicProblem {
                 }
             }
 
+            for (int externalId : headPart.droppedExternalIds) {
+                List<Integer> predicateTermIndices = this.externalPredicateIdToTerms.getOrDefault(externalId, null);
+                if (predicateTermIndices == null) {
+                    predicateTermIndices = new ArrayList<>(200);
+                    this.externalPredicateIdToTerms.put(externalId, predicateTermIndices);
+                }
+                predicateTermIndices.add(indexTerm);
+            }
+            for (int externalId : bodyPart.droppedExternalIds) {
+                List<Integer> predicateTermIndices = this.externalPredicateIdToTerms.getOrDefault(externalId, null);
+                if (predicateTermIndices == null) {
+                    predicateTermIndices = new ArrayList<>(200);
+                    this.externalPredicateIdToTerms.put(externalId, predicateTermIndices);
+                }
+                predicateTermIndices.add(indexTerm);
+            }
             for (int headVariable = 0; headVariable < headVariableIndexes.length; ++headVariable) {
                 List<Integer> predicateTermIndices = this.externalPredicateIdToTerms.getOrDefault(headVariableIndexes[headVariable], null);
                 if (predicateTermIndices == null) {
@@ -999,9 +1009,11 @@ public final class ProbabilisticSoftLogicProblem {
             List<Integer> internalVariableIndexes = new ArrayList<>();
             List<Boolean> internalVariableNegations = new ArrayList<>();
             double observedConstant = 0;
+            ArrayList<Integer> droppedExternalIds = new ArrayList<>();
             for (int i = 0; i < externalVariableIndexes.length; ++i) {
                 double observedValue = observedVariableValues.getOrDefault(externalVariableIndexes[i], Double.NaN);
                 if (!Double.isNaN(observedValue)) {
+                    droppedExternalIds.add(externalVariableIndexes[i]);
                     if (isRuleHeadVariable == negations[i])
                         observedConstant += observedValue - 1;
                     else
@@ -1020,21 +1032,25 @@ public final class ProbabilisticSoftLogicProblem {
             return new RulePart(
                     Ints.toArray(internalVariableIndexes),
                     Booleans.toArray(internalVariableNegations),
-                    observedConstant
+                    observedConstant,
+                    droppedExternalIds
             );
         }
 
         private static class RulePart {
+            private final List<Integer> droppedExternalIds;
             private final int[] variableIndexes;
             private final boolean[] negations;
             private final double observedConstant;
 
             private RulePart(int[] variableIndexes,
                              boolean[] negations,
-                             double observedConstant) {
+                             double observedConstant,
+                             List<Integer> droppedExternalIds) {
                 this.variableIndexes = variableIndexes;
                 this.negations = negations;
                 this.observedConstant = observedConstant;
+                this.droppedExternalIds = droppedExternalIds;
             }
         }
 

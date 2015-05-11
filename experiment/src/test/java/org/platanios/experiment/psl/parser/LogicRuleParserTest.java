@@ -1349,7 +1349,7 @@ public class LogicRuleParserTest {
             ProbabilisticSoftLogicProblem problem2 = problemBuilder2.build();
 
             Map.Entry<ConsensusAlternatingDirectionsMethodOfMultipliersSolver, Map<Integer, Double>> resultPair = problem.preWarmStartSolve(
-                    ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.CONSENSUS_FOCUSED_SAMPLING, null, 100);
+                    ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.ALL, null, -1);
 
             ConsensusAlternatingDirectionsMethodOfMultipliersSolver oldSolver = resultPair.getKey();
             Map<Integer, Double> result = resultPair.getValue();
@@ -1361,21 +1361,69 @@ public class LogicRuleParserTest {
                             problem2.getExternalPredicateIdsToTerms(),
                             problem2.getInternalToExternalIds(),
                             problem2.getTermPredicateIdGetter(),
-                            0.01, // restart probability
-                            0.01,  // sample probability
+                            .95, // restart probability
+                            .005,  // sample probability
                             random);
 
             trainPredicateManager.addEdgesToRandomWalkSampler(randomWalkSamplerBuilder);
 
             // 28242->1883 was updated
             randomWalkSamplerBuilder.addOriginEntity("28242");
+            randomWalkSamplerBuilder.addOriginEntity("26");
+            randomWalkSamplerBuilder.addOriginEntity("162");
+            randomWalkSamplerBuilder.addOriginEntity("1028");
+            randomWalkSamplerBuilder.addOriginEntity("1683");
             randomWalkSamplerBuilder.addOriginEntity("1883");
+            randomWalkSamplerBuilder.addOriginEntity("1896");
+            randomWalkSamplerBuilder.addOriginEntity("3206");
+            randomWalkSamplerBuilder.addOriginEntity("5562");
+            randomWalkSamplerBuilder.addOriginEntity("27776");
+            randomWalkSamplerBuilder.addOriginEntity("28525");
+
+            RandomBipartiteWalkSampler.Builder bipartiteWalkSamplerBuilder =
+                    new RandomBipartiteWalkSampler.Builder(
+                            problem2.getExternalPredicateIdsToTerms(),
+                            problem2.getInternalToExternalIds(),
+                            problem2.getTermPredicateIdGetter(),
+                            .25,
+                            .25,
+                            new Random());
+
+            bipartiteWalkSamplerBuilder.addOriginPredicate(train2PredicateManager.getIdForPredicate(
+                    new ProbabilisticSoftLogicProblem.Predicate("TRUSTS", ImmutableList.of("28242", "26"), false)));
+            bipartiteWalkSamplerBuilder.addOriginPredicate(train2PredicateManager.getIdForPredicate(
+                    new ProbabilisticSoftLogicProblem.Predicate("TRUSTS", ImmutableList.of("28242", "162"), false)));
+            bipartiteWalkSamplerBuilder.addOriginPredicate(train2PredicateManager.getIdForPredicate(
+                    new ProbabilisticSoftLogicProblem.Predicate("TRUSTS", ImmutableList.of("28242", "1028"), false)));
+            bipartiteWalkSamplerBuilder.addOriginPredicate(train2PredicateManager.getIdForPredicate(
+                    new ProbabilisticSoftLogicProblem.Predicate("TRUSTS", ImmutableList.of("28242", "1683"), false)));
+            bipartiteWalkSamplerBuilder.addOriginPredicate(train2PredicateManager.getIdForPredicate(
+                    new ProbabilisticSoftLogicProblem.Predicate("TRUSTS", ImmutableList.of("28242", "1883"), false)));
+            bipartiteWalkSamplerBuilder.addOriginPredicate(train2PredicateManager.getIdForPredicate(
+                    new ProbabilisticSoftLogicProblem.Predicate("TRUSTS", ImmutableList.of("28242", "1896"), false)));
+            bipartiteWalkSamplerBuilder.addOriginPredicate(train2PredicateManager.getIdForPredicate(
+                    new ProbabilisticSoftLogicProblem.Predicate("TRUSTS", ImmutableList.of("28242", "3206"), false)));
+            bipartiteWalkSamplerBuilder.addOriginPredicate(train2PredicateManager.getIdForPredicate(
+                    new ProbabilisticSoftLogicProblem.Predicate("TRUSTS", ImmutableList.of("28242", "5562"), false)));
+            bipartiteWalkSamplerBuilder.addOriginPredicate(train2PredicateManager.getIdForPredicate(
+                    new ProbabilisticSoftLogicProblem.Predicate("TRUSTS", ImmutableList.of("28242", "27776"), false)));
+            bipartiteWalkSamplerBuilder.addOriginPredicate(train2PredicateManager.getIdForPredicate(
+                    new ProbabilisticSoftLogicProblem.Predicate("TRUSTS", ImmutableList.of("28242", "28525"), false)));
 
             RandomWalkSampler<String> randomWalkSampler = randomWalkSamplerBuilder.build();
+            RandomBipartiteWalkSampler bipartiteWalkSampler = bipartiteWalkSamplerBuilder.build();
+
+            /*
+            Map.Entry<ConsensusAlternatingDirectionsMethodOfMultipliersSolver, Map<Integer, Double>> resultPair2 = problem2.warmStartSolve(
+                    ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.ALL, // ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.CUSTOM,
+                    null, //randomWalkSampler,
+                    -1, //100,
+                    oldSolver);
+            */
 
             Map.Entry<ConsensusAlternatingDirectionsMethodOfMultipliersSolver, Map<Integer, Double>> resultPair2 = problem2.warmStartSolve(
                     ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.CUSTOM,
-                    randomWalkSampler,
+                    bipartiteWalkSampler, //randomWalkSampler,
                     100,
                     oldSolver);
 

@@ -1,6 +1,8 @@
 package org.platanios.experiment.psl;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.ArrayUtils;
+import org.platanios.learn.math.statistics.StatisticsUtilities;
 import org.platanios.learn.optimization.ConsensusAlternatingDirectionsMethodOfMultipliersSolver;
 
 import java.util.*;
@@ -21,7 +23,7 @@ public class RandomWalkSampler<T> implements ConsensusAlternatingDirectionsMetho
     private final Map<Integer, Integer> internalToExternalIds;
     private HashSet<Integer> predicateIdsToUpdate;
     private final TermPredicateIdGetter predicateIdGetter;
-    private static final int maxSampleAttempts = 20;
+    private static final int maxSampleAttempts = Integer.MAX_VALUE;
 
     private RandomWalkSampler(Builder builder) {
 
@@ -59,51 +61,38 @@ public class RandomWalkSampler<T> implements ConsensusAlternatingDirectionsMetho
 
         predicateIdsToUpdate.clear();
 
-        int[] sampledSubProblems = new int[solver.numberOfSubProblemSamples];
+        HashSet<Integer> subProblemsToSample = new HashSet<>();
 
         for (int i = 0; i < solver.numberOfSubProblemSamples; ++i) {
 
-            boolean isSampled = false;
-            for (int sampleAttempt = 0; sampleAttempt < maxSampleAttempts && !isSampled; ++sampleAttempt) {
-                // first choose whether to restart
-                double randRestart = this.random.nextDouble();
-                if (randRestart < this.restartProbability) {
-                    this.graphSampleCursor.set(i, this.entityToGraph.get(this.graphSampleOrigins.get(this.graphSampleCursorOriginIndices.get(i))));
-                } else {
-                    boolean isSampleOnStep = this.random.nextDouble() < this.sampleProbablity;
-                    Map.Entry<Integer, GraphEdges> step = this.graphSampleCursor.get(i).step();
-                    if (step != null) { // step can be null for nodes with no outgoing edges, keep looping so there is a chance to restart
-                        this.graphSampleCursor.set(i, step.getValue());
-                        if (isSampleOnStep) {
-                            int predicateId = step.getKey();
-                            List<Integer> terms = this.predicateInformation.get(predicateId).Terms;
-                            if (terms.size() > 0) {
-                                int indexIntoTerms = random.nextInt(terms.size());
-                                sampledSubProblems[i] = terms.get(indexIntoTerms);
-                                int[] subProblemPredicateIds = this.predicateIdGetter.getInternalPredicateIds(sampledSubProblems[i]);
-                                for (int subProblemPredicateId : subProblemPredicateIds) {
-                                    this.predicateIdsToUpdate.add(subProblemPredicateId);
-                                }
-                                isSampled = true;
-                            }
-                        }
+            // first choose whether to restart
+            double randRestart = this.random.nextDouble();
+            if (randRestart < this.restartProbability) {
+                this.graphSampleCursor.set(i, this.entityToGraph.get(this.graphSampleOrigins.get(this.graphSampleCursorOriginIndices.get(i))));
+            } else {
+                boolean isSampleOnStep = this.random.nextDouble() < this.sampleProbablity;
+                Map.Entry<Integer, GraphEdges> step = this.graphSampleCursor.get(i).step();
+                if (step != null) { // step can be null for nodes with no outgoing edges, keep looping so there is a chance to restart
+                    this.graphSampleCursor.set(i, step.getValue());
+                    if (isSampleOnStep) {
+                        int predicateId = step.getKey();
+                        subProblemsToSample.addAll(this.predicateInformation.get(predicateId).Terms);
                     }
                 }
             }
+        }
 
+        while (subProblemsToSample.size() < solver.numberOfSubProblemSamples) {
+            subProblemsToSample.add(this.random.nextInt(solver.getNumberOfTerms()));
+        }
 
-
-            if (!isSampled) {// this could happen if we are in a bad part of the graph that has observed edges everywhere
-
-                // remove this seed since it seems bad
-                this.graphSampleOrigins.remove(this.graphSampleCursorOriginIndices.get(i));
-
-                int iSeed = random.nextInt(this.graphSampleOrigins.size());
-                this.graphSampleCursorOriginIndices.set(i, iSeed);
-                this.graphSampleCursor.set(i, this.entityToGraph.get(this.graphSampleOrigins.get(iSeed)));
-
-                sampledSubProblems[i] = this.random.nextInt(solver.getNumberOfTerms());
-
+        int[] sampledSubProblems = new int[solver.numberOfSubProblemSamples];
+        Integer[] sampledFromGraph = StatisticsUtilities.sampleWithoutReplacement(subProblemsToSample.toArray(new Integer[subProblemsToSample.size()]), Math.min(solver.numberOfSubProblemSamples, subProblemsToSample.size()));
+        for(int i = 0; i < sampledFromGraph.length; ++i) {
+            sampledSubProblems[i] = sampledFromGraph[i];
+            int[] subProblemPredicateIds = this.predicateIdGetter.getInternalPredicateIds(sampledSubProblems[i]);
+            for (int subProblemPredicateId : subProblemPredicateIds) {
+                this.predicateIdsToUpdate.add(subProblemPredicateId);
             }
         }
 
