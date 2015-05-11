@@ -31,6 +31,22 @@ public class LazyGrounding<T, R> extends Grounding<T, R> {
     }
 
     @Override
+    public void ground(List<Formula<T>> formulas) {
+        while (true) {
+            int previousNumberOfActivatedGroundedPredicates = activatedGroundedPredicates.size();
+            for (int currentFormulaIndex = 0; currentFormulaIndex < formulas.size(); currentFormulaIndex++) {
+                if (!groundedFormulas.containsKey(currentFormulaIndex))
+                    groundedFormulas.put(currentFormulaIndex, new HashSet<>());
+                ground(formulas.get(currentFormulaIndex));
+                System.out.println("Generated " + groundedFormula.size() + " groundings for rule " + currentFormulaIndex); // TODO: Use a logger for this part.
+                groundedFormulas.get(currentFormulaIndex).addAll(groundedFormula);
+            }
+            if (activatedGroundedPredicates.size() == previousNumberOfActivatedGroundedPredicates)
+                break;
+        }
+    }
+
+    @Override
     boolean pruneGroundingAndSetCurrentPredicateTruthValue(Formula<T> formula,
                                                            Map<Variable<T>, T> variableAssignments,
                                                            List<R> disjunctionComponentsSoFar) {
@@ -54,11 +70,14 @@ public class LazyGrounding<T, R> extends Grounding<T, R> {
 
     @Override
     void onGroundedPredicateAddition(List<GroundedPredicate<T, R>> groundedRule) {
-        activatedGroundedPredicates.addAll(groundedRule.stream().filter(rule -> rule.getValue() == null).map(
-                groundedPredicate ->
-                        new ActivatedGroundedPredicate<>(groundedPredicate.getPredicate().getIdentifier(),
-                                                         groundedPredicate.getPredicateArgumentsAssignment()))
-                                                   .collect(Collectors.toList()));
+        activatedGroundedPredicates.addAll(
+                groundedRule.stream()
+                        .filter(rule -> rule.getValue() == null)
+                        .map(groundedPredicate ->
+                                     new ActivatedGroundedPredicate<>(groundedPredicate.getPredicate().getIdentifier(),
+                                                                      groundedPredicate.getPredicateArgumentsAssignment()))
+                        .collect(Collectors.toList())
+        );
     }
 
     public class ActivatedGroundedPredicate<V> {
