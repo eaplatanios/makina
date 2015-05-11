@@ -240,6 +240,9 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
 
     @Override
     public boolean checkTerminationConditions() {
+        if (currentIteration >= maximumNumberOfIterations) {
+            return true;
+        }
         if (super.checkTerminationConditions()) {
             if (currentIteration >= maximumNumberOfIterations
                     || objective.getNumberOfFunctionEvaluations() >= maximumNumberOfFunctionEvaluations) {

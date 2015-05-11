@@ -917,8 +917,8 @@ public final class ProbabilisticSoftLogicProblem {
             RulePart headPart = convertRulePartToInternalRepresentation(headVariableIndexes, headNegations, true);
             RulePart bodyPart = convertRulePartToInternalRepresentation(bodyVariableIndexes, bodyNegations, false);
             double ruleMaximumValue = 1 + headPart.observedConstant + bodyPart.observedConstant;
-            if (ruleMaximumValue <= 0)
-                return this;
+            //if (ruleMaximumValue <= 0)
+            //    return this;
             int[] variableIndexes = Utilities.union(headPart.variableIndexes, bodyPart.variableIndexes);
             if (variableIndexes.length == 0)
                 return this;
