@@ -235,6 +235,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
             for (int variableIndex : variableIndexes)
                 variableCopiesCounts.set(variableIndex, variableCopiesCounts.get(variableIndex) + 1);
         }
+        variableCopiesSum = currentPoint.multElementwise(variableCopiesCounts);
     }
 
     @Override
