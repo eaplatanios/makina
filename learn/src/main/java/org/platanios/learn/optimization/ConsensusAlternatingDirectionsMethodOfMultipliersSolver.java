@@ -62,6 +62,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
     private boolean logPredictionChanges;
     private int nChangedPredictions = 0;
     private int nTotalChangedPredictions = 0;
+    private double totalSqChangePredictions = 0;
 
     private int numberOfIterationsWithNoPointChange = 0;
     private boolean primalResidualConverged = false;
@@ -314,8 +315,9 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
                     DECIMAL_FORMAT.format(primalResidual),
                     DECIMAL_FORMAT.format(dualResidual)));
         if (logPredictionChanges)
-            stringBuilder.append(String.format(" | nTotalChangedPredictions: %5s",
-                DECIMAL_FORMAT.format(nTotalChangedPredictions)));
+            stringBuilder.append(String.format(" | nTotalChangedPredictions: %5 | nTotalSqChange: %20s",
+                DECIMAL_FORMAT.format(nTotalChangedPredictions),
+                DECIMAL_FORMAT.format(totalSqChangePredictions)));
         logger.info(stringBuilder.toString());
     }
 
@@ -485,6 +487,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
                 nChangedPredictions++;
                 nTotalChangedPredictions++;
             }
+            totalSqChangePredictions += Math.pow(currentPoint.get(i) - previousPoint.get(i),2);
         }
     }
 
