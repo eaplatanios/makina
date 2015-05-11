@@ -1141,22 +1141,113 @@ public final class ProbabilisticSoftLogicProblem {
                         .numberOfSubProblemSamples(numberOfSubProblemSamples)
                         .penaltyParameter(1)
                         .penaltyParameterSettingMethod(ConsensusAlternatingDirectionsMethodOfMultipliersSolver.PenaltyParameterSettingMethod.CONSTANT)
+                        .checkForPrimalAndDualResidualConvergence(true)
                         .checkForPointConvergence(false)
                         .checkForObjectiveConvergence(false)
                         .checkForGradientConvergence(false)
                         .logObjectiveValue(true)
                         .logGradientNorm(false)
-                        .loggingLevel(3);
+                        .loggingLevel(1);
         for (Constraint constraint : constraints)
             solverBuilder.addConstraint(constraint.constraint, constraint.variableIndexes);
         ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver = solverBuilder.build();
+
         Vector solverResult = solver.solve();
+
         Map<Integer, Double> inferredValues = new HashMap<>(solverResult.size());
         for (int internalVariableIndex = 0; internalVariableIndex < solverResult.size(); internalVariableIndex++)
             inferredValues.put(externalToInternalIndexesMapping.inverse().get(internalVariableIndex),
                                solverResult.get(internalVariableIndex));
         return inferredValues;
     }
+
+
+    public Map.Entry<ConsensusAlternatingDirectionsMethodOfMultipliersSolver, Map<Integer, Double>> preWarmStartSolve(
+            ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod subProblemSelectionMethod,
+            ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelector subProblemSelector,
+            int numberOfSubProblemSamples) {
+
+        ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder solverBuilder =
+                new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder(
+                        objectiveFunction,
+                        Vectors.dense(objectiveFunction.getNumberOfVariables())
+                )
+                        .subProblemSolver((subProblem) -> solveProbabilisticSoftLogicSubProblem(subProblem, subProblemCholeskyFactors))
+                        .subProblemSelector(subProblemSelector)
+                        .subProblemSelectionMethod(subProblemSelectionMethod) // if this is not CUSTOM, it will override the subProblemSelector
+                        .numberOfSubProblemSamples(numberOfSubProblemSamples)
+                        .penaltyParameter(1)
+                        .penaltyParameterSettingMethod(ConsensusAlternatingDirectionsMethodOfMultipliersSolver.PenaltyParameterSettingMethod.CONSTANT)
+                        .checkForPointConvergence(false)
+                        .checkForObjectiveConvergence(false)
+                        .checkForGradientConvergence(false)
+                        .logObjectiveValue(true)
+                        .logGradientNorm(false)
+                        .loggingLevel(4);
+        for (Constraint constraint : constraints)
+            solverBuilder.addConstraint(constraint.constraint, constraint.variableIndexes);
+
+        ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver = solverBuilder.build();
+
+        Vector solverResult = solver.solve();
+
+
+        Map<Integer, Double> inferredValues = new HashMap<>(solverResult.size());
+        for (int internalVariableIndex = 0; internalVariableIndex < solverResult.size(); internalVariableIndex++)
+            inferredValues.put(externalToInternalIndexesMapping.inverse().get(internalVariableIndex),
+                    solverResult.get(internalVariableIndex));
+
+        Map.Entry<ConsensusAlternatingDirectionsMethodOfMultipliersSolver, Map<Integer, Double>> returnObject = new AbstractMap.SimpleEntry<ConsensusAlternatingDirectionsMethodOfMultipliersSolver, Map<Integer, Double>>(solver, inferredValues);
+
+        return returnObject;
+    }
+
+    public Map.Entry<ConsensusAlternatingDirectionsMethodOfMultipliersSolver, Map<Integer, Double>> warmStartSolve(
+            ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod subProblemSelectionMethod,
+            ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelector subProblemSelector,
+            int numberOfSubProblemSamples,
+            ConsensusAlternatingDirectionsMethodOfMultipliersSolver oldSolver) {
+
+        Vector warmStartValues = Vectors.build(oldSolver.getCurrentPoint().size(), oldSolver.getCurrentPoint().type());
+        warmStartValues.set(oldSolver.getCurrentPoint());
+
+        ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder solverBuilder =
+                new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder(
+                        objectiveFunction,
+                        warmStartValues
+                )
+                        .subProblemSolver((subProblem) -> solveProbabilisticSoftLogicSubProblem(subProblem, subProblemCholeskyFactors))
+                        .subProblemSelector(subProblemSelector)
+                        .subProblemSelectionMethod(subProblemSelectionMethod) // if this is not CUSTOM, it will override the subProblemSelector
+                        .numberOfSubProblemSamples(numberOfSubProblemSamples)
+                        .penaltyParameter(1)
+                        .penaltyParameterSettingMethod(ConsensusAlternatingDirectionsMethodOfMultipliersSolver.PenaltyParameterSettingMethod.CONSTANT)
+                        .checkForPointConvergence(false)
+                        .checkForObjectiveConvergence(false)
+                        .checkForGradientConvergence(false)
+                        .checkForPrimalAndDualResidualConvergence(true)
+                        .logObjectiveValue(true)
+                        .logGradientNorm(false)
+                        .loggingLevel(4);
+        for (Constraint constraint : constraints)
+            solverBuilder.addConstraint(constraint.constraint, constraint.variableIndexes);
+
+        ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver = solverBuilder.build();
+
+        solver.lagrangeMultipliers = oldSolver.lagrangeMultipliers;
+
+        Vector solverResult = solver.solve();
+
+        Map<Integer, Double> inferredValues = new HashMap<>(solverResult.size());
+        for (int internalVariableIndex = 0; internalVariableIndex < solverResult.size(); internalVariableIndex++)
+            inferredValues.put(externalToInternalIndexesMapping.inverse().get(internalVariableIndex),
+                    solverResult.get(internalVariableIndex));
+
+        Map.Entry<ConsensusAlternatingDirectionsMethodOfMultipliersSolver, Map<Integer, Double>> returnObject = new AbstractMap.SimpleEntry<ConsensusAlternatingDirectionsMethodOfMultipliersSolver, Map<Integer, Double>>(solver, inferredValues);
+
+        return returnObject;
+    }
+
 
     private static void solveProbabilisticSoftLogicSubProblem(
             ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblem subProblem,

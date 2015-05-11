@@ -6,7 +6,6 @@ import org.platanios.experiment.psl.*;
 import org.platanios.learn.math.matrix.Vectors;
 import org.platanios.learn.math.statistics.StatisticsUtilities;
 import org.platanios.learn.optimization.ConsensusAlternatingDirectionsMethodOfMultipliersSolver;
-import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.SumFunction;
 
 import java.io.*;
@@ -15,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.zip.DataFormatException;
+import java.util.regex.*;
 
 import static junit.framework.TestCase.*;
 
@@ -1144,11 +1144,10 @@ public class LogicRuleParserTest {
                     }
 
                     ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(testPredicateManager, "TRUSTS", false, false, trustTestReader);
-
                     // DBC: Use the model parser to parse the pre-grounded rules
                     groundRules = ProbabilisticSoftLogicReader.readRules(groundRuleReader);
 
-                    // DBC: Creata a problem builder using the pre-grounded rules
+                    // DBC: Create a problem builder using the pre-grounded rules
                     problemBuilder = ProbabilisticSoftLogicProblem.PregroundRuleHandler.createBuilder(
                             rules,
                             trainPredicateManager,
@@ -1188,7 +1187,11 @@ public class LogicRuleParserTest {
                     .build();
 
 
-            Map<Integer, Double> result = problem.solve();
+            Map<Integer, Double> result = problem.solve(
+                    ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.UNIFORM_SAMPLING,
+                    null,
+                    10
+            );
             Map<String, Double> filteredResults = new HashMap<>();
 
             // to make compiler happy that this is effectively final
@@ -1200,12 +1203,220 @@ public class LogicRuleParserTest {
 
 
 
-            Iterator it = filteredResults.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry pair = (Map.Entry)it.next();
-                System.out.println(pair.getKey() + " = " + pair.getValue());
-                it.remove(); // avoids a ConcurrentModificationException
+            System.out.println("Done\n");
+
+        }
+
+    }
+
+    // DBC: Added test to do pre-grounded rules, from PSL (based on testEndToEnd)
+    @Test
+    public void testPregroundRulesWithWarmStart() {
+
+        String experimentName = "epinions_30";
+
+        for (ProbabilisticSoftLogicProblem.GroundingMode groundingMode : ProbabilisticSoftLogicProblem.GroundingMode.values()) {
+
+            // for testing one mode
+            if (groundingMode != ProbabilisticSoftLogicProblem.GroundingMode.AsRead) {
+                continue;
             }
+
+            String outputStreamName = null;
+            try {
+                Path knowsPath = Paths.get(this.getClass().getResource("../" + experimentName + "/knows.txt").toURI());
+                outputStreamName = Paths.get(knowsPath.getParent().toString(), "problem_serialized.bin").toString();
+            } catch (URISyntaxException e) {
+                fail(e.getMessage());
+                System.out.println(e.getMessage());
+                e.printStackTrace();
+                return;
+            }
+
+
+            // DBC: Not really doing the serialization thing yet, but I'll leave it here for now
+            File outputStreamFile = new File(outputStreamName);
+            ProbabilisticSoftLogicProblem.Builder problemBuilder = null;
+            ProbabilisticSoftLogicProblem.Builder problemBuilder2 = null;
+            ProbabilisticSoftLogicPredicateManager trainPredicateManager = null;
+            ProbabilisticSoftLogicPredicateManager warmStartPredicateManager = null;
+
+            // Don't look for serialized file
+            if (false) {
+                //if (outputStreamFile.exists()) {
+
+                try (FileInputStream inputStream = new FileInputStream(outputStreamFile)) {
+
+                    Map.Entry<ProbabilisticSoftLogicPredicateManager, ProbabilisticSoftLogicProblem.Builder> deserialized =
+                            ProbabilisticSoftLogicProblem.ProblemSerializer.read(inputStream);
+
+                    trainPredicateManager = deserialized.getKey();
+                    problemBuilder = deserialized.getValue();
+
+                } catch (IOException|ClassNotFoundException e) {
+                    fail(e.getMessage());
+                    System.out.println(e.getMessage());
+                    e.printStackTrace();
+                }
+
+            } else {
+
+                InputStream groundingStream = null;
+                if (groundingMode == ProbabilisticSoftLogicProblem.GroundingMode.AsRead) {
+                    groundingStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/trust_groundings.txt");
+                }
+
+                InputStream modelStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/model.txt");
+                InputStream knowsStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/knows.txt");
+                InputStream trustTrainStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/train.txt");
+                InputStream trustTestStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/test.txt");
+                // DBC: The rules file contains all grounded rules
+                InputStream groundRuleStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/rules.txt");
+                // DBC: and the warm start values
+                InputStream warmStartStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/warmStart.txt");
+
+                List<ProbabilisticSoftLogicProblem.Rule> rules = null;
+                List<ProbabilisticSoftLogicProblem.Rule> groundRules = null;
+                trainPredicateManager = new ProbabilisticSoftLogicPredicateManager();
+                ProbabilisticSoftLogicPredicateManager testPredicateManager = new ProbabilisticSoftLogicPredicateManager();
+                warmStartPredicateManager = new ProbabilisticSoftLogicPredicateManager();
+
+                try (
+                        BufferedReader groundingReader = groundingStream == null ? null : new BufferedReader(new InputStreamReader(groundingStream));
+                        BufferedReader modelReader = new BufferedReader(new InputStreamReader(modelStream));
+                        BufferedReader knowsReader = new BufferedReader(new InputStreamReader(knowsStream));
+                        BufferedReader trustTrainReader = new BufferedReader(new InputStreamReader(trustTrainStream));
+                        BufferedReader groundRuleReader = new BufferedReader(new InputStreamReader(groundRuleStream));
+                        BufferedReader trustTestReader = trustTestStream == null ? null : new BufferedReader(new InputStreamReader(trustTestStream));
+                        BufferedReader warmStartReader = warmStartStream == null ? null : new BufferedReader(new InputStreamReader(warmStartStream))) {
+
+                    rules = ProbabilisticSoftLogicReader.readRules(modelReader);
+
+                    ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
+                            trainPredicateManager, "KNOWS", groundingMode == ProbabilisticSoftLogicProblem.GroundingMode.AllPossible, false, knowsReader);
+
+                    ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
+                            trainPredicateManager, "TRUSTS", false, false, trustTrainReader);
+
+                    if (groundingMode == ProbabilisticSoftLogicProblem.GroundingMode.AsRead) {
+                        ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
+                                trainPredicateManager, "TRUSTS", false, true, groundingReader);
+                    }
+
+                    ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(testPredicateManager, "TRUSTS", false, false, trustTestReader);
+
+                    // DBC: Trying warm start: add test predicates with previous results
+                    ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
+                            warmStartPredicateManager, "TRUSTS", false, false, warmStartReader);
+
+
+                    // DBC: Use the model parser to parse the pre-grounded rules
+                    groundRules = ProbabilisticSoftLogicReader.readRules(groundRuleReader);
+
+                    // DBC: Creata a problem builder using the pre-grounded rules
+                    problemBuilder = ProbabilisticSoftLogicProblem.PregroundRuleHandler.createBuilder(
+                            rules,
+                            trainPredicateManager,
+                            groundRules);
+
+                    problemBuilder2 = ProbabilisticSoftLogicProblem.PregroundRuleHandler.createBuilder(
+                            rules,
+                            trainPredicateManager,
+                            groundRules);
+
+
+
+                } catch (IOException | DataFormatException e) {
+                    fail(e.getMessage());
+                    System.out.println(e.getMessage());
+                    e.printStackTrace();
+                }
+
+
+                /*
+                try (FileOutputStream outputStream = new FileOutputStream(outputStreamFile)) {
+
+                    problemBuilder =
+                            ProbabilisticSoftLogicProblem.ProblemSerializer.write(
+                                    outputStream,
+                                    rules,
+                                    trainPredicateManager,
+                                    groundingMode);
+
+                } catch (IOException e) {
+                    fail(e.getMessage());
+                    System.out.println(e.getMessage());
+                    e.printStackTrace();
+                }
+                */
+
+            }
+
+
+            ProbabilisticSoftLogicProblem problem = problemBuilder
+                    //.subProblemSelectionMethod(ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.UNIFORM_SAMPLING)
+                    //.numberOfSubProblemSamples(100)
+                    .build();
+
+            ProbabilisticSoftLogicProblem problem2 = problemBuilder2
+                    //.subProblemSelectionMethod(ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.UNIFORM_SAMPLING)
+                    //.numberOfSubProblemSamples(100)
+                    .build();
+
+
+            Map.Entry<ConsensusAlternatingDirectionsMethodOfMultipliersSolver, Map<Integer, Double>> resultPair = problem.preWarmStartSolve(
+                    ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.ALL, null, -1);
+
+            ConsensusAlternatingDirectionsMethodOfMultipliersSolver oldSolver = resultPair.getKey();
+            Map<Integer, Double> result = resultPair.getValue();
+
+            Map.Entry<ConsensusAlternatingDirectionsMethodOfMultipliersSolver, Map<Integer, Double>> resultPair2 = problem2.warmStartSolve(
+                    ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.ALL,
+                    null, -1, oldSolver);
+
+            Map<Integer, Double> result2 = resultPair2.getValue();
+            Map<String, Double> filteredResults = new HashMap<>();
+
+            // to make compiler happy that this is effectively final
+            ProbabilisticSoftLogicPredicateManager temp = trainPredicateManager;
+
+            result2.keySet().stream()
+                    .filter(key -> result.get(key) > Math.sqrt(Double.MIN_VALUE))
+                    .forEach(key -> filteredResults.put(temp.getPredicateFromId(key).toString(), result.get(key)));
+
+            // DBC: Write the filtered results to a file.
+            String resultStreamName = null;
+            try {
+                Path resultPath = Paths.get(this.getClass().getResource("../" + experimentName + "/").toURI());
+                resultStreamName = Paths.get(resultPath.toString(), "results.txt").toString();
+            } catch (URISyntaxException e) {
+                fail(e.getMessage());
+                System.out.println(e.getMessage());
+                e.printStackTrace();
+                return;
+            }
+
+            //File resultStreamFile = new File(resultStreamName);
+            try (PrintWriter writer = new PrintWriter(resultStreamName, "UTF-8");) {
+
+                Pattern p = Pattern.compile("(.*)\\((\\d+), (\\d+)\\)");
+
+                Iterator it = filteredResults.entrySet().iterator();
+                while (it.hasNext()) {
+                    Map.Entry pair = (Map.Entry) it.next();
+                    System.out.println(pair.getKey() + " = " + pair.getValue());
+                    String gPred = (String) pair.getKey();
+                    Matcher m = p.matcher(gPred);
+                    m.find();
+                    writer.println(m.group(2) + '\t' + m.group(3) + '\t' + pair.getValue());
+                    it.remove(); // avoids a ConcurrentModificationException
+                }
+            } catch (IOException e) {
+                fail(e.getMessage());
+                System.out.println(e.getMessage());
+                e.printStackTrace();
+            }
+
 
 
             System.out.println("Done\n");
@@ -1213,5 +1424,7 @@ public class LogicRuleParserTest {
         }
 
     }
+
+
 
 }

@@ -27,8 +27,10 @@ import java.util.function.Consumer;
 public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver extends AbstractIterativeSolver {
     private final Object lock = new Object();
     private final List<Vector> variableCopies = new ArrayList<>();
-    private final List<Vector> lagrangeMultipliers = new ArrayList<>();
-    private final Vector variableCopiesSum = Vectors.build(currentPoint.size(), currentPoint.type());
+    // BUG BUGBUGBUG: Hacks to enable warm starts
+    public List<Vector> lagrangeMultipliers = new ArrayList<>();
+    private Vector variableCopiesSum = Vectors.build(currentPoint.size(), currentPoint.type());
+    public Vector getCurrentPoint() { return currentPoint; }
 
     private final Vector variableCopiesCounts;
     private final int maximumNumberOfIterationsWithNoPointChange;
@@ -70,7 +72,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
 
         protected int maximumNumberOfIterationsWithNoPointChange = 1;
         protected double absoluteTolerance = 1e-5;
-        protected double relativeTolerance = 1e-3;
+        protected double relativeTolerance = 1e-4;
         protected boolean checkForPrimalAndDualResidualConvergence = true;
 
         protected PenaltyParameterSettingMethod penaltyParameterSettingMethod = PenaltyParameterSettingMethod.ADAPTIVE;
