@@ -235,14 +235,6 @@ public final class FastProbabilisticSoftLogicProblem {
                     linearFunction = linearFunction.add(new LinearFunction(coefficients, 0));
                 }
             }
-            for (int variable = 0; variable < variableIndexes.length; ++variable) {
-                List<Integer> predicateTermIndices = this.externalPredicateIdToTerms.getOrDefault(variableIndexes[variable], null);
-                if (predicateTermIndices == null) {
-                    predicateTermIndices = new ArrayList<>(200);
-                    this.externalPredicateIdToTerms.put(variableIndexes[variable], predicateTermIndices);
-                }
-                predicateTermIndices.add(indexTerm);
-            }
             FunctionTerm term = new FunctionTerm(internalRepresentation.variableIndexes, linearFunction, weight, power);
             // functionTerms.putIfAbsent(term.toString(), term);
             functionTerms.add(term);

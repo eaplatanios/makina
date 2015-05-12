@@ -180,7 +180,8 @@ public class ProbabilisticSoftLogicReader {
             if (isIgnoreValues) {
                 logicManager.addGroundedPredicate(
                         predicate,
-                        currentGrounding.build().stream().map(Integer::parseInt).collect(Collectors.toList())
+                        currentGrounding.build().stream().map(Integer::parseInt).collect(Collectors.toList()),
+                        logicManager.logic().trueValue()
                 );
             } else {
                 logicManager.addGroundedPredicate(

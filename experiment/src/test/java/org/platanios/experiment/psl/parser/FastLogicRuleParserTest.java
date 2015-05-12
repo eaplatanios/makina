@@ -25,7 +25,7 @@ import static junit.framework.TestCase.fail;
 public class FastLogicRuleParserTest {
     @Test
     public void testFastEndToEnd() {
-        String experimentName = "epinions_200";
+        String experimentName = "uci_trust";
 
         LogicManager<Integer, Double> logicManager = new LogicManager<>(new LukasiewiczLogic());
         VariableType<Integer> personType = logicManager.addVariableType("{person}", Integer.class);
@@ -45,6 +45,7 @@ public class FastLogicRuleParserTest {
                     personValues.add(Integer.parseInt(lineParts[partIndex].trim()));
             });
         } catch (IOException ignored) { }
+
         logicManager.addVariable("A", new ArrayList<>(personValues), personType);
         logicManager.addVariable("B", new ArrayList<>(personValues), personType);
         logicManager.addVariable("C", new ArrayList<>(personValues), personType);
@@ -71,7 +72,7 @@ public class FastLogicRuleParserTest {
 
             rules = ProbabilisticSoftLogicReader.readFastRules(modelReader, logicManager);
 
-            ProbabilisticSoftLogicReader.readGroundingsAndAddToFastManager(logicManager, "KNOWS", false, knowsReader);
+            ProbabilisticSoftLogicReader.readGroundingsAndAddToFastManager(logicManager, "KNOWS", true, knowsReader);
 
             ProbabilisticSoftLogicReader.readGroundingsAndAddToFastManager(logicManager, "TRUSTS", false, trustTrainReader);
 
