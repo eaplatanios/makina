@@ -92,7 +92,7 @@ public class FastLogicRuleParserTest {
         }
 
         FastProbabilisticSoftLogicProblem.Builder problemBuilder =
-                new FastProbabilisticSoftLogicProblem.Builder(observedIndexes, observedWeights, logicManager.getNumberOfVariables());
+                new FastProbabilisticSoftLogicProblem.Builder(logicManager);
         FastProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilder(rules, problemBuilder, logicManager);
 
         FastProbabilisticSoftLogicProblem problem = problemBuilder.build();

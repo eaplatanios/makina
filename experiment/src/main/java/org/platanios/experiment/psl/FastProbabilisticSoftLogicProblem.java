@@ -2,10 +2,10 @@ package org.platanios.experiment.psl;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Booleans;
 import com.google.common.primitives.Ints;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.platanios.learn.logic.LogicManager;
@@ -132,26 +132,17 @@ public final class FastProbabilisticSoftLogicProblem {
             }
             Grounding<Integer, Double> grounding = new ExhaustiveGrounding<>(logicManager);
             grounding.ground(ruleFormulas);
-            Map<Integer, Set<List<GroundedPredicate<Integer, Double>>>> groundedRules = new HashMap<>();
-            for (int ruleIndex = 0; ruleIndex < rules.size(); ruleIndex++)
-                groundedRules.put(ruleIndex, grounding.getGroundedFormulas().get(ruleIndex));
             for (int ruleIndex = 0; ruleIndex < rules.size(); ruleIndex++) {
-                Set<List<GroundedPredicate<Integer, Double>>> predicateGroundings = groundedRules.get(ruleIndex);
                 Disjunction<Integer> ruleFormula = ((Disjunction<Integer>) ruleFormulas.get(ruleIndex));
                 boolean[] variableNegations = new boolean[ruleFormula.getNumberOfComponents()];
                 for (int i = 0; i < ruleFormula.getNumberOfComponents(); ++i)
                     variableNegations[i] = ruleFormula.getComponent(i) instanceof Negation;
-                if (variableNegations.length != 0) {
-                    for (List<GroundedPredicate<Integer, Double>> groundedRulePredicates : predicateGroundings) {
-                        int[] variableIndexes = new int[ruleFormula.getNumberOfComponents()];
-                        for (int i = 0; i < ruleFormula.getNumberOfComponents(); ++i)
-                            variableIndexes[i] = (int) groundedRulePredicates.get(i).getIdentifier();
+                if (variableNegations.length != 0)
+                    for (List<GroundedPredicate<Integer, Double>> groundedRulePredicates : grounding.getGroundedFormulas().get(ruleIndex))
                         if (Double.isNaN(rules.get(ruleIndex).weight))
-                            builder.addRule(variableIndexes, variableNegations, 1, 1000);
+                            builder.addRule(groundedRulePredicates, variableNegations, 1, 1000);
                         else
-                            builder.addRule(variableIndexes, variableNegations, rules.get(ruleIndex).power, rules.get(ruleIndex).weight);
-                    }
-                }
+                            builder.addRule(groundedRulePredicates, variableNegations, rules.get(ruleIndex).power, rules.get(ruleIndex).weight);
             }
         }
 
@@ -165,7 +156,7 @@ public final class FastProbabilisticSoftLogicProblem {
     public static final class Builder {
         private final BiMap<Integer, Integer> externalToInternalIndexesMapping;
 
-        private final Map<Integer, Double> observedVariableValues;
+        private final LogicManager<Integer, Double> logicManager;
         //private final HashMap<String, FunctionTerm> functionTerms = new HashMap<>();
         private final List<FunctionTerm> functionTerms = new ArrayList<>();
         private final List<Constraint> constraints = new ArrayList<>();
@@ -173,52 +164,33 @@ public final class FastProbabilisticSoftLogicProblem {
 
         private int nextInternalIndex = 0;
 
-        public Builder(
-                int[] observedVariableIndexes,
-                double[] observedVariableValues,
-                int numberOfUnobservedVariables) {
-
-            ImmutableMap.Builder<Integer, Double> observedVariableValueBuilder = ImmutableMap.builder();
-            if ((observedVariableIndexes == null) != (observedVariableValues == null)) {
-                throw new IllegalArgumentException(
-                        "The provided indexes for the observed variables must much the corresponding provided values."
-                );
-            }
-            if (observedVariableIndexes != null) {
-                if (observedVariableIndexes.length != observedVariableValues.length) {
-                    throw new IllegalArgumentException(
-                            "The provided indexes array for the observed variables must " +
-                                    "have the same length the corresponding provided values array."
-                    );
-                }
-                for (int i = 0; i < observedVariableIndexes.length; ++i) {
-                    observedVariableValueBuilder.put(observedVariableIndexes[i], observedVariableValues[i]);
-                }
-            }
+        public Builder(LogicManager<Integer, Double> logicManager) {
 
             // special case - always add -1 as an Id with observed value 0.
             // predicates which are grounded outside of a closed set will thus have value 0
 //            observedVariableValueBuilder.put(-1, 0.0);
-            this.observedVariableValues = observedVariableValueBuilder.build();
-            this.externalToInternalIndexesMapping = HashBiMap.create(numberOfUnobservedVariables);
-            this.externalPredicateIdToTerms = new HashMap<>(numberOfUnobservedVariables + observedVariableIndexes.length, 1);
+            this.logicManager = logicManager;
+            this.externalToInternalIndexesMapping = HashBiMap.create(logicManager.getNumberOfVariables());
+            this.externalPredicateIdToTerms = new HashMap<>(logicManager.getNumberOfVariables());
         }
 
         public int getNumberOfTerms() { return this.functionTerms.size(); }
 
         Builder addRule(
-                int[] variableIndexes,
+                List<GroundedPredicate<Integer, Double>> groundedRulePredicates,
                 boolean[] variableNegations,
                 double power,
                 double weight) {
-            RulePart internalRepresentation = convertRulePartToInternalRepresentation(variableIndexes, variableNegations);
+            RulePart internalRepresentation = convertRulePartToInternalRepresentation(groundedRulePredicates, variableNegations);
             double ruleMaximumValue = 1 + internalRepresentation.observedConstant;
             if (ruleMaximumValue <= 0)
                 return this;
-            if (internalRepresentation.variableIndexes.length == 0)
+            Set<Integer> variableIndexesSet = new HashSet<>(Arrays.asList(ArrayUtils.toObject(internalRepresentation.variableIndexes)));
+            int[] variableIndexes = ArrayUtils.toPrimitive(variableIndexesSet.toArray(new Integer[variableIndexesSet.size()]));
+            if (variableIndexes.length == 0)
                 return this;
             int indexTerm = this.functionTerms.size();
-            LinearFunction linearFunction = new LinearFunction(Vectors.dense(internalRepresentation.variableIndexes.length), ruleMaximumValue);
+            LinearFunction linearFunction = new LinearFunction(Vectors.dense(variableIndexes.length), ruleMaximumValue);
             for (int variable = 0; variable < internalRepresentation.variableIndexes.length; variable++) {
                 List<Integer> predicateTermIndices = this.externalPredicateIdToTerms.getOrDefault(internalRepresentation.variableIndexes[variable], null);
                 if (predicateTermIndices == null) {
@@ -226,16 +198,16 @@ public final class FastProbabilisticSoftLogicProblem {
                     this.externalPredicateIdToTerms.put(internalRepresentation.variableIndexes[variable], predicateTermIndices);
                 }
                 predicateTermIndices.add(indexTerm);
-                Vector coefficients = Vectors.dense(internalRepresentation.variableIndexes.length);
+                Vector coefficients = Vectors.dense(variableIndexes.length);
                 if (internalRepresentation.negations[variable]) {
-                    coefficients.set(variable, 1);
+                    coefficients.set(ArrayUtils.indexOf(variableIndexes, internalRepresentation.variableIndexes[variable]), 1);
                     linearFunction = linearFunction.add(new LinearFunction(coefficients, -1));
                 } else {
-                    coefficients.set(variable, -1);
+                    coefficients.set(ArrayUtils.indexOf(variableIndexes, internalRepresentation.variableIndexes[variable]), -1);
                     linearFunction = linearFunction.add(new LinearFunction(coefficients, 0));
                 }
             }
-            FunctionTerm term = new FunctionTerm(internalRepresentation.variableIndexes, linearFunction, weight, power);
+            FunctionTerm term = new FunctionTerm(variableIndexes, linearFunction, weight, power);
             // functionTerms.putIfAbsent(term.toString(), term);
             functionTerms.add(term);
             return this;
@@ -260,24 +232,24 @@ public final class FastProbabilisticSoftLogicProblem {
             return new FastProbabilisticSoftLogicProblem(this);
         }
 
-        private RulePart convertRulePartToInternalRepresentation(int[] externalVariableIndexes,
+        private RulePart convertRulePartToInternalRepresentation(List<GroundedPredicate<Integer, Double>> groundedRulePredicates,
                                                                  boolean[] negations) {
             List<Integer> internalVariableIndexes = new ArrayList<>();
             List<Boolean> internalVariableNegations = new ArrayList<>();
             double observedConstant = 0;
-            for (int i = 0; i < externalVariableIndexes.length; ++i) {
-                double observedValue = observedVariableValues.getOrDefault(externalVariableIndexes[i], Double.NaN);
-                if (!Double.isNaN(observedValue)) {
+            for (int i = 0; i < groundedRulePredicates.size(); ++i) {
+                Double observedValue = groundedRulePredicates.get(i).getValue();
+                if (observedValue != null) {
                     if (negations[i])
                         observedConstant += observedValue - 1;
                     else
                         observedConstant -= observedValue;
                 } else {
                     int internalVariableIndex =
-                            externalToInternalIndexesMapping.getOrDefault(externalVariableIndexes[i], -1);
+                            externalToInternalIndexesMapping.getOrDefault((int) groundedRulePredicates.get(i).getIdentifier(), -1);
                     if (internalVariableIndex < 0) {
                         internalVariableIndex = nextInternalIndex++;
-                        externalToInternalIndexesMapping.put(externalVariableIndexes[i], internalVariableIndex);
+                        externalToInternalIndexesMapping.put((int) groundedRulePredicates.get(i).getIdentifier(), internalVariableIndex);
                     }
                     internalVariableIndexes.add(internalVariableIndex);
                     internalVariableNegations.add(negations[i]);
@@ -406,7 +378,7 @@ public final class FastProbabilisticSoftLogicProblem {
                         .checkForPointConvergence(false)
                         .checkForObjectiveConvergence(false)
                         .checkForGradientConvergence(false)
-                        .logObjectiveValue(false)
+                        .logObjectiveValue(true)
                         .logGradientNorm(false)
                         .loggingLevel(3);
         for (Constraint constraint : constraints)

@@ -114,7 +114,8 @@ public class LogicManager<T, R> {
             throw new IllegalArgumentException("The provided predicate identifier does not match any of the " +
                                                        "predicates currently stored in this logic manager.");
 
-        return groundedPredicates.get(predicate.getIdentifier()).containsKey(argumentAssignments);
+        return groundedPredicates.get(predicate.getIdentifier()).containsKey(argumentAssignments)
+                || closedPredicateIdentifiers.contains(predicate.getIdentifier());
     }
 
     // TODO: Maybe change return type to long?
