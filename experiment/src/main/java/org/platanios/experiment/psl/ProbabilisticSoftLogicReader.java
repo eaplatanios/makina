@@ -110,8 +110,8 @@ public class ProbabilisticSoftLogicReader {
     }
 
     public static void readGroundingsAndAddToFastManager(
-            LogicManager<Integer, Double> logicManager,
-            VariableType<Integer> variableType,
+            LogicManager<Double> logicManager,
+            EntityType entityType,
             String predicateName,
             boolean isIgnoreValues,
             String filename) throws DataFormatException, IOException {
@@ -140,7 +140,7 @@ public class ProbabilisticSoftLogicReader {
     }
 
     public static void readGroundingsAndAddToFastManager(
-            LogicManager<Integer, Double> logicManager,
+            LogicManager<Double> logicManager,
             String predicateName,
             boolean isIgnoreValues,
             BufferedReader reader) throws DataFormatException, IOException {
@@ -176,17 +176,17 @@ public class ProbabilisticSoftLogicReader {
                 currentGrounding.add(entity);
             }
 
-            Predicate<Integer> predicate = logicManager.getPredicate(predicateName);
+            Predicate predicate = logicManager.getPredicate(predicateName);
             if (isIgnoreValues) {
-                logicManager.addGroundedPredicate(
+                logicManager.addGroundPredicate(
                         predicate,
-                        currentGrounding.build().stream().map(Integer::parseInt).collect(Collectors.toList()),
+                        currentGrounding.build().stream().map(Long::parseLong).collect(Collectors.toList()),
                         logicManager.logic().trueValue()
                 );
             } else {
-                logicManager.addGroundedPredicate(
+                logicManager.addGroundPredicate(
                         predicate,
-                        currentGrounding.build().stream().map(Integer::parseInt).collect(Collectors.toList()),
+                        currentGrounding.build().stream().map(Long::parseLong).collect(Collectors.toList()),
                         value
                 );
             }
@@ -334,7 +334,8 @@ public class ProbabilisticSoftLogicReader {
     }
 
     public static List<FastProbabilisticSoftLogicProblem.Rule> readFastRules(BufferedReader reader,
-                                                                             LogicManager<Integer, Double> logicManager) throws DataFormatException, IOException {
+                                                                             LogicManager<Double> logicManager,
+                                                                             List<Variable> variables) throws DataFormatException, IOException {
 
         List<FastProbabilisticSoftLogicProblem.Rule> result = new ArrayList<>();
 
@@ -439,23 +440,28 @@ public class ProbabilisticSoftLogicReader {
                 List<ProbabilisticSoftLogicProblem.Predicate> body = ImmutableList.copyOf(flattenedBody.Predicates);
                 List<ProbabilisticSoftLogicProblem.Predicate> head = ImmutableList.copyOf(flattenedHead.Predicates);
 
-                List<Formula<Integer>> bodyParts = new ArrayList<>();
+                List<Formula> bodyParts = new ArrayList<>();
                 for (int i = 0; i < body.size(); ++i) {
-                    Predicate<Integer> predicate = logicManager.getPredicate(body.get(i).Name);
-                    List<Variable<Integer>> predicateArguments = body.get(i).Arguments.stream().map(logicManager::getVariable).collect(Collectors.toList());
+                    Predicate predicate = logicManager.getPredicate(body.get(i).Name);
+                    List<Variable> predicateArguments = body.get(i).Arguments
+                            .stream()
+                            .map(argument -> variables.stream().filter(variable ->  variable.getName().equals(argument)).findFirst().get())
+                            .collect(Collectors.toList());
                     if (body.get(i).IsNegated)
-                        bodyParts.add(new Negation<>(new Atom<>(predicate, predicateArguments)));
+                        bodyParts.add(new Negation(new Atom(predicate, predicateArguments)));
                     else
-                        bodyParts.add(new Atom<>(predicate, predicateArguments));
+                        bodyParts.add(new Atom(predicate, predicateArguments));
                 }
-                List<Formula<Integer>> headParts = new ArrayList<>();
+                List<Formula> headParts = new ArrayList<>();
                 for (int i = 0; i < head.size(); ++i) {
-                    Predicate<Integer> predicate = logicManager.getPredicate(head.get(i).Name);
-                    List<Variable<Integer>> predicateArguments = head.get(i).Arguments.stream().map(logicManager::getVariable).collect(Collectors.toList());
+                    Predicate predicate = logicManager.getPredicate(head.get(i).Name);
+                    List<Variable> predicateArguments = head.get(i).Arguments.stream()
+                            .map(argument -> variables.stream().filter(variable -> variable.getName().equals(argument)).findFirst().get())
+                            .collect(Collectors.toList());
                     if (head.get(i).IsNegated)
-                        headParts.add(new Negation<>(new Atom<>(predicate, predicateArguments)));
+                        headParts.add(new Negation(new Atom(predicate, predicateArguments)));
                     else
-                        headParts.add(new Atom<>(predicate, predicateArguments));
+                        headParts.add(new Atom(predicate, predicateArguments));
                 }
                 FastProbabilisticSoftLogicProblem.Rule rule = new FastProbabilisticSoftLogicProblem.Rule(bodyParts, headParts, weight, power);
                 result.add(rule);

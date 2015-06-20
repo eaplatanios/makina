@@ -3,9 +3,11 @@ package org.platanios.experiment.psl.parser;
 import org.junit.Test;
 import org.platanios.experiment.psl.FastProbabilisticSoftLogicProblem;
 import org.platanios.experiment.psl.ProbabilisticSoftLogicReader;
+import org.platanios.learn.logic.DatabaseLogicManager;
 import org.platanios.learn.logic.LogicManager;
 import org.platanios.learn.logic.LukasiewiczLogic;
-import org.platanios.learn.logic.formula.VariableType;
+import org.platanios.learn.logic.formula.EntityType;
+import org.platanios.learn.logic.formula.Variable;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,31 +29,32 @@ public class FastLogicRuleParserTest {
     public void testFastEndToEnd() {
         String experimentName = "uci_trust";
 
-        LogicManager<Integer, Double> logicManager = new LogicManager<>(new LukasiewiczLogic());
-        VariableType<Integer> personType = logicManager.addVariableType("{person}", Integer.class);
+        LogicManager<Double> logicManager = new DatabaseLogicManager<>(new LukasiewiczLogic(), Double.class);
 
-        Set<Integer> personValues = new HashSet<>();
+        Set<Long> personValues = new HashSet<>();
         try {
             Stream<String> lines = Files.lines(Paths.get(LogicRuleParserTest.class.getResource("../" + experimentName + "/knows.txt").getPath()));
             lines.forEach(line -> {
                 String[] lineParts = line.split("\t");
                 for (String linePart : lineParts)
-                    personValues.add(Integer.parseInt(linePart.trim()));
+                    personValues.add(Long.parseLong(linePart.trim()));
             });
             lines = Files.lines(Paths.get(LogicRuleParserTest.class.getResource("../" + experimentName + "/train.txt").getPath()));
             lines.forEach(line -> {
                 String[] lineParts = line.split("\t");
                 for (int partIndex = 0; partIndex < lineParts.length - 1; partIndex++)
-                    personValues.add(Integer.parseInt(lineParts[partIndex].trim()));
+                    personValues.add(Long.parseLong(lineParts[partIndex].trim()));
             });
         } catch (IOException ignored) { }
 
-        logicManager.addVariable("A", new ArrayList<>(personValues), personType);
-        logicManager.addVariable("B", new ArrayList<>(personValues), personType);
-        logicManager.addVariable("C", new ArrayList<>(personValues), personType);
-        logicManager.addVariable("D", new ArrayList<>(personValues), personType);
-        logicManager.addVariable("E", new ArrayList<>(personValues), personType);
-        List<VariableType<Integer>> argumentTypes = new ArrayList<>(2);
+        EntityType personType = logicManager.addEntityType("{person}", new ArrayList<>(personValues));
+        List<Variable> variables = new ArrayList<>();
+        variables.add(new Variable(0, "A", personType));
+        variables.add(new Variable(1, "B", personType));
+        variables.add(new Variable(2, "C", personType));
+        variables.add(new Variable(3, "D", personType));
+        variables.add(new Variable(4, "E", personType));
+        List<EntityType> argumentTypes = new ArrayList<>(2);
         argumentTypes.add(personType);
         argumentTypes.add(personType);
         logicManager.addPredicate("KNOWS", argumentTypes, false);
@@ -70,7 +73,7 @@ public class FastLogicRuleParserTest {
                 BufferedReader trustTrainReader = new BufferedReader(new InputStreamReader(trustTrainStream));
                 BufferedReader trustTestReader = trustTestStream == null ? null : new BufferedReader(new InputStreamReader(trustTestStream))) {
 
-            rules = ProbabilisticSoftLogicReader.readFastRules(modelReader, logicManager);
+            rules = ProbabilisticSoftLogicReader.readFastRules(modelReader, logicManager, variables);
 
             ProbabilisticSoftLogicReader.readGroundingsAndAddToFastManager(logicManager, "KNOWS", true, knowsReader);
 
@@ -84,11 +87,11 @@ public class FastLogicRuleParserTest {
             e.printStackTrace();
         }
 
-        int[] observedIndexes = new int[logicManager.getNumberOfGroundedPredicates()];
-        double[] observedWeights = new double[logicManager.getNumberOfGroundedPredicates()];
-        for (int index = 0; index < logicManager.getNumberOfGroundedPredicates(); index++) {
-            observedIndexes[index] = (int) logicManager.getGroundedPredicates().get(index).getIdentifier();
-            observedWeights[index] = (double) logicManager.getGroundedPredicates().get(index).getValue();
+        int[] observedIndexes = new int[(int) logicManager.getNumberOfGroundPredicates()];
+        double[] observedWeights = new double[(int) logicManager.getNumberOfGroundPredicates()];
+        for (int index = 0; index < logicManager.getNumberOfGroundPredicates(); index++) {
+            observedIndexes[index] = (int) logicManager.getGroundPredicates().get(index).getId();
+            observedWeights[index] = (double) logicManager.getGroundPredicates().get(index).getValue();
         }
 
         FastProbabilisticSoftLogicProblem.Builder problemBuilder =
@@ -102,13 +105,13 @@ public class FastLogicRuleParserTest {
 
         result.keySet().stream()
                 .filter(key -> result.get(key) > Math.sqrt(Double.MIN_VALUE))
-                .forEach(key -> filteredResults.put(logicManager.getGroundedPredicate(key).toString(), result.get(key)));
+                .forEach(key -> filteredResults.put(logicManager.getGroundPredicate(key).toString(), result.get(key)));
 
         long numberOfActivatedGroundings = result.keySet().stream().filter(key -> result.get(key) > 0.01).count();
 
         result.keySet().stream()
                 .filter(key -> result.get(key) > 0.01)
-                .forEach(key -> logicManager.getGroundedPredicate(key).setValue(result.get(key)));
+                .forEach(key -> logicManager.getGroundPredicate(key).setValue(result.get(key)));
 
         System.out.println(result.get(0));
         System.out.println(result.get(1));

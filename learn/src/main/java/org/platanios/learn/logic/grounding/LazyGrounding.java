@@ -5,33 +5,35 @@ import org.platanios.learn.logic.LogicManager;
 import org.platanios.learn.logic.formula.Atom;
 import org.platanios.learn.logic.formula.Formula;
 import org.platanios.learn.logic.formula.Negation;
-import org.platanios.learn.logic.formula.Variable;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class LazyGrounding<T, R> extends Grounding<T, R> {
-    private Set<ActivatedGroundedPredicate<T>> activatedGroundedPredicates = new HashSet<>();
+public class LazyGrounding<R> extends Grounding<R> {
+    private Set<ActivatedGroundedPredicate> activatedGroundedPredicates = new HashSet<>();
 
-    public LazyGrounding(LogicManager<T, R> logicManager) {
+    public LazyGrounding(LogicManager<R> logicManager) {
         super(logicManager);
     }
 
-    public LazyGrounding(LogicManager<T, R> logicManager,
-                         Set<ActivatedGroundedPredicate<T>> activatedGroundedPredicates) {
+    public LazyGrounding(LogicManager<R> logicManager,
+                         Set<ActivatedGroundedPredicate> activatedGroundedPredicates) {
         super(logicManager);
         this.activatedGroundedPredicates = activatedGroundedPredicates;
     }
 
-    public Set<ActivatedGroundedPredicate<T>> getActivatedGroundedPredicates() {
+    public Set<ActivatedGroundedPredicate> getActivatedGroundedPredicates() {
         return activatedGroundedPredicates;
     }
 
     @Override
-    public void ground(List<Formula<T>> formulas) {
+    public void ground(List<Formula> formulas) {
         while (true) {
             int previousNumberOfActivatedGroundedPredicates = activatedGroundedPredicates.size();
             for (int currentFormulaIndex = 0; currentFormulaIndex < formulas.size(); currentFormulaIndex++) {
@@ -47,15 +49,15 @@ public class LazyGrounding<T, R> extends Grounding<T, R> {
     }
 
     @Override
-    boolean pruneGroundingAndSetCurrentPredicateTruthValue(Formula<T> formula,
-                                                           Map<Variable<T>, T> variableAssignments,
+    boolean pruneGroundingAndSetCurrentPredicateTruthValue(Formula formula,
+                                                           Map<Long, Long> variableAssignments,
                                                            List<R> disjunctionComponentsSoFar) {
         if (currentPredicateTruthValue == null) // This is the important thing that PSL is doing while considering only the body variables.
             if (formula instanceof Negation
                     && !activatedGroundedPredicates.contains(
                     new ActivatedGroundedPredicate<>(
-                            ((Atom<T>) ((Negation<T>) formula).getFormula()).getPredicate().getIdentifier(),
-                            ((Atom<T>) ((Negation<T>) formula).getFormula()).getPredicateArguments().stream().map(variableAssignments::get).collect(Collectors.toList())
+                            ((Atom) ((Negation) formula).getFormula()).getPredicate().getId(),
+                            ((Atom) ((Negation) formula).getFormula()).getPredicateArguments().stream().map(variableAssignments::get).collect(Collectors.toList())
                     ))) {
                 return true;
             } else
@@ -69,12 +71,12 @@ public class LazyGrounding<T, R> extends Grounding<T, R> {
     }
 
     @Override
-    void onGroundedPredicateAddition(List<GroundedPredicate<T, R>> groundedRule) {
+    void onGroundedPredicateAddition(List<GroundPredicate<R>> groundedRule) {
         activatedGroundedPredicates.addAll(
                 groundedRule.stream()
                         .filter(rule -> rule.getValue() == null)
                         .map(groundedPredicate ->
-                                     new ActivatedGroundedPredicate<>(groundedPredicate.getPredicate().getIdentifier(),
+                                     new ActivatedGroundedPredicate<>(groundedPredicate.getPredicate().getId(),
                                                                       groundedPredicate.getPredicateArgumentsAssignment()))
                         .collect(Collectors.toList())
         );

@@ -19,7 +19,7 @@ public class ErrorEstimation {
         String filename = "/Users/Anthony/Development/GitHub/org.platanios/learn/src/test/resources/org/platanios/learn/classification/reflection/nell/input/";
 //        filename = "/Users/Anthony/Development/GitHub/org.platanios/learn/src/test/resources/org/platanios/learn/classification/reflection/brain/input/";
         String separator = ",";
-        double[] classificationThresholds = new double[] { 0.05, 0.05, 0.05, 0.05 };
+        double[] classificationThresholds = new double[] { 0.05, 0.05, 0.1, 0.05 };
 //        classificationThresholds = new double[] { 0.5 };
         List<String> domainNames = new ArrayList<>();
         List<boolean[][]> functionOutputs = new ArrayList<>();
@@ -31,7 +31,7 @@ public class ErrorEstimation {
                                                               separator,
                                                               classificationThresholds,
                                                               1,
-                                                              true);
+                                                              false);
                 domainNames.add(data.domainName);
                 functionOutputs.add(data.functionOutputs);
                 trueLabels.add(data.trueLabels);
@@ -46,14 +46,38 @@ public class ErrorEstimation {
                 ErrorEstimationMethod.HIERARCHICAL_COUPLED_ERROR_ESTIMATION_GM
         };
         Double[] alphaValues = new Double[] {
-//                1e0,
+//                1e-6,
+//                1e-5,
+//                1e-4,
+//                1e-3,
+//                1e-2,
+//                1e-1,
+                1e0,
+                1e1,
                 1e2,
-                1e5,
+//                1e3,
+//                1e4,
+//                1e5,
+//                1e6,
+//                1e7,
+//                1e8,
+//                1e9,
+//                1e10,
+//                1e11,
+//                1e12,
+//                1e13,
+//                1e14,
+//                1e15,
 //                1e16
         };
         Double[] gammaValues = new Double[] {
-//                1e3,
-                1e5
+//                1e1,
+//                1e2,
+                1e3,
+                1e4,
+                1e5,
+                1e6,
+                1e7
         };
         runExperiments(domainNames, errorEstimationMethods, alphaValues, gammaValues, functionOutputs, trueLabels, evaluationFunctionOutputs);
     }
@@ -316,6 +340,32 @@ public class ErrorEstimation {
         String line;
         List<boolean[]> classifiersOutputsList = new ArrayList<>();
         List<Boolean> trueLabelsList = new ArrayList<>();
+
+//        switch (domainName) {
+//            case "animal.csv":
+//                classificationThresholds = new double[] { 0.05, 0.05, 0.02, 0.05 };
+//                break;
+//            case "beverage.csv":
+//                classificationThresholds = new double[] { 0.05, 0.5, 0.01, 0.03 };
+//                break;
+//            case "fish.csv":
+//                classificationThresholds = new double[] { 0.05, 0.1, 0.03, 0.05 };
+//                break;
+//            case "food.csv":
+//                classificationThresholds = new double[] { 0.05, 0.1, 0.02, 0.03 };
+//                break;
+//            case "fruit.csv":
+//                classificationThresholds = new double[] { 0.05, 0.1, 0.01, 0.005 };
+//                break;
+//            case "muscle.csv":
+//                classificationThresholds = new double[] { 0.05, 0.1, 0.01, 0.01 };
+//                break;
+//            case "river.csv":
+//                classificationThresholds = new double[] { 0.05, 0.1, 0.01, 0.01 };
+//                break;
+//            default:
+//                classificationThresholds = new double[] { 0.05, 0.1, 0.02, 0.05 };
+//        }
 
         try {
             br = new BufferedReader(new FileReader(file));

@@ -3,16 +3,17 @@ package org.platanios.learn.logic.formula;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class Variable<T> extends Term<T> {
-    private String name;
+public class Variable extends Term {
+    private final String name;
 
-    public Variable(long identifier, VariableType<T> type) {
-        super(identifier, type);
+    public Variable(long id, EntityType type) {
+        super(id, type);
+        this.name = null;
     }
 
-    public Variable<T> setName(String name) {
+    public Variable(long id, String name, EntityType type) {
+        super(id, type);
         this.name = name;
-        return this;
     }
 
     public String getName() {
@@ -24,6 +25,6 @@ public class Variable<T> extends Term<T> {
         if (this.name != null)
             return name;
         else
-            return Long.toString(identifier);
+            return Long.toString(id);
     }
 }

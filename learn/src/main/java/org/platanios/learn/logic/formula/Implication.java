@@ -10,31 +10,31 @@ import java.util.Set;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class Implication<T> extends Formula<T> {
-    private Formula<T> bodyFormula;
-    private Formula<T> headFormula;
+public class Implication extends Formula {
+    private Formula bodyFormula;
+    private Formula headFormula;
 
-    public Implication(Formula<T> bodyFormula, Formula<T> headFormula) {
+    public Implication(Formula bodyFormula, Formula headFormula) {
         this.bodyFormula = bodyFormula;
         this.headFormula = headFormula;
     }
 
     @Override
-    public Set<Variable<T>> getVariables() {
-        Set<Variable<T>> variables = bodyFormula.getVariables();
+    public Set<Variable> getVariables() {
+        Set<Variable> variables = bodyFormula.getVariables();
         variables.addAll(headFormula.getVariables());
         return variables;
     }
 
     @Override
-    public List<Variable<T>> getOrderedVariables() {
-        List<Variable<T>> variables = bodyFormula.getOrderedVariables();
+    public List<Variable> getOrderedVariables() {
+        List<Variable> variables = bodyFormula.getOrderedVariables();
         variables.addAll(headFormula.getOrderedVariables());
         return variables;
     }
 
     @Override
-    public <R> R evaluate(LogicManager<T, R> logicManager, Map<Variable<T>, T> variableAssignments) {
+    public <R> R evaluate(LogicManager<R> logicManager, Map<Long, Long> variableAssignments) {
         List<R> components = new ArrayList<>(2);
         components.add(logicManager.logic().negation(bodyFormula.evaluate(logicManager, variableAssignments)));
         components.add(headFormula.evaluate(logicManager, variableAssignments));
@@ -42,11 +42,11 @@ public class Implication<T> extends Formula<T> {
     }
 
     @Override
-    public Formula<T> toDisjunctiveNormalForm() {
-        List<Formula<T>> disjunctionComponents = new ArrayList<>(2);
-        disjunctionComponents.add(new Negation<>(bodyFormula).toDisjunctiveNormalForm());
+    public Formula toDisjunctiveNormalForm() {
+        List<Formula> disjunctionComponents = new ArrayList<>(2);
+        disjunctionComponents.add(new Negation(bodyFormula).toDisjunctiveNormalForm());
         disjunctionComponents.add(headFormula.toDisjunctiveNormalForm());
-        return new Disjunction<>(disjunctionComponents);
+        return new Disjunction(disjunctionComponents);
     }
 
     @Override

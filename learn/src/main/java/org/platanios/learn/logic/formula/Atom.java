@@ -11,11 +11,11 @@ import java.util.stream.Collectors;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class Atom<T> extends Formula<T> {
-    private Predicate<T> predicate;
-    private List<? extends Term<T>> predicateArguments;
+public class Atom extends Formula {
+    private Predicate predicate;
+    private List<? extends Term> predicateArguments;
 
-    public Atom(Predicate<T> predicate, List<? extends Term<T>> predicateArguments) {
+    public Atom(Predicate predicate, List<? extends Term> predicateArguments) {
         this.predicate = predicate;
         this.predicateArguments = predicateArguments;
         if (!predicate.isValidArgumentAssignment(predicateArguments))
@@ -23,35 +23,35 @@ public class Atom<T> extends Formula<T> {
                                                        "provided predicate requires.");
     }
 
-    public Predicate<T> getPredicate() {
+    public Predicate getPredicate() {
         return predicate;
     }
 
-    public List<? extends Term<T>> getPredicateArguments() {
+    public List<? extends Term> getPredicateArguments() {
         return predicateArguments;
     }
 
     @Override
-    public Set<Variable<T>> getVariables() {
+    public Set<Variable> getVariables() {
         return predicateArguments.stream()
                 .filter(term -> term instanceof Variable)
-                .map(term -> (Variable<T>) term)
+                .map(term -> (Variable) term)
                 .collect(Collectors.toSet());
     }
 
     @Override
-    public List<Variable<T>> getOrderedVariables() {
+    public List<Variable> getOrderedVariables() {
         return predicateArguments.stream()
                 .filter(term -> term instanceof Variable)
-                .map(term -> (Variable<T>) term)
+                .map(term -> (Variable) term)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public <R> R evaluate(LogicManager<T, R> logicManager, Map<Variable<T>, T> variableAssignments) {
-        List<T> predicateArgumentValues = new ArrayList<>();
-        for (Term<T> predicateArgument : predicateArguments) {
-            T variableAssignment = variableAssignments.getOrDefault(predicateArgument, null);
+    public <R> R evaluate(LogicManager<R> logicManager, Map<Long, Long> variableAssignments) {
+        List<Long> predicateArgumentValues = new ArrayList<>();
+        for (Term predicateArgument : predicateArguments) {
+            Long variableAssignment = variableAssignments.getOrDefault(predicateArgument.getId(), null);
             if (variableAssignment != null)
                 predicateArgumentValues.add(variableAssignment);
             else
@@ -62,7 +62,7 @@ public class Atom<T> extends Formula<T> {
     }
 
     @Override
-    public Formula<T> toDisjunctiveNormalForm() {
+    public Formula toDisjunctiveNormalForm() {
         return this;
     }
 

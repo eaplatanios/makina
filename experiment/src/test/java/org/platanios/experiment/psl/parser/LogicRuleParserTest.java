@@ -885,12 +885,12 @@ public class LogicRuleParserTest {
     @Test
     public void testEndToEnd() {
 
-        String experimentName = "epinions_200";
+        String experimentName = "uci_trust";
 
         for (ProbabilisticSoftLogicProblem.GroundingMode groundingMode : ProbabilisticSoftLogicProblem.GroundingMode.values()) {
 
             // for testing one mode
-            if (groundingMode != ProbabilisticSoftLogicProblem.GroundingMode.AsRead) {
+            if (groundingMode != ProbabilisticSoftLogicProblem.GroundingMode.AllPossible) {
                 continue;
             }
 
@@ -909,7 +909,7 @@ public class LogicRuleParserTest {
             File outputStreamFile = new File(outputStreamName);
             ProbabilisticSoftLogicProblem.Builder problemBuilder = null;
             ProbabilisticSoftLogicPredicateManager trainPredicateManager = null;
-            if (outputStreamFile.exists()) {
+            if (false) { // (outputStreamFile.exists()) {
 
                 try (FileInputStream inputStream = new FileInputStream(outputStreamFile)) {
 
@@ -951,7 +951,7 @@ public class LogicRuleParserTest {
                     rules = ProbabilisticSoftLogicReader.readRules(modelReader);
 
                     ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
-                            trainPredicateManager, "KNOWS", groundingMode == ProbabilisticSoftLogicProblem.GroundingMode.AllPossible, false, knowsReader);
+                            trainPredicateManager, "KNOWS", false, false, knowsReader); // groundingMode == ProbabilisticSoftLogicProblem.GroundingMode.AllPossible, false, knowsReader);
 
                     ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(
                             trainPredicateManager, "TRUSTS", false, false, trustTrainReader);
@@ -1021,11 +1021,11 @@ public class LogicRuleParserTest {
 
             RandomWalkSampler<String> randomWalkSampler = randomWalkSamplerBuilder.build();
 
-            Map<Integer, Double> result =
-                    problem.solve(
-                            ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.CUSTOM,
-                            randomWalkSampler, // sub problem selector (sampler)
-                            100); // number of subproblem samples
+            Map<Integer, Double> result = problem.solve();
+//                    problem.solve(
+//                            ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.CUSTOM,
+//                            randomWalkSampler, // sub problem selector (sampler)
+//                            100); // number of subproblem samples
 
 //            Map<Integer, Double> result =
 //                    problem.solve(

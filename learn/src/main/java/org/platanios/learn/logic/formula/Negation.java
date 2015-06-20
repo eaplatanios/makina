@@ -10,50 +10,50 @@ import java.util.Set;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class Negation<T> extends Formula<T> {
-    private Formula<T> formula;
+public class Negation extends Formula {
+    private Formula formula;
 
-    public Negation(Formula<T> formula) {
+    public Negation(Formula formula) {
         this.formula = formula;
     }
 
-    public Formula<T> getFormula() {
+    public Formula getFormula() {
         return formula;
     }
 
     @Override
-    public Set<Variable<T>> getVariables() {
+    public Set<Variable> getVariables() {
         return formula.getVariables();
     }
 
     @Override
-    public List<Variable<T>> getOrderedVariables() {
+    public List<Variable> getOrderedVariables() {
         return formula.getOrderedVariables();
     }
 
     @Override
-    public <R> R evaluate(LogicManager<T, R> logicManager, Map<Variable<T>, T> variableAssignments) {
+    public <R> R evaluate(LogicManager<R> logicManager, Map<Long, Long> variableAssignments) {
         return logicManager.logic().negation(formula.evaluate(logicManager, variableAssignments));
     }
 
     @Override
-    public Formula<T> toDisjunctiveNormalForm() {
+    public Formula toDisjunctiveNormalForm() {
         if (formula instanceof Atom)
             return this;
         else if (formula instanceof Negation)
-            return ((Negation<T>) formula).formula.toDisjunctiveNormalForm();
+            return ((Negation) formula).formula.toDisjunctiveNormalForm();
         else if (formula instanceof Conjunction) {
-            int numberOfComponents = ((Conjunction<T>) formula).getNumberOfComponents();
-            List<Formula<T>> components = new ArrayList<>(numberOfComponents);
+            int numberOfComponents = ((Conjunction) formula).getNumberOfComponents();
+            List<Formula> components = new ArrayList<>(numberOfComponents);
             for (int componentIndex = 0; componentIndex < numberOfComponents; componentIndex++)
-                components.add(new Negation<>(((Conjunction<T>) formula).getComponent(componentIndex)));
-            return new Disjunction<>(components).toDisjunctiveNormalForm();
+                components.add(new Negation(((Conjunction) formula).getComponent(componentIndex)));
+            return new Disjunction(components).toDisjunctiveNormalForm();
         } else if (formula instanceof Disjunction) {
-            int numberOfComponents = ((Disjunction<T>) formula).getNumberOfComponents();
-            List<Formula<T>> components = new ArrayList<>(numberOfComponents);
+            int numberOfComponents = ((Disjunction) formula).getNumberOfComponents();
+            List<Formula> components = new ArrayList<>(numberOfComponents);
             for (int componentIndex = 0; componentIndex < numberOfComponents; componentIndex++)
-                components.add(new Negation<>(((Disjunction<T>) formula).getComponent(componentIndex)));
-            return new Conjunction<>(components).toDisjunctiveNormalForm();
+                components.add(new Negation(((Disjunction) formula).getComponent(componentIndex)));
+            return new Conjunction(components).toDisjunctiveNormalForm();
         } else {
             throw new IllegalStateException("The provided formula type is not supported by this conversion algorithm.");
         }

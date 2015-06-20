@@ -3,7 +3,6 @@ package org.platanios.learn.logic.grounding;
 import org.platanios.learn.logic.LogicManager;
 import org.platanios.learn.logic.formula.Atom;
 import org.platanios.learn.logic.formula.Formula;
-import org.platanios.learn.logic.formula.Variable;
 
 import java.util.HashSet;
 import java.util.List;
@@ -12,13 +11,13 @@ import java.util.Map;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class ExhaustiveGrounding<T, R> extends Grounding<T, R> {
-    public ExhaustiveGrounding(LogicManager<T, R> logicManager) {
+public class ExhaustiveGrounding<R> extends Grounding<R> {
+    public ExhaustiveGrounding(LogicManager<R> logicManager) {
         super(logicManager);
     }
 
     @Override
-    public void ground(List<Formula<T>> formulas) {
+    public void ground(List<Formula> formulas) {
         for (int currentFormulaIndex = 0; currentFormulaIndex < formulas.size(); currentFormulaIndex++) {
             ground(formulas.get(currentFormulaIndex));
             groundedFormulas.put(currentFormulaIndex, new HashSet<>(groundedFormula));
@@ -27,8 +26,8 @@ public class ExhaustiveGrounding<T, R> extends Grounding<T, R> {
     }
 
     @Override
-    boolean pruneGroundingAndSetCurrentPredicateTruthValue(Formula<T> formula,
-                                                           Map<Variable<T>, T> variableAssignments,
+    boolean pruneGroundingAndSetCurrentPredicateTruthValue(Formula formula,
+                                                           Map<Long, Long> variableAssignments,
                                                            List<R> disjunctionComponentsSoFar) {
         if (currentPredicateTruthValue == null)
             disjunctionComponentsSoFar.add(logicManager.logic().falseValue());

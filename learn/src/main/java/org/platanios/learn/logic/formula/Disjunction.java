@@ -10,13 +10,13 @@ import java.util.stream.Collectors;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class Disjunction<T> extends BranchingFormula<T> {
-    public Disjunction(List<Formula<T>> formulas) {
+public class Disjunction extends BranchingFormula {
+    public Disjunction(List<Formula> formulas) {
         super(formulas);
     }
 
     @Override
-    public <R> R evaluate(LogicManager<T, R> logicManager, Map<Variable<T>, T> variableAssignments) {
+    public <R> R evaluate(LogicManager<R> logicManager, Map<Long, Long> variableAssignments) {
         return logicManager.logic().disjunction(formulas.stream()
                                                         .map(formula -> formula.evaluate(logicManager, variableAssignments))
                                                         .collect(Collectors.toList()));
@@ -28,21 +28,21 @@ public class Disjunction<T> extends BranchingFormula<T> {
      * @return
      */
     @Override
-    public Formula<T> toDisjunctiveNormalForm() {
-        return new Disjunction<>(formulas.stream()
+    public Formula toDisjunctiveNormalForm() {
+        return new Disjunction(formulas.stream()
                                        .map(Formula::toDisjunctiveNormalForm)
                                        .collect(Collectors.toList())).flatten();
     }
 
-    public Disjunction<T> flatten() {
-        ArrayList<Formula<T>> disjunctionComponents = new ArrayList<>(formulas.size());
-        for (Formula<T> formula : formulas) {
+    public Disjunction flatten() {
+        ArrayList<Formula> disjunctionComponents = new ArrayList<>(formulas.size());
+        for (Formula formula : formulas) {
             if (formula instanceof Disjunction)
-                disjunctionComponents.addAll(((Disjunction<T>) formula).flatten().formulas);
+                disjunctionComponents.addAll(((Disjunction) formula).flatten().formulas);
             else
                 disjunctionComponents.add(formula);
         }
-        return new Disjunction<>(disjunctionComponents);
+        return new Disjunction(disjunctionComponents);
     }
 
     @Override

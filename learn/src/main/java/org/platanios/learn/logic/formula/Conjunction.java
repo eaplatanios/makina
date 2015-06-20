@@ -10,13 +10,13 @@ import java.util.stream.Collectors;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class Conjunction<T> extends BranchingFormula<T> {
-    public Conjunction(List<Formula<T>> formulas) {
+public class Conjunction extends BranchingFormula {
+    public Conjunction(List<Formula> formulas) {
         super(formulas);
     }
 
     @Override
-    public <R> R evaluate(LogicManager<T, R> logicManager, Map<Variable<T>, T> variableAssignments) {
+    public <R> R evaluate(LogicManager<R> logicManager, Map<Long, Long> variableAssignments) {
         return logicManager.logic().conjunction(formulas.stream()
                                                         .map(formula -> formula.evaluate(logicManager, variableAssignments))
                                                         .collect(Collectors.toList()));
@@ -30,8 +30,8 @@ public class Conjunction<T> extends BranchingFormula<T> {
      * @return
      */
     @Override
-    public Formula<T> toDisjunctiveNormalForm() {
-        List<Formula<T>> components = new ArrayList<>(formulas.size());
+    public Formula toDisjunctiveNormalForm() {
+        List<Formula> components = new ArrayList<>(formulas.size());
         ArrayList<Integer> disjunctionComponents = new ArrayList<>();
         int finalNumberOfComponents = 1;
         for (int componentIndex = 0; componentIndex < formulas.size(); componentIndex++) {
@@ -42,8 +42,8 @@ public class Conjunction<T> extends BranchingFormula<T> {
             }
         }
         if (disjunctionComponents.size() == 0)
-            return new Conjunction<>(components);
-        List<Formula<T>> disjunctiveNormalFormComponents = new ArrayList<>(finalNumberOfComponents);
+            return new Conjunction(components);
+        List<Formula> disjunctiveNormalFormComponents = new ArrayList<>(finalNumberOfComponents);
         int[] indexes = new int[disjunctionComponents.size()];
         for (int finalComponentIndex = 0; finalComponentIndex < finalNumberOfComponents; finalComponentIndex++) {
             for (int j = 0; j < indexes.length; j++) {
@@ -53,28 +53,28 @@ public class Conjunction<T> extends BranchingFormula<T> {
                 else
                     break;
             }
-            List<Formula<T>> conjunctionComponents = new ArrayList<>(formulas.size());
+            List<Formula> conjunctionComponents = new ArrayList<>(formulas.size());
             for (int componentIndex = 0; componentIndex < conjunctionComponents.size(); componentIndex++) {
                 if (components.get(componentIndex) instanceof Disjunction)
-                    conjunctionComponents.add(((Disjunction<T>) components.get(componentIndex))
+                    conjunctionComponents.add(((Disjunction) components.get(componentIndex))
                                                       .getComponent(indexes[componentIndex]));
                 else
                     conjunctionComponents.add(components.get(componentIndex));
             }
-            disjunctiveNormalFormComponents.add(new Conjunction<>(conjunctionComponents).toDisjunctiveNormalForm());
+            disjunctiveNormalFormComponents.add(new Conjunction(conjunctionComponents).toDisjunctiveNormalForm());
         }
-        return new Disjunction<>(disjunctiveNormalFormComponents).flatten();
+        return new Disjunction(disjunctiveNormalFormComponents).flatten();
     }
 
-    public Conjunction<T> flatten() {
-        ArrayList<Formula<T>> conjunctionComponents = new ArrayList<>(formulas.size());
-        for (Formula<T> formula : formulas) {
+    public Conjunction flatten() {
+        ArrayList<Formula> conjunctionComponents = new ArrayList<>(formulas.size());
+        for (Formula formula : formulas) {
             if (formula instanceof Conjunction)
-                conjunctionComponents.addAll(((Conjunction<T>) formula).flatten().formulas);
+                conjunctionComponents.addAll(((Conjunction) formula).flatten().formulas);
             else
                 conjunctionComponents.add(formula);
         }
-        return new Conjunction<>(conjunctionComponents);
+        return new Conjunction(conjunctionComponents);
     }
 
     @Override

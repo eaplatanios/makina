@@ -8,25 +8,25 @@ import java.util.Set;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public abstract class BranchingFormula<T> extends Formula<T> {
-    List<Formula<T>> formulas;
+public abstract class BranchingFormula extends Formula {
+    List<Formula> formulas;
 
-    BranchingFormula(List<Formula<T>> formulas) {
+    BranchingFormula(List<Formula> formulas) {
         this.formulas = formulas;
     }
 
     @Override
-    public Set<Variable<T>> getVariables() {
-        Set<Variable<T>> variables = new HashSet<>();
-        for (Formula<T> formula : formulas)
+    public Set<Variable> getVariables() {
+        Set<Variable> variables = new HashSet<>();
+        for (Formula formula : formulas)
             variables.addAll(formula.getVariables());
         return variables;
     }
 
     @Override
-    public List<Variable<T>> getOrderedVariables() {
-        List<Variable<T>> variables = new ArrayList<>();
-        for (Formula<T> formula : formulas)
+    public List<Variable> getOrderedVariables() {
+        List<Variable> variables = new ArrayList<>();
+        for (Formula formula : formulas)
             variables.addAll(formula.getOrderedVariables());
         return variables;
     }
@@ -35,8 +35,12 @@ public abstract class BranchingFormula<T> extends Formula<T> {
         return formulas.size();
     }
 
-    public Formula<T> getComponent(int index) {
+    public Formula getComponent(int index) {
         return formulas.get(index);
+    }
+
+    public List<Formula> getComponents() {
+        return formulas;
     }
 
     public abstract String operatorToString();

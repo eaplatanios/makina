@@ -12,9 +12,8 @@ import org.platanios.learn.logic.LogicManager;
 import org.platanios.learn.logic.formula.Disjunction;
 import org.platanios.learn.logic.formula.Formula;
 import org.platanios.learn.logic.formula.Negation;
-import org.platanios.learn.logic.grounding.ExhaustiveGrounding;
-import org.platanios.learn.logic.grounding.GroundedPredicate;
-import org.platanios.learn.logic.grounding.Grounding;
+import org.platanios.learn.logic.grounding.FastLazyGrounding;
+import org.platanios.learn.logic.grounding.GroundPredicate;
 import org.platanios.learn.math.matrix.*;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.ConsensusAlternatingDirectionsMethodOfMultipliersSolver;
@@ -72,7 +71,7 @@ public final class FastProbabilisticSoftLogicProblem {
 
     public static class Rule {
 
-        public Rule(List<Formula<Integer>> bodyParts, List<Formula<Integer>> headParts, double weight, double power) {
+        public Rule(List<Formula> bodyParts, List<Formula> headParts, double weight, double power) {
             this.bodyParts = bodyParts;
             this.headParts = headParts;
             this.weight = weight;
@@ -117,28 +116,29 @@ public final class FastProbabilisticSoftLogicProblem {
         public static void addGroundingsToBuilder(
                 List<Rule> rules,
                 Builder builder,
-                LogicManager<Integer, Double> logicManager) {
-            List<Formula<Integer>> ruleFormulas = new ArrayList<>();
+                LogicManager<Double> logicManager) {
+            List<Formula> ruleFormulas = new ArrayList<>();
             for (Rule rule : rules) {
-                List<Formula<Integer>> disjunctionComponents = new ArrayList<>();
+                List<Formula> disjunctionComponents = new ArrayList<>();
                 for (int i = 0; i < rule.bodyParts.size(); ++i)
                     if (rule.bodyParts.get(i) instanceof Negation)
-                        disjunctionComponents.add(((Negation<Integer>) rule.bodyParts.get(i)).getFormula());
+                        disjunctionComponents.add(((Negation) rule.bodyParts.get(i)).getFormula());
                     else
-                        disjunctionComponents.add(new Negation<>(rule.bodyParts.get(i)));
+                        disjunctionComponents.add(new Negation(rule.bodyParts.get(i)));
                 for (int i = 0; i < rule.headParts.size(); ++i)
                     disjunctionComponents.add(rule.headParts.get(i));
-                ruleFormulas.add(new Disjunction<>(disjunctionComponents));
+                ruleFormulas.add(new Disjunction(disjunctionComponents));
             }
-            Grounding<Integer, Double> grounding = new ExhaustiveGrounding<>(logicManager);
-            grounding.ground(ruleFormulas);
+            FastLazyGrounding<Double> grounding = new FastLazyGrounding<>(logicManager);
+//            grounding.ground(ruleFormulas);
+            ruleFormulas = grounding.ground(ruleFormulas);
             for (int ruleIndex = 0; ruleIndex < rules.size(); ruleIndex++) {
-                Disjunction<Integer> ruleFormula = ((Disjunction<Integer>) ruleFormulas.get(ruleIndex));
+                Disjunction ruleFormula = ((Disjunction) ruleFormulas.get(ruleIndex));
                 boolean[] variableNegations = new boolean[ruleFormula.getNumberOfComponents()];
                 for (int i = 0; i < ruleFormula.getNumberOfComponents(); ++i)
                     variableNegations[i] = ruleFormula.getComponent(i) instanceof Negation;
                 if (variableNegations.length != 0)
-                    for (List<GroundedPredicate<Integer, Double>> groundedRulePredicates : grounding.getGroundedFormulas().get(ruleIndex))
+                    for (List<GroundPredicate<Double>> groundedRulePredicates : grounding.getGroundedFormulas().get(ruleIndex))
                         if (Double.isNaN(rules.get(ruleIndex).weight))
                             builder.addRule(groundedRulePredicates, variableNegations, 1, 1000);
                         else
@@ -147,8 +147,8 @@ public final class FastProbabilisticSoftLogicProblem {
         }
 
         // NaN indicates constraint
-        public final List<Formula<Integer>> bodyParts;
-        public final List<Formula<Integer>> headParts;
+        public final List<Formula> bodyParts;
+        public final List<Formula> headParts;
         public final double weight;
         public final double power;
     }
@@ -156,7 +156,7 @@ public final class FastProbabilisticSoftLogicProblem {
     public static final class Builder {
         private final BiMap<Integer, Integer> externalToInternalIndexesMapping;
 
-        private final LogicManager<Integer, Double> logicManager;
+        private final LogicManager<Double> logicManager;
         //private final HashMap<String, FunctionTerm> functionTerms = new HashMap<>();
         private final List<FunctionTerm> functionTerms = new ArrayList<>();
         private final List<Constraint> constraints = new ArrayList<>();
@@ -164,20 +164,20 @@ public final class FastProbabilisticSoftLogicProblem {
 
         private int nextInternalIndex = 0;
 
-        public Builder(LogicManager<Integer, Double> logicManager) {
+        public Builder(LogicManager<Double> logicManager) {
 
             // special case - always add -1 as an Id with observed value 0.
             // predicates which are grounded outside of a closed set will thus have value 0
 //            observedVariableValueBuilder.put(-1, 0.0);
             this.logicManager = logicManager;
-            this.externalToInternalIndexesMapping = HashBiMap.create(logicManager.getNumberOfVariables());
-            this.externalPredicateIdToTerms = new HashMap<>(logicManager.getNumberOfVariables());
+            this.externalToInternalIndexesMapping = HashBiMap.create((int) logicManager.getNumberOfEntityTypes());
+            this.externalPredicateIdToTerms = new HashMap<>((int) logicManager.getNumberOfEntityTypes());
         }
 
         public int getNumberOfTerms() { return this.functionTerms.size(); }
 
         Builder addRule(
-                List<GroundedPredicate<Integer, Double>> groundedRulePredicates,
+                List<GroundPredicate<Double>> groundedRulePredicates,
                 boolean[] variableNegations,
                 double power,
                 double weight) {
@@ -232,7 +232,7 @@ public final class FastProbabilisticSoftLogicProblem {
             return new FastProbabilisticSoftLogicProblem(this);
         }
 
-        private RulePart convertRulePartToInternalRepresentation(List<GroundedPredicate<Integer, Double>> groundedRulePredicates,
+        private RulePart convertRulePartToInternalRepresentation(List<GroundPredicate<Double>> groundedRulePredicates,
                                                                  boolean[] negations) {
             List<Integer> internalVariableIndexes = new ArrayList<>();
             List<Boolean> internalVariableNegations = new ArrayList<>();
@@ -246,10 +246,10 @@ public final class FastProbabilisticSoftLogicProblem {
                         observedConstant -= observedValue;
                 } else {
                     int internalVariableIndex =
-                            externalToInternalIndexesMapping.getOrDefault((int) groundedRulePredicates.get(i).getIdentifier(), -1);
+                            externalToInternalIndexesMapping.getOrDefault((int) groundedRulePredicates.get(i).getId(), -1);
                     if (internalVariableIndex < 0) {
                         internalVariableIndex = nextInternalIndex++;
-                        externalToInternalIndexesMapping.put((int) groundedRulePredicates.get(i).getIdentifier(), internalVariableIndex);
+                        externalToInternalIndexesMapping.put((int) groundedRulePredicates.get(i).getId(), internalVariableIndex);
                     }
                     internalVariableIndexes.add(internalVariableIndex);
                     internalVariableNegations.add(negations[i]);
