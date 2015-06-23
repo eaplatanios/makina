@@ -17,3 +17,17 @@ dependencies {
     compile 'org.mariadb.jdbc:mariadb-java-client:1.1.7'
     compile fileTree(dir: 'lib', include: '*.jar')
 }
+
+task allJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'org.platanios.learn',
+                   'Implementation-Version': version
+    }
+    baseName = project.name + '-all'
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    with jar
+}
