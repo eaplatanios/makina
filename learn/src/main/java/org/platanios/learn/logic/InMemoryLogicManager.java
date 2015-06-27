@@ -1,14 +1,11 @@
 package org.platanios.learn.logic;
 
+import org.platanios.learn.logic.formula.EntityType;
 import org.platanios.learn.logic.formula.Predicate;
 import org.platanios.learn.logic.formula.Variable;
-import org.platanios.learn.logic.formula.EntityType;
 import org.platanios.learn.logic.grounding.GroundPredicate;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -35,11 +32,11 @@ public class InMemoryLogicManager<R> implements LogicManager<R> {
         return logic;
     }
 
-    public EntityType addEntityType(List<Long> allowedValues) {
+    public EntityType addEntityType(Set<Long> allowedValues) {
         return addEntityType(null, allowedValues);
     }
 
-    public EntityType addEntityType(String name, List<Long> allowedValues) {
+    public EntityType addEntityType(String name, Set<Long> allowedValues) {
         EntityType entityType = new EntityType(newEntityTypeIdentifier, name, allowedValues);
         entityTypes.put(newEntityTypeIdentifier++, entityType);
         return entityType;
@@ -149,7 +146,7 @@ public class InMemoryLogicManager<R> implements LogicManager<R> {
         return null;
     }
 
-    public List<Long> getVariableValues(Variable variable) {
+    public Set<Long> getVariableValues(Variable variable) {
         return entityTypes.get(variable.getType().getId()).getAllowedValues();
     }
 

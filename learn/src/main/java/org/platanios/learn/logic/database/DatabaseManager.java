@@ -6,14 +6,15 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.service.ServiceRegistry;
+import org.hibernate.stat.Statistics;
 import org.platanios.learn.logic.Logic;
+import org.platanios.learn.logic.formula.Atom;
 import org.platanios.learn.logic.formula.EntityType;
 import org.platanios.learn.logic.formula.Predicate;
+import org.platanios.learn.logic.formula.Variable;
 import org.platanios.learn.logic.grounding.GroundPredicate;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -38,6 +39,7 @@ public class DatabaseManager {
     private final String hbm2ddlAuto;
 
     private SessionFactory sessionFactory;
+    private Statistics hibernateStatistics;
 
     public static class Builder {
         private String driverClass = "org.mariadb.jdbc.Driver";
@@ -158,9 +160,13 @@ public class DatabaseManager {
                 .applySettings(configuration.getProperties())
                 .build();
         sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+        hibernateStatistics = sessionFactory.getStatistics();
+        hibernateStatistics.setStatisticsEnabled(true);
     }
 
     public void closeSessionFactory() {
+        if (sessionFactory.getCurrentSession().isOpen())
+            sessionFactory.getCurrentSession().close();
         sessionFactory.close();
     }
 
@@ -214,23 +220,23 @@ public class DatabaseManager {
         return numberOfRows;
     }
 
-    public DatabaseEntityType addEntityType(List<Long> allowedValues) {
+    public DatabaseEntityType addEntityType(Set<Long> allowedValues) {
         DatabaseEntityType databaseEntityType = new DatabaseEntityType();
         databaseEntityType.setAllowedValues(
                 allowedValues.stream()
                         .map(value -> new DatabaseEntityTypeValue(databaseEntityType, value))
-                        .collect(Collectors.toList())
+                        .collect(Collectors.toSet())
         );
         insertObject(databaseEntityType);
         return databaseEntityType;
     }
 
-    public DatabaseEntityType addEntityType(String name, List<Long> allowedValues) {
+    public DatabaseEntityType addEntityType(String name, Set<Long> allowedValues) {
         DatabaseEntityType databaseEntityType = new DatabaseEntityType(name);
         databaseEntityType.setAllowedValues(
                 allowedValues.stream()
                         .map(value -> new DatabaseEntityTypeValue(databaseEntityType, value))
-                        .collect(Collectors.toList())
+                        .collect(Collectors.toSet())
         );
         insertObject(databaseEntityType);
         return databaseEntityType;
@@ -276,7 +282,7 @@ public class DatabaseManager {
         return entityType;
     }
 
-    public List<DatabaseEntityTypeValue> getEntityTypeAllowedValues(long id) {
+    public Set<DatabaseEntityTypeValue> getEntityTypeAllowedValues(long id) {
         Session session = sessionFactory.openSession();
         Criteria criteria = session.createCriteria(DatabaseEntityType.class);
         criteria.setFetchMode("allowedValues", FetchMode.JOIN);
@@ -385,6 +391,7 @@ public class DatabaseManager {
         List<DatabaseGroundPredicateArgument> databaseGroundPredicateArguments = new ArrayList<>();
         for (int argumentIndex = 0; argumentIndex < variablesAssignment.size(); argumentIndex++)
             databaseGroundPredicateArguments.add(new DatabaseGroundPredicateArgument(
+                    databasePredicate,
                     databaseGroundPredicate,
                     argumentIndex,
                     variablesAssignment.get(argumentIndex)
@@ -396,25 +403,30 @@ public class DatabaseManager {
 
     @SuppressWarnings("unchecked")
     public boolean checkIfGroundPredicateExists(long predicateId, List<Long> variablesAssignment) {
-        Session session = sessionFactory.openSession();
-        Criteria criteria = session.createCriteria(DatabaseGroundPredicate.class);
-        criteria.setFetchMode("groundPredicateArguments", FetchMode.JOIN);
-        Criteria joinCriteria = criteria.createCriteria("predicate");
-        joinCriteria.add(Restrictions.eq("id", predicateId));
-        List<DatabaseGroundPredicate> databaseGroundPredicates = criteria.list();
-        session.close();
-        for (DatabaseGroundPredicate databaseGroundPredicate : databaseGroundPredicates) {
-            List<DatabaseGroundPredicateArgument> databaseGroundPredicateArguments =
-                    databaseGroundPredicate.getGroundPredicateArguments();
-            boolean groundPredicateFound = true;
-            for (DatabaseGroundPredicateArgument databaseGroundPredicateArgument : databaseGroundPredicateArguments)
-                if (databaseGroundPredicateArgument.getArgumentValue()
-                        != variablesAssignment.get(databaseGroundPredicateArgument.getArgumentIndex()))
-                    groundPredicateFound = false;
-            if (groundPredicateFound)
-                return true;
+        StringBuilder hqlQuery = new StringBuilder("select count(*) from ");
+        for (int argumentId = 0; argumentId < variablesAssignment.size(); argumentId++) {
+            hqlQuery.append("DatabaseGroundPredicateArgument ")
+                    .append("argument_").append(argumentId);
+            if (argumentId < variablesAssignment.size() - 1)
+                hqlQuery.append(", ");
         }
-        return false;
+        hqlQuery.append(" where ");
+        hqlQuery.append("argument_0.predicate.id = ").append(predicateId);
+        for (int argumentId = 0; argumentId < variablesAssignment.size(); argumentId++) {
+            if (argumentId != 0)
+                hqlQuery.append(" and argument_0.groundPredicate.id = ")
+                        .append("argument_").append(argumentId)
+                        .append(".groundPredicate.id");
+            hqlQuery.append(" and argument_").append(argumentId)
+                    .append(".argumentIndex = ").append(argumentId);
+            hqlQuery.append(" and argument_").append(argumentId)
+                    .append(".argumentValue = ").append(variablesAssignment.get(argumentId));
+        }
+        Session session = sessionFactory.openSession();
+        Query query = session.createQuery(hqlQuery.toString());
+        boolean result = (long) query.uniqueResult() > 0;
+        session.close();
+        return result;
     }
 
     public long getNumberOfGroundPredicates() {
@@ -425,6 +437,8 @@ public class DatabaseManager {
     public <R> List<GroundPredicate<R>> getGroundPredicates() {
         Session session = sessionFactory.openSession();
         Criteria criteria = session.createCriteria(DatabaseGroundPredicate.class);
+        criteria.setFetchMode("predicate", FetchMode.JOIN);
+        criteria.setFetchMode("groundPredicateArguments", FetchMode.JOIN);
         List<GroundPredicate<R>> groundPredicates = ((List<DatabaseGroundPredicate>) criteria.list())
                 .stream()
                 .map(this::<R>convertToGroundPredicate)
@@ -447,28 +461,37 @@ public class DatabaseManager {
 
     @SuppressWarnings("unchecked")
     public <R> GroundPredicate<R> getGroundPredicate(long predicateId, List<Long> variablesAssignment) {
-        Session session = sessionFactory.openSession();
-        Criteria criteria = session.createCriteria(DatabaseGroundPredicate.class);
-        criteria.setFetchMode("groundPredicateArguments", FetchMode.JOIN);
-        Criteria joinCriteria = criteria.createCriteria("predicate");
-        joinCriteria.add(Restrictions.eq("id", predicateId));
-        List<DatabaseGroundPredicate> databaseGroundPredicates = criteria.list();
-        for (DatabaseGroundPredicate databaseGroundPredicate : databaseGroundPredicates) {
-            List<DatabaseGroundPredicateArgument> databaseGroundPredicateArguments =
-                    databaseGroundPredicate.getGroundPredicateArguments();
-            boolean groundPredicateFound = true;
-            for (DatabaseGroundPredicateArgument databaseGroundPredicateArgument : databaseGroundPredicateArguments)
-                if (databaseGroundPredicateArgument.getArgumentValue()
-                        != variablesAssignment.get(databaseGroundPredicateArgument.getArgumentIndex()))
-                    groundPredicateFound = false;
-            if (groundPredicateFound) {
-                GroundPredicate<R> groundPredicate = convertToGroundPredicate(databaseGroundPredicate);
-                session.close();
-                return groundPredicate;
-            }
+        StringBuilder hqlQuery = new StringBuilder("from ");
+        for (int argumentId = 0; argumentId < variablesAssignment.size(); argumentId++) {
+            hqlQuery.append("DatabaseGroundPredicateArgument ")
+                    .append("argument_").append(argumentId);
+            if (argumentId < variablesAssignment.size() - 1)
+                hqlQuery.append(", ");
         }
-        session.close();
-        return null;
+        hqlQuery.append(" where ");
+        hqlQuery.append("argument_0.predicate.id = ").append(predicateId);
+        for (int argumentId = 0; argumentId < variablesAssignment.size(); argumentId++) {
+            if (argumentId != 0)
+                hqlQuery.append(" and argument_0.groundPredicate.id = ")
+                        .append("argument_").append(argumentId)
+                        .append(".groundPredicate.id");
+            hqlQuery.append(" and argument_").append(argumentId)
+                    .append(".argumentIndex = ").append(argumentId);
+            hqlQuery.append(" and argument_").append(argumentId)
+                    .append(".argumentValue = ").append(variablesAssignment.get(argumentId));
+        }
+        Session session = sessionFactory.openSession();
+        Query query = session.createQuery(hqlQuery.toString());
+        DatabaseGroundPredicate databaseGroundPredicate =
+                ((DatabaseGroundPredicateArgument) ((Object[]) query.uniqueResult())[0]).getGroundPredicate();
+        if (databaseGroundPredicate != null) {
+            GroundPredicate<R> groundPredicate = convertToGroundPredicate(databaseGroundPredicate);
+            session.close();
+            return groundPredicate;
+        } else {
+            session.close();
+            return null;
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -502,6 +525,85 @@ public class DatabaseManager {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    public <R> PartialGroundedFormula<R> getMatchingGroundPredicates(List<Atom> atoms, Logic<R> logic) {
+        StringBuilder hqlQuery = new StringBuilder("from ");
+        for (int atomId = 0; atomId < atoms.size(); atomId++) {
+            for (int argumentId = 0; argumentId < atoms.get(atomId).getOrderedVariables().size(); argumentId++) {
+                hqlQuery.append("DatabaseGroundPredicateArgument ")
+                        .append("atom_").append(atomId)
+                        .append("_argument_").append(argumentId);
+                if (atomId < atoms.size() - 1
+                        || argumentId != atoms.get(atomId).getOrderedVariables().size() - 1)
+                    hqlQuery.append(", ");
+            }
+        }
+        hqlQuery.append(" where ");
+        for (int atomId = 0; atomId < atoms.size(); atomId++) {
+            if (atomId != 0)
+                hqlQuery.append(" and ");
+            hqlQuery.append("atom_").append(atomId)
+                    .append("_argument_0.predicate.id = ")
+                    .append(atoms.get(atomId).getPredicate().getId());
+            for (int argumentId = 0; argumentId < atoms.get(atomId).getOrderedVariables().size(); argumentId++) {
+                if (argumentId != 0)
+                    hqlQuery.append(" and atom_").append(atomId)
+                            .append("_argument_0.groundPredicate.id = ")
+                            .append("atom_").append(atomId)
+                            .append("_argument_").append(argumentId)
+                            .append(".groundPredicate.id");
+                hqlQuery.append(" and atom_").append(atomId)
+                        .append("_argument_").append(argumentId)
+                        .append(".argumentIndex = ").append(argumentId);
+                Variable currentVariable = atoms.get(atomId).getOrderedVariables().get(argumentId);
+                for (int innerAtomId = atomId + 1; innerAtomId < atoms.size(); innerAtomId++) {
+                    List<Variable> innerVariables = atoms.get(innerAtomId).getOrderedVariables();
+                    for (int innerArgumentId = 0; innerArgumentId < innerVariables.size(); innerArgumentId++)
+                        if (currentVariable.getId() == innerVariables.get(innerArgumentId).getId())
+                            hqlQuery.append(" and atom_").append(atomId)
+                                    .append("_argument_").append(argumentId)
+                                    .append(".argumentValue = ")
+                                    .append("atom_").append(innerAtomId)
+                                    .append("_argument_").append(innerArgumentId)
+                                    .append(".argumentValue");
+                }
+            }
+        }
+        Session session = sessionFactory.openSession();
+        Query query = session.createQuery(hqlQuery.toString());
+        List<Object[]> resultList = query.list();
+        PartialGroundedFormula<R> partialGroundedFormula = new PartialGroundedFormula<>();
+        for (Object[] result : resultList) {
+            partialGroundedFormula.addFormulaUnobservedVariableIndicator(false);
+            List<GroundPredicate<R>> groundFormula = new ArrayList<>();
+            List<R> groundFormulaPartTruthValues = new ArrayList<>();
+            Set<Long> seenVariables = new HashSet<>();
+            int resultIndex = 0;
+            for (Atom atom : atoms) {
+                DatabaseGroundPredicate currentGroundPredicate =
+                        ((DatabaseGroundPredicateArgument) result[resultIndex]).getGroundPredicate();
+                groundFormula.add(convertToGroundPredicate(currentGroundPredicate));
+                R truthValue = getGroundPredicateValue(currentGroundPredicate);
+                groundFormulaPartTruthValues.add(truthValue == null ? logic.falseValue() : logic.negation(truthValue));
+                for (int argumentId = 0; argumentId < atom.getOrderedVariables().size(); argumentId++) {
+                    Long currentVariableId = atom.getOrderedVariables().get(argumentId).getId();
+                    if (!seenVariables.contains(currentVariableId)) {
+                        partialGroundedFormula.addGroundVariable(
+                                currentVariableId,
+                                ((DatabaseGroundPredicateArgument) result[resultIndex]).getArgumentValue()
+                        );
+                        seenVariables.add(currentVariableId);
+                    }
+                    resultIndex++;
+                }
+            }
+            partialGroundedFormula.addGroundFormula(groundFormula);
+            partialGroundedFormula.addGroundFormulaTruthValue(logic.disjunction(groundFormulaPartTruthValues));
+        }
+        session.close();
+        return partialGroundedFormula;
+    }
+
     public long getNumberOfEntityTypes() {
         return getNumberOfRows(DatabaseEntityType.class);
     }
@@ -516,7 +618,7 @@ public class DatabaseManager {
                               databaseEntityType.getAllowedValues()
                                       .stream()
                                       .map(DatabaseEntityTypeValue::getValue)
-                                      .collect(Collectors.toList()));
+                                      .collect(Collectors.toSet()));
     }
 
     private Predicate convertToPredicate(DatabasePredicate databasePredicate) {
@@ -531,7 +633,7 @@ public class DatabaseManager {
                                                                  databaseEntityType.getAllowedValues()
                                                                          .stream()
                                                                          .map(DatabaseEntityTypeValue::getValue)
-                                                                         .collect(Collectors.toList())))
+                                                                         .collect(Collectors.toSet())))
                                      .collect(Collectors.toList()));
     }
 
@@ -556,7 +658,7 @@ public class DatabaseManager {
                                                                   databaseEntityType.getAllowedValues()
                                                                           .stream()
                                                                           .map(DatabaseEntityTypeValue::getValue)
-                                                                          .collect(Collectors.toList())))
+                                                                          .collect(Collectors.toSet())))
                                       .collect(Collectors.toList())),
                 argumentsAssignment,
                 getGroundPredicateValue(databaseGroundPredicate)
@@ -580,5 +682,50 @@ public class DatabaseManager {
             else
                 throw new IllegalStateException("Unsupported logic value type encountered.");
         return groundPredicateValue;
+    }
+
+    public class PartialGroundedFormula<R> {
+        Map<Long, List<Long>> groundVariables = new HashMap<>(); // Maps from variable ID to list of grounded values -- the list is ordered in the same way as the groundedFormula list.
+        List<List<GroundPredicate<R>>> groundFormula = new ArrayList<>(); // List of groundings -- each grounding is a set of grounded predicates representing the formula terms.
+        List<R> groundFormulaTruthValues = new ArrayList<>();
+        List<Boolean> formulaUnobservedVariableIndicators = new ArrayList<>();
+
+        public PartialGroundedFormula() {
+
+        }
+
+        public void addGroundVariable(Long variableId, Long value) {
+            if (!groundVariables.containsKey(variableId))
+                groundVariables.put(variableId, new ArrayList<>());
+            groundVariables.get(variableId).add(value);
+        }
+
+        public void addGroundFormula(List<GroundPredicate<R>> groundFormula) {
+            this.groundFormula.add(groundFormula);
+        }
+
+        public void addGroundFormulaTruthValue(R truthValue) {
+            groundFormulaTruthValues.add(truthValue);
+        }
+
+        public void addFormulaUnobservedVariableIndicator(boolean unobservedVariableIndicator) {
+            formulaUnobservedVariableIndicators.add(unobservedVariableIndicator);
+        }
+
+        public Map<Long, List<Long>> getGroundVariables() {
+            return groundVariables;
+        }
+
+        public List<List<GroundPredicate<R>>> getGroundFormula() {
+            return groundFormula;
+        }
+
+        public List<R> getGroundFormulaTruthValues() {
+            return groundFormulaTruthValues;
+        }
+
+        public List<Boolean> getFormulaUnobservedVariableIndicators() {
+            return formulaUnobservedVariableIndicators;
+        }
     }
 }

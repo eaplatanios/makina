@@ -8,7 +8,9 @@ import org.platanios.learn.logic.LukasiewiczLogic;
 import org.platanios.learn.logic.formula.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -16,7 +18,7 @@ import java.util.List;
 public class ExhaustiveGroundingTest {
     @Test
     public void testAtomGrounding() {
-        List<Long> allowedValues = new ArrayList<>();
+        Set<Long> allowedValues = new HashSet<>();
         allowedValues.add((long) 0);
         allowedValues.add((long) 1);
         allowedValues.add((long) 2);
@@ -48,7 +50,7 @@ public class ExhaustiveGroundingTest {
 
     @Test
     public void testNegationGrounding() {
-        List<Long> allowedValues = new ArrayList<>();
+        Set<Long> allowedValues = new HashSet<>();
         allowedValues.add((long) 0);
         allowedValues.add((long) 1);
         allowedValues.add((long) 2);
@@ -80,7 +82,7 @@ public class ExhaustiveGroundingTest {
 
     @Test
     public void testDisjunctionGrounding() {
-        List<Long> allowedValues = new ArrayList<>();
+        Set<Long> allowedValues = new HashSet<>();
         allowedValues.add((long) 0);
         allowedValues.add((long) 1);
         allowedValues.add((long) 2);
@@ -123,7 +125,7 @@ public class ExhaustiveGroundingTest {
 
     @Test
     public void testDisjunctionWithNegationGrounding() {
-        List<Long> allowedValues = new ArrayList<>();
+        Set<Long> allowedValues = new HashSet<>();
         allowedValues.add((long) 0);
         allowedValues.add((long) 1);
         allowedValues.add((long) 2);

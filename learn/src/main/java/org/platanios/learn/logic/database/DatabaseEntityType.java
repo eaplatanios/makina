@@ -1,7 +1,7 @@
 package org.platanios.learn.logic.database;
 
 import javax.persistence.*;
-import java.util.List;
+import java.util.Set;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -18,7 +18,7 @@ public class DatabaseEntityType {
     private long id;
     /** Note that this field is not used for checking equality between different argument type objects. */
     private String name;
-    private List<DatabaseEntityTypeValue> allowedValues;
+    private Set<DatabaseEntityTypeValue> allowedValues;
 
     protected DatabaseEntityType() { }
 
@@ -48,11 +48,11 @@ public class DatabaseEntityType {
     }
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "entityType", cascade = CascadeType.ALL, orphanRemoval = true)
-    public List<DatabaseEntityTypeValue> getAllowedValues() {
+    public Set<DatabaseEntityTypeValue> getAllowedValues() {
         return allowedValues;
     }
 
-    public void setAllowedValues(List<DatabaseEntityTypeValue> allowedValues) {
+    public void setAllowedValues(Set<DatabaseEntityTypeValue> allowedValues) {
         this.allowedValues = allowedValues;
     }
 }

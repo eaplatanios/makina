@@ -8,6 +8,7 @@ import org.platanios.learn.logic.LogicManager;
 import org.platanios.learn.logic.LukasiewiczLogic;
 import org.platanios.learn.logic.formula.EntityType;
 import org.platanios.learn.logic.formula.Variable;
+import org.platanios.learn.logic.grounding.GroundPredicate;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -47,7 +48,7 @@ public class FastLogicRuleParserTest {
             });
         } catch (IOException ignored) { }
 
-        EntityType personType = logicManager.addEntityType("{person}", new ArrayList<>(personValues));
+        EntityType personType = logicManager.addEntityType("{person}", new HashSet<>(personValues));
         List<Variable> variables = new ArrayList<>();
         variables.add(new Variable(0, "A", personType));
         variables.add(new Variable(1, "B", personType));
@@ -89,9 +90,10 @@ public class FastLogicRuleParserTest {
 
         int[] observedIndexes = new int[(int) logicManager.getNumberOfGroundPredicates()];
         double[] observedWeights = new double[(int) logicManager.getNumberOfGroundPredicates()];
+        List<GroundPredicate<Double>> groundPredicates = logicManager.getGroundPredicates();
         for (int index = 0; index < logicManager.getNumberOfGroundPredicates(); index++) {
-            observedIndexes[index] = (int) logicManager.getGroundPredicates().get(index).getId();
-            observedWeights[index] = (double) logicManager.getGroundPredicates().get(index).getValue();
+            observedIndexes[index] = (int) groundPredicates.get(index).getId();
+            observedWeights[index] = (double) groundPredicates.get(index).getValue();
         }
 
         FastProbabilisticSoftLogicProblem.Builder problemBuilder =

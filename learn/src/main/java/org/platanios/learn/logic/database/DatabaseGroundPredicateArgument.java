@@ -10,21 +10,29 @@ import javax.validation.constraints.NotNull;
 @Table(name = "GroundPredicateArguments",
         catalog = "learn_logic",
         uniqueConstraints = @UniqueConstraint(
-                name = "uk_predicate_argument",
-                columnNames = {"predicate_id", "argument_index"}
+                name = "uk_ground_predicate_argument_index",
+                columnNames = {"ground_predicate_id", "argument_index"}
         ),
-        indexes = @Index(columnList = "predicate_id", name = "predicate_id_index"))
+        indexes = {
+                @Index(columnList = "predicate_id", name = "predicate_id_index"),
+                @Index(columnList = "ground_predicate_id", name = "ground_predicate_id_index"),
+                @Index(columnList = "argument_index", name = "argument_index_index"),
+                @Index(columnList = "argument_value", name = "argument_value_index")
+        })
 public class DatabaseGroundPredicateArgument {
     private long id;
+    private DatabasePredicate predicate;
     private DatabaseGroundPredicate groundPredicate;
     private int argumentIndex;
     private long argumentValue;
 
-    private DatabaseGroundPredicateArgument() { }
+    protected DatabaseGroundPredicateArgument() { }
 
-    protected DatabaseGroundPredicateArgument(DatabaseGroundPredicate groundPredicate,
+    protected DatabaseGroundPredicateArgument(DatabasePredicate predicate,
+                                              DatabaseGroundPredicate groundPredicate,
                                               int argumentIndex,
                                               long argumentValue) {
+        setPredicate(predicate);
         setGroundPredicate(groundPredicate);
         setArgumentIndex(argumentIndex);
         setArgumentValue(argumentValue);
@@ -42,7 +50,18 @@ public class DatabaseGroundPredicateArgument {
     }
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "predicate_id", nullable = false, foreignKey = @ForeignKey(name = "fk_ground_id"))
+    @JoinColumn(name = "predicate_id", nullable = false, foreignKey = @ForeignKey(name = "fk_predicate_id"))
+    @NotNull
+    public DatabasePredicate getPredicate() {
+        return predicate;
+    }
+
+    public void setPredicate(DatabasePredicate predicate) {
+        this.predicate = predicate;
+    }
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "ground_predicate_id", nullable = false, foreignKey = @ForeignKey(name = "fk_ground_predicate_id"))
     @NotNull
     public DatabaseGroundPredicate getGroundPredicate() {
         return groundPredicate;

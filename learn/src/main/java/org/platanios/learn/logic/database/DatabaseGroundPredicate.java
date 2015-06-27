@@ -17,7 +17,7 @@ public class DatabaseGroundPredicate {
     private Class valueClass;
     private List<DatabaseGroundPredicateArgument> groundPredicateArguments;
 
-    private DatabaseGroundPredicate() { }
+    protected DatabaseGroundPredicate() { }
 
     protected DatabaseGroundPredicate(DatabasePredicate predicate, String value, Class valueClass) {
         setPredicate(predicate);
