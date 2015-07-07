@@ -1,12 +1,14 @@
 package org.platanios.learn.logic;
 
 import org.platanios.learn.logic.database.*;
+import org.platanios.learn.logic.formula.Atom;
 import org.platanios.learn.logic.formula.EntityType;
 import org.platanios.learn.logic.formula.Predicate;
 import org.platanios.learn.logic.formula.Variable;
 import org.platanios.learn.logic.grounding.GroundPredicate;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -16,6 +18,8 @@ public class DatabaseLogicManager<R> implements LogicManager<R> {
     private final Logic<R> logic;
     private final Class<R> valueClass;
     private final DatabaseManager databaseManager;
+
+//    private final Map<Long, Set<Long>> entityTypeAllowedValues = new HashMap<>();
 
     public DatabaseLogicManager(Logic<R> logic, Class<R> valueClass) {
         this.logic = logic;
@@ -33,18 +37,18 @@ public class DatabaseLogicManager<R> implements LogicManager<R> {
         return logic;
     }
 
-    public EntityType addEntityType(List<Long> allowedValues) {
+    public EntityType addEntityType(Set<Long> allowedValues) {
         return addEntityType(null, allowedValues);
     }
 
-    public EntityType addEntityType(String name, List<Long> allowedValues) {
+    public EntityType addEntityType(String name, Set<Long> allowedValues) {
         DatabaseEntityType databaseEntityType = databaseManager.addEntityType(name, allowedValues);
         return new EntityType(databaseEntityType.getId(),
                               databaseEntityType.getName(),
                               databaseEntityType.getAllowedValues()
                                       .stream()
                                       .map(DatabaseEntityTypeValue::getValue)
-                                      .collect(Collectors.toList()));
+                                      .collect(Collectors.toSet()));
     }
 
     public Predicate addPredicate(List<EntityType> argumentTypes, boolean closed) {
@@ -64,7 +68,7 @@ public class DatabaseLogicManager<R> implements LogicManager<R> {
                                                                  databaseEntityType.getAllowedValues()
                                                                          .stream()
                                                                          .map(DatabaseEntityTypeValue::getValue)
-                                                                         .collect(Collectors.toList())))
+                                                                         .collect(Collectors.toSet())))
                                      .collect(Collectors.toList()));
     }
 
@@ -114,11 +118,11 @@ public class DatabaseLogicManager<R> implements LogicManager<R> {
         return databaseManager.getEntityType(name);
     }
 
-    public List<Long> getVariableValues(Variable variable) {
+    public Set<Long> getVariableValues(Variable variable) {
         return databaseManager.getEntityTypeAllowedValues(variable.getType().getId())
                 .stream()
                 .map(DatabaseEntityTypeValue::getValue)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
     }
 
     public Predicate getPredicate(long identifier) {
@@ -143,5 +147,9 @@ public class DatabaseLogicManager<R> implements LogicManager<R> {
     @SuppressWarnings("unchecked")
     public R getPredicateAssignmentTruthValue(Predicate predicate, List<Long> variablesAssignment) {
         return databaseManager.getPredicateAssignmentTruthValue(predicate, variablesAssignment, logic);
+    }
+
+    public DatabaseManager.PartialGroundedFormula<R> getMatchingGroundPredicates(List<Atom> atoms) {
+        return databaseManager.getMatchingGroundPredicates(atoms, logic);
     }
 }

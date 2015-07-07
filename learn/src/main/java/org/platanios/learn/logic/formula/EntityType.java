@@ -1,6 +1,6 @@
 package org.platanios.learn.logic.formula;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -9,15 +9,15 @@ public class EntityType {
     private final long id;
     /** Note that this field is not used for checking equality between different argument type objects. */
     private final String name;
-    private final List<Long> allowedValues;
+    private final Set<Long> allowedValues;
 
-    public EntityType(long id, List<Long> allowedValues) {
+    public EntityType(long id, Set<Long> allowedValues) {
         this.id = id;
         this.name = null;
         this.allowedValues = allowedValues;
     }
 
-    public EntityType(long id, String name, List<Long> allowedValues) {
+    public EntityType(long id, String name, Set<Long> allowedValues) {
         this.id = id;
         this.name = name;
         this.allowedValues = allowedValues;
@@ -31,7 +31,7 @@ public class EntityType {
         return name;
     }
 
-    public List<Long> getAllowedValues() {
+    public Set<Long> getAllowedValues() {
         return allowedValues;
     }
 

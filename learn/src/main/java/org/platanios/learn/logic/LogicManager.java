@@ -6,14 +6,15 @@ import org.platanios.learn.logic.formula.Variable;
 import org.platanios.learn.logic.grounding.GroundPredicate;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
 public interface LogicManager<R> {
     Logic<R> logic();
-    EntityType addEntityType(List<Long> allowedValues);
-    EntityType addEntityType(String name, List<Long> allowedValues);
+    EntityType addEntityType(Set<Long> allowedValues);
+    EntityType addEntityType(String name, Set<Long> allowedValues);
     Predicate addPredicate(List<EntityType> argumentTypes, boolean closed);
     Predicate addPredicate(String name, List<EntityType> argumentTypes, boolean closed);
     GroundPredicate<R> addGroundPredicate(Predicate predicate, List<Long> argumentAssignments);
@@ -26,7 +27,7 @@ public interface LogicManager<R> {
     long getNumberOfEntityTypes();
     EntityType getEntityType(long identifier);
     EntityType getEntityType(String name);
-    List<Long> getVariableValues(Variable variable);
+    Set<Long> getVariableValues(Variable variable);
     Predicate getPredicate(long identifier);
     Predicate getPredicate(String name);
     List<Predicate> getClosedPredicates();

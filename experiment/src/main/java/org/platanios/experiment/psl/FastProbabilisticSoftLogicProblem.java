@@ -8,11 +8,12 @@ import com.google.common.primitives.Ints;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.platanios.learn.logic.DatabaseLogicManager;
 import org.platanios.learn.logic.LogicManager;
 import org.platanios.learn.logic.formula.Disjunction;
 import org.platanios.learn.logic.formula.Formula;
 import org.platanios.learn.logic.formula.Negation;
-import org.platanios.learn.logic.grounding.FastLazyGrounding;
+import org.platanios.learn.logic.grounding.DatabaseLazyGrounding;
 import org.platanios.learn.logic.grounding.GroundPredicate;
 import org.platanios.learn.math.matrix.*;
 import org.platanios.learn.math.matrix.Vector;
@@ -129,7 +130,7 @@ public final class FastProbabilisticSoftLogicProblem {
                     disjunctionComponents.add(rule.headParts.get(i));
                 ruleFormulas.add(new Disjunction(disjunctionComponents));
             }
-            FastLazyGrounding<Double> grounding = new FastLazyGrounding<>(logicManager);
+            DatabaseLazyGrounding<Double> grounding = new DatabaseLazyGrounding<>((DatabaseLogicManager<Double>) logicManager);
 //            grounding.ground(ruleFormulas);
             ruleFormulas = grounding.ground(ruleFormulas);
             for (int ruleIndex = 0; ruleIndex < rules.size(); ruleIndex++) {

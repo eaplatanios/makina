@@ -1,6 +1,7 @@
 package org.platanios.learn.logic.grounding;
 
-import org.platanios.learn.logic.LogicManager;
+import org.platanios.learn.logic.DatabaseLogicManager;
+import org.platanios.learn.logic.database.DatabaseManager;
 import org.platanios.learn.logic.formula.*;
 
 import java.util.*;
@@ -9,8 +10,8 @@ import java.util.stream.Collectors;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class FastLazyGrounding<R> {
-    final LogicManager<R> logicManager;
+public class DatabaseLazyGrounding<R> {
+    final DatabaseLogicManager<R> logicManager;
 
     Map<Long, Set<GroundPredicate<R>>> activatedGroundedPredicates = new HashMap<>(); // Predicate ID to set of grounded predicates with that predicate ID.
     Map<Long, List<Long>> groundedVariables = new HashMap<>(); // Maps from variable ID to list of grounded values -- the list is ordered in the same way as the groundedFormula list.
@@ -20,7 +21,7 @@ public class FastLazyGrounding<R> {
 
     Map<Integer, Set<List<GroundPredicate<R>>>> groundedFormulas = new HashMap<>();
 
-    public FastLazyGrounding(LogicManager<R> logicManager) {
+    public DatabaseLazyGrounding(DatabaseLogicManager<R> logicManager) {
         this.logicManager = logicManager;
         for (GroundPredicate<R> groundPredicate : logicManager.getGroundPredicates()) {
             if (!activatedGroundedPredicates.containsKey(groundPredicate.getPredicate().getId()))
@@ -30,29 +31,42 @@ public class FastLazyGrounding<R> {
     }
 
     public List<Formula> ground(List<Formula> formulas) {
+        List<List<Atom>> negationAtoms = new ArrayList<>();
+        List<Formula> remainingAtomsDisjunction = new ArrayList<>();
         List<Formula> preprocessedFormulas = new ArrayList<>();
         for (Formula formula : formulas) {
             formula = formula.toDisjunctiveNormalForm();
+            List<Atom> formulaNegationAtoms = new ArrayList<>();
+            List<Formula> formulaRemainingAtoms = new ArrayList<>();
             List<Formula> disjunctionComponents = new ArrayList<>();
-            if (formula instanceof Atom || formula instanceof Negation) {
+            if (formula instanceof Atom) {
+                remainingAtomsDisjunction.add(formula);
+                disjunctionComponents.add(formula);
+            } else if (formula instanceof Negation) {
+                formulaNegationAtoms.add((Atom) ((Negation) formula).getFormula());
                 disjunctionComponents.add(formula);
             } else if (formula instanceof Disjunction) {
+                formulaNegationAtoms.addAll(((Disjunction) formula).getComponents().stream().filter(innerFormula -> innerFormula instanceof Negation).map(innerFormula -> (Atom) ((Negation) innerFormula).getFormula()).collect(Collectors.toList()));
+                formulaRemainingAtoms.addAll(((Disjunction) formula).getComponents().stream().filter(innerFormula -> !(innerFormula instanceof Negation)).collect(Collectors.toList()));
                 disjunctionComponents.addAll(((Disjunction) formula).getComponents().stream().filter(innerFormula -> innerFormula instanceof Negation).collect(Collectors.toList()));
-                disjunctionComponents.addAll(((Disjunction) formula).getComponents().stream().filter(innerFormula -> !(innerFormula instanceof Negation)).collect(Collectors.toList()));
+                disjunctionComponents.addAll(formulaRemainingAtoms);
             } else {
                 throw new IllegalStateException("The formula being grounded was not converted to valid disjunctive " +
                                                         "normal form for some unknown reason.");
             }
+            negationAtoms.add(formulaNegationAtoms);
+            remainingAtomsDisjunction.add(new Disjunction(formulaRemainingAtoms));
             preprocessedFormulas.add(new Disjunction(disjunctionComponents));
         }
         int previousNumberOfActivatedGroundedPredicates = 0;
         for (Map.Entry<Long, Set<GroundPredicate<R>>> activatedGroundedPredicate : activatedGroundedPredicates.entrySet())
             previousNumberOfActivatedGroundedPredicates += activatedGroundedPredicate.getValue().size();
         while (true) {
-            for (int currentFormulaIndex = 0; currentFormulaIndex < preprocessedFormulas.size(); currentFormulaIndex++) {
+            for (int currentFormulaIndex = 0; currentFormulaIndex < remainingAtomsDisjunction.size(); currentFormulaIndex++) {
+                DatabaseManager.PartialGroundedFormula<R> partialGroundedFormula = logicManager.getMatchingGroundPredicates(negationAtoms.get(currentFormulaIndex));
                 if (!groundedFormulas.containsKey(currentFormulaIndex))
                     groundedFormulas.put(currentFormulaIndex, new HashSet<>());
-                ground(preprocessedFormulas.get(currentFormulaIndex));
+                ground(partialGroundedFormula, remainingAtomsDisjunction.get(currentFormulaIndex));
                 System.out.println("Generated " + groundedFormula.size() + " groundings for rule " + currentFormulaIndex); // TODO: Use a logger for this part.
                 groundedFormulas.get(currentFormulaIndex).addAll(groundedFormula);
             }
@@ -66,11 +80,11 @@ public class FastLazyGrounding<R> {
         return preprocessedFormulas;
     }
 
-    private void ground(Formula formula) {
-        groundedVariables = new HashMap<>();
-        groundedFormula = new ArrayList<>();
-        groundedFormulaTruthValues = new ArrayList<>();
-        formulaUnobservedVariableIndicators = new ArrayList<>();
+    private void ground(DatabaseManager.PartialGroundedFormula<R> partialGroundedFormula, Formula formula) {
+        groundedVariables = partialGroundedFormula.getGroundVariables();
+        groundedFormula = partialGroundedFormula.getGroundFormula();
+        groundedFormulaTruthValues = partialGroundedFormula.getGroundFormulaTruthValues();
+        formulaUnobservedVariableIndicators = partialGroundedFormula.getFormulaUnobservedVariableIndicators();
         ground(formula, 0);
 //        List<List<T>> filteredPartialVariableGroundings = new ArrayList<>();
 //        List<List<GroundedPredicate<T, R>>> filteredGroundedPredicates = new ArrayList<>();

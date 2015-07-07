@@ -10,11 +10,11 @@ import java.util.List;
 @Entity
 @Table(name = "Predicates",
         catalog = "learn_logic",
+        uniqueConstraints = @UniqueConstraint(name = "uk_name", columnNames = "name"),
         indexes = {
                 @Index(columnList = "id", name = "id_index"),
                 @Index(columnList = "name", name = "name_index")
-        },
-        uniqueConstraints = @UniqueConstraint(name = "uk_name", columnNames = "name"))
+        })
 public class DatabasePredicate {
     private long id;
     private String name;
