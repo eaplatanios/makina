@@ -1,19 +1,19 @@
 package org.platanios.learn.evaluation;
 
 import javafx.application.Application;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Scene;
 import javafx.scene.chart.AreaChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
-import javafx.scene.image.WritableImage;
+import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
+import javafx.util.converter.NumberStringConverter;
 import org.platanios.learn.data.DataSet;
 import org.platanios.learn.data.PredictedDataInstance;
+import org.platanios.learn.math.MathUtilities;
 import org.platanios.learn.math.matrix.Vector;
 
-import javax.imageio.ImageIO;
-import java.io.File;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -24,7 +24,9 @@ import java.util.function.Function;
  * @author Emmanouil Antonios Platanios
  */
 public class ReceiverOperatingCharacteristic<T extends Vector, S> {
+    private final double epsilon = MathUtilities.computeMachineEpsilonDouble();
     private final List<Curve> curves = new ArrayList<>();
+    private final List<Double> areaUnderCurves = new ArrayList<>();
 
     public ReceiverOperatingCharacteristic() { }
 
@@ -52,9 +54,10 @@ public class ReceiverOperatingCharacteristic<T extends Vector, S> {
             else
                 trueNegativesNumber++;
         points.add(
-                new CurvePoint((double) truePositivesNumber / (truePositivesNumber + falseNegativesNumber + 1),
-                               (double) falsePositivesNumber / (falsePositivesNumber + trueNegativesNumber + 1))
+                new CurvePoint(truePositivesNumber / (truePositivesNumber + falseNegativesNumber + epsilon),
+                               falsePositivesNumber / (falsePositivesNumber + trueNegativesNumber + epsilon))
         );
+        double areaUnderCurve = 0;
         for (PredictedDataInstance<T, S> prediction : predictions) {
             if (groundTruth.apply(prediction)) {
                 truePositivesNumber++;
@@ -64,12 +67,20 @@ public class ReceiverOperatingCharacteristic<T extends Vector, S> {
                 trueNegativesNumber--;
             }
             points.add(
-                    new CurvePoint((double) truePositivesNumber / (truePositivesNumber + falseNegativesNumber + 1),
-                                   (double) falsePositivesNumber / (falsePositivesNumber + trueNegativesNumber + 1))
+                    new CurvePoint(truePositivesNumber / (truePositivesNumber + falseNegativesNumber + epsilon),
+                                   falsePositivesNumber / (falsePositivesNumber + trueNegativesNumber + epsilon))
             );
+            int k = points.size() - 1;
+            areaUnderCurve += 0.5
+                    * (points.get(k).falsePositiveRate - points.get(k - 1).falsePositiveRate)
+                    * (points.get(k).truePositiveRate + points.get(k - 1).truePositiveRate);
         }
         points.add(new CurvePoint(1, 1));
+        areaUnderCurve += 0.5
+                * (1 - points.get(points.size() - 2).falsePositiveRate)
+                * (1 + points.get(points.size() - 2).truePositiveRate);
         curves.add(new Curve(name, points));
+        areaUnderCurves.add(areaUnderCurve);
     }
 
     public List<Curve> getCurves() {
@@ -77,7 +88,7 @@ public class ReceiverOperatingCharacteristic<T extends Vector, S> {
     }
 
     public void plotCurves() {
-        Plot.addCurves(curves);
+        Plot.addCurves(curves, areaUnderCurves);
         Application.launch(Plot.class);
     }
 
@@ -119,14 +130,17 @@ public class ReceiverOperatingCharacteristic<T extends Vector, S> {
 
     public static class Plot extends Application {
         private static final List<Curve> curves = new ArrayList<>();
+        private static final List<Double> areaUnderCurves = new ArrayList<>();
+
         private final NumberAxis xAxis = new NumberAxis("False Positive Rate", 0, 1, 0.2);
         private final NumberAxis yAxis = new NumberAxis("True Positive Rate", 0, 1, 0.2);
         private final AreaChart<Number, Number> areaChart = new AreaChart<>(xAxis, yAxis);
 
         public Plot() { }
 
-        private static void addCurves(List<Curve> curves) {
+        private static void addCurves(List<Curve> curves, List<Double> areaUnderCurves) {
             Plot.curves.addAll(curves);
+            Plot.areaUnderCurves.addAll(areaUnderCurves);
         }
 
         @Override
@@ -134,14 +148,17 @@ public class ReceiverOperatingCharacteristic<T extends Vector, S> {
             stage.setTitle("Receiver Operating Characteristic Curve");
             areaChart.setTitle("Receiver Operating Characteristic Curve");
             areaChart.setCreateSymbols(false);
-            for (Curve curve : curves) {
+            xAxis.setTickLabelFormatter(new NumberStringConverter("0.0"));
+            yAxis.setTickLabelFormatter(new NumberStringConverter("0.0"));
+            for (int curveIndex = 0; curveIndex < curves.size(); curveIndex++) {
                 XYChart.Series<Number, Number> curveSeries = new XYChart.Series<>();
-                curveSeries.setName(curve.name);
-                for (CurvePoint point : curve.points)
+                curveSeries.setName(curves.get(curveIndex).name
+                                            + " - AUC: " + String.format("%.4f", areaUnderCurves.get(curveIndex)));
+                for (CurvePoint point : curves.get(curveIndex).points)
                     curveSeries.getData().add(new XYChart.Data<>(point.falsePositiveRate, point.truePositiveRate));
                 areaChart.getData().add(curveSeries);
             }
-            Scene scene = new Scene(areaChart, 500, 500);
+            Scene scene = new Scene(areaChart, 350, 400);
             scene.getStylesheets().add("org.platanios.learn.evaluation/ReceiverOperatingCharacteristic.Plot.css");
             stage.setScene(scene);
             stage.show();
