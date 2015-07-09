@@ -2,72 +2,133 @@ package org.platanios.learn.logic.grounding;
 
 import org.platanios.learn.logic.formula.Predicate;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class GroundPredicate<R> {
-    private final long id;
-    private final Predicate predicate;
-    private final List<Long> predicateArgumentsAssignment;
+@Entity
+@Table(name = "GroundPredicates",
+        catalog = "learn_logic")
+public class GroundPredicate {
+    private long id;
+    private Predicate predicate;
+    private Double value;
+    private List<GroundPredicateArgument> groundPredicateArguments;
 
-    private R value;
+    public GroundPredicate() { }
+
+    public GroundPredicate(Predicate predicate, Double value) {
+        setPredicate(predicate);
+        setValue(value);
+    }
+
+    public GroundPredicate(Predicate predicate,
+                           List<Long> predicateArgumentsAssignment) {
+        setPredicate(predicate);
+        List<GroundPredicateArgument> groundPredicateArguments = new ArrayList<>();
+        for (int argumentIndex = 0; argumentIndex < predicateArgumentsAssignment.size(); argumentIndex++)
+            groundPredicateArguments.add(new GroundPredicateArgument(
+                    predicate,
+                    this,
+                    argumentIndex,
+                    predicateArgumentsAssignment.get(argumentIndex)
+            ));
+        setGroundPredicateArguments(groundPredicateArguments);
+    }
 
     public GroundPredicate(long id,
                            Predicate predicate,
                            List<Long> predicateArgumentsAssignment) {
-        this.id = id;
-        this.predicate = predicate;
-        this.predicateArgumentsAssignment = predicateArgumentsAssignment;
-        this.value = null;
+        this(predicate, predicateArgumentsAssignment);
+        setId(id);
+    }
+
+    public GroundPredicate(Predicate predicate,
+                           List<Long> predicateArgumentsAssignment,
+                           Double value) {
+        this(predicate, predicateArgumentsAssignment);
+        setValue(value);
     }
 
     public GroundPredicate(long id,
                            Predicate predicate,
                            List<Long> predicateArgumentsAssignment,
-                           R value) {
-        this.id = id;
-        this.predicate = predicate;
-        this.predicateArgumentsAssignment = predicateArgumentsAssignment;
-        this.value = value;
+                           Double value) {
+        this(id, predicate, predicateArgumentsAssignment);
+        setValue(value);
     }
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
     public long getId() {
         return id;
     }
 
+    private void setId(long id) {
+        this.id = id;
+    }
+
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "predicate_id", nullable = false, foreignKey = @ForeignKey(name = "fk_predicate"))
+    @NotNull
     public Predicate getPredicate() {
         return predicate;
     }
 
-    public List<Long> getPredicateArgumentsAssignment() {
-        return predicateArgumentsAssignment;
+    public void setPredicate(Predicate predicate) {
+        this.predicate = predicate;
     }
 
-    public void setValue(R value) {
-        this.value = value;
-    }
-
-    public R getValue() {
+    @Basic
+    @Column(name = "value")
+    public Double getValue() {
         return value;
     }
 
+    public void setValue(Double value) {
+        this.value = value;
+    }
+
+    @OneToMany(
+            fetch = FetchType.EAGER,
+            mappedBy = "groundPredicate",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @NotNull
+    public List<GroundPredicateArgument> getGroundPredicateArguments() {
+        return groundPredicateArguments;
+    }
+
+    public void setGroundPredicateArguments(List<GroundPredicateArgument> groundPredicateArguments) {
+        this.groundPredicateArguments = groundPredicateArguments;
+    }
+
+    @Transient
+    public List<Long> getPredicateArgumentsAssignment() {
+        return groundPredicateArguments
+                .stream()
+                .sorted((a1, a2) -> Integer.compare(a1.getArgumentIndex(), a2.getArgumentIndex()))
+                .map(GroundPredicateArgument::getArgumentValue)
+                .collect(Collectors.toList());
+    }
+
     @Override
-    @SuppressWarnings("unchecked")
     public boolean equals(Object other) {
         if (this == other)
             return true;
         if (other == null || getClass() != other.getClass())
             return false;
 
-        GroundPredicate<R> that = (GroundPredicate<R>) other;
+        GroundPredicate that = (GroundPredicate) other;
 
         if (id != that.id)
-            return false;
-        if (!predicate.equals(that.predicate))
-            return false;
-        if (!predicateArgumentsAssignment.equals(that.predicateArgumentsAssignment))
             return false;
 
         return true;
@@ -75,22 +136,16 @@ public class GroundPredicate<R> {
 
     @Override
     public int hashCode() {
-        int result = (int) (id ^ (id >>> 32));
-        result = 31 * result + predicate.hashCode();
-        result = 31 * result + predicateArgumentsAssignment.hashCode();
-        return result;
+        return (int) (id ^ (id >>> 32));
     }
 
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
-        if (predicate.getName() != null)
-            stringBuilder.append(predicate.getName()).append("(");
-        else
-            stringBuilder.append(predicate.getId()).append("(");
-        for (int argumentIndex = 0; argumentIndex < predicateArgumentsAssignment.size(); argumentIndex++) {
-            stringBuilder.append(predicateArgumentsAssignment.get(argumentIndex).toString());
-            if (argumentIndex != predicateArgumentsAssignment.size() - 1)
+        stringBuilder.append(predicate.getName()).append("(");
+        for (int argumentIndex = 0; argumentIndex < groundPredicateArguments.size(); argumentIndex++) {
+            stringBuilder.append(groundPredicateArguments.get(argumentIndex).toString());
+            if (argumentIndex != groundPredicateArguments.size() - 1)
                 stringBuilder.append(", ");
         }
         return stringBuilder.append(")").toString();

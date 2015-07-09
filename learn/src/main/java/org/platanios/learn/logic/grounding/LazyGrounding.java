@@ -15,14 +15,14 @@ import java.util.stream.Collectors;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class LazyGrounding<R> extends Grounding<R> {
+public class LazyGrounding extends Grounding {
     private Set<ActivatedGroundedPredicate> activatedGroundedPredicates = new HashSet<>();
 
-    public LazyGrounding(LogicManager<R> logicManager) {
+    public LazyGrounding(LogicManager logicManager) {
         super(logicManager);
     }
 
-    public LazyGrounding(LogicManager<R> logicManager,
+    public LazyGrounding(LogicManager logicManager,
                          Set<ActivatedGroundedPredicate> activatedGroundedPredicates) {
         super(logicManager);
         this.activatedGroundedPredicates = activatedGroundedPredicates;
@@ -51,7 +51,7 @@ public class LazyGrounding<R> extends Grounding<R> {
     @Override
     boolean pruneGroundingAndSetCurrentPredicateTruthValue(Formula formula,
                                                            Map<Long, Long> variableAssignments,
-                                                           List<R> disjunctionComponentsSoFar) {
+                                                           List<Double> disjunctionComponentsSoFar) {
         if (currentPredicateTruthValue == null) // This is the important thing that PSL is doing while considering only the body variables.
             if (formula instanceof Negation
                     && !activatedGroundedPredicates.contains(
@@ -71,7 +71,7 @@ public class LazyGrounding<R> extends Grounding<R> {
     }
 
     @Override
-    void onGroundedPredicateAddition(List<GroundPredicate<R>> groundedRule) {
+    void onGroundedPredicateAddition(List<GroundPredicate> groundedRule) {
         activatedGroundedPredicates.addAll(
                 groundedRule.stream()
                         .filter(rule -> rule.getValue() == null)

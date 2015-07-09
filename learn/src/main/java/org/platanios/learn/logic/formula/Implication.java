@@ -34,8 +34,8 @@ public class Implication extends Formula {
     }
 
     @Override
-    public <R> R evaluate(LogicManager<R> logicManager, Map<Long, Long> variableAssignments) {
-        List<R> components = new ArrayList<>(2);
+    public Double evaluate(LogicManager logicManager, Map<Long, Long> variableAssignments) {
+        List<Double> components = new ArrayList<>(2);
         components.add(logicManager.logic().negation(bodyFormula.evaluate(logicManager, variableAssignments)));
         components.add(headFormula.evaluate(logicManager, variableAssignments));
         return logicManager.logic().disjunction(components);

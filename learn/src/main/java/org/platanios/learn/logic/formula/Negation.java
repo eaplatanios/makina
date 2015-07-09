@@ -32,7 +32,7 @@ public class Negation extends Formula {
     }
 
     @Override
-    public <R> R evaluate(LogicManager<R> logicManager, Map<Long, Long> variableAssignments) {
+    public Double evaluate(LogicManager logicManager, Map<Long, Long> variableAssignments) {
         return logicManager.logic().negation(formula.evaluate(logicManager, variableAssignments));
     }
 

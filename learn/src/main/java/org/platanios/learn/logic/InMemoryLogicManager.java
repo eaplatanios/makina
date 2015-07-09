@@ -11,24 +11,24 @@ import java.util.stream.Collectors;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class InMemoryLogicManager<R> implements LogicManager<R> {
-    private final Logic<R> logic;
+public class InMemoryLogicManager implements LogicManager {
+    private final Logic logic;
 
     private final Map<Long, EntityType> entityTypes = new HashMap<>();
     private final Map<Long, Predicate> predicates = new HashMap<>();
-    private final Map<Long, Map<List<Long>, GroundPredicate<R>>> groundedPredicates = new HashMap<>();
-    private final Map<Long, GroundPredicate<R>> groundedPredicatesMap = new HashMap<>();
+    private final Map<Long, Map<List<Long>, GroundPredicate>> groundedPredicates = new HashMap<>();
+    private final Map<Long, GroundPredicate> groundedPredicatesMap = new HashMap<>();
     private final List<Long> closedPredicateIdentifiers = new ArrayList<>();
 
     private long newEntityTypeIdentifier = 0;
     private long newPredicateIdentifier = 0;
     private long newPredicateGroundingIdentifier = 0;
 
-    public InMemoryLogicManager(Logic<R> logic) {
+    public InMemoryLogicManager(Logic logic) {
         this.logic = logic;
     }
 
-    public Logic<R> logic() {
+    public Logic logic() {
         return logic;
     }
 
@@ -56,16 +56,16 @@ public class InMemoryLogicManager<R> implements LogicManager<R> {
         return predicate;
     }
 
-    public GroundPredicate<R> addGroundPredicate(Predicate predicate, List<Long> argumentAssignments) {
+    public GroundPredicate addGroundPredicate(Predicate predicate, List<Long> argumentAssignments) {
         return addGroundPredicate(predicate, argumentAssignments, null);
     }
 
-    public GroundPredicate<R> addGroundPredicate(Predicate predicate, List<Long> argumentAssignments, R value) {
+    public GroundPredicate addGroundPredicate(Predicate predicate, List<Long> argumentAssignments, Double value) {
         if (!groundedPredicates.containsKey(predicate.getId()))
             throw new IllegalArgumentException("The provided predicate identifier does not match any of the " +
                                                        "predicates currently stored in this logic manager.");
         if (groundedPredicates.get(predicate.getId()).containsKey(argumentAssignments)) {
-            GroundPredicate<R> groundPredicate =
+            GroundPredicate groundPredicate =
                     groundedPredicates.get(predicate.getId()).get(argumentAssignments);
             if (!groundPredicate.getValue().equals(value))
                 throw new IllegalArgumentException("A grounding for the predicate corresponding to the provided " +
@@ -76,10 +76,10 @@ public class InMemoryLogicManager<R> implements LogicManager<R> {
                 return groundPredicate;
             }
         } else {
-            GroundPredicate<R> groundPredicate = new GroundPredicate<>(newPredicateGroundingIdentifier++,
-                                                                                predicate,
-                                                                                argumentAssignments,
-                                                                                value);
+            GroundPredicate groundPredicate = new GroundPredicate(newPredicateGroundingIdentifier++,
+                                                                  predicate,
+                                                                  argumentAssignments,
+                                                                  value);
             groundedPredicatesMap.put(groundPredicate.getId(), groundPredicate);
             groundedPredicates.get(predicate.getId()).put(argumentAssignments, groundPredicate);
             return groundPredicate;
@@ -100,19 +100,19 @@ public class InMemoryLogicManager<R> implements LogicManager<R> {
         return groundedPredicatesMap.size();
     }
 
-    public List<GroundPredicate<R>> getGroundPredicates() {
-        List<GroundPredicate<R>> groundPredicates = new ArrayList<>();
-        for (Map<List<Long>, GroundPredicate<R>> groundedPredicatesSet : this.groundedPredicates.values())
+    public List<GroundPredicate> getGroundPredicates() {
+        List<GroundPredicate> groundPredicates = new ArrayList<>();
+        for (Map<List<Long>, GroundPredicate> groundedPredicatesSet : this.groundedPredicates.values())
             groundPredicates.addAll(groundedPredicatesSet.values().stream().collect(Collectors.toList()));
         return groundPredicates;
     }
 
     // TODO: Fix the way in which the grounded predicates are stored in this manager.
-    public GroundPredicate<R> getGroundPredicate(long identifier) {
+    public GroundPredicate getGroundPredicate(long identifier) {
         return groundedPredicatesMap.get(identifier);
     }
 
-    public GroundPredicate<R> getGroundPredicate(Predicate predicate, List<Long> argumentAssignments) {
+    public GroundPredicate getGroundPredicate(Predicate predicate, List<Long> argumentAssignments) {
         if (!groundedPredicates.containsKey(predicate.getId()))
             throw new IllegalArgumentException("The provided predicate identifier does not match any of the " +
                                                        "predicates currently stored in this logic manager.");
@@ -147,7 +147,7 @@ public class InMemoryLogicManager<R> implements LogicManager<R> {
     }
 
     public Set<Long> getVariableValues(Variable variable) {
-        return entityTypes.get(variable.getType().getId()).getAllowedValues();
+        return entityTypes.get(variable.getType().getId()).getPrimitiveAllowedValues();
     }
 
     public Predicate getPredicate(long identifier) {
@@ -180,7 +180,7 @@ public class InMemoryLogicManager<R> implements LogicManager<R> {
      * @param argumentAssignments
      * @return
      */
-    public R getPredicateAssignmentTruthValue(Predicate predicate, List<Long> argumentAssignments) {
+    public Double getPredicateAssignmentTruthValue(Predicate predicate, List<Long> argumentAssignments) {
         if (!groundedPredicates.containsKey(predicate.getId()))
             throw new IllegalArgumentException("The provided predicate identifier does not match any of the " +
                                                        "predicates currently stored in this logic manager.");

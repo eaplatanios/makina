@@ -35,7 +35,7 @@ public abstract class Formula {
 
     public abstract Set<Variable> getVariables();
     public abstract List<Variable> getOrderedVariables();
-    public abstract <R> R evaluate(LogicManager<R> logicManager, Map<Long, Long> variableAssignments);
+    public abstract Double evaluate(LogicManager logicManager, Map<Long, Long> variableAssignments);
     public abstract Formula toDisjunctiveNormalForm();
     @Override
     public abstract String toString();

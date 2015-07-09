@@ -24,7 +24,7 @@ public class ExhaustiveGroundingTest {
         allowedValues.add((long) 2);
         allowedValues.add((long) 3);
 
-        LogicManager<Double> logicManager = new InMemoryLogicManager<>(new LukasiewiczLogic());
+        LogicManager logicManager = new InMemoryLogicManager(new LukasiewiczLogic());
         EntityType personType = logicManager.addEntityType("{person}", allowedValues);
         Variable personA = new Variable(0, "A", personType);
         Variable personB = new Variable(1, "B", personType);
@@ -42,7 +42,7 @@ public class ExhaustiveGroundingTest {
         knowsVariables.add(personB);
         Formula knowsABAtom = new Atom(knowsPredicate, knowsVariables);
 
-        ExhaustiveGrounding<Double> exhaustiveGrounding = new ExhaustiveGrounding<>(logicManager);
+        ExhaustiveGrounding exhaustiveGrounding = new ExhaustiveGrounding(logicManager);
         exhaustiveGrounding.ground(knowsABAtom);
 
         Assert.assertEquals("knows(A, B)", knowsABAtom.toString());
@@ -56,7 +56,7 @@ public class ExhaustiveGroundingTest {
         allowedValues.add((long) 2);
         allowedValues.add((long) 3);
 
-        LogicManager<Double> logicManager = new InMemoryLogicManager<>(new LukasiewiczLogic());
+        LogicManager logicManager = new InMemoryLogicManager(new LukasiewiczLogic());
         EntityType personType = logicManager.addEntityType("{person}", allowedValues);
         Variable personA = new Variable(0, "A", personType);
         Variable personB = new Variable(1, "B", personType);
@@ -74,7 +74,7 @@ public class ExhaustiveGroundingTest {
         knowsVariables.add(personB);
         Formula knowsABAtom = new Negation(new Atom(knowsPredicate, knowsVariables));
 
-        ExhaustiveGrounding<Double> exhaustiveGrounding = new ExhaustiveGrounding<>(logicManager);
+        ExhaustiveGrounding exhaustiveGrounding = new ExhaustiveGrounding(logicManager);
         exhaustiveGrounding.ground(knowsABAtom);
 
         Assert.assertEquals("!knows(A, B)", knowsABAtom.toString());
@@ -88,7 +88,7 @@ public class ExhaustiveGroundingTest {
         allowedValues.add((long) 2);
         allowedValues.add((long) 3);
 
-        LogicManager<Double> logicManager = new InMemoryLogicManager<>(new LukasiewiczLogic());
+        LogicManager logicManager = new InMemoryLogicManager(new LukasiewiczLogic());
         EntityType personType = logicManager.addEntityType("{person}", allowedValues);
         Variable personA = new Variable(0, "A", personType);
         Variable personB = new Variable(1, "B", personType);
@@ -117,7 +117,7 @@ public class ExhaustiveGroundingTest {
         disjunctionComponents.add(new Atom(knowsPredicate, knowsBCVariables));
         Formula disjunctionFormula = new Disjunction(disjunctionComponents);
 
-        ExhaustiveGrounding<Double> exhaustiveGrounding = new ExhaustiveGrounding<>(logicManager);
+        ExhaustiveGrounding exhaustiveGrounding = new ExhaustiveGrounding(logicManager);
         exhaustiveGrounding.ground(disjunctionFormula);
 
         Assert.assertEquals("knows(A, B)", disjunctionFormula.toString());
@@ -131,7 +131,7 @@ public class ExhaustiveGroundingTest {
         allowedValues.add((long) 2);
         allowedValues.add((long) 3);
 
-        LogicManager<Double> logicManager = new InMemoryLogicManager<>(new LukasiewiczLogic());
+        LogicManager logicManager = new InMemoryLogicManager(new LukasiewiczLogic());
         EntityType personType = logicManager.addEntityType("{person}", allowedValues);
         Variable personA = new Variable(0, "A", personType);
         Variable personB = new Variable(1, "B", personType);
@@ -160,7 +160,7 @@ public class ExhaustiveGroundingTest {
         disjunctionComponents.add(new Negation(new Atom(knowsPredicate, knowsBCVariables)));
         Formula disjunctionFormula = new Disjunction(disjunctionComponents);
 
-        ExhaustiveGrounding<Double> exhaustiveGrounding = new ExhaustiveGrounding<>(logicManager);
+        ExhaustiveGrounding exhaustiveGrounding = new ExhaustiveGrounding(logicManager);
         exhaustiveGrounding.ground(disjunctionFormula);
 
         Assert.assertEquals("knows(A, B)", disjunctionFormula.toString());

@@ -1,10 +1,7 @@
 package org.platanios.learn.logic;
 
-import org.platanios.learn.logic.database.*;
-import org.platanios.learn.logic.formula.Atom;
-import org.platanios.learn.logic.formula.EntityType;
 import org.platanios.learn.logic.formula.Predicate;
-import org.platanios.learn.logic.formula.Variable;
+import org.platanios.learn.logic.formula.*;
 import org.platanios.learn.logic.grounding.GroundPredicate;
 
 import java.util.List;
@@ -14,26 +11,23 @@ import java.util.stream.Collectors;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class DatabaseLogicManager<R> implements LogicManager<R> {
-    private final Logic<R> logic;
-    private final Class<R> valueClass;
+public class DatabaseLogicManager implements LogicManager {
+    private final Logic logic;
     private final DatabaseManager databaseManager;
 
 //    private final Map<Long, Set<Long>> entityTypeAllowedValues = new HashMap<>();
 
-    public DatabaseLogicManager(Logic<R> logic, Class<R> valueClass) {
+    public DatabaseLogicManager(Logic logic) {
         this.logic = logic;
-        this.valueClass = valueClass;
         this.databaseManager = new DatabaseManager.Builder().build();
     }
 
-    public DatabaseLogicManager(Logic<R> logic, Class<R> valueClass, DatabaseManager databaseManager) {
+    public DatabaseLogicManager(Logic logic, DatabaseManager databaseManager) {
         this.logic = logic;
-        this.valueClass = valueClass;
         this.databaseManager = databaseManager;
     }
 
-    public Logic<R> logic() {
+    public Logic logic() {
         return logic;
     }
 
@@ -42,13 +36,7 @@ public class DatabaseLogicManager<R> implements LogicManager<R> {
     }
 
     public EntityType addEntityType(String name, Set<Long> allowedValues) {
-        DatabaseEntityType databaseEntityType = databaseManager.addEntityType(name, allowedValues);
-        return new EntityType(databaseEntityType.getId(),
-                              databaseEntityType.getName(),
-                              databaseEntityType.getAllowedValues()
-                                      .stream()
-                                      .map(DatabaseEntityTypeValue::getValue)
-                                      .collect(Collectors.toSet()));
+        return databaseManager.addEntityType(name, allowedValues);
     }
 
     public Predicate addPredicate(List<EntityType> argumentTypes, boolean closed) {
@@ -56,34 +44,27 @@ public class DatabaseLogicManager<R> implements LogicManager<R> {
     }
 
     public Predicate addPredicate(String name, List<EntityType> argumentTypes, boolean closed) {
-        DatabasePredicate databasePredicate = databaseManager.addPredicate(name, argumentTypes, closed);
-        return new Predicate(databasePredicate.getId(),
-                             databasePredicate.getName(),
-                             databasePredicate.getArgumentTypes()
-                                     .stream()
-                                     .map(DatabasePredicateArgumentType::getArgumentType)
-                                     .map(databaseEntityType ->
-                                                  new EntityType(databaseEntityType.getId(),
-                                                                 databaseEntityType.getName(),
-                                                                 databaseEntityType.getAllowedValues()
-                                                                         .stream()
-                                                                         .map(DatabaseEntityTypeValue::getValue)
-                                                                         .collect(Collectors.toSet())))
-                                     .collect(Collectors.toList()));
+        return databaseManager.addPredicate(name, argumentTypes, closed);
     }
 
-    public GroundPredicate<R> addGroundPredicate(Predicate predicate, List<Long> argumentAssignments) {
+    public GroundPredicate addGroundPredicate(Predicate predicate, List<Long> argumentAssignments) {
         return addGroundPredicate(predicate, argumentAssignments, null);
     }
 
-    public GroundPredicate<R> addGroundPredicate(Predicate predicate, List<Long> argumentAssignments, R value) {
-        DatabaseGroundPredicate databaseGroundPredicate = databaseManager.addGroundPredicate(
+    public GroundPredicate addGroundPredicate(Predicate predicate, List<Long> argumentAssignments, Double value) {
+        return databaseManager.addGroundPredicate(
                 predicate.getId(),
                 argumentAssignments,
-                value == null ? null : value.toString(),
-                valueClass
+                value
         );
-        return new GroundPredicate<>(databaseGroundPredicate.getId(), predicate, argumentAssignments, value);
+    }
+
+    public GroundPredicate addGroundPredicate(GroundPredicate groundPredicate) {
+        return databaseManager.addGroundPredicate(groundPredicate);
+    }
+
+    public List<GroundPredicate> addGroundPredicates(List<GroundPredicate> groundPredicates) {
+        return databaseManager.addGroundPredicates(groundPredicates);
     }
 
     public boolean checkIfGroundPredicateExists(Predicate predicate, List<Long> argumentAssignments) {
@@ -94,15 +75,15 @@ public class DatabaseLogicManager<R> implements LogicManager<R> {
         return databaseManager.getNumberOfGroundPredicates();
     }
 
-    public List<GroundPredicate<R>> getGroundPredicates() {
+    public List<GroundPredicate> getGroundPredicates() {
         return databaseManager.getGroundPredicates();
     }
 
-    public GroundPredicate<R> getGroundPredicate(long identifier) {
+    public GroundPredicate getGroundPredicate(long identifier) {
         return databaseManager.getGroundPredicate(identifier);
     }
 
-    public GroundPredicate<R> getGroundPredicate(Predicate predicate, List<Long> variableAssignments) {
+    public GroundPredicate getGroundPredicate(Predicate predicate, List<Long> variableAssignments) {
         return databaseManager.getGroundPredicate(predicate.getId(), variableAssignments);
     }
 
@@ -121,7 +102,7 @@ public class DatabaseLogicManager<R> implements LogicManager<R> {
     public Set<Long> getVariableValues(Variable variable) {
         return databaseManager.getEntityTypeAllowedValues(variable.getType().getId())
                 .stream()
-                .map(DatabaseEntityTypeValue::getValue)
+                .map(EntityTypeValue::getValue)
                 .collect(Collectors.toSet());
     }
 
@@ -145,11 +126,11 @@ public class DatabaseLogicManager<R> implements LogicManager<R> {
      * @return
      */
     @SuppressWarnings("unchecked")
-    public R getPredicateAssignmentTruthValue(Predicate predicate, List<Long> variablesAssignment) {
+    public Double getPredicateAssignmentTruthValue(Predicate predicate, List<Long> variablesAssignment) {
         return databaseManager.getPredicateAssignmentTruthValue(predicate, variablesAssignment, logic);
     }
 
-    public DatabaseManager.PartialGroundedFormula<R> getMatchingGroundPredicates(List<Atom> atoms) {
+    public DatabaseManager.PartialGroundedFormula getMatchingGroundPredicates(List<Atom> atoms) {
         return databaseManager.getMatchingGroundPredicates(atoms, logic);
     }
 }

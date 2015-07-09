@@ -117,7 +117,7 @@ public final class FastProbabilisticSoftLogicProblem {
         public static void addGroundingsToBuilder(
                 List<Rule> rules,
                 Builder builder,
-                LogicManager<Double> logicManager) {
+                LogicManager logicManager) {
             List<Formula> ruleFormulas = new ArrayList<>();
             for (Rule rule : rules) {
                 List<Formula> disjunctionComponents = new ArrayList<>();
@@ -130,7 +130,7 @@ public final class FastProbabilisticSoftLogicProblem {
                     disjunctionComponents.add(rule.headParts.get(i));
                 ruleFormulas.add(new Disjunction(disjunctionComponents));
             }
-            DatabaseLazyGrounding<Double> grounding = new DatabaseLazyGrounding<>((DatabaseLogicManager<Double>) logicManager);
+            DatabaseLazyGrounding grounding = new DatabaseLazyGrounding((DatabaseLogicManager) logicManager);
 //            grounding.ground(ruleFormulas);
             ruleFormulas = grounding.ground(ruleFormulas);
             for (int ruleIndex = 0; ruleIndex < rules.size(); ruleIndex++) {
@@ -139,7 +139,7 @@ public final class FastProbabilisticSoftLogicProblem {
                 for (int i = 0; i < ruleFormula.getNumberOfComponents(); ++i)
                     variableNegations[i] = ruleFormula.getComponent(i) instanceof Negation;
                 if (variableNegations.length != 0)
-                    for (List<GroundPredicate<Double>> groundedRulePredicates : grounding.getGroundedFormulas().get(ruleIndex))
+                    for (List<GroundPredicate> groundedRulePredicates : grounding.getGroundedFormulas().get(ruleIndex))
                         if (Double.isNaN(rules.get(ruleIndex).weight))
                             builder.addRule(groundedRulePredicates, variableNegations, 1, 1000);
                         else
@@ -157,7 +157,7 @@ public final class FastProbabilisticSoftLogicProblem {
     public static final class Builder {
         private final BiMap<Integer, Integer> externalToInternalIndexesMapping;
 
-        private final LogicManager<Double> logicManager;
+        private final LogicManager logicManager;
         //private final HashMap<String, FunctionTerm> functionTerms = new HashMap<>();
         private final List<FunctionTerm> functionTerms = new ArrayList<>();
         private final List<Constraint> constraints = new ArrayList<>();
@@ -165,7 +165,7 @@ public final class FastProbabilisticSoftLogicProblem {
 
         private int nextInternalIndex = 0;
 
-        public Builder(LogicManager<Double> logicManager) {
+        public Builder(LogicManager logicManager) {
 
             // special case - always add -1 as an Id with observed value 0.
             // predicates which are grounded outside of a closed set will thus have value 0
@@ -178,7 +178,7 @@ public final class FastProbabilisticSoftLogicProblem {
         public int getNumberOfTerms() { return this.functionTerms.size(); }
 
         Builder addRule(
-                List<GroundPredicate<Double>> groundedRulePredicates,
+                List<GroundPredicate> groundedRulePredicates,
                 boolean[] variableNegations,
                 double power,
                 double weight) {
@@ -233,7 +233,7 @@ public final class FastProbabilisticSoftLogicProblem {
             return new FastProbabilisticSoftLogicProblem(this);
         }
 
-        private RulePart convertRulePartToInternalRepresentation(List<GroundPredicate<Double>> groundedRulePredicates,
+        private RulePart convertRulePartToInternalRepresentation(List<GroundPredicate> groundedRulePredicates,
                                                                  boolean[] negations) {
             List<Integer> internalVariableIndexes = new ArrayList<>();
             List<Boolean> internalVariableNegations = new ArrayList<>();

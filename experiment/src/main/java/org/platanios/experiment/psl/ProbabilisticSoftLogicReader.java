@@ -110,7 +110,7 @@ public class ProbabilisticSoftLogicReader {
     }
 
     public static void readGroundingsAndAddToFastManager(
-            LogicManager<Double> logicManager,
+            LogicManager logicManager,
             EntityType entityType,
             String predicateName,
             boolean isIgnoreValues,
@@ -140,7 +140,7 @@ public class ProbabilisticSoftLogicReader {
     }
 
     public static void readGroundingsAndAddToFastManager(
-            LogicManager<Double> logicManager,
+            LogicManager logicManager,
             String predicateName,
             boolean isIgnoreValues,
             BufferedReader reader) throws DataFormatException, IOException {
@@ -334,7 +334,7 @@ public class ProbabilisticSoftLogicReader {
     }
 
     public static List<FastProbabilisticSoftLogicProblem.Rule> readFastRules(BufferedReader reader,
-                                                                             LogicManager<Double> logicManager,
+                                                                             LogicManager logicManager,
                                                                              List<Variable> variables) throws DataFormatException, IOException {
 
         List<FastProbabilisticSoftLogicProblem.Rule> result = new ArrayList<>();

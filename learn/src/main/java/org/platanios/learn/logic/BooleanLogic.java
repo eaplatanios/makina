@@ -5,40 +5,40 @@ import java.util.List;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class BooleanLogic implements Logic<Boolean> {
+public class BooleanLogic implements Logic {
     @Override
-    public Boolean conjunction(List<Boolean> arguments) {
-        Boolean result = true;
-        for (Boolean argument : arguments)
-            result &= argument;
-        return result;
+    public double conjunction(List<Double> arguments) {
+        for (double argument : arguments)
+            if (argument == 0)
+                return 0;
+        return 1;
     }
 
     @Override
-    public Boolean disjunction(List<Boolean> arguments) {
-        Boolean result = false;
-        for (Boolean argument : arguments)
-            result |= argument;
-        return result;
+    public double disjunction(List<Double> arguments) {
+        for (double argument : arguments)
+            if (argument == 1)
+                return 1;
+        return 0;
     }
 
     @Override
-    public Boolean negation(Boolean argument) {
-        return !argument;
+    public double negation(double argument) {
+        return 1 - argument;
     }
 
     @Override
-    public Boolean trueValue() {
-        return true;
+    public double trueValue() {
+        return 1;
     }
 
     @Override
-    public Boolean falseValue() {
-        return false;
+    public double falseValue() {
+        return 0;
     }
 
     @Override
-    public boolean isSatisfied(Boolean value) {
-        return value;
+    public boolean isSatisfied(double value) {
+        return value == 1;
     }
 }

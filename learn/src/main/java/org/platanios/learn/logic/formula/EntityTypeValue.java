@@ -1,4 +1,4 @@
-package org.platanios.learn.logic.database;
+package org.platanios.learn.logic.formula;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -14,14 +14,14 @@ import javax.validation.constraints.NotNull;
                 columnNames = {"entity_type_id", "value"}
         ),
         indexes = { @Index(columnList = "entity_type_id", name = "entity_type_id_index") })
-public class DatabaseEntityTypeValue {
+public class EntityTypeValue {
     private long id;
-    private DatabaseEntityType entityType;
+    private EntityType entityType;
     private long value;
 
-    private DatabaseEntityTypeValue() { }
+    public EntityTypeValue() { }
 
-    protected DatabaseEntityTypeValue(DatabaseEntityType entityType, long value) {
+    public EntityTypeValue(EntityType entityType, long value) {
         setEntityType(entityType);
         setValue(value);
     }
@@ -40,21 +40,47 @@ public class DatabaseEntityTypeValue {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "entity_type_id", nullable = false, foreignKey = @ForeignKey(name = "fk_entity_type"))
     @NotNull
-    public DatabaseEntityType getEntityType() {
+    public EntityType getEntityType() {
         return entityType;
     }
 
-    public void setEntityType(DatabaseEntityType entityType) {
+    public void setEntityType(EntityType entityType) {
         this.entityType = entityType;
     }
 
     @Basic
-    @Column(name = "value")
+    @Column(name = "value", nullable = false)
+    @NotNull
     public long getValue() {
         return value;
     }
 
     public void setValue(long value) {
         this.value = value;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other)
+            return true;
+        if (other == null || getClass() != other.getClass())
+            return false;
+
+        EntityTypeValue that = (EntityTypeValue) other;
+
+        if (id != that.id)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) (id ^ (id >>> 32));
+    }
+
+    @Override
+    public String toString() {
+        return Long.toString(value);
     }
 }

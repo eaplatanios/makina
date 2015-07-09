@@ -11,8 +11,8 @@ import java.util.Map;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class ExhaustiveGrounding<R> extends Grounding<R> {
-    public ExhaustiveGrounding(LogicManager<R> logicManager) {
+public class ExhaustiveGrounding extends Grounding {
+    public ExhaustiveGrounding(LogicManager logicManager) {
         super(logicManager);
     }
 
@@ -28,7 +28,7 @@ public class ExhaustiveGrounding<R> extends Grounding<R> {
     @Override
     boolean pruneGroundingAndSetCurrentPredicateTruthValue(Formula formula,
                                                            Map<Long, Long> variableAssignments,
-                                                           List<R> disjunctionComponentsSoFar) {
+                                                           List<Double> disjunctionComponentsSoFar) {
         if (currentPredicateTruthValue == null)
             disjunctionComponentsSoFar.add(logicManager.logic().falseValue());
         else if (formula instanceof Atom)

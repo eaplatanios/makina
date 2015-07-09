@@ -1,4 +1,4 @@
-package org.platanios.learn.logic.database;
+package org.platanios.learn.logic.formula;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -14,17 +14,17 @@ import javax.validation.constraints.NotNull;
                 columnNames = {"predicate_id", "argument_index"}
         ),
         indexes = { @Index(columnList = "predicate_id", name = "predicate_index") })
-public class DatabasePredicateArgumentType {
+public class PredicateArgumentType {
     private long id;
-    private DatabasePredicate predicate;
+    private Predicate predicate;
     private int argumentIndex;
-    private DatabaseEntityType argumentType;
+    private EntityType argumentType;
 
-    private DatabasePredicateArgumentType() { }
+    public PredicateArgumentType() { }
 
-    protected DatabasePredicateArgumentType(DatabasePredicate predicate,
-                                            int argumentIndex,
-                                            DatabaseEntityType argumentType) {
+    public PredicateArgumentType(Predicate predicate,
+                                 int argumentIndex,
+                                 EntityType argumentType) {
         setPredicate(predicate);
         setArgumentIndex(argumentIndex);
         setArgumentType(argumentType);
@@ -44,16 +44,17 @@ public class DatabasePredicateArgumentType {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "predicate_id", nullable = false, foreignKey = @ForeignKey(name = "fk_predicate"))
     @NotNull
-    public DatabasePredicate getPredicate() {
+    public Predicate getPredicate() {
         return predicate;
     }
 
-    public void setPredicate(DatabasePredicate predicate) {
+    public void setPredicate(Predicate predicate) {
         this.predicate = predicate;
     }
 
     @Basic
-    @Column(name = "argument_index")
+    @Column(name = "argument_index", nullable = false)
+    @NotNull
     public int getArgumentIndex() {
         return argumentIndex;
     }
@@ -62,14 +63,39 @@ public class DatabasePredicateArgumentType {
         this.argumentIndex = argumentIndex;
     }
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "argument_type_id", nullable = false, foreignKey = @ForeignKey(name = "fk_argument_type"))
     @NotNull
-    public DatabaseEntityType getArgumentType() {
+    public EntityType getArgumentType() {
         return argumentType;
     }
 
-    public void setArgumentType(DatabaseEntityType argumentType) {
+    public void setArgumentType(EntityType argumentType) {
         this.argumentType = argumentType;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other)
+            return true;
+        if (other == null || getClass() != other.getClass())
+            return false;
+
+        PredicateArgumentType that = (PredicateArgumentType) other;
+
+        if (id != that.id)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) (id ^ (id >>> 32));
+    }
+
+    @Override
+    public String toString() {
+        return argumentType.toString();
     }
 }

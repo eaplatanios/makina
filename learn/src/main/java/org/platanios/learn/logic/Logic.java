@@ -5,11 +5,11 @@ import java.util.List;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public interface Logic<R> {
-    R conjunction(List<R> arguments);
-    R disjunction(List<R> arguments);
-    R negation(R argument);
-    R trueValue();
-    R falseValue();
-    boolean isSatisfied(R value);
+public interface Logic {
+    double conjunction(List<Double> arguments);
+    double disjunction(List<Double> arguments);
+    double negation(double argument);
+    double trueValue();
+    double falseValue();
+    boolean isSatisfied(double value);
 }

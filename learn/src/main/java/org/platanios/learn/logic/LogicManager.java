@@ -11,19 +11,19 @@ import java.util.Set;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public interface LogicManager<R> {
-    Logic<R> logic();
+public interface LogicManager {
+    Logic logic();
     EntityType addEntityType(Set<Long> allowedValues);
     EntityType addEntityType(String name, Set<Long> allowedValues);
     Predicate addPredicate(List<EntityType> argumentTypes, boolean closed);
     Predicate addPredicate(String name, List<EntityType> argumentTypes, boolean closed);
-    GroundPredicate<R> addGroundPredicate(Predicate predicate, List<Long> argumentAssignments);
-    GroundPredicate<R> addGroundPredicate(Predicate predicate, List<Long> argumentAssignments, R value);
+    GroundPredicate addGroundPredicate(Predicate predicate, List<Long> argumentAssignments);
+    GroundPredicate addGroundPredicate(Predicate predicate, List<Long> argumentAssignments, Double value);
     boolean checkIfGroundPredicateExists(Predicate predicate, List<Long> argumentAssignments);
     long getNumberOfGroundPredicates();
-    List<GroundPredicate<R>> getGroundPredicates();
-    GroundPredicate<R> getGroundPredicate(long identifier);
-    GroundPredicate<R> getGroundPredicate(Predicate predicate, List<Long> argumentAssignments);
+    List<GroundPredicate> getGroundPredicates();
+    GroundPredicate getGroundPredicate(long identifier);
+    GroundPredicate getGroundPredicate(Predicate predicate, List<Long> argumentAssignments);
     long getNumberOfEntityTypes();
     EntityType getEntityType(long identifier);
     EntityType getEntityType(String name);
@@ -31,5 +31,5 @@ public interface LogicManager<R> {
     Predicate getPredicate(long identifier);
     Predicate getPredicate(String name);
     List<Predicate> getClosedPredicates();
-    R getPredicateAssignmentTruthValue(Predicate predicate, List<Long> argumentAssignments);
+    Double getPredicateAssignmentTruthValue(Predicate predicate, List<Long> argumentAssignments);
 }

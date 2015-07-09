@@ -5,9 +5,9 @@ import java.util.List;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class LukasiewiczLogic implements Logic<Double> {
+public class LukasiewiczLogic implements Logic {
     @Override
-    public Double conjunction(List<Double> arguments) {
+    public double conjunction(List<Double> arguments) {
         double result = 0;
         for (double argument : arguments)
             result = Math.max(0, result + argument - 1);
@@ -15,7 +15,7 @@ public class LukasiewiczLogic implements Logic<Double> {
     }
 
     @Override
-    public Double disjunction(List<Double> arguments) {
+    public double disjunction(List<Double> arguments) {
         double result = 0;
         for (double argument : arguments)
             result = Math.min(1, result + argument);
@@ -23,22 +23,22 @@ public class LukasiewiczLogic implements Logic<Double> {
     }
 
     @Override
-    public Double negation(Double argument) {
+    public double negation(double argument) {
         return 1 - argument;
     }
 
     @Override
-    public Double trueValue() {
-        return 1.0;
+    public double trueValue() {
+        return 1;
     }
 
     @Override
-    public Double falseValue() {
-        return 0.0;
+    public double falseValue() {
+        return 0;
     }
 
     @Override
-    public boolean isSatisfied(Double value) {
-        return value == 1.0;
+    public boolean isSatisfied(double value) {
+        return value == 1;
     }
 }

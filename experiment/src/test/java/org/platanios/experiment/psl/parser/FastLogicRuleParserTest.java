@@ -28,9 +28,9 @@ import static junit.framework.TestCase.fail;
 public class FastLogicRuleParserTest {
     @Test
     public void testFastEndToEnd() {
-        String experimentName = "uci_trust";
+        String experimentName = "epinions_200";
 
-        LogicManager<Double> logicManager = new DatabaseLogicManager<>(new LukasiewiczLogic(), Double.class);
+        LogicManager logicManager = new DatabaseLogicManager(new LukasiewiczLogic());
 
         Set<Long> personValues = new HashSet<>();
         try {
@@ -90,7 +90,7 @@ public class FastLogicRuleParserTest {
 
         int[] observedIndexes = new int[(int) logicManager.getNumberOfGroundPredicates()];
         double[] observedWeights = new double[(int) logicManager.getNumberOfGroundPredicates()];
-        List<GroundPredicate<Double>> groundPredicates = logicManager.getGroundPredicates();
+        List<GroundPredicate> groundPredicates = logicManager.getGroundPredicates();
         for (int index = 0; index < logicManager.getNumberOfGroundPredicates(); index++) {
             observedIndexes[index] = (int) groundPredicates.get(index).getId();
             observedWeights[index] = (double) groundPredicates.get(index).getValue();

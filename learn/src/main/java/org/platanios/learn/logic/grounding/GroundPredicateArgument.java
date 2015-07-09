@@ -1,4 +1,6 @@
-package org.platanios.learn.logic.database;
+package org.platanios.learn.logic.grounding;
+
+import org.platanios.learn.logic.formula.Predicate;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -19,19 +21,19 @@ import javax.validation.constraints.NotNull;
                 @Index(columnList = "argument_index", name = "argument_index_index"),
                 @Index(columnList = "argument_value", name = "argument_value_index")
         })
-public class DatabaseGroundPredicateArgument {
+public class GroundPredicateArgument {
     private long id;
-    private DatabasePredicate predicate;
-    private DatabaseGroundPredicate groundPredicate;
+    private Predicate predicate;
+    private GroundPredicate groundPredicate;
     private int argumentIndex;
     private long argumentValue;
 
-    protected DatabaseGroundPredicateArgument() { }
+    public GroundPredicateArgument() { }
 
-    protected DatabaseGroundPredicateArgument(DatabasePredicate predicate,
-                                              DatabaseGroundPredicate groundPredicate,
-                                              int argumentIndex,
-                                              long argumentValue) {
+    public GroundPredicateArgument(Predicate predicate,
+                                   GroundPredicate groundPredicate,
+                                   int argumentIndex,
+                                   long argumentValue) {
         setPredicate(predicate);
         setGroundPredicate(groundPredicate);
         setArgumentIndex(argumentIndex);
@@ -52,22 +54,26 @@ public class DatabaseGroundPredicateArgument {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "predicate_id", nullable = false, foreignKey = @ForeignKey(name = "fk_predicate_id"))
     @NotNull
-    public DatabasePredicate getPredicate() {
+    public Predicate getPredicate() {
         return predicate;
     }
 
-    public void setPredicate(DatabasePredicate predicate) {
+    public void setPredicate(Predicate predicate) {
         this.predicate = predicate;
     }
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "ground_predicate_id", nullable = false, foreignKey = @ForeignKey(name = "fk_ground_predicate_id"))
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(
+            name = "ground_predicate_id",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_ground_predicate_id")
+    )
     @NotNull
-    public DatabaseGroundPredicate getGroundPredicate() {
+    public GroundPredicate getGroundPredicate() {
         return groundPredicate;
     }
 
-    public void setGroundPredicate(DatabaseGroundPredicate groundPredicate) {
+    public void setGroundPredicate(GroundPredicate groundPredicate) {
         this.groundPredicate = groundPredicate;
     }
 
@@ -91,5 +97,30 @@ public class DatabaseGroundPredicateArgument {
 
     public void setArgumentValue(long argumentValue) {
         this.argumentValue = argumentValue;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other)
+            return true;
+        if (other == null || getClass() != other.getClass())
+            return false;
+
+        GroundPredicateArgument that = (GroundPredicateArgument) other;
+
+        if (id != that.id)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) (id ^ (id >>> 32));
+    }
+
+    @Override
+    public String toString() {
+        return Long.toString(argumentValue);
     }
 }

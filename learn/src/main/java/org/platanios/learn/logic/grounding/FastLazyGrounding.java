@@ -9,20 +9,20 @@ import java.util.stream.Collectors;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class FastLazyGrounding<R> {
-    final LogicManager<R> logicManager;
+public class FastLazyGrounding {
+    final LogicManager logicManager;
 
-    Map<Long, Set<GroundPredicate<R>>> activatedGroundedPredicates = new HashMap<>(); // Predicate ID to set of grounded predicates with that predicate ID.
+    Map<Long, Set<GroundPredicate>> activatedGroundedPredicates = new HashMap<>(); // Predicate ID to set of grounded predicates with that predicate ID.
     Map<Long, List<Long>> groundedVariables = new HashMap<>(); // Maps from variable ID to list of grounded values -- the list is ordered in the same way as the groundedFormula list.
-    List<List<GroundPredicate<R>>> groundedFormula = new ArrayList<>(); // List of groundings -- each grounding is a set of grounded predicates representing the formula terms.
-    List<R> groundedFormulaTruthValues = new ArrayList<>();
+    List<List<GroundPredicate>> groundedFormula = new ArrayList<>(); // List of groundings -- each grounding is a set of grounded predicates representing the formula terms.
+    List<Double> groundedFormulaTruthValues = new ArrayList<>();
     List<Boolean> formulaUnobservedVariableIndicators = new ArrayList<>();
 
-    Map<Integer, Set<List<GroundPredicate<R>>>> groundedFormulas = new HashMap<>();
+    Map<Integer, Set<List<GroundPredicate>>> groundedFormulas = new HashMap<>();
 
-    public FastLazyGrounding(LogicManager<R> logicManager) {
+    public FastLazyGrounding(LogicManager logicManager) {
         this.logicManager = logicManager;
-        for (GroundPredicate<R> groundPredicate : logicManager.getGroundPredicates()) {
+        for (GroundPredicate groundPredicate : logicManager.getGroundPredicates()) {
             if (!activatedGroundedPredicates.containsKey(groundPredicate.getPredicate().getId()))
                 activatedGroundedPredicates.put(groundPredicate.getPredicate().getId(), new HashSet<>());
             activatedGroundedPredicates.get(groundPredicate.getPredicate().getId()).add(groundPredicate);
@@ -46,7 +46,7 @@ public class FastLazyGrounding<R> {
             preprocessedFormulas.add(new Disjunction(disjunctionComponents));
         }
         int previousNumberOfActivatedGroundedPredicates = 0;
-        for (Map.Entry<Long, Set<GroundPredicate<R>>> activatedGroundedPredicate : activatedGroundedPredicates.entrySet())
+        for (Map.Entry<Long, Set<GroundPredicate>> activatedGroundedPredicate : activatedGroundedPredicates.entrySet())
             previousNumberOfActivatedGroundedPredicates += activatedGroundedPredicate.getValue().size();
         while (true) {
             for (int currentFormulaIndex = 0; currentFormulaIndex < preprocessedFormulas.size(); currentFormulaIndex++) {
@@ -57,7 +57,7 @@ public class FastLazyGrounding<R> {
                 groundedFormulas.get(currentFormulaIndex).addAll(groundedFormula);
             }
             int currentNumberOfActivatedGroundedPredicates = 0;
-            for (Map.Entry<Long, Set<GroundPredicate<R>>> activatedGroundedPredicate : activatedGroundedPredicates.entrySet())
+            for (Map.Entry<Long, Set<GroundPredicate>> activatedGroundedPredicate : activatedGroundedPredicates.entrySet())
                 currentNumberOfActivatedGroundedPredicates += activatedGroundedPredicate.getValue().size();
             if (currentNumberOfActivatedGroundedPredicates == previousNumberOfActivatedGroundedPredicates)
                 break;
@@ -134,16 +134,16 @@ public class FastLazyGrounding<R> {
         if (groundedVariables.size() == 0) {
             for (Variable variable : variables)
                 groundedVariables.put(variable.getId(), new ArrayList<>());
-            for (GroundPredicate<R> groundPredicate : activatedGroundedPredicates.get(predicate.getId())) {
-                R groundedPredicateValue = groundPredicate.getValue();
-                R currentTruthValue = groundedPredicateValue == null ? logicManager.logic().falseValue() : logicManager.logic().negation(groundedPredicateValue);
+            for (GroundPredicate groundPredicate : activatedGroundedPredicates.get(predicate.getId())) {
+                Double groundedPredicateValue = groundPredicate.getValue();
+                Double currentTruthValue = groundedPredicateValue == null ? logicManager.logic().falseValue() : logicManager.logic().negation(groundedPredicateValue);
                 if (logicManager.logic().isSatisfied(currentTruthValue))
                     continue;
                 List<Long> variablesAssignment = groundPredicate.getPredicateArgumentsAssignment();
                 for (int variableIndex = 0; variableIndex < variablesAssignment.size(); variableIndex++)
                     groundedVariables.get(variables.get(variableIndex).getId())
                             .add(variablesAssignment.get(variableIndex));
-                List<GroundPredicate<R>> temporaryList = new ArrayList<>();
+                List<GroundPredicate> temporaryList = new ArrayList<>();
                 temporaryList.add(groundPredicate);
                 groundedFormula.add(temporaryList);
                 groundedFormulaTruthValues.add(currentTruthValue);
@@ -151,8 +151,8 @@ public class FastLazyGrounding<R> {
             }
         } else {
             Map<Long, List<Long>> newGroundedVariables = new HashMap<>();
-            List<List<GroundPredicate<R>>> newGroundedFormula = new ArrayList<>();
-            List<R> newGroundedFormulaTruthValues = new ArrayList<>();
+            List<List<GroundPredicate>> newGroundedFormula = new ArrayList<>();
+            List<Double> newGroundedFormulaTruthValues = new ArrayList<>();
             List<Boolean> newFormulaUnobservedVariableIndicators = new ArrayList<>();
             for (Variable variable : variables)
                 newGroundedVariables.put(variable.getId(), new ArrayList<>());
@@ -166,7 +166,7 @@ public class FastLazyGrounding<R> {
                     else
                         variablesAssignmentTemplate.add(null);
                 }
-                for (GroundPredicate<R> groundPredicate : activatedGroundedPredicates.get(predicate.getId())) {
+                for (GroundPredicate groundPredicate : activatedGroundedPredicates.get(predicate.getId())) {
                     boolean pruneGroundedPredicate = false;
                     List<Long> variablesAssignment = groundPredicate.getPredicateArgumentsAssignment();
                     for (int variableIndex = 0; variableIndex < variablesAssignment.size(); variableIndex++) {
@@ -178,9 +178,9 @@ public class FastLazyGrounding<R> {
                     }
                     if (pruneGroundedPredicate)
                         continue;
-                    List<R> disjunctionComponentsSoFar = new ArrayList<>();
+                    List<Double> disjunctionComponentsSoFar = new ArrayList<>();
                     disjunctionComponentsSoFar.add(groundedFormulaTruthValues.get(groundingIndex));
-                    R currentPredicateTruthValue = groundPredicate.getValue();
+                    Double currentPredicateTruthValue = groundPredicate.getValue();
                     if (currentPredicateTruthValue == null)
                         disjunctionComponentsSoFar.add(logicManager.logic().falseValue());
                     else
@@ -194,7 +194,7 @@ public class FastLazyGrounding<R> {
                     for (Long variableIdentifier : newGroundedVariables.keySet())
                         if (groundedVariables.containsKey(variableIdentifier))
                             newGroundedVariables.get(variableIdentifier).add(groundedVariables.get(variableIdentifier).get(groundingIndex));
-                    List<GroundPredicate<R>> temporaryList = new ArrayList<>(groundedFormula.get(groundingIndex));
+                    List<GroundPredicate> temporaryList = new ArrayList<>(groundedFormula.get(groundingIndex));
                     temporaryList.add(groundPredicate);
                     newGroundedFormula.add(temporaryList);
                     newGroundedFormulaTruthValues.add(currentPredicateTruthValue);
@@ -214,8 +214,8 @@ public class FastLazyGrounding<R> {
                 .filter(argumentVariable -> !groundedVariables.containsKey(argumentVariable.getId()))
                 .forEach(argumentVariable -> {
                     Map<Long, List<Long>> newGroundedVariables = new HashMap<>();
-                    List<List<GroundPredicate<R>>> newGroundedFormula = new ArrayList<>();
-                    List<R> newGroundedFormulaTruthValues = new ArrayList<>();
+                    List<List<GroundPredicate>> newGroundedFormula = new ArrayList<>();
+                    List<Double> newGroundedFormulaTruthValues = new ArrayList<>();
                     List<Boolean> newFormulaUnobservedVariableIndicators = new ArrayList<>();
                     newGroundedVariables.put(argumentVariable.getId(), new ArrayList<>());
                     if (groundedFormula.size() > 0) {
@@ -247,8 +247,8 @@ public class FastLazyGrounding<R> {
                     formulaUnobservedVariableIndicators = newFormulaUnobservedVariableIndicators;
                 });
         Map<Long, List<Long>> newGroundedVariables = new HashMap<>();
-        List<List<GroundPredicate<R>>> newGroundedFormula = new ArrayList<>();
-        List<R> newGroundedFormulaTruthValues = new ArrayList<>();
+        List<List<GroundPredicate>> newGroundedFormula = new ArrayList<>();
+        List<Double> newGroundedFormulaTruthValues = new ArrayList<>();
         List<Boolean> newFormulaUnobservedVariableIndicators = new ArrayList<>();
         for (Long variableIdentifier : groundedVariables.keySet())
             newGroundedVariables.put(variableIdentifier, new ArrayList<>());
@@ -259,9 +259,9 @@ public class FastLazyGrounding<R> {
                 newVariableGrounding.add(groundedVariables.get(variableIdentifier).get(groundingIndex));
                 variableAssignments.put(variableIdentifier, newVariableGrounding.get(newVariableGrounding.size() - 1));
             }
-            List<R> disjunctionComponentsSoFar = new ArrayList<>();
+            List<Double> disjunctionComponentsSoFar = new ArrayList<>();
             disjunctionComponentsSoFar.add(groundedFormulaTruthValues.get(groundingIndex));
-            R currentPredicateTruthValue = formula.evaluate(logicManager, variableAssignments);
+            Double currentPredicateTruthValue = formula.evaluate(logicManager, variableAssignments);
             if (currentPredicateTruthValue == null)
                 disjunctionComponentsSoFar.add(logicManager.logic().falseValue());
             else
@@ -270,7 +270,7 @@ public class FastLazyGrounding<R> {
             if (!logicManager.logic().isSatisfied(currentPredicateTruthValue)) {
                 for (Long variableIdentifier : groundedVariables.keySet())
                     newGroundedVariables.get(variableIdentifier).add(groundedVariables.get(variableIdentifier).get(groundingIndex));
-                GroundPredicate<R> groundPredicate;
+                GroundPredicate groundPredicate;
                 Predicate predicate = formula.getPredicate();
                 newVariableGrounding = new ArrayList<>();
                 for (Variable variable : formula.getOrderedVariables())
@@ -288,7 +288,7 @@ public class FastLazyGrounding<R> {
                             newVariableGrounding
                     );
                 }
-                List<GroundPredicate<R>> temporaryList = new ArrayList<>(groundedFormula.get(groundingIndex));
+                List<GroundPredicate> temporaryList = new ArrayList<>(groundedFormula.get(groundingIndex));
                 temporaryList.add(groundPredicate);
                 newGroundedFormula.add(temporaryList);
                 newGroundedFormulaTruthValues.add(currentPredicateTruthValue);
@@ -304,7 +304,7 @@ public class FastLazyGrounding<R> {
         formulaUnobservedVariableIndicators = newFormulaUnobservedVariableIndicators;
     }
 
-    public Map<Integer, Set<List<GroundPredicate<R>>>> getGroundedFormulas() {
+    public Map<Integer, Set<List<GroundPredicate>>> getGroundedFormulas() {
         return groundedFormulas;
     }
 }

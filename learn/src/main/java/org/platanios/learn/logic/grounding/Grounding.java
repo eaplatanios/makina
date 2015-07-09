@@ -9,18 +9,18 @@ import java.util.stream.Collectors;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public abstract class Grounding<R> {
-    final LogicManager<R> logicManager;
+public abstract class Grounding {
+    final LogicManager logicManager;
 
-    List<R> groundingTruthValues = new ArrayList<>();
+    List<Double> groundingTruthValues = new ArrayList<>();
     List<Variable> groundedVariables = new ArrayList<>();
     List<List<Long>> partialVariableGroundings = new ArrayList<>();
-    List<List<GroundPredicate<R>>> groundedFormula = new ArrayList<>();
-    Map<Integer, Set<List<GroundPredicate<R>>>> groundedFormulas = new HashMap<>();
+    List<List<GroundPredicate>> groundedFormula = new ArrayList<>();
+    Map<Integer, Set<List<GroundPredicate>>> groundedFormulas = new HashMap<>();
     List<Boolean> ruleUnobservedVariableIndicators = new ArrayList<>();
-    R currentPredicateTruthValue;
+    Double currentPredicateTruthValue;
 
-    public Grounding(LogicManager<R> logicManager) {
+    public Grounding(LogicManager logicManager) {
         this.logicManager = logicManager;
     }
 
@@ -35,7 +35,7 @@ public abstract class Grounding<R> {
         currentPredicateTruthValue = logicManager.logic().falseValue();
         ground(formula.toDisjunctiveNormalForm(), 0);
         List<List<Long>> filteredPartialVariableGroundings = new ArrayList<>();
-        List<List<GroundPredicate<R>>> filteredGroundedPredicates = new ArrayList<>();
+        List<List<GroundPredicate>> filteredGroundedPredicates = new ArrayList<>();
         for (int groundedRuleIndex = 0; groundedRuleIndex < groundedFormula.size(); groundedRuleIndex++) {
             if (ruleUnobservedVariableIndicators.get(groundedRuleIndex)) {
                 filteredPartialVariableGroundings.add(partialVariableGroundings.get(groundedRuleIndex));
@@ -56,9 +56,9 @@ public abstract class Grounding<R> {
                     .stream()
                     .collect(Collectors.toList());
             List<Variable> newGroundedVariables = new ArrayList<>(groundedVariables);
-            List<R> candidateGroundingTruthValues = new ArrayList<>(groundingTruthValues);
+            List<Double> candidateGroundingTruthValues = new ArrayList<>(groundingTruthValues);
             List<List<Long>> candidateVariableGroundings = new ArrayList<>(partialVariableGroundings);
-            List<List<GroundPredicate<R>>> candidateGroundedFormula = new ArrayList<>(groundedFormula);
+            List<List<GroundPredicate>> candidateGroundedFormula = new ArrayList<>(groundedFormula);
             List<Boolean> candidateRuleUnobservedVariableIndicators = new ArrayList<>(ruleUnobservedVariableIndicators);
             argumentVariables.stream()
                     .filter(argumentVariable -> !groundedVariables.contains(argumentVariable))
@@ -94,7 +94,7 @@ public abstract class Grounding<R> {
                         groundedFormula = new ArrayList<>(candidateGroundedFormula);
                         ruleUnobservedVariableIndicators = new ArrayList<>(candidateRuleUnobservedVariableIndicators);
                     });
-            List<R> truthValues = new ArrayList<>(groundingTruthValues);
+            List<Double> truthValues = new ArrayList<>(groundingTruthValues);
             groundedVariables = newGroundedVariables;
             groundingTruthValues = new ArrayList<>();
             partialVariableGroundings = new ArrayList<>();
@@ -105,7 +105,7 @@ public abstract class Grounding<R> {
                 Map<Long, Long> variableAssignments = new HashMap<>();
                 for (int variableIndex = 0; variableIndex < groundedVariables.size(); variableIndex++)
                     variableAssignments.put(groundedVariables.get(variableIndex).getId(), candidateVariableGrounding.get(variableIndex));
-                List<R> disjunctionComponentsSoFar = new ArrayList<>();
+                List<Double> disjunctionComponentsSoFar = new ArrayList<>();
                 disjunctionComponentsSoFar.add(truthValues.get(candidateIndex));
                 if (formula instanceof Atom)
                     currentPredicateTruthValue = formula.evaluate(logicManager, variableAssignments);
@@ -114,7 +114,7 @@ public abstract class Grounding<R> {
                 if (!pruneGroundingAndSetCurrentPredicateTruthValue(formula, variableAssignments, disjunctionComponentsSoFar)) {
                     groundingTruthValues.add(currentPredicateTruthValue);
                     partialVariableGroundings.add(candidateVariableGrounding);
-                    GroundPredicate<R> groundPredicate;
+                    GroundPredicate groundPredicate;
                     Predicate predicate;
                     if (formula instanceof Atom)
                         predicate = ((Atom) formula).getPredicate();
@@ -180,17 +180,17 @@ public abstract class Grounding<R> {
 
     abstract boolean pruneGroundingAndSetCurrentPredicateTruthValue(Formula formula,
                                                                     Map<Long, Long> variableAssignments,
-                                                                    List<R> disjunctionComponentsSoFar);
+                                                                    List<Double> disjunctionComponentsSoFar);
 
-    void onGroundedPredicateAddition(List<GroundPredicate<R>> groundPredicate) {
+    void onGroundedPredicateAddition(List<GroundPredicate> groundPredicate) {
 
     }
 
-    public List<List<GroundPredicate<R>>> getGroundedFormula() {
+    public List<List<GroundPredicate>> getGroundedFormula() {
         return groundedFormula;
     }
 
-    public Map<Integer, Set<List<GroundPredicate<R>>>> getGroundedFormulas() {
+    public Map<Integer, Set<List<GroundPredicate>>> getGroundedFormulas() {
         return groundedFormulas;
     }
 }

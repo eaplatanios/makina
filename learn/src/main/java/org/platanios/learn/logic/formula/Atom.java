@@ -48,7 +48,7 @@ public class Atom extends Formula {
     }
 
     @Override
-    public <R> R evaluate(LogicManager<R> logicManager, Map<Long, Long> variableAssignments) {
+    public Double evaluate(LogicManager logicManager, Map<Long, Long> variableAssignments) {
         List<Long> predicateArgumentValues = new ArrayList<>();
         for (Term predicateArgument : predicateArguments) {
             Long variableAssignment = variableAssignments.getOrDefault(predicateArgument.getId(), null);

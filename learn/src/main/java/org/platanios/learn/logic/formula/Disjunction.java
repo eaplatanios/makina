@@ -16,10 +16,12 @@ public class Disjunction extends BranchingFormula {
     }
 
     @Override
-    public <R> R evaluate(LogicManager<R> logicManager, Map<Long, Long> variableAssignments) {
-        return logicManager.logic().disjunction(formulas.stream()
-                                                        .map(formula -> formula.evaluate(logicManager, variableAssignments))
-                                                        .collect(Collectors.toList()));
+    public Double evaluate(LogicManager logicManager, Map<Long, Long> variableAssignments) {
+        return logicManager.logic().disjunction(
+                formulas.stream()
+                        .map(formula -> formula.evaluate(logicManager, variableAssignments))
+                        .collect(Collectors.toList())
+        );
     }
 
     /**
