@@ -223,6 +223,22 @@ public class DatabaseManager {
         session.close();
     }
 
+    private void fastInsertObject(Object object) {
+        StatelessSession session = sessionFactory.openStatelessSession();
+        Transaction transaction = session.beginTransaction();
+        session.insert(object);
+        transaction.commit();
+        session.close();
+    }
+
+    private void fastInsertObjects(List<?> objects) {
+        StatelessSession session = sessionFactory.openStatelessSession();
+        Transaction transaction = session.beginTransaction();
+        objects.forEach(session::insert);
+        transaction.commit();
+        session.close();
+    }
+
     private void updateObject(Object object) {
         Session session = sessionFactory.openSession();
         Transaction transaction = session.beginTransaction();
@@ -242,6 +258,22 @@ public class DatabaseManager {
                 session.clear();
             }
         }
+        transaction.commit();
+        session.close();
+    }
+
+    private void fastUpdateObject(Object object) {
+        StatelessSession session = sessionFactory.openStatelessSession();
+        Transaction transaction = session.beginTransaction();
+        session.update(object);
+        transaction.commit();
+        session.close();
+    }
+
+    private void fastUpdateObjects(List<?> objects) {
+        StatelessSession session = sessionFactory.openStatelessSession();
+        Transaction transaction = session.beginTransaction();
+        objects.forEach(session::update);
         transaction.commit();
         session.close();
     }
@@ -521,26 +553,34 @@ public class DatabaseManager {
 
     @SuppressWarnings("unchecked")
     public Double getPredicateAssignmentTruthValue(Predicate predicate, List<Long> variablesAssignment, Logic logic) {
-        Session session = sessionFactory.openSession();
-        Criteria criteria = session.createCriteria(GroundPredicate.class);
-        criteria.setFetchMode("groundPredicateArguments", FetchMode.JOIN);
-        Criteria joinCriteria = criteria.createCriteria("predicate");
-        joinCriteria.add(Restrictions.eq("id", predicate.getId()));
-        List<GroundPredicate> groundPredicates = criteria.list();
-        for (GroundPredicate groundPredicate : groundPredicates) {
-            List<GroundPredicateArgument> groundPredicateArguments = groundPredicate.getGroundPredicateArguments();
-            boolean groundPredicateFound = true;
-            for (GroundPredicateArgument groundPredicateArgument : groundPredicateArguments)
-                if (groundPredicateArgument.getArgumentValue()
-                        != variablesAssignment.get(groundPredicateArgument.getArgumentIndex()))
-                    groundPredicateFound = false;
-            if (groundPredicateFound) {
-                Double truthValue = groundPredicate.getValue();
-                session.close();
-                return truthValue;
-            }
+        StringBuilder hqlQuery = new StringBuilder("from ");
+        for (int argumentId = 0; argumentId < variablesAssignment.size(); argumentId++) {
+            hqlQuery.append("GroundPredicateArgument ")
+                    .append("argument_").append(argumentId);
+            if (argumentId < variablesAssignment.size() - 1)
+                hqlQuery.append(", ");
         }
-        if (!getDatabasePredicate(predicate.getId()).getClosed()) {
+        hqlQuery.append(" where ");
+        hqlQuery.append("argument_0.predicate.id = ").append(predicate.getId());
+        for (int argumentId = 0; argumentId < variablesAssignment.size(); argumentId++) {
+            if (argumentId != 0)
+                hqlQuery.append(" and argument_0.groundPredicate.id = ")
+                        .append("argument_").append(argumentId)
+                        .append(".groundPredicate.id");
+            hqlQuery.append(" and argument_").append(argumentId)
+                    .append(".argumentIndex = ").append(argumentId);
+            hqlQuery.append(" and argument_").append(argumentId)
+                    .append(".argumentValue = ").append(variablesAssignment.get(argumentId));
+        }
+        Session session = sessionFactory.openSession();
+        Query query = session.createQuery(hqlQuery.toString());
+        Object[] uniqueResult = (Object[]) query.uniqueResult();
+        if (uniqueResult != null) {
+            GroundPredicateArgument argument = ((GroundPredicateArgument) uniqueResult[0]);
+            GroundPredicate groundPredicate = argument.getGroundPredicate();
+            session.close();
+            return groundPredicate.getValue();
+        } else if (!getDatabasePredicate(predicate.getId()).getClosed()) {
             session.close();
             return null;
         } else {

@@ -130,6 +130,7 @@ public final class FastProbabilisticSoftLogicProblem {
                     disjunctionComponents.add(rule.headParts.get(i));
                 ruleFormulas.add(new Disjunction(disjunctionComponents));
             }
+//            FastLazyGrounding grounding = new FastLazyGrounding(logicManager);
             DatabaseLazyGrounding grounding = new DatabaseLazyGrounding((DatabaseLogicManager) logicManager);
 //            grounding.ground(ruleFormulas);
             ruleFormulas = grounding.ground(ruleFormulas);

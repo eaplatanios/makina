@@ -1,5 +1,7 @@
 package org.platanios.learn.logic.grounding;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.platanios.learn.logic.LogicManager;
 import org.platanios.learn.logic.formula.*;
 
@@ -10,6 +12,8 @@ import java.util.stream.Collectors;
  * @author Emmanouil Antonios Platanios
  */
 public class FastLazyGrounding {
+    private static Logger logger = LogManager.getFormatterLogger("Fast Lazy Grounding");
+
     final LogicManager logicManager;
 
     Map<Long, Set<GroundPredicate>> activatedGroundedPredicates = new HashMap<>(); // Predicate ID to set of grounded predicates with that predicate ID.
@@ -53,7 +57,7 @@ public class FastLazyGrounding {
                 if (!groundedFormulas.containsKey(currentFormulaIndex))
                     groundedFormulas.put(currentFormulaIndex, new HashSet<>());
                 ground(preprocessedFormulas.get(currentFormulaIndex));
-                System.out.println("Generated " + groundedFormula.size() + " groundings for rule " + currentFormulaIndex); // TODO: Use a logger for this part.
+                logger.info("Generated " + groundedFormula.size() + " groundings for rule " + currentFormulaIndex); // TODO: Use a logger for this part.
                 groundedFormulas.get(currentFormulaIndex).addAll(groundedFormula);
             }
             int currentNumberOfActivatedGroundedPredicates = 0;
