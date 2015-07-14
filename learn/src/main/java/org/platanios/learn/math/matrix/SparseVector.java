@@ -1086,7 +1086,7 @@ public class SparseVector extends Vector {
                 currentIndex++;
                 vector2Index++;
             }
-            if (newIndexes[currentIndex - 1] == size - 1) {
+            if (currentIndex > 0 && newIndexes[currentIndex - 1] == size - 1) {
                 newValues[currentIndex - 1] += scalar;
             } else {
                 newIndexes[currentIndex] = size - 1;
@@ -1144,7 +1144,7 @@ public class SparseVector extends Vector {
                 currentIndex++;
                 vector2Index++;
             }
-            if (newIndexes[currentIndex - 1] == size - 1) {
+            if (currentIndex > 0 && newIndexes[currentIndex - 1] == size - 1) {
                 newValues[currentIndex - 1] += scalar;
             } else {
                 newIndexes[currentIndex] = size - 1;
