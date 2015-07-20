@@ -1,49 +1,43 @@
 package org.platanios.experiment.psl;
 
-import org.junit.Test;
-import org.platanios.learn.math.matrix.Vectors;
-import org.platanios.learn.optimization.constraint.LinearEqualityConstraint;
-
-import java.util.Map;
-
 /**
  * @author Emmanouil Antonios Platanios
  */
 public class ConsensusAlternatingDirectionsMethodOfMultipliersSolverTest {
-    @Test
-    public void testSimpleConsensusADMM1() {
-        ProbabilisticSoftLogicProblem pslProblem = new ProbabilisticSoftLogicProblem.Builder(new int[]{1, 3},
-                                                                                             new double[]{1, 0},
-                                                                                             2)
-                .addRule(new int[]{0}, new int[]{1}, new boolean[]{false}, new boolean[]{false}, 1, 1)
-                .addRule(new int[]{2}, new int[]{0}, new boolean[]{false}, new boolean[]{false}, 1, 1)
-                .addRule(new int[]{2}, new int[]{3}, new boolean[]{false}, new boolean[]{false}, 1, 1)
-                .build();
-        Map<Integer, Double> result = pslProblem.solve();
-        System.out.println(result.get(0));
-        System.out.println(result.get(2));
-        System.out.println('\n');
-    }
-
-    @Test
-    public void testSimpleConstrainedConsensusADMM2() {
-        ProbabilisticSoftLogicProblem pslProblem = new ProbabilisticSoftLogicProblem.Builder(new int[]{1, 3},
-                                                                                             new double[]{1, 0},
-                                                                                             2)
-                .addRule(new int[]{0}, new int[]{1}, new boolean[]{false}, new boolean[]{false}, 1, 1)
-                .addRule(new int[]{2}, new int[]{0}, new boolean[]{false}, new boolean[]{false}, 1, 1)
-                .addRule(new int[]{2}, new int[]{3}, new boolean[]{false}, new boolean[]{false}, 1, 1)
-                .addRule(new int[]{0}, new int[]{1}, new boolean[]{true}, new boolean[]{true}, 1, 1)
-                .addRule(new int[]{2}, new int[]{0}, new boolean[]{true}, new boolean[]{true}, 1, 1)
-                .addRule(new int[]{2}, new int[]{3}, new boolean[]{true}, new boolean[]{true}, 1, 1)
-                .addConstraint(new LinearEqualityConstraint(Vectors.dense(new double[]{-1, 1}), 0.2), 0, 2)
-                .build();
-        Map<Integer, Double> result = pslProblem.solve();
-        System.out.println(result.get(0));
-        System.out.println(result.get(2));
-        System.out.println('\n');
-    }
-
+//    @Test
+//    public void testSimpleConsensusADMM1() {
+//        ProbabilisticSoftLogicProblem pslProblem = new ProbabilisticSoftLogicProblem.Builder(new int[]{1, 3},
+//                                                                                             new double[]{1, 0},
+//                                                                                             2)
+//                .addRule(new int[]{0}, new int[]{1}, new boolean[]{false}, new boolean[]{false}, 1, 1)
+//                .addRule(new int[]{2}, new int[]{0}, new boolean[]{false}, new boolean[]{false}, 1, 1)
+//                .addRule(new int[]{2}, new int[]{3}, new boolean[]{false}, new boolean[]{false}, 1, 1)
+//                .build();
+//        Map<Integer, Double> result = pslProblem.solve();
+//        System.out.println(result.get(0));
+//        System.out.println(result.get(2));
+//        System.out.println('\n');
+//    }
+//
+//    @Test
+//    public void testSimpleConstrainedConsensusADMM2() {
+//        ProbabilisticSoftLogicProblem pslProblem = new ProbabilisticSoftLogicProblem.Builder(new int[]{1, 3},
+//                                                                                             new double[]{1, 0},
+//                                                                                             2)
+//                .addRule(new int[]{0}, new int[]{1}, new boolean[]{false}, new boolean[]{false}, 1, 1)
+//                .addRule(new int[]{2}, new int[]{0}, new boolean[]{false}, new boolean[]{false}, 1, 1)
+//                .addRule(new int[]{2}, new int[]{3}, new boolean[]{false}, new boolean[]{false}, 1, 1)
+//                .addRule(new int[]{0}, new int[]{1}, new boolean[]{true}, new boolean[]{true}, 1, 1)
+//                .addRule(new int[]{2}, new int[]{0}, new boolean[]{true}, new boolean[]{true}, 1, 1)
+//                .addRule(new int[]{2}, new int[]{3}, new boolean[]{true}, new boolean[]{true}, 1, 1)
+//                .addConstraint(new LinearEqualityConstraint(Vectors.dense(new double[]{-1, 1}), 0.2), 0, 2)
+//                .build();
+//        Map<Integer, Double> result = pslProblem.solve();
+//        System.out.println(result.get(0));
+//        System.out.println(result.get(2));
+//        System.out.println('\n');
+//    }
+//
 //    @Test
 //    public void testSimpleConsensusADMM1_NewInterface() {
 //        ProbabilisticSoftLogicFunction pslFunction = new ProbabilisticSoftLogicFunction.Builder(2)

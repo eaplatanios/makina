@@ -572,7 +572,7 @@ public class DatabaseManager {
             hqlQuery.append(" and argument_").append(argumentId)
                     .append(".argumentValue = ").append(variablesAssignment.get(argumentId));
         }
-        Session session = sessionFactory.openSession();
+        StatelessSession session = sessionFactory.openStatelessSession();
         Query query = session.createQuery(hqlQuery.toString());
         Object[] uniqueResult = (Object[]) query.uniqueResult();
         if (uniqueResult != null) {

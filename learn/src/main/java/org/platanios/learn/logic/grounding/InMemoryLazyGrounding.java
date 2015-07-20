@@ -11,8 +11,8 @@ import java.util.stream.Collectors;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class FastLazyGrounding {
-    private static Logger logger = LogManager.getFormatterLogger("Fast Lazy Grounding");
+public class InMemoryLazyGrounding {
+    private static Logger logger = LogManager.getFormatterLogger("In-Memory Lazy Grounding");
 
     final LogicManager logicManager;
 
@@ -24,7 +24,7 @@ public class FastLazyGrounding {
 
     Map<Integer, Set<List<GroundPredicate>>> groundedFormulas = new HashMap<>();
 
-    public FastLazyGrounding(LogicManager logicManager) {
+    public InMemoryLazyGrounding(LogicManager logicManager) {
         this.logicManager = logicManager;
         for (GroundPredicate groundPredicate : logicManager.getGroundPredicates()) {
             if (!activatedGroundedPredicates.containsKey(groundPredicate.getPredicate().getId()))

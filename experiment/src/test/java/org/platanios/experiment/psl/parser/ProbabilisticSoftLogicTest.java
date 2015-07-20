@@ -1,14 +1,13 @@
 package org.platanios.experiment.psl.parser;
 
 import org.junit.Test;
-import org.platanios.experiment.psl.FastProbabilisticSoftLogicProblem;
+import org.platanios.learn.logic.ProbabilisticSoftLogicProblem;
 import org.platanios.experiment.psl.ProbabilisticSoftLogicReader;
 import org.platanios.learn.logic.DatabaseLogicManager;
 import org.platanios.learn.logic.LogicManager;
 import org.platanios.learn.logic.LukasiewiczLogic;
 import org.platanios.learn.logic.formula.EntityType;
 import org.platanios.learn.logic.formula.Variable;
-import org.platanios.learn.logic.grounding.GroundPredicate;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,22 +24,22 @@ import static junit.framework.TestCase.fail;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class FastLogicRuleParserTest {
+public class ProbabilisticSoftLogicTest {
     @Test
-    public void testFastEndToEnd() {
-        String experimentName = "epinions_200";
+    public void testEndToEnd() {
+        String experimentName = "uci_trust";
 
         LogicManager logicManager = new DatabaseLogicManager(new LukasiewiczLogic());
 
         Set<Long> personValues = new HashSet<>();
         try {
-            Stream<String> lines = Files.lines(Paths.get(LogicRuleParserTest.class.getResource("../" + experimentName + "/knows.txt").getPath()));
+            Stream<String> lines = Files.lines(Paths.get(ProbabilisticSoftLogicTest.class.getResource("../" + experimentName + "/knows.txt").getPath()));
             lines.forEach(line -> {
                 String[] lineParts = line.split("\t");
                 for (String linePart : lineParts)
                     personValues.add(Long.parseLong(linePart.trim()));
             });
-            lines = Files.lines(Paths.get(LogicRuleParserTest.class.getResource("../" + experimentName + "/train.txt").getPath()));
+            lines = Files.lines(Paths.get(ProbabilisticSoftLogicTest.class.getResource("../" + experimentName + "/train.txt").getPath()));
             lines.forEach(line -> {
                 String[] lineParts = line.split("\t");
                 for (int partIndex = 0; partIndex < lineParts.length - 1; partIndex++)
@@ -61,12 +60,12 @@ public class FastLogicRuleParserTest {
         logicManager.addPredicate("KNOWS", argumentTypes, false);
         logicManager.addPredicate("TRUSTS", argumentTypes, false);
 
-        InputStream modelStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/model.txt");
-        InputStream knowsStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/knows.txt");
-        InputStream trustTrainStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/train.txt");
-        InputStream trustTestStream = LogicRuleParserTest.class.getResourceAsStream("../" + experimentName + "/test.txt");
+        InputStream modelStream = ProbabilisticSoftLogicTest.class.getResourceAsStream("../" + experimentName + "/model.txt");
+        InputStream knowsStream = ProbabilisticSoftLogicTest.class.getResourceAsStream("../" + experimentName + "/knows.txt");
+        InputStream trustTrainStream = ProbabilisticSoftLogicTest.class.getResourceAsStream("../" + experimentName + "/train.txt");
+        InputStream trustTestStream = ProbabilisticSoftLogicTest.class.getResourceAsStream("../" + experimentName + "/test.txt");
 
-        List<FastProbabilisticSoftLogicProblem.Rule> rules = null;
+        List<ProbabilisticSoftLogicProblem.LogicRule> logicRules = null;
 
         try (
                 BufferedReader modelReader = new BufferedReader(new InputStreamReader(modelStream));
@@ -74,11 +73,11 @@ public class FastLogicRuleParserTest {
                 BufferedReader trustTrainReader = new BufferedReader(new InputStreamReader(trustTrainStream));
                 BufferedReader trustTestReader = trustTestStream == null ? null : new BufferedReader(new InputStreamReader(trustTestStream))) {
 
-            rules = ProbabilisticSoftLogicReader.readFastRules(modelReader, logicManager, variables);
+            logicRules = ProbabilisticSoftLogicReader.readRules(modelReader, logicManager, variables);
 
-            ProbabilisticSoftLogicReader.readGroundingsAndAddToFastManager(logicManager, "KNOWS", true, knowsReader);
+            ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(logicManager, "KNOWS", true, knowsReader);
 
-            ProbabilisticSoftLogicReader.readGroundingsAndAddToFastManager(logicManager, "TRUSTS", false, trustTrainReader);
+            ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(logicManager, "TRUSTS", false, trustTrainReader);
 
 //                    ProbabilisticSoftLogicReader.readGroundingsAndAddToManager(testPredicateManager, logicManager, personType, "TRUSTS", false, false, trustTestReader);
 
@@ -88,19 +87,18 @@ public class FastLogicRuleParserTest {
             e.printStackTrace();
         }
 
-        int[] observedIndexes = new int[(int) logicManager.getNumberOfGroundPredicates()];
-        double[] observedWeights = new double[(int) logicManager.getNumberOfGroundPredicates()];
-        List<GroundPredicate> groundPredicates = logicManager.getGroundPredicates();
-        for (int index = 0; index < logicManager.getNumberOfGroundPredicates(); index++) {
-            observedIndexes[index] = (int) groundPredicates.get(index).getId();
-            observedWeights[index] = (double) groundPredicates.get(index).getValue();
-        }
+//        int[] observedIndexes = new int[(int) logicManager.getNumberOfGroundPredicates()];
+//        double[] observedWeights = new double[(int) logicManager.getNumberOfGroundPredicates()];
+//        List<GroundPredicate> groundPredicates = logicManager.getGroundPredicates();
+//        for (int index = 0; index < logicManager.getNumberOfGroundPredicates(); index++) {
+//            observedIndexes[index] = (int) groundPredicates.get(index).getId();
+//            observedWeights[index] = (double) groundPredicates.get(index).getValue();
+//        }
 
-        FastProbabilisticSoftLogicProblem.Builder problemBuilder =
-                new FastProbabilisticSoftLogicProblem.Builder(logicManager);
-        FastProbabilisticSoftLogicProblem.Rule.addGroundingsToBuilder(rules, problemBuilder, logicManager);
-
-        FastProbabilisticSoftLogicProblem problem = problemBuilder.build();
+        ProbabilisticSoftLogicProblem problem =
+                new ProbabilisticSoftLogicProblem.Builder(logicManager)
+                        .addLogicRules(logicRules)
+                        .build();
         Map<Integer, Double> result = problem.solve();
 
         Map<String, Double> filteredResults = new HashMap<>();
