@@ -199,15 +199,18 @@ abstract class AbstractTrainableLogisticRegression
     @SuppressWarnings("unchecked")
     public boolean train(DataSet<? extends LabeledDataInstance<Vector, Double>> trainingDataSet) {
         this.trainingDataSet = (DataSet<LabeledDataInstance<Vector, Double>>) trainingDataSet;
-        try {
-            train();
-            if (sparse)
-                ((SparseVector) weights).compact();
-            return true;
-        } catch(Exception e) {
-            e.printStackTrace();
-            return false;
+        if (trainingDataSet.size() > 0) {
+            try {
+                train();
+                if (sparse)
+                    ((SparseVector) weights).compact();
+                return true;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
         }
+        return true;
     }
 
     /**
