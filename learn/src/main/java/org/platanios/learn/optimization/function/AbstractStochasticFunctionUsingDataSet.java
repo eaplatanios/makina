@@ -38,4 +38,37 @@ public abstract class AbstractStochasticFunctionUsingDataSet<D extends DataInsta
      * @return              The values of the first derivatives of the objective function, estimated at the given point.
      */
     public abstract Vector estimateGradient(Vector point, List<D> dataBatch);
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other)
+            return true;
+        if (other == null || getClass() != other.getClass())
+            return false;
+
+        AbstractStochasticFunctionUsingDataSet that = (AbstractStochasticFunctionUsingDataSet) other;
+
+        if (!super.equals(that))
+            return false;
+        if (!dataSet.equals(that.dataSet))
+            return false;
+        if (!dataIterator.equals(that.dataIterator))
+            return false;
+        if (oldSampleWithReplacement != that.oldSampleWithReplacement)
+            return false;
+        if (oldBatchSize != that.oldBatchSize)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + dataSet.hashCode();
+        result = 31 * result + dataIterator.hashCode();
+        result = 31 * result + (oldSampleWithReplacement ? 1231 : 1237);
+        result = 31 * result + oldBatchSize;
+        return result;
+    }
 }

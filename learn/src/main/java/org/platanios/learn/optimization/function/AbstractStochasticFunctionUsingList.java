@@ -55,4 +55,31 @@ public abstract class AbstractStochasticFunctionUsingList<T> extends AbstractSto
      * @return              The values of the first derivatives of the objective function, estimated at the given point.
      */
     public abstract Vector estimateGradient(Vector point, int startIndex, int endIndex);
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other)
+            return true;
+        if (other == null || getClass() != other.getClass())
+            return false;
+
+        AbstractStochasticFunctionUsingList that = (AbstractStochasticFunctionUsingList) other;
+
+        if (!super.equals(that))
+            return false;
+        if (!data.equals(that.data))
+            return false;
+        if (currentSampleIndex != that.currentSampleIndex)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + data.hashCode();
+        result = 31 * result + currentSampleIndex;
+        return result;
+    }
 }

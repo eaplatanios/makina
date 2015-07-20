@@ -1,12 +1,10 @@
 package org.platanios.learn.optimization.function;
 
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -14,7 +12,7 @@ import java.util.List;
  */
 public class SumFunction extends AbstractFunction {
     protected final int numberOfVariables;
-    protected final List<int[]> termsVariables;
+    protected final List<int[]> termVariables;
     protected final List<AbstractFunction> terms;
 
     protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
@@ -52,51 +50,8 @@ public class SumFunction extends AbstractFunction {
 
     protected SumFunction(AbstractBuilder<?> builder) {
         numberOfVariables = builder.numberOfVariables;
-        termsVariables = builder.termsVariables;
+        termVariables = builder.termsVariables;
         terms = builder.terms;
-    }
-
-    @Override
-    public boolean equals(Object other) {
-        if (other == this) {
-            return true;
-        }
-
-        if (!(other instanceof SumFunction)) {
-            return false;
-        }
-
-        SumFunction rhs = (SumFunction) other;
-
-        if (this.numberOfVariables != rhs.numberOfVariables) {
-            return false;
-        }
-
-        if (this.termsVariables.size() != rhs.termsVariables.size()) {
-            return false;
-        }
-
-        for (int i = 0; i < this.termsVariables.size(); ++i) {
-            if (!Arrays.equals(this.termsVariables.get(i), rhs.termsVariables.get(i))) {
-                return false;
-            }
-        }
-
-        return this.terms.equals(rhs.terms);
-
-    }
-
-    @Override
-    public int hashCode() {
-
-        HashCodeBuilder codeBuilder = new HashCodeBuilder(19, 29);
-        codeBuilder.append(this.numberOfVariables);
-        for (int i = 0; i < this.termsVariables.size(); ++i) {
-            codeBuilder.append(this.termsVariables.get(i));
-        }
-        codeBuilder.append(this.terms);
-        return codeBuilder.toHashCode();
-
     }
 
     public final double getValue(Vector point, int termIndex) {
@@ -107,8 +62,8 @@ public class SumFunction extends AbstractFunction {
     protected double computeValue(Vector point) {
         double value = 0;
         for (int term = 0; term < terms.size(); term++) {
-            Vector termPoint = Vectors.build(termsVariables.get(term).length, point.type());
-            termPoint.set(0, termsVariables.get(term).length - 1, point.get(termsVariables.get(term)));
+            Vector termPoint = Vectors.build(termVariables.get(term).length, point.type());
+            termPoint.set(0, termVariables.get(term).length - 1, point.get(termVariables.get(term)));
             value += terms.get(term).computeValue(termPoint);
         }
         return value;
@@ -122,10 +77,10 @@ public class SumFunction extends AbstractFunction {
     protected Vector computeGradient(Vector point) throws NonSmoothFunctionException {
         Vector gradient = Vectors.build(point.size(), point.type());
         for (int term = 0; term < terms.size(); term++) {
-            Vector termPoint = Vectors.build(termsVariables.get(term).length, point.type());
-            termPoint.set(0, termsVariables.get(term).length - 1, point.get(termsVariables.get(term)));
+            Vector termPoint = Vectors.build(termVariables.get(term).length, point.type());
+            termPoint.set(0, termVariables.get(term).length - 1, point.get(termVariables.get(term)));
             Vector termGradient = Vectors.build(point.size(), point.type());
-            termGradient.set(termsVariables.get(term), terms.get(term).computeGradient(termPoint));
+            termGradient.set(termVariables.get(term), terms.get(term).computeGradient(termPoint));
             gradient.add(termGradient);
         }
         return gradient;
@@ -139,11 +94,11 @@ public class SumFunction extends AbstractFunction {
     protected Matrix computeHessian(Vector point) throws NonSmoothFunctionException {
         Matrix hessian = new Matrix(point.size(), point.size());
         for (int term = 0; term < terms.size(); term++) {
-            Vector termPoint = Vectors.build(termsVariables.get(term).length, point.type());
-            termPoint.set(0, termsVariables.get(term).length - 1, point.get(termsVariables.get(term)));
+            Vector termPoint = Vectors.build(termVariables.get(term).length, point.type());
+            termPoint.set(0, termVariables.get(term).length - 1, point.get(termVariables.get(term)));
             Matrix termHessian = new Matrix(point.size(), point.size());
-            termHessian.setSubMatrix(termsVariables.get(term),
-                                     termsVariables.get(term),
+            termHessian.setSubMatrix(termVariables.get(term),
+                                     termVariables.get(term),
                                      terms.get(term).computeHessian(termPoint));
             hessian.add(termHessian);
         }
@@ -158,12 +113,12 @@ public class SumFunction extends AbstractFunction {
         return terms.size();
     }
 
-    public List<int[]> getTermsVariables() {
-        return termsVariables;
+    public List<int[]> getTermVariables() {
+        return termVariables;
     }
 
     public int[] getTermVariables(int termIndex) {
-        return termsVariables.get(termIndex);
+        return termVariables.get(termIndex);
     }
 
     public List<AbstractFunction> getTerms() {
@@ -172,5 +127,35 @@ public class SumFunction extends AbstractFunction {
 
     public AbstractFunction getTerm(int termIndex) {
         return terms.get(termIndex);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other)
+            return true;
+        if (other == null || getClass() != other.getClass())
+            return false;
+
+        SumFunction that = (SumFunction) other;
+
+        if (!super.equals(that))
+            return false;
+        if (numberOfVariables != that.numberOfVariables)
+            return false;
+        if (!termVariables.equals(that.termVariables))
+            return false;
+        if (!terms.equals(that.terms))
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + numberOfVariables;
+        result = 31 * result + termVariables.hashCode();
+        result = 31 * result + terms.hashCode();
+        return result;
     }
 }

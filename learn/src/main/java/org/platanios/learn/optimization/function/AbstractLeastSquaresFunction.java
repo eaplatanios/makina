@@ -28,4 +28,24 @@ public abstract class AbstractLeastSquaresFunction extends AbstractFunction {
 
     public abstract Vector computeResiduals(Vector point);
     public abstract Matrix computeJacobian(Vector point);
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other)
+            return true;
+        if (other == null || getClass() != other.getClass())
+            return false;
+
+        AbstractLeastSquaresFunction that = (AbstractLeastSquaresFunction) other;
+
+        if (!super.equals(that))
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }

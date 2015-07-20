@@ -1,8 +1,5 @@
 package org.platanios.learn.optimization.function;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.math3.analysis.function.Max;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
@@ -56,45 +53,6 @@ public class MaxFunction extends AbstractFunction {
         functionTermVariables = builder.functionTermVariables;
         functionTerms = builder.functionTerms;
         constantTerms = builder.constantTerms;
-    }
-
-    @Override
-    public boolean equals(Object other) {
-
-        if (other == this) {
-            return true;
-        }
-
-        if (!super.equals(other)) {
-            return false;
-        }
-
-        if (!(other instanceof MaxFunction)) {
-            return false;
-        }
-
-        MaxFunction rhs = (MaxFunction) other;
-
-        return new EqualsBuilder()
-                .append(this.constantTerms, rhs.constantTerms)
-                .append(this.functionTerms, rhs.functionTerms)
-                .append(this.functionTermVariables, rhs.functionTermVariables)
-                .append(this.numberOfVariables, rhs.numberOfVariables)
-                .isEquals();
-
-    }
-
-    @Override
-    public int hashCode() {
-
-        return new HashCodeBuilder(71, 29)
-                .append(super.hashCode())
-                .append(this.constantTerms)
-                .append(this.functionTerms)
-                .append(this.functionTermVariables)
-                .append(this.numberOfVariables)
-                .toHashCode();
-
     }
 
     public final double getValue(Vector point, int termIndex) {
@@ -166,5 +124,38 @@ public class MaxFunction extends AbstractFunction {
 
     public double getConstantTerm(int constantTermIndex) {
         return constantTerms.get(constantTermIndex);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other)
+            return true;
+        if (other == null || getClass() != other.getClass())
+            return false;
+
+        MaxFunction that = (MaxFunction) other;
+
+        if (!super.equals(that))
+            return false;
+        if (numberOfVariables != that.numberOfVariables)
+            return false;
+        if (!functionTermVariables.equals(that.functionTermVariables))
+            return false;
+        if (!functionTerms.equals(that.functionTerms))
+            return false;
+        if (!constantTerms.equals(that.constantTerms))
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + numberOfVariables;
+        result = 31 * result + functionTermVariables.hashCode();
+        result = 31 * result + functionTerms.hashCode();
+        result = 31 * result + constantTerms.hashCode();
+        return result;
     }
 }

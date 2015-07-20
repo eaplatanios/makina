@@ -1,7 +1,5 @@
 package org.platanios.learn.optimization.function;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 
@@ -16,34 +14,6 @@ public abstract class AbstractFunction {
 
     private DerivativesApproximation derivativesApproximation =
             new DerivativesApproximation(this, DerivativesApproximation.Method.CENTRAL_DIFFERENCE);
-
-    @Override
-    public boolean equals(Object other) {
-
-        if (other == this) {
-            return true;
-        }
-
-        if (!(other instanceof AbstractFunction)) {
-            return false;
-        }
-
-        AbstractFunction rhs = (AbstractFunction) other;
-
-        return this.computeGradientMethodOverridden == rhs.computeGradientMethodOverridden &&
-                this.derivativesApproximation.sameApprox(rhs.derivativesApproximation);
-
-    }
-
-    @Override
-    public int hashCode() {
-
-        return new HashCodeBuilder(23, 29)
-                .append(this.derivativesApproximation.approxCode())
-                .append(this.computeGradientMethodOverridden)
-                .toHashCode();
-
-    }
 
     /**
      * Computes the function value at a particular point.
@@ -111,5 +81,29 @@ public abstract class AbstractFunction {
 
     public final void setDerivativesApproximationMethod(DerivativesApproximation.Method method) {
         derivativesApproximation.setMethod(method);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other)
+            return true;
+        if (other == null || getClass() != other.getClass())
+            return false;
+
+        AbstractFunction that = (AbstractFunction) other;
+
+        if (computeGradientMethodOverridden != that.computeGradientMethodOverridden)
+            return false;
+        if (derivativesApproximation.getMethod() != that.derivativesApproximation.getMethod())
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = computeGradientMethodOverridden ? 1231 : 1237;
+        result = 31 * result + derivativesApproximation.getMethod().hashCode();
+        return result;
     }
 }

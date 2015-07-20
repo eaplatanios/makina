@@ -1,7 +1,5 @@
 package org.platanios.learn.optimization.function;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 
@@ -17,41 +15,6 @@ public final class LinearFunction extends AbstractFunction {
     public LinearFunction(Vector a, double b) {
         this.a = a;
         this.b = b;
-    }
-
-    @Override
-    public boolean equals(Object other) {
-
-        if (other == this) {
-            return true;
-        }
-
-        if (!super.equals(other)) {
-            return false;
-        }
-
-        if (!(other instanceof LinearFunction)) {
-            return false;
-        }
-
-        LinearFunction rhs = (LinearFunction)other;
-
-        return new EqualsBuilder()
-                .append(this.a, rhs.a)
-                .append(this.b, rhs.b)
-                .isEquals();
-
-    }
-
-    @Override
-    public int hashCode() {
-
-        return new HashCodeBuilder(19, 23)
-                .append(super.hashCode())
-                .append(this.a)
-                .append(this.b)
-                .toHashCode();
-
     }
 
     @Override
@@ -90,5 +53,32 @@ public final class LinearFunction extends AbstractFunction {
 
     public double getB() {
         return b;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other)
+            return true;
+        if (other == null || getClass() != other.getClass())
+            return false;
+
+        LinearFunction that = (LinearFunction) other;
+
+        if (!super.equals(that))
+            return false;
+        if (!a.equals(that.a))
+            return false;
+        if (b != b)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + a.hashCode();
+        result = 31 * result + Double.valueOf(b).hashCode();
+        return result;
     }
 }

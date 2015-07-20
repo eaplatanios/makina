@@ -87,4 +87,31 @@ public final class LinearEqualityConstraint extends AbstractEqualityConstraint {
     public Vector getB() {
         return b;
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other)
+            return true;
+        if (other == null || getClass() != other.getClass())
+            return false;
+
+        LinearEqualityConstraint that = (LinearEqualityConstraint) other;
+
+        if (!super.equals(that))
+            return false;
+        if (!A.equals(that.A))
+            return false;
+        if (!b.equals(that.b))
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + A.hashCode();
+        result = 31 * result + b.hashCode();
+        return result;
+    }
 }

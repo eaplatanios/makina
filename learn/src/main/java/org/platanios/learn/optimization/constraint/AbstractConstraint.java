@@ -36,4 +36,28 @@ public abstract class AbstractConstraint {
     public final int getNumberOfJacobianEvaluations() {
         return numberOfJacobianEvaluations;
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other)
+            return true;
+        if (other == null || getClass() != other.getClass())
+            return false;
+
+        AbstractConstraint that = (AbstractConstraint) other;
+
+        if (numberOfConstraintEvaluations != that.numberOfConstraintEvaluations)
+            return false;
+        if (numberOfJacobianEvaluations != that.numberOfJacobianEvaluations)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = numberOfConstraintEvaluations;
+        result = 31 * result + numberOfJacobianEvaluations;
+        return result;
+    }
 }

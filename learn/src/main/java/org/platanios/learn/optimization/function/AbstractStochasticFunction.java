@@ -1,8 +1,8 @@
 package org.platanios.learn.optimization.function;
 
-import java.util.Random;
-
 import org.platanios.learn.math.matrix.Vector;
+
+import java.util.Random;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -45,5 +45,38 @@ public abstract class AbstractStochasticFunction {
 
     public int getNumberOfGradientEvaluations() {
         return numberOfGradientEvaluations;
+    }
+
+    /**
+     * Note that this function does not consider the Random object of this class when checking for equality.
+     *
+     * @param   other
+     * @return
+     */
+    @Override
+    public boolean equals(Object other) {
+        if (this == other)
+            return true;
+        if (other == null || getClass() != other.getClass())
+            return false;
+
+        AbstractStochasticFunction that = (AbstractStochasticFunction) other;
+
+        if (!super.equals(that))
+            return false;
+        if (sampleWithReplacement != that.sampleWithReplacement)
+            return false;
+        if (numberOfGradientEvaluations != that.numberOfGradientEvaluations)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (sampleWithReplacement ? 1231 : 1237);
+        result = 31 * result + numberOfGradientEvaluations;
+        return result;
     }
 }

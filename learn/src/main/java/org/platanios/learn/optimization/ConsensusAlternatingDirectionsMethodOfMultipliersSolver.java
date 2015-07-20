@@ -232,7 +232,7 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         subProblemSolver = builder.subProblemSolver;
         taskExecutor = Executors.newFixedThreadPool(builder.numberOfThreads);
         variableCopiesCounts = Vectors.dense(currentPoint.size());
-        for (int[] variableIndexes : objective.getTermsVariables()) {
+        for (int[] variableIndexes : objective.getTermVariables()) {
             Vector termPoint = Vectors.build(variableIndexes.length, currentPoint.type());
             termPoint.set(currentPoint.get(variableIndexes));
             variableCopies.add(termPoint);

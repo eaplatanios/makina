@@ -1,7 +1,5 @@
 package org.platanios.learn.optimization.function;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 
@@ -19,40 +17,6 @@ public final class LinearLeastSquaresFunction extends AbstractLeastSquaresFuncti
         this.y = y;
     }
 
-    @Override
-    public boolean equals(Object other) {
-        if (other == this) {
-            return true;
-        }
-
-        if (!super.equals(other)) {
-            return false;
-        }
-
-        if (!(other instanceof LinearLeastSquaresFunction)) {
-            return false;
-        }
-
-        LinearLeastSquaresFunction rhs = (LinearLeastSquaresFunction)other;
-
-        return new EqualsBuilder()
-                .append(this.J, rhs.J)
-                .append(this.y, rhs.y)
-                .isEquals();
-
-    }
-
-    @Override
-    public int hashCode() {
-
-        return new HashCodeBuilder(7, 61)
-                .append(super.hashCode())
-                .append(this.J)
-                .append(this.y)
-                .toHashCode();
-
-    }
-
     public Vector computeResiduals(Vector point) {
         return J.multiply(point).sub(y);
     }
@@ -67,5 +31,32 @@ public final class LinearLeastSquaresFunction extends AbstractLeastSquaresFuncti
 
     public Vector getY() {
         return y;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other)
+            return true;
+        if (other == null || getClass() != other.getClass())
+            return false;
+
+        LinearLeastSquaresFunction that = (LinearLeastSquaresFunction) other;
+
+        if (!super.equals(that))
+            return false;
+        if (!J.equals(that.J))
+            return false;
+        if (!y.equals(that.y))
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + J.hashCode();
+        result = 31 * result + y.hashCode();
+        return result;
     }
 }
