@@ -72,7 +72,7 @@ public class DatabaseLazyGrounding {
                 if (!groundedFormulas.containsKey(currentFormulaIndex))
                     groundedFormulas.put(currentFormulaIndex, new HashSet<>());
                 ground(partialGroundedFormula, remainingAtomsDisjunction.get(currentFormulaIndex));
-                logger.info("Generated " + groundedFormula.size() + " groundings for rule " + currentFormulaIndex); // TODO: Use a logger for this part.
+                logger.info("Generated " + groundedFormula.size() + " groundings for rule " + currentFormulaIndex);
                 groundedFormulas.get(currentFormulaIndex).addAll(groundedFormula);
             }
             int currentNumberOfActivatedGroundedPredicates = 0;

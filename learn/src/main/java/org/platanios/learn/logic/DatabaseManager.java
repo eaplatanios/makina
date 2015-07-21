@@ -409,26 +409,6 @@ public class DatabaseManager {
         return predicate;
     }
 
-    public Predicate getDatabasePredicate(long id) {
-        Session session = sessionFactory.openSession();
-        Criteria criteria = session.createCriteria(Predicate.class);
-        criteria.setFetchMode("argumentTypes", FetchMode.JOIN);
-        criteria.add(Restrictions.eq("id", id));
-        Predicate predicate = (Predicate) criteria.uniqueResult();
-        session.close();
-        return predicate;
-    }
-
-    public Predicate getDatabasePredicate(String name) {
-        Session session = sessionFactory.openSession();
-        Criteria criteria = session.createCriteria(Predicate.class);
-        criteria.setFetchMode("argumentTypes", FetchMode.JOIN);
-        criteria.add(Restrictions.eq("name", name));
-        Predicate predicate = (Predicate) criteria.uniqueResult();
-        session.close();
-        return predicate;
-    }
-
     @SuppressWarnings("unchecked")
     public List<Predicate> getClosedPredicates() {
         Session session = sessionFactory.openSession();
@@ -524,20 +504,21 @@ public class DatabaseManager {
 
     @SuppressWarnings("unchecked")
     public GroundPredicate getGroundPredicate(long predicateId, List<Long> variablesAssignment) {
-        StringBuilder hqlQuery = new StringBuilder("from ");
+        StringBuilder hqlQuery = new StringBuilder("select groundPredicate from ");
         for (int argumentId = 0; argumentId < variablesAssignment.size(); argumentId++) {
             hqlQuery.append("GroundPredicateArgument ")
                     .append("argument_").append(argumentId);
             if (argumentId < variablesAssignment.size() - 1)
                 hqlQuery.append(", ");
         }
-        hqlQuery.append(" where ");
+        hqlQuery.append(" inner join argument_0.groundPredicate as groundPredicate ");
+        hqlQuery.append("where ");
         hqlQuery.append("argument_0.predicate.id = ").append(predicateId);
         for (int argumentId = 0; argumentId < variablesAssignment.size(); argumentId++) {
             if (argumentId != 0)
-                hqlQuery.append(" and argument_0.groundPredicate.id = ")
+                hqlQuery.append(" and groundPredicate = ")
                         .append("argument_").append(argumentId)
-                        .append(".groundPredicate.id");
+                        .append(".groundPredicate");
             hqlQuery.append(" and argument_").append(argumentId)
                     .append(".argumentIndex = ").append(argumentId);
             hqlQuery.append(" and argument_").append(argumentId)
@@ -545,28 +526,28 @@ public class DatabaseManager {
         }
         Session session = sessionFactory.openSession();
         Query query = session.createQuery(hqlQuery.toString());
-        GroundPredicateArgument argument = ((GroundPredicateArgument) ((Object[]) query.uniqueResult())[0]);
-        GroundPredicate groundPredicate = argument.getGroundPredicate();
+        GroundPredicate result = (GroundPredicate) query.uniqueResult();
         session.close();
-        return groundPredicate;
+        return result;
     }
 
     @SuppressWarnings("unchecked")
     public Double getPredicateAssignmentTruthValue(Predicate predicate, List<Long> variablesAssignment, Logic logic) {
-        StringBuilder hqlQuery = new StringBuilder("from ");
+        StringBuilder hqlQuery = new StringBuilder("select groundPredicate.value from ");
         for (int argumentId = 0; argumentId < variablesAssignment.size(); argumentId++) {
             hqlQuery.append("GroundPredicateArgument ")
                     .append("argument_").append(argumentId);
             if (argumentId < variablesAssignment.size() - 1)
                 hqlQuery.append(", ");
         }
-        hqlQuery.append(" where ");
+        hqlQuery.append(" inner join argument_0.groundPredicate as groundPredicate ");
+        hqlQuery.append("where ");
         hqlQuery.append("argument_0.predicate.id = ").append(predicate.getId());
         for (int argumentId = 0; argumentId < variablesAssignment.size(); argumentId++) {
             if (argumentId != 0)
-                hqlQuery.append(" and argument_0.groundPredicate.id = ")
+                hqlQuery.append(" and groundPredicate = ")
                         .append("argument_").append(argumentId)
-                        .append(".groundPredicate.id");
+                        .append(".groundPredicate");
             hqlQuery.append(" and argument_").append(argumentId)
                     .append(".argumentIndex = ").append(argumentId);
             hqlQuery.append(" and argument_").append(argumentId)
@@ -574,19 +555,12 @@ public class DatabaseManager {
         }
         StatelessSession session = sessionFactory.openStatelessSession();
         Query query = session.createQuery(hqlQuery.toString());
-        Object[] uniqueResult = (Object[]) query.uniqueResult();
-        if (uniqueResult != null) {
-            GroundPredicateArgument argument = ((GroundPredicateArgument) uniqueResult[0]);
-            GroundPredicate groundPredicate = argument.getGroundPredicate();
-            session.close();
-            return groundPredicate.getValue();
-        } else if (!getDatabasePredicate(predicate.getId()).getClosed()) {
-            session.close();
-            return null;
-        } else {
-            session.close();
+        Double result = (Double) query.uniqueResult();
+        session.close();
+        if (result != null || !predicate.getClosed())
+            return result;
+        else
             return logic.falseValue();
-        }
     }
 
     @SuppressWarnings("unchecked")
@@ -612,10 +586,10 @@ public class DatabaseManager {
             for (int argumentId = 0; argumentId < atoms.get(atomId).getOrderedVariables().size(); argumentId++) {
                 if (argumentId != 0)
                     hqlQuery.append(" and atom_").append(atomId)
-                            .append("_argument_0.groundPredicate.id = ")
+                            .append("_argument_0.groundPredicate = ")
                             .append("atom_").append(atomId)
                             .append("_argument_").append(argumentId)
-                            .append(".groundPredicate.id");
+                            .append(".groundPredicate");
                 hqlQuery.append(" and atom_").append(atomId)
                         .append("_argument_").append(argumentId)
                         .append(".argumentIndex = ").append(argumentId);

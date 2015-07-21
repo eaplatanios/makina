@@ -144,7 +144,7 @@ public final class ProbabilisticSoftLogicProblem {
                     disjunctionComponents.add(logicRule.headFormulas.get(i));
                 ruleFormulas.add(new Disjunction(disjunctionComponents));
             }
-//            FastLazyGrounding grounding = new FastLazyGrounding(logicManager);
+//            InMemoryLazyGrounding grounding = new InMemoryLazyGrounding(logicManager);
             DatabaseLazyGrounding grounding = new DatabaseLazyGrounding((DatabaseLogicManager) logicManager);
 //            grounding.ground(ruleFormulas);
             ruleFormulas = grounding.ground(ruleFormulas);
