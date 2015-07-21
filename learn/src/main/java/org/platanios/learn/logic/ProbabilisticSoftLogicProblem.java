@@ -27,6 +27,7 @@ import java.util.*;
  * @author Emmanouil Antonios Platanios
  */
 public final class ProbabilisticSoftLogicProblem {
+    private final LogicManager logicManager;
     private final ProbabilisticSoftLogicObjectiveFunction objectiveFunction;
     private final ImmutableSet<Constraint> constraints;
     private final BiMap<Integer, Integer> externalToInternalIdsMap;
@@ -201,6 +202,7 @@ public final class ProbabilisticSoftLogicProblem {
     }
 
     private ProbabilisticSoftLogicProblem(Builder builder) {
+        logicManager = builder.logicManager;
         externalToInternalIdsMap = builder.externalToInternalIdsMap;
         SumFunction.Builder sumFunctionBuilder = new SumFunction.Builder(externalToInternalIdsMap.size());
         for (Builder.FunctionTerm function : builder.functionTerms) {
@@ -232,11 +234,11 @@ public final class ProbabilisticSoftLogicProblem {
         }
     }
 
-    public Map<Integer, Double> solve() {
+    public List<GroundPredicate> solve() {
         return solve(ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.ALL, null, -1);
     }
 
-    public Map<Integer, Double> solve(
+    public List<GroundPredicate> solve(
             ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod subProblemSelectionMethod,
             ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelector subProblemSelector,
             int numberOfSubProblemSamples) {
@@ -265,11 +267,14 @@ public final class ProbabilisticSoftLogicProblem {
             solverBuilder.addConstraint(constraint.constraint, constraint.variableIndexes);
         ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver = solverBuilder.build();
         Vector result = solver.solve();
-        Map<Integer, Double> inferredVariableValues = new HashMap<>(result.size());
-        for (int internalVariableId = 0; internalVariableId < result.size(); internalVariableId++)
-            inferredVariableValues.put(externalToInternalIdsMap.inverse().get(internalVariableId),
-                                       result.get(internalVariableId));
-        return inferredVariableValues;
+        List<GroundPredicate> groundPredicates = new ArrayList<>();
+        for (int internalVariableId = 0; internalVariableId < result.size(); internalVariableId++) {
+            GroundPredicate groundPredicate =
+                    logicManager.getGroundPredicate(externalToInternalIdsMap.inverse().get(internalVariableId));
+            groundPredicate.setValue(result.get(internalVariableId));
+            groundPredicates.add(groundPredicate);
+        }
+        return groundPredicates;
     }
 
     private static void solveProbabilisticSoftLogicSubProblem(

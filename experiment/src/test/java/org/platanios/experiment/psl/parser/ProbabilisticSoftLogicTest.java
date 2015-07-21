@@ -8,6 +8,7 @@ import org.platanios.learn.logic.LogicManager;
 import org.platanios.learn.logic.LukasiewiczLogic;
 import org.platanios.learn.logic.formula.EntityType;
 import org.platanios.learn.logic.formula.Variable;
+import org.platanios.learn.logic.grounding.GroundPredicate;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -99,19 +100,13 @@ public class ProbabilisticSoftLogicTest {
                 new ProbabilisticSoftLogicProblem.Builder(logicManager)
                         .addLogicRules(logicRules)
                         .build();
-        Map<Integer, Double> result = problem.solve();
+        List<GroundPredicate> result = problem.solve();
 
-        Map<String, Double> filteredResults = new HashMap<>();
+        List<GroundPredicate> filteredResults = new ArrayList<>();
 
-        result.keySet().stream()
-                .filter(key -> result.get(key) > Math.sqrt(Double.MIN_VALUE))
-                .forEach(key -> filteredResults.put(logicManager.getGroundPredicate(key).toString(), result.get(key)));
-
-        long numberOfActivatedGroundings = result.keySet().stream().filter(key -> result.get(key) > 0.01).count();
-
-        result.keySet().stream()
-                .filter(key -> result.get(key) > 0.01)
-                .forEach(key -> logicManager.getGroundPredicate(key).setValue(result.get(key)));
+        result.stream()
+                .filter(groundPredicate -> groundPredicate.getValue() > 0.01)
+                .forEach(filteredResults::add);
 
         System.out.println(result.get(0));
         System.out.println(result.get(1));
