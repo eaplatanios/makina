@@ -52,28 +52,38 @@ public class PrecisionRecall<T extends Vector, S> {
             else
                 trueNegativesNumber++;
         points.add(
-                new CurvePoint(truePositivesNumber / (truePositivesNumber + falsePositivesNumber + epsilon),
-                               truePositivesNumber / (truePositivesNumber + falseNegativesNumber + epsilon))
+                new CurvePoint((truePositivesNumber + epsilon) / (truePositivesNumber + falsePositivesNumber + epsilon),
+                               (truePositivesNumber + epsilon) / (truePositivesNumber + falseNegativesNumber + epsilon))
         );
         double areaUnderCurve = 0;
-        for (PredictedDataInstance<T, S> prediction : predictions) {
-            if (groundTruth.apply(prediction)) {
-                truePositivesNumber++;
-                falseNegativesNumber--;
-            } else {
-                falsePositivesNumber++;
-                trueNegativesNumber--;
+        int previousThresholdPredictionIndex = 0;
+        for (double thresholdIndex = 0; thresholdIndex <= 1000; thresholdIndex++) {
+            double threshold = 1 - thresholdIndex / 1000;
+            PredictedDataInstance<T, S> prediction = predictions.get(previousThresholdPredictionIndex);
+            while (prediction.probability() >= threshold) {
+                if (groundTruth.apply(prediction)) {
+                    falseNegativesNumber--;
+                    truePositivesNumber++;
+                } else {
+                    trueNegativesNumber--;
+                    falsePositivesNumber++;
+                }
+                points.add(
+                        new CurvePoint((truePositivesNumber + epsilon) / (truePositivesNumber + falsePositivesNumber + epsilon),
+                                       (truePositivesNumber + epsilon) / (truePositivesNumber + falseNegativesNumber + epsilon))
+                );
+                int k = points.size() - 1;
+                areaUnderCurve += 0.5
+                        * (points.get(k).recall - points.get(k - 1).recall)
+                        * (points.get(k).precision + points.get(k - 1).precision);
+                if (++previousThresholdPredictionIndex < predictions.size())
+                    prediction = predictions.get(previousThresholdPredictionIndex);
+                else
+                    break;
             }
-            points.add(
-                    new CurvePoint(truePositivesNumber / (truePositivesNumber + falsePositivesNumber + epsilon),
-                                   truePositivesNumber / (truePositivesNumber + falseNegativesNumber + epsilon))
-            );
-            int k = points.size() - 1;
-            areaUnderCurve += 0.5
-                    * (points.get(k).recall - points.get(k - 1).recall)
-                    * (points.get(k).precision + points.get(k - 1).precision);
+            if (previousThresholdPredictionIndex == predictions.size())
+                break;
         }
-        points.add(new CurvePoint(1, 1));
         areaUnderCurve += 0.5
                 * (1 - points.get(points.size() - 2).recall)
                 * (1 + points.get(points.size() - 2).precision);
