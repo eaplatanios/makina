@@ -1,5 +1,6 @@
 package org.platanios.learn.math.matrix;
 
+import org.platanios.learn.math.MathUtilities;
 import sun.misc.Unsafe;
 
 import java.io.IOException;
@@ -45,7 +46,7 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
 
     /** The threshold value for elements to be considered equal to zero when counting the number of non-zero elements of
      * this vector (i.e., in method {@link #cardinality()}) and when handling sparse vectors. */
-    protected static final double epsilon = Math.sqrt(Double.MIN_VALUE);
+    protected static final double epsilon = MathUtilities.computeMachineEpsilonDouble();
 
     /**
      * Gets the type of this vector (i.e., dense, sparse, etc.).
