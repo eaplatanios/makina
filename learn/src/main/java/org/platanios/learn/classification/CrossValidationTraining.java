@@ -13,7 +13,6 @@ import java.util.List;
  */
 public class CrossValidationTraining<T extends Vector, S> extends Training<T, S> {
     private final int numberOfFolds;
-    protected final List<S> fullDataSetLabels;
 
     protected DataSet<? extends LabeledDataInstance<T, S>> trainingDataSet;
     protected DataSet<? extends LabeledDataInstance<T, S>> evaluationDataSet;
@@ -21,14 +20,10 @@ public class CrossValidationTraining<T extends Vector, S> extends Training<T, S>
     protected static abstract class AbstractBuilder<B extends AbstractBuilder<B, T, S>, T extends Vector, S>
             extends Training.AbstractBuilder<B, T, S> {
         protected int numberOfFolds = 10;
-        protected List<S> fullDataSetLabels = new ArrayList<>();
 
         private AbstractBuilder(TrainableClassifier.Builder<T, S> classifierBuilder,
                                 DataSet<? extends LabeledDataInstance<T, S>> trainingDataSet) {
             super(classifierBuilder, trainingDataSet);
-
-            for (LabeledDataInstance<T, S> labeledDataInstance : labeledDataSet)
-                fullDataSetLabels.add(labeledDataInstance.label());
         }
 
         public B numberOfFolds(int numberOfFolds) {
@@ -58,7 +53,6 @@ public class CrossValidationTraining<T extends Vector, S> extends Training<T, S>
         super(builder);
 
         numberOfFolds = builder.numberOfFolds;
-        fullDataSetLabels = builder.fullDataSetLabels;
     }
 
     @Override
@@ -78,5 +72,10 @@ public class CrossValidationTraining<T extends Vector, S> extends Training<T, S>
             averageLoss += lossFunction.computeLoss(predictedLabels, evaluationDataSetLabels);
         }
         return averageLoss / numberOfFolds;
+    }
+
+    @Override
+    protected boolean needsTrainingAfterSearch() {
+        return true;
     }
 }

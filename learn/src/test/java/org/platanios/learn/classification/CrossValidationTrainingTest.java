@@ -32,7 +32,7 @@ public class CrossValidationTrainingTest {
                         .addAllowedParameterValues("l1RegularizationWeight", 0.1, 1.0, 10.0)
                         .addAllowedParameterValues("l2RegularizationWeight", 0.1, 1.0, 10.0)
                         .build();
-        LogisticRegressionAdaGrad classifier = (LogisticRegressionAdaGrad) training.train();
+        LogisticRegressionAdaGrad classifier = (LogisticRegressionAdaGrad) training.train().getClassifier();
         DataSet<PredictedDataInstance<Vector, Double>> testingDataSet = new DataSetInMemory<>();
         for (PredictedDataInstance<Vector, Double> dataInstance : trainingDataSet.subSet(80, trainingDataSet.size()))
             testingDataSet.add(dataInstance);
@@ -64,7 +64,7 @@ public class CrossValidationTrainingTest {
                         .addAllowedParameterValues("l1RegularizationWeight", 0.1, 1.0, 10.0)
                         .addAllowedParameterValues("l2RegularizationWeight", 0.1, 1.0, 10.0)
                         .build();
-        LogisticRegressionAdaGrad classifier = (LogisticRegressionAdaGrad) training.train();
+        LogisticRegressionAdaGrad classifier = (LogisticRegressionAdaGrad) training.train().getClassifier();
         DataSet<PredictedDataInstance<Vector, Double>> testingDataSet = new DataSetInMemory<>();
         for (PredictedDataInstance<Vector, Double> dataInstance : trainingDataSet.subSet(500000, trainingDataSet.size()))
             testingDataSet.add(dataInstance);
@@ -99,7 +99,7 @@ public class CrossValidationTrainingTest {
                         .addAllowedParameterValues("l1RegularizationWeight", 0.1, 1.0, 10.0)
                         .addAllowedParameterValues("l2RegularizationWeight", 0.1, 1.0, 10.0)
                         .build();
-        LogisticRegressionAdaGrad classifier = (LogisticRegressionAdaGrad) training.train();
+        LogisticRegressionAdaGrad classifier = (LogisticRegressionAdaGrad) training.train().getClassifier();
         DataSet<PredictedDataInstance<Vector, Double>> testingDataSet = new DataSetInMemory<>();
         for (PredictedDataInstance<Vector, Double> dataInstance : trainingDataSet.subSet(20000, trainingDataSet.size()))
             testingDataSet.add(dataInstance);

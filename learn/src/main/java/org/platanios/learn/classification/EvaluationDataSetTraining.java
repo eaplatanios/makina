@@ -64,4 +64,9 @@ public class EvaluationDataSetTraining<T extends Vector, S> extends Training<T, 
             predictedLabels.add(predictedDataInstance.label());
         return lossFunction.computeLoss(predictedLabels, evaluationDataSetLabels);
     }
+
+    @Override
+    protected boolean needsTrainingAfterSearch() {
+        return false;
+    }
 }

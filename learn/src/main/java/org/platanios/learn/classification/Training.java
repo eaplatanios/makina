@@ -79,13 +79,15 @@ public abstract class Training<T extends Vector, S> {
         lossFunction = builder.lossFunction;
     }
 
-    public TrainableClassifier<T, S> train() {
+    public TrainedClassifier<T, S> train() {
         searchMethod.searchOverParameterValues(this);
-        bestClassifier.train(labeledDataSet); // TODO: Not necessary for evaluation data set method.
-        return bestClassifier;
+        if (needsTrainingAfterSearch())
+            bestClassifier.train(labeledDataSet);
+        return new TrainedClassifier<>(bestClassifier, bestClassifierLoss);
     }
 
     protected abstract double trainAndEvaluateClassifier(TrainableClassifier<T, S> classifier);
+    protected abstract boolean needsTrainingAfterSearch();
 
     public enum SearchMethod {
         GRID_SEARCH {
@@ -146,5 +148,23 @@ public abstract class Training<T extends Vector, S> {
         };
 
         protected abstract <S> double computeLoss(List<S> predictedLabels, List<S> trueLabels);
+    }
+
+    public class TrainedClassifier<T extends Vector, S> {
+        private final TrainableClassifier<T, S> classifier;
+        private final double loss;
+
+        public TrainedClassifier(TrainableClassifier<T, S> classifier, double loss) {
+            this.classifier = classifier;
+            this.loss = loss;
+        }
+
+        public TrainableClassifier<T, S> getClassifier() {
+            return classifier;
+        }
+
+        public double getLoss() {
+            return loss;
+        }
     }
 }
