@@ -7,12 +7,14 @@ import org.platanios.learn.math.matrix.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
 public class CrossValidationTraining<T extends Vector, S> extends Training<T, S> {
     private final int numberOfFolds;
+    private final Function<Integer, DataSetPartitioning<T, S>> dataSetPartitioningFunction;
 
     protected DataSet<? extends LabeledDataInstance<T, S>> trainingDataSet;
     protected DataSet<? extends LabeledDataInstance<T, S>> evaluationDataSet;
@@ -20,6 +22,18 @@ public class CrossValidationTraining<T extends Vector, S> extends Training<T, S>
     protected static abstract class AbstractBuilder<B extends AbstractBuilder<B, T, S>, T extends Vector, S>
             extends Training.AbstractBuilder<B, T, S> {
         protected int numberOfFolds = 10;
+        protected Function<Integer, DataSetPartitioning<T, S>> dataSetPartitioningFunction =
+                foldNumber -> {
+                    int foldSize = Math.floorDiv(labeledDataSet.size(), numberOfFolds);
+                    int[] evaluationDataSetIndexes = new int[foldSize];
+                    for (int index = 0; index < foldSize; index++)
+                        evaluationDataSetIndexes[index] = index + foldNumber * foldSize;
+                    return new DataSetPartitioning<>(
+                            labeledDataSet.subSetComplement(foldNumber * foldSize, (foldNumber + 1) * foldSize),
+                            labeledDataSet.subSet(foldNumber * foldSize, (foldNumber + 1) * foldSize),
+                            evaluationDataSetIndexes
+                    );
+                };
 
         private AbstractBuilder(TrainableClassifier.Builder<T, S> classifierBuilder,
                                 DataSet<? extends LabeledDataInstance<T, S>> trainingDataSet) {
@@ -28,6 +42,11 @@ public class CrossValidationTraining<T extends Vector, S> extends Training<T, S>
 
         public B numberOfFolds(int numberOfFolds) {
             this.numberOfFolds = numberOfFolds;
+            return self();
+        }
+
+        public B dataSetPartitioningFunction(Function<Integer, DataSetPartitioning<T, S>> dataSetPartitioningFunction) {
+            this.dataSetPartitioningFunction = dataSetPartitioningFunction;
             return self();
         }
 
@@ -53,15 +72,16 @@ public class CrossValidationTraining<T extends Vector, S> extends Training<T, S>
         super(builder);
 
         numberOfFolds = builder.numberOfFolds;
+        dataSetPartitioningFunction = builder.dataSetPartitioningFunction;
     }
 
     @Override
     protected double trainAndEvaluateClassifier(TrainableClassifier<T, S> classifier) {
         double averageLoss = 0;
-        int foldSize = Math.floorDiv(labeledDataSet.size(), numberOfFolds);
         for (int fold = 0; fold < numberOfFolds; fold++) {
-            trainingDataSet = labeledDataSet.subSet(fold * foldSize, (fold + 1) * foldSize);
-            evaluationDataSet = labeledDataSet.subSetComplement(fold * foldSize, (fold + 1) * foldSize);
+            DataSetPartitioning<T, S> dataSetPartitioning = dataSetPartitioningFunction.apply(fold);
+            trainingDataSet = dataSetPartitioning.getTrainingDataSet();
+            evaluationDataSet = dataSetPartitioning.getEvaluationDataSet();
             List<S> evaluationDataSetLabels = new ArrayList<>();
             for (LabeledDataInstance<T, S> evaluationDataInstance : evaluationDataSet)
                 evaluationDataSetLabels.add(evaluationDataInstance.label());
@@ -69,7 +89,9 @@ public class CrossValidationTraining<T extends Vector, S> extends Training<T, S>
             List<S> predictedLabels = new ArrayList<>();
             for (PredictedDataInstance<T, S> predictedDataInstance : classifier.predict(evaluationDataSet))
                 predictedLabels.add(predictedDataInstance.label());
-            averageLoss += lossFunction.computeLoss(predictedLabels, evaluationDataSetLabels);
+            averageLoss += computeLoss(predictedLabels,
+                                       evaluationDataSetLabels,
+                                       dataSetPartitioning.getEvaluationDataSetIndexes());
         }
         return averageLoss / numberOfFolds;
     }
@@ -77,5 +99,31 @@ public class CrossValidationTraining<T extends Vector, S> extends Training<T, S>
     @Override
     protected boolean needsTrainingAfterSearch() {
         return true;
+    }
+
+    public static class DataSetPartitioning<T extends Vector, S> {
+        private final DataSet<? extends LabeledDataInstance<T, S>> trainingDataSet;
+        private final DataSet<? extends LabeledDataInstance<T, S>> evaluationDataSet;
+        private final int[] evaluationDataSetIndexes;
+
+        public DataSetPartitioning(DataSet<? extends LabeledDataInstance<T, S>> trainingDataSet,
+                                   DataSet<? extends LabeledDataInstance<T, S>> evaluationDataSet,
+                                   int[] evaluationDataSetIndexes) {
+            this.trainingDataSet = trainingDataSet;
+            this.evaluationDataSet = evaluationDataSet;
+            this.evaluationDataSetIndexes = evaluationDataSetIndexes;
+        }
+
+        public DataSet<? extends LabeledDataInstance<T, S>> getTrainingDataSet() {
+            return trainingDataSet;
+        }
+
+        public DataSet<? extends LabeledDataInstance<T, S>> getEvaluationDataSet() {
+            return evaluationDataSet;
+        }
+
+        public int[] getEvaluationDataSetIndexes() {
+            return evaluationDataSetIndexes;
+        }
     }
 }

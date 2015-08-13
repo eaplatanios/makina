@@ -62,7 +62,10 @@ public class EvaluationDataSetTraining<T extends Vector, S> extends Training<T, 
         List<S> predictedLabels = new ArrayList<>();
         for (PredictedDataInstance<T, S> predictedDataInstance : classifier.predict(evaluationDataSet))
             predictedLabels.add(predictedDataInstance.label());
-        return lossFunction.computeLoss(predictedLabels, evaluationDataSetLabels);
+        int[] dataSetIndexes = new int[evaluationDataSet.size()];
+        for (int index = 0; index < evaluationDataSet.size(); index++)
+            dataSetIndexes[index] = index;
+        return computeLoss(predictedLabels, evaluationDataSetLabels, dataSetIndexes);
     }
 
     @Override

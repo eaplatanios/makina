@@ -10,6 +10,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -17,11 +18,13 @@ import java.util.Map;
 public abstract class Training<T extends Vector, S> {
     private static final Logger logger = LogManager.getLogger("Classification / Training");
 
+    private final LossFunction lossFunction;
+    private final Function<LossFunctionArguments<S>, Double> customLossFunction;
+
     protected final TrainableClassifier.Builder<T, S> classifierBuilder;
     protected final DataSet<? extends LabeledDataInstance<T, S>> labeledDataSet;
     protected final List<Map.Entry<String, Object[]>> allowedParameterValues;
     protected final SearchMethod searchMethod;
-    protected final LossFunction lossFunction;
 
     protected TrainableClassifier<T, S> bestClassifier = null;
     protected double bestClassifierLoss = Double.MAX_VALUE;
@@ -35,6 +38,7 @@ public abstract class Training<T extends Vector, S> {
         protected List<Map.Entry<String, Object[]>> allowedParameterValues = new ArrayList<>();
         protected SearchMethod searchMethod = SearchMethod.GRID_SEARCH;
         protected LossFunction lossFunction = LossFunction.MEAN_ZERO_ONE_LOSS;
+        protected Function<LossFunctionArguments<S>, Double> customLossFunction = null;
 
         protected AbstractBuilder(TrainableClassifier.Builder<T, S> classifierBuilder,
                                   DataSet<? extends LabeledDataInstance<T, S>> trainingDataSet) {
@@ -54,6 +58,11 @@ public abstract class Training<T extends Vector, S> {
 
         public B lossFunction(LossFunction lossFunction) {
             this.lossFunction = lossFunction;
+            return self();
+        }
+
+        public B lossFunction(Function<LossFunctionArguments<S>, Double> lossFunction) {
+            this.customLossFunction = lossFunction;
             return self();
         }
     }
@@ -77,13 +86,21 @@ public abstract class Training<T extends Vector, S> {
         allowedParameterValues = builder.allowedParameterValues;
         searchMethod = builder.searchMethod;
         lossFunction = builder.lossFunction;
+        customLossFunction = builder.customLossFunction;
     }
 
-    public TrainedClassifier<T, S> train() {
+    public TrainedClassifier train() {
         searchMethod.searchOverParameterValues(this);
         if (needsTrainingAfterSearch())
             bestClassifier.train(labeledDataSet);
-        return new TrainedClassifier<>(bestClassifier, bestClassifierLoss);
+        return new TrainedClassifier(bestClassifier, bestClassifierLoss);
+    }
+
+    protected double computeLoss(List<S> predictedLabels, List<S> trueLabels, int[] dataSetIndexes) {
+        if (customLossFunction == null)
+            return lossFunction.computeLoss(predictedLabels, trueLabels, dataSetIndexes);
+        else
+            return customLossFunction.apply(new LossFunctionArguments<>(predictedLabels, trueLabels, dataSetIndexes));
     }
 
     protected abstract double trainAndEvaluateClassifier(TrainableClassifier<T, S> classifier);
@@ -127,7 +144,7 @@ public abstract class Training<T extends Vector, S> {
     public enum LossFunction {
         MEAN_SQUARED_ERROR {
             @Override
-            protected <S> double computeLoss(List<S> predictedLabels, List<S> trueLabels) {
+            protected <S> double computeLoss(List<S> predictedLabels, List<S> trueLabels, int[] dataSetIndexes) {
                 if (predictedLabels.size() != trueLabels.size())
                     throw new IllegalArgumentException("The two lists of labels must have the same length!");
 
@@ -136,7 +153,7 @@ public abstract class Training<T extends Vector, S> {
         },
         MEAN_ZERO_ONE_LOSS {
             @Override
-            protected <S> double computeLoss(List<S> predictedLabels, List<S> trueLabels) {
+            protected <S> double computeLoss(List<S> predictedLabels, List<S> trueLabels, int[] dataSetIndexes) {
                 if (predictedLabels.size() != trueLabels.size())
                     throw new IllegalArgumentException("The two lists of labels must have the same length!");
                 double loss = 0;
@@ -147,10 +164,10 @@ public abstract class Training<T extends Vector, S> {
             }
         };
 
-        protected abstract <S> double computeLoss(List<S> predictedLabels, List<S> trueLabels);
+        protected abstract <S> double computeLoss(List<S> predictedLabels, List<S> trueLabels, int[] dataSetIndexes);
     }
 
-    public class TrainedClassifier<T extends Vector, S> {
+    public class TrainedClassifier {
         private final TrainableClassifier<T, S> classifier;
         private final double loss;
 
@@ -165,6 +182,30 @@ public abstract class Training<T extends Vector, S> {
 
         public double getLoss() {
             return loss;
+        }
+    }
+
+    public static class LossFunctionArguments<S> {
+        private final List<S> predictedLabels;
+        private final List<S> trueLabels;
+        private final int[] dataSetIndexes;
+
+        public LossFunctionArguments(List<S> predictedLabels, List<S> trueLabels, int[] dataSetIndexes) {
+            this.predictedLabels = predictedLabels;
+            this.trueLabels = trueLabels;
+            this.dataSetIndexes = dataSetIndexes;
+        }
+
+        public List<S> getPredictedLabels() {
+            return predictedLabels;
+        }
+
+        public List<S> getTrueLabels() {
+            return trueLabels;
+        }
+
+        public int[] getDataSetIndexes() {
+            return dataSetIndexes;
         }
     }
 }
