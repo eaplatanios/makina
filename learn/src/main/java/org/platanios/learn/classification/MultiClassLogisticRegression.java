@@ -1,7 +1,5 @@
 package org.platanios.learn.classification;
 
-import com.sun.org.apache.xpath.internal.operations.Equals;
-import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.platanios.learn.math.matrix.*;
 import org.platanios.learn.optimization.QuasiNewtonSolver;
 import org.platanios.learn.optimization.Solver;

@@ -43,8 +43,7 @@ abstract class AbstractTrainableLogisticRegression
      * "hack" so that we can have inheritable builder classes.
      *
      * @param   <T> This type corresponds to the type of the final object to be built. That is, the super class of the
-     *              builder class that extends this class, which in this case will be the
-     *              {@link LogisticRegressionSGD} class.
+     *              builder class that extends this class.
      */
     protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
             extends LogisticRegressionPrediction.AbstractBuilder<T> {
@@ -159,7 +158,7 @@ abstract class AbstractTrainableLogisticRegression
     public static class Builder extends AbstractBuilder<Builder> {
         /**
          * Constructs a builder object for a binary logistic regression model that will be trained with the provided
-         * training data using the stochastic gradient descent algorithm.
+         * training data.
          *
          * @param   numberOfFeatures    The number of features used.
          */
@@ -179,9 +178,8 @@ abstract class AbstractTrainableLogisticRegression
     }
 
     /**
-     * Constructs a binary logistic regression object that uses the stochastic gradient descent algorithm to train the
-     * model, given an appropriate builder object. This constructor can only be used from within the builder class of
-     * this class.
+     * Constructs a binary logistic regression object, given an appropriate builder object. This constructor can only be
+     * used from within the builder class of this class and from its subclasses.
      *
      * @param   builder The builder object to use.
      */
@@ -211,7 +209,7 @@ abstract class AbstractTrainableLogisticRegression
     }
 
     /**
-     * Trains this logistic regression model using the data provided while building this object.
+     * Trains this logistic regression model.
      */
     protected abstract void train();
 
@@ -288,7 +286,7 @@ abstract class AbstractTrainableLogisticRegression
 
     /**
      * Class implementing the likelihood function for the binary logistic regression model for use with stochastic
-     * solvers.
+     * optimization solvers.
      */
     protected class StochasticLikelihoodFunction
             extends AbstractStochasticFunctionUsingDataSet<LabeledDataInstance<Vector, Double>> {
@@ -302,7 +300,7 @@ abstract class AbstractTrainableLogisticRegression
         }
 
         /**
-         * Computes the gradient of the likelihood function for the multi-class logistic regression model.
+         * Computes the gradient of the likelihood function for the binary logistic regression model.
          *
          * @param   weights     The current weights vector.
          * @param   dataBatch
