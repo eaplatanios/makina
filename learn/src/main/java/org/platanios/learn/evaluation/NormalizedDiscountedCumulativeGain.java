@@ -15,6 +15,10 @@ import java.util.function.Function;
 public class NormalizedDiscountedCumulativeGain<T extends Vector, S> extends CurveEvaluation<T, S> {
     private final boolean useAlternativeFormulation;
 
+    public NormalizedDiscountedCumulativeGain() {
+        this(false);
+    }
+
     public NormalizedDiscountedCumulativeGain(boolean useAlternativeFormulation) {
         super();
         this.useAlternativeFormulation = useAlternativeFormulation;
