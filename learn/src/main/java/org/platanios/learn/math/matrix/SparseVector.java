@@ -214,7 +214,7 @@ public class SparseVector extends Vector {
                     "The provided index must be between 0 (inclusive) and the size of the vector (exclusive)."
             );
         }
-        int valueIndex = Arrays.binarySearch(indexes, index);
+        int valueIndex = Arrays.binarySearch(indexes, 0, numberOfNonzeroEntries, index);
         if (valueIndex >= 0) {
             return values[valueIndex];
         } else {
@@ -233,13 +233,13 @@ public class SparseVector extends Vector {
         if (initialIndex > finalIndex) {
             throw new IllegalArgumentException("The initial index must be smaller or equal to the final index.");
         }
-        int startIndex = Arrays.binarySearch(indexes, initialIndex);
+        int startIndex = Arrays.binarySearch(indexes, 0, numberOfNonzeroEntries,  initialIndex);
         if (startIndex < 0) {
             startIndex = -startIndex - 1;
             if (startIndex < 0)
                 startIndex = 0;
         }
-        int endIndex = Arrays.binarySearch(indexes, finalIndex);
+        int endIndex = Arrays.binarySearch(indexes, 0, numberOfNonzeroEntries, finalIndex);
         if (endIndex < 0) {
             endIndex = -endIndex - 2;
         }
@@ -271,7 +271,7 @@ public class SparseVector extends Vector {
                     "The provided index must be between 0 (inclusive) and the size of the vector (exclusive)."
             );
         }
-        int foundIndex = Arrays.binarySearch(indexes, index);
+        int foundIndex = Arrays.binarySearch(indexes, 0, numberOfNonzeroEntries, index);
         if (foundIndex >= 0) {
             values[foundIndex] = value;
         } else {
@@ -309,10 +309,10 @@ public class SparseVector extends Vector {
         }
 
         if (vector.type() == VectorType.DENSE) {
-            int foundInitialIndex = Arrays.binarySearch(indexes, initialIndex);
+            int foundInitialIndex = Arrays.binarySearch(indexes, 0, numberOfNonzeroEntries, initialIndex);
             if (foundInitialIndex < 0)
                 foundInitialIndex = -foundInitialIndex - 1;
-            int foundFinalIndex = Arrays.binarySearch(indexes, finalIndex);
+            int foundFinalIndex = Arrays.binarySearch(indexes, 0, numberOfNonzeroEntries, finalIndex);
             if (foundFinalIndex < 0)
                 foundFinalIndex = -foundFinalIndex - 1;
             
@@ -322,16 +322,16 @@ public class SparseVector extends Vector {
             SparseVector sparseVector = (SparseVector) vector;
         
             // Overwritten initial/final positions within this vector's indexes/values arrays
-            int overwrittenInitial = Arrays.binarySearch(this.indexes, initialIndex);
+            int overwrittenInitial = Arrays.binarySearch(indexes, 0, numberOfNonzeroEntries, initialIndex);
             if (overwrittenInitial < 0)
                 overwrittenInitial = -overwrittenInitial - 1; // search returned -(insertion point) - 1 
-            int overwrittenFinal = Arrays.binarySearch(this.indexes, finalIndex);
+            int overwrittenFinal = Arrays.binarySearch(indexes, 0, numberOfNonzeroEntries, finalIndex);
             if (overwrittenFinal < 0)
                 overwrittenFinal = -overwrittenFinal - 2; // search returned -(insertion point) - 1 
         
             // Overwriting inital/final overwriting positions within other (sparseVector) vector's indexes/values arrays
             int overwritingInitial = 0;
-            int overwritingFinal = Arrays.binarySearch(sparseVector.indexes, finalIndex - initialIndex);
+            int overwritingFinal = Arrays.binarySearch(sparseVector.indexes, 0, sparseVector.numberOfNonzeroEntries, finalIndex - initialIndex);
             if (overwritingFinal < 0)
                 overwritingFinal = -overwritingFinal - 2; // search returned -(insertion point) - 1
             
