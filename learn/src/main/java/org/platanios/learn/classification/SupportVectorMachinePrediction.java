@@ -1,6 +1,8 @@
 package org.platanios.learn.classification;
 
 import org.platanios.learn.data.PredictedDataInstance;
+import org.platanios.learn.kernel.KernelFunction;
+import org.platanios.learn.kernel.LinearKernelFunction;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.VectorType;
 import org.platanios.learn.math.matrix.Vectors;
@@ -12,16 +14,9 @@ import java.io.InvalidObjectException;
 import java.io.OutputStream;
 
 /**
- * This abstract class provides some functionality that is common to all binary logistic regression classes. All those
- * classes should extend this class.
- *
- * TODO: Add bias term.
- *
- * Note that the two class labels are represented using the integer values of 0 and 1.
- *
  * @author Emmanouil Antonios Platanios
  */
-public class LogisticRegressionPrediction implements Classifier<Vector, Double> {
+public class SupportVectorMachinePrediction implements Classifier<Vector, Boolean> {
     /** The number of features used. */
     protected int numberOfFeatures;
     /** Indicates whether sparse vectors are being used or not. */
@@ -29,13 +24,15 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Double> 
     /** Indicates whether a separate bias term must be used along with the feature weights. Note that if a value of
      * 1 has already been appended to all feature vectors, then there is no need for a bias term. */
     protected boolean useBiasTerm;
+    /** The kernel function to use. */
+    protected KernelFunction<Vector> kernelFunction;
 
-    /** The weights (i.e., parameters) used by this logistic regression model. Note that the size of this vector is
+    /** The weights (i.e., parameters) used by this support vector machine model. Note that the size of this vector is
      * equal to 1 + {@link #numberOfFeatures}. */
     protected Vector weights;
 
     /**
-     * This abstract class needs to be extended by the builders of all binary logistic regression classes. It provides
+     * This abstract class needs to be extended by the builders of all support vector machine classes. It provides
      * an implementation for those parts of those builders that are common. This is basically part of a small "hack" so
      * that we can have inheritable builder classes.
      *
@@ -54,8 +51,10 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Double> 
         /** Indicates whether a separate bias term must be used along with the feature weights. Note that if a value of
          * 1 has already been appended to all feature vectors, then there is no need for a bias term. */
         protected boolean useBiasTerm = true;
-        /** The weights (i.e., parameters) used by this logistic regression model. Note that the size of this vector is
-         * equal to 1 + {@link #numberOfFeatures}. */
+        /** The kernel function to use. */
+        protected KernelFunction<Vector> kernelFunction = new LinearKernelFunction();
+        /** The weights (i.e., parameters) used by this support vector machine model. Note that the size of this vector
+         * is equal to 1 + {@link #numberOfFeatures}. */
         protected Vector weights = null;
 
         protected AbstractBuilder() { }
@@ -91,6 +90,20 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Double> 
             return self();
         }
 
+        /**
+         * Sets the {@link #kernelFunction} field that indicates which kernel function will be used by the support
+         * vector machine being built. The default kernel function is a linear kernel function with no shift (i.e., an
+         * inner product).
+         *
+         * @param   kernelFunction  The value to which to set the {@link #kernelFunction} field.
+         * @return                  This builder object itself. That is done so that we can use a nice and expressive
+         *                          code format when we build objects using this builder class.
+         */
+        public T kernelFunction(KernelFunction<Vector> kernelFunction) {
+            this.kernelFunction = kernelFunction;
+            return self();
+        }
+
         public T setParameter(String name, Object value) {
             switch (name) {
                 case "sparse":
@@ -105,8 +118,8 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Double> 
             return self();
         }
 
-        public LogisticRegressionPrediction build() {
-            return new LogisticRegressionPrediction(this);
+        public SupportVectorMachinePrediction build() {
+            return new SupportVectorMachinePrediction(this);
         }
     }
 
@@ -127,51 +140,41 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Double> 
     }
 
     /**
-     * Constructs a binary logistic regression object given an appropriate builder object. This constructor can only be
+     * Constructs a support vector machine object given an appropriate builder object. This constructor can only be
      * used from within the builder class of this class.
      *
      * @param   builder The builder object to use.
      */
-    protected LogisticRegressionPrediction(AbstractBuilder<?> builder) {
+    protected SupportVectorMachinePrediction(AbstractBuilder<?> builder) {
         numberOfFeatures = builder.numberOfFeatures;
         sparse = builder.sparse;
         useBiasTerm = builder.useBiasTerm;
+        kernelFunction = builder.kernelFunction;
         if (builder.weights != null)
             weights = builder.weights;
         else
-            if (builder.sparse)
-                weights = Vectors.build(useBiasTerm ? numberOfFeatures + 1 : numberOfFeatures, VectorType.SPARSE);
-            else
-                weights = Vectors.build(useBiasTerm ? numberOfFeatures + 1 : numberOfFeatures, VectorType.DENSE);
+        if (builder.sparse)
+            weights = Vectors.build(useBiasTerm ? numberOfFeatures + 1 : numberOfFeatures, VectorType.SPARSE);
+        else
+            weights = Vectors.build(useBiasTerm ? numberOfFeatures + 1 : numberOfFeatures, VectorType.DENSE);
     }
 
     @Override
     public ClassifierType type() {
-        return ClassifierType.LOGISTIC_REGRESSION_PREDICTION;
+        return ClassifierType.SUPPORT_VECTOR_MACHINE_PREDICTION;
     }
 
-    /**
-     * Predict the probability of the class label being 1 for some data instance.
-     *
-     * @param   dataInstance    The data instance for which the probability is computed.
-     * @return                  The probability of the class label being 1 for the given data instance.
-     */
     @Override
-    public PredictedDataInstance<Vector, Double> predictInPlace(PredictedDataInstance<Vector, Double> dataInstance) {
-        double probability = useBiasTerm ?
-                1 / (1 + Math.exp(-weights.dotPlusConstant(dataInstance.features()))) :
-                1 / (1 + Math.exp(-weights.dot(dataInstance.features())));
-        if (probability >= 0.5) {
-            dataInstance.probability(probability);
-            dataInstance.label((double) 1);
-        } else {
-            dataInstance.probability(1 - probability);
-            dataInstance.label((double) 0);
-        }
+    public PredictedDataInstance<Vector, Boolean> predictInPlace(PredictedDataInstance<Vector, Boolean> dataInstance) {
+        double distanceFromSeparator = kernelFunction.getValue(weights, dataInstance.features());
+        dataInstance.probability(distanceFromSeparator);
+        if (distanceFromSeparator >= 0)
+            dataInstance.label(true);
+        else
+            dataInstance.label(false);
         return dataInstance;
     }
 
-    /** {@inheritDoc} */
     @Override
     public void write(OutputStream outputStream, boolean includeType) throws IOException {
         if (includeType)
@@ -181,10 +184,10 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Double> 
         weights.write(outputStream, true);
     }
 
-    public static LogisticRegressionPrediction read(InputStream inputStream, boolean includeType) throws IOException {
+    public static SupportVectorMachinePrediction read(InputStream inputStream, boolean includeType) throws IOException {
         if (includeType) {
             ClassifierType classifierType = ClassifierType.values()[UnsafeSerializationUtilities.readInt(inputStream)];
-            if (!ClassifierType.LOGISTIC_REGRESSION_PREDICTION
+            if (!ClassifierType.SUPPORT_VECTOR_MACHINE_PREDICTION
                     .getStorageCompatibleTypes()
                     .contains(classifierType))
                 throw new InvalidObjectException("The stored classifier is of type " + classifierType.name() + "!");

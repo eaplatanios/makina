@@ -49,6 +49,21 @@ public enum ClassifierType {
         public LogisticRegressionAdaGrad read(InputStream inputStream, boolean includeType) throws IOException {
             return LogisticRegressionAdaGrad.read(inputStream, includeType);
         }
+    },
+    SUPPORT_VECTOR_MACHINE_PREDICTION {
+        @Override
+        public Set<ClassifierType> getStorageCompatibleTypes() {
+            Set<ClassifierType> storageCompatibleTypesSet = new TreeSet<>();
+            storageCompatibleTypesSet.add(SUPPORT_VECTOR_MACHINE_PREDICTION);
+//            storageCompatibleTypesSet.add(SUPPORT_VECTOR_MACHINE_SGD);
+//            storageCompatibleTypesSet.add(SUPPORT_VECTOR_MACHINE_ADAGRAD);
+            return storageCompatibleTypesSet;
+        }
+
+        @Override
+        public SupportVectorMachinePrediction read(InputStream inputStream, boolean includeType) throws IOException {
+            return SupportVectorMachinePrediction.read(inputStream, includeType);
+        }
     };
 
     public abstract Set<ClassifierType> getStorageCompatibleTypes();
