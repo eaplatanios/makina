@@ -31,14 +31,11 @@ public class PrecisionRecall<T extends Vector, S> extends CurveEvaluation<T, S> 
         Collections.sort(predictions, Comparator.comparing(PredictedDataInstance::probability));
         List<CurvePoint> points = new ArrayList<>();
         int truePositivesNumber = 0;
-        int trueNegativesNumber = 0;
         int falsePositivesNumber = 0;
         int falseNegativesNumber = 0;
         for (PredictedDataInstance<T, S> prediction : predictions)
             if (groundTruth.apply(prediction))
                 falseNegativesNumber++;
-            else
-                trueNegativesNumber++;
         points.add(new CurvePoint(
                 (truePositivesNumber + epsilon) / (truePositivesNumber + falseNegativesNumber + epsilon),
                 (truePositivesNumber + epsilon) / (truePositivesNumber + falsePositivesNumber + epsilon)
@@ -50,7 +47,6 @@ public class PrecisionRecall<T extends Vector, S> extends CurveEvaluation<T, S> 
                     falseNegativesNumber--;
                     truePositivesNumber++;
                 } else {
-                    trueNegativesNumber--;
                     falsePositivesNumber++;
                 }
                 points.add(new CurvePoint(
@@ -72,7 +68,6 @@ public class PrecisionRecall<T extends Vector, S> extends CurveEvaluation<T, S> 
                         falseNegativesNumber--;
                         truePositivesNumber++;
                     } else {
-                        trueNegativesNumber--;
                         falsePositivesNumber++;
                     }
                     if (++previousThresholdPredictionIndex < predictions.size())

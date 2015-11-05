@@ -331,7 +331,10 @@ public class SparseVector extends Vector {
         
             // Overwriting inital/final overwriting positions within other (sparseVector) vector's indexes/values arrays
             int overwritingInitial = 0;
-            int overwritingFinal = Arrays.binarySearch(sparseVector.indexes, 0, sparseVector.numberOfNonzeroEntries, finalIndex - initialIndex);
+            int overwritingFinal = Arrays.binarySearch(sparseVector.indexes,
+                                                       0,
+                                                       sparseVector.numberOfNonzeroEntries,
+                                                       finalIndex - initialIndex);
             if (overwritingFinal < 0)
                 overwritingFinal = -overwritingFinal - 2; // search returned -(insertion point) - 1
             
