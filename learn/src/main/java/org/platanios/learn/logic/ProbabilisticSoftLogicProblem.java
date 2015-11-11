@@ -70,7 +70,7 @@ public final class ProbabilisticSoftLogicProblem {
             return this;
         }
 
-        private Builder addRule(List<GroundPredicate> groundPredicates,
+        public Builder addRule(List<GroundPredicate> groundPredicates,
                                 boolean[] variableNegations,
                                 double power,
                                 double weight) {
@@ -133,36 +133,42 @@ public final class ProbabilisticSoftLogicProblem {
 //        }
 
         public ProbabilisticSoftLogicProblem build() {
-            List<Formula> ruleFormulas = new ArrayList<>();
-            for (LogicRule logicRule : logicRules) {
-                List<Formula> disjunctionComponents = new ArrayList<>();
-                for (int i = 0; i < logicRule.bodyFormulas.size(); ++i)
-                    if (logicRule.bodyFormulas.get(i) instanceof Negation)
-                        disjunctionComponents.add(((Negation) logicRule.bodyFormulas.get(i)).getFormula());
-                    else
-                        disjunctionComponents.add(new Negation(logicRule.bodyFormulas.get(i)));
-                for (int i = 0; i < logicRule.headFormulas.size(); ++i)
-                    disjunctionComponents.add(logicRule.headFormulas.get(i));
-                ruleFormulas.add(new Disjunction(disjunctionComponents));
-            }
-//            InMemoryLazyGrounding grounding = new InMemoryLazyGrounding(logicManager);
-            DatabaseLazyGrounding grounding = new DatabaseLazyGrounding((DatabaseLogicManager) logicManager);
-//            grounding.ground(ruleFormulas);
-            ruleFormulas = grounding.ground(ruleFormulas);
-            for (int ruleIndex = 0; ruleIndex < logicRules.size(); ruleIndex++) {
-                Disjunction ruleFormula = ((Disjunction) ruleFormulas.get(ruleIndex));
-                boolean[] variableNegations = new boolean[ruleFormula.getNumberOfComponents()];
-                for (int i = 0; i < ruleFormula.getNumberOfComponents(); ++i)
-                    variableNegations[i] = ruleFormula.getComponent(i) instanceof Negation;
-                if (variableNegations.length != 0)
-                    for (List<GroundPredicate> groundedRulePredicates : grounding.getGroundedFormulas().get(ruleIndex))
-                        if (Double.isNaN(logicRules.get(ruleIndex).weight))
-                            addRule(groundedRulePredicates, variableNegations, 1, 1000);
+            return build(true);
+        }
+
+        public ProbabilisticSoftLogicProblem build(boolean groundRules) {
+            if (groundRules) {
+                List<Formula> ruleFormulas = new ArrayList<>();
+                for (LogicRule logicRule : logicRules) {
+                    List<Formula> disjunctionComponents = new ArrayList<>();
+                    for (int i = 0; i < logicRule.bodyFormulas.size(); ++i)
+                        if (logicRule.bodyFormulas.get(i) instanceof Negation)
+                            disjunctionComponents.add(((Negation) logicRule.bodyFormulas.get(i)).getFormula());
                         else
-                            addRule(groundedRulePredicates,
-                                    variableNegations,
-                                    logicRules.get(ruleIndex).power,
-                                    logicRules.get(ruleIndex).weight);
+                            disjunctionComponents.add(new Negation(logicRule.bodyFormulas.get(i)));
+                    for (int i = 0; i < logicRule.headFormulas.size(); ++i)
+                        disjunctionComponents.add(logicRule.headFormulas.get(i));
+                    ruleFormulas.add(new Disjunction(disjunctionComponents));
+                }
+//            InMemoryLazyGrounding grounding = new InMemoryLazyGrounding(logicManager);
+                DatabaseLazyGrounding grounding = new DatabaseLazyGrounding((DatabaseLogicManager) logicManager);
+//            grounding.ground(ruleFormulas);
+                ruleFormulas = grounding.ground(ruleFormulas);
+                for (int ruleIndex = 0; ruleIndex < logicRules.size(); ruleIndex++) {
+                    Disjunction ruleFormula = ((Disjunction) ruleFormulas.get(ruleIndex));
+                    boolean[] variableNegations = new boolean[ruleFormula.getNumberOfComponents()];
+                    for (int i = 0; i < ruleFormula.getNumberOfComponents(); ++i)
+                        variableNegations[i] = ruleFormula.getComponent(i) instanceof Negation;
+                    if (variableNegations.length != 0)
+                        for (List<GroundPredicate> groundedRulePredicates : grounding.getGroundedFormulas().get(ruleIndex))
+                            if (Double.isNaN(logicRules.get(ruleIndex).weight))
+                                addRule(groundedRulePredicates, variableNegations, 1, 1000);
+                            else
+                                addRule(groundedRulePredicates,
+                                        variableNegations,
+                                        logicRules.get(ruleIndex).power,
+                                        logicRules.get(ruleIndex).weight);
+                }
             }
             return new ProbabilisticSoftLogicProblem(this);
         }

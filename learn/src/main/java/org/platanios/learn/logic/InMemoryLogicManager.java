@@ -67,7 +67,7 @@ public class InMemoryLogicManager implements LogicManager {
         if (groundedPredicates.get(predicate.getId()).containsKey(argumentAssignments)) {
             GroundPredicate groundPredicate =
                     groundedPredicates.get(predicate.getId()).get(argumentAssignments);
-            if (!groundPredicate.getValue().equals(value))
+            if (!(groundPredicate.getValue() == null && value == null) && !groundPredicate.getValue().equals(value))
                 throw new IllegalArgumentException("A grounding for the predicate corresponding to the provided " +
                                                            "identifier and for the provided argument assignments has " +
                                                            "already been added to this logic manager with a " +
