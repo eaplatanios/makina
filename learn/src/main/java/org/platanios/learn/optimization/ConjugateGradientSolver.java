@@ -2,6 +2,7 @@ package org.platanios.learn.optimization;
 
 import org.platanios.learn.math.matrix.*;
 import org.platanios.learn.optimization.function.LinearLeastSquaresFunction;
+import org.platanios.learn.optimization.function.NonSmoothFunctionException;
 import org.platanios.learn.optimization.function.QuadraticFunction;
 
 /**
@@ -93,6 +94,7 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
     private ConjugateGradientSolver(AbstractBuilder<?> builder)
             throws NonPositiveDefiniteMatrixException {
         super(builder);
+        currentObjectiveValue = objective.getValue(currentPoint);
         problemConversionMethod = builder.problemConversionMethod;
 
         Matrix temporaryA;

@@ -68,6 +68,12 @@ abstract class AbstractLineSearchSolver extends AbstractIterativeSolver {
     protected AbstractLineSearchSolver(AbstractBuilder<?> builder) {
         super(builder);
         lineSearch = builder.lineSearch;
+        try {
+            currentGradient = objective.getGradient(currentPoint);
+        } catch (NonSmoothFunctionException e) {
+            logger.info("The objective function being optimized is non-smooth.");
+        }
+        currentObjectiveValue = objective.getValue(currentPoint);
         previousPoint = currentPoint;
         previousGradient = currentGradient;
     }

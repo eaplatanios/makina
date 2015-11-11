@@ -158,12 +158,6 @@ abstract class AbstractIterativeSolver implements Solver {
         logObjectiveValue = builder.logObjectiveValue;
         logGradientNorm = builder.logGradientNorm;
         currentPoint = builder.initialPoint;
-        try {
-            currentGradient = objective.getGradient(currentPoint);
-        } catch (NonSmoothFunctionException e) {
-            logger.info("The objective function being optimized is non-smooth.");
-        }
-        currentObjectiveValue = objective.getValue(currentPoint);
         currentIteration = 0;
     }
 

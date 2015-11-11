@@ -250,6 +250,15 @@ public final class ConsensusAlternatingDirectionsMethodOfMultipliersSolver exten
         }
         variableCopiesSum = currentPoint.multElementwise(variableCopiesCounts);
         logPredictionChanges = builder.logPredictionChanges;
+        if (checkForGradientConvergence || logGradientNorm) {
+            try {
+                currentGradient = objective.getGradient(currentPoint);
+            } catch (NonSmoothFunctionException e) {
+                logger.info("The objective function being optimized is non-smooth.");
+            }
+        }
+        if (checkForObjectiveConvergence || logObjectiveValue)
+            currentObjectiveValue = objective.getValue(currentPoint);
     }
 
     @Override
