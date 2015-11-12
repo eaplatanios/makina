@@ -12,8 +12,7 @@ public abstract class AbstractFunction {
     private int numberOfHessianEvaluations = 0;
     private boolean computeGradientMethodOverridden = true;
 
-    private DerivativesApproximation derivativesApproximation =
-            new DerivativesApproximation(this, DerivativesApproximation.Method.CENTRAL_DIFFERENCE);
+    private DerivativesApproximation derivativesApproximation;
 
     /**
      * Computes the function value at a particular point.
@@ -40,8 +39,11 @@ public abstract class AbstractFunction {
     }
 
     protected Vector computeGradient(Vector point) throws NonSmoothFunctionException {
-        if (computeGradientMethodOverridden)
+        if (computeGradientMethodOverridden) {
             computeGradientMethodOverridden = false;
+            derivativesApproximation =
+                    new DerivativesApproximation(this, DerivativesApproximation.Method.CENTRAL_DIFFERENCE);
+        }
         return derivativesApproximation.approximateGradient(point);
     }
 
@@ -57,6 +59,9 @@ public abstract class AbstractFunction {
     }
 
     protected Matrix computeHessian(Vector point) throws NonSmoothFunctionException {
+        if (derivativesApproximation == null)
+            derivativesApproximation =
+                    new DerivativesApproximation(this, DerivativesApproximation.Method.CENTRAL_DIFFERENCE);
         if (computeGradientMethodOverridden)
             return derivativesApproximation.approximateHessianGivenGradient(point);
         else
