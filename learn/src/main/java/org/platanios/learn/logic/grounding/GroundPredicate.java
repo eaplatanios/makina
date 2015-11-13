@@ -54,14 +54,12 @@ public class GroundPredicate {
 
         GroundPredicate that = (GroundPredicate) other;
 
-        return Objects.equal(predicate, that.predicate)
-                && Objects.equal(arguments, that.arguments)
-                && Objects.equal(value, that.value);
+        return Objects.equal(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(predicate, arguments, value);
+        return Objects.hashCode(id);
     }
 
     @Override
