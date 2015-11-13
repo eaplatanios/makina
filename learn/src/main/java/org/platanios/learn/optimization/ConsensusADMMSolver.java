@@ -27,16 +27,7 @@ import java.util.function.Consumer;
 public final class ConsensusADMMSolver extends AbstractIterativeSolver {
     private final Object lock = new Object();
     private final List<Vector> variableCopies = new ArrayList<>();
-    // TODO: Hacks to enable warm starts.
-    public List<Vector> lagrangeMultipliers = new ArrayList<>();
-    private Vector variableCopiesSum = Vectors.build(currentPoint.size(), currentPoint.type());
-    public Vector getCurrentPoint() { return currentPoint; }
-
-    private int numberOfIterationsWithNoPointChange = 0;
-    private boolean primalResidualConverged = false;
-    private boolean dualResidualConverged = false;
-    private DoubleAdder primalToleranceAdder = new DoubleAdder();
-    private DoubleAdder dualToleranceAdder = new DoubleAdder();
+    private final List<Vector> lagrangeMultipliers = new ArrayList<>();
 
     private final Vector variableCopiesCounts;
     private final int maximumNumberOfIterationsWithNoPointChange;
@@ -57,6 +48,13 @@ public final class ConsensusADMMSolver extends AbstractIterativeSolver {
     private final SumFunction objective;
     private final List<int[]> constraintsVariablesIndexes;
     private final List<AbstractConstraint> constraints;
+
+    private Vector variableCopiesSum = Vectors.build(currentPoint.size(), currentPoint.type());
+    private int numberOfIterationsWithNoPointChange = 0;
+    private boolean primalResidualConverged = false;
+    private boolean dualResidualConverged = false;
+    private DoubleAdder primalToleranceAdder = new DoubleAdder();
+    private DoubleAdder dualToleranceAdder = new DoubleAdder();
 
     private Vector primalResidualSquaredTerms;
     private double penaltyParameter;

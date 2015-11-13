@@ -11,8 +11,8 @@ dependencies {
     compile 'com.google.guava:guava:18.0'
     compile 'colt:colt:1.2.0'
     compile 'net.sf.trove4j:trove4j:3.0.3'
-    compile 'javax:javaee-api:7.0'
-    compile 'org.hibernate:hibernate-core:4.3.9.Final'
+//    compile 'javax:javaee-api:7.0'
+//    compile 'org.hibernate:hibernate-core:4.3.9.Final'
     compile 'mysql:mysql-connector-java:5.1.35'
     compile 'org.mariadb.jdbc:mariadb-java-client:1.1.7'
     compile fileTree(dir: 'lib', include: '*.jar')
