@@ -8,13 +8,18 @@ import java.util.Set;
  * @author Emmanouil Antonios Platanios
  */
 public class EntityType {
+    private long id;
     /** Note that this field is not used for checking equality between different argument type objects. */
     private String name;
     private Set<Long> allowedValues;
 
-    public EntityType(String name, Set<Long> allowedValues) {
+    public EntityType(long id, String name, Set<Long> allowedValues) {
         this.name = name;
         this.allowedValues = allowedValues;
+    }
+
+    public long getId() {
+        return id;
     }
 
     public String getName() {
@@ -34,13 +39,12 @@ public class EntityType {
 
         EntityType that = (EntityType) other;
 
-        return Objects.equal(name, that.name)
-                && Objects.equal(allowedValues, that.allowedValues);
+        return Objects.equal(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(name, allowedValues);
+        return Objects.hashCode(id);
     }
 
     @Override

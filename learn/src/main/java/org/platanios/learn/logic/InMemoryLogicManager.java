@@ -6,6 +6,7 @@ import org.platanios.learn.logic.formula.Variable;
 import org.platanios.learn.logic.grounding.GroundPredicate;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 /**
@@ -20,7 +21,9 @@ public class InMemoryLogicManager implements LogicManager {
     private final Map<Long, GroundPredicate> groundPredicates = new HashMap<>();
     private final List<Predicate> closedPredicates = new ArrayList<>();
 
-    private long newPredicateGroundingIdentifier = 0;
+    private AtomicLong newEntityTypeId = new AtomicLong();
+    private AtomicLong newPredicateId = new AtomicLong();
+    private AtomicLong newGroundPredicateId = new AtomicLong();
 
     public InMemoryLogicManager(Logic logic) {
         this.logic = logic;
@@ -35,7 +38,7 @@ public class InMemoryLogicManager implements LogicManager {
     }
 
     public EntityType addEntityType(String name, Set<Long> allowedValues) {
-        EntityType entityType = new EntityType(name, allowedValues);
+        EntityType entityType = new EntityType(newEntityTypeId.getAndIncrement(), name, allowedValues);
         entityTypes.add(entityType);
         return entityType;
     }
@@ -45,7 +48,7 @@ public class InMemoryLogicManager implements LogicManager {
     }
 
     public Predicate addPredicate(String name, List<EntityType> argumentTypes, boolean closed) {
-        Predicate predicate = new Predicate(name, argumentTypes);
+        Predicate predicate = new Predicate(newPredicateId.getAndIncrement(), name, argumentTypes);
         predicates.add(predicate);
         groundPredicatesMap.put(predicate, new HashMap<>());
         if (closed)
@@ -73,7 +76,7 @@ public class InMemoryLogicManager implements LogicManager {
                 return groundPredicate;
             }
         } else {
-            GroundPredicate groundPredicate = new GroundPredicate(newPredicateGroundingIdentifier++,
+            GroundPredicate groundPredicate = new GroundPredicate(newGroundPredicateId.getAndIncrement(),
                                                                   predicate,
                                                                   argumentAssignments,
                                                                   value);

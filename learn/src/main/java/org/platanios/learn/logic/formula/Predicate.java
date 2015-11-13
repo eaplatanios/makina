@@ -8,19 +8,24 @@ import java.util.List;
  * @author Emmanouil Antonios Platanios
  */
 public class Predicate {
+    private long id;
     private String name;
     private List<EntityType> argumentTypes;
 
     private boolean closed = false;
 
-    public Predicate(String name, List<EntityType> argumentTypes) {
+    public Predicate(long id, String name, List<EntityType> argumentTypes) {
         this.name = name;
         this.argumentTypes = argumentTypes;
     }
 
-    public Predicate(String name, List<EntityType> argumentTypes, boolean closed) {
-        this(name, argumentTypes);
+    public Predicate(long id, String name, List<EntityType> argumentTypes, boolean closed) {
+        this(id, name, argumentTypes);
         this.closed = closed;
+    }
+
+    public long getId() {
+        return id;
     }
 
     public String getName() {
@@ -57,12 +62,12 @@ public class Predicate {
 
         Predicate that = (Predicate) other;
 
-        return Objects.equal(name, that.name) && Objects.equal(argumentTypes, that.argumentTypes);
+        return Objects.equal(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(name, argumentTypes);
+        return Objects.hashCode(id);
     }
 
     @Override
