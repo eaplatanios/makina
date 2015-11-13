@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 
 /**
  * TODO: The current implementation is PSL-specific and not generic at all.
- * TODO: Only support p = 1 in PSL for now and only linear equality constraints.
+ * TODO: Only support linear equality constraints in PSL for now.
  *
  * @author Emmanouil Antonios Platanios
  */
@@ -118,19 +118,6 @@ public final class ConsensusADMMSolver extends AbstractIterativeSolver {
             return self();
         }
 
-        /**
-         * Note that this parameter is not used if the sub-problem selection method is set to
-         * {@link SubProblemSelectionMethod#ALL} (which is the default setting). If a high sub-sampling ratio is used,
-         * it is suggested that the value of {@link this#mu} be higher.
-         *
-         * @param   numberOfSubProblemSamples
-         * @return
-         */
-        public T numberOfSubProblemSamples(int numberOfSubProblemSamples) {
-            this.numberOfSubProblemSamples = numberOfSubProblemSamples;
-            return self();
-        }
-
         public T mu(double mu) {
             this.mu = mu;
             return self();
@@ -173,6 +160,19 @@ public final class ConsensusADMMSolver extends AbstractIterativeSolver {
             return self();
         }
 
+        /**
+         * Note that this parameter is not used if the sub-problem selection method is set to
+         * {@link SubProblemSelectionMethod#ALL} (which is the default setting). If a high sub-sampling ratio is used,
+         * it is suggested that the value of {@link this#mu} be higher.
+         *
+         * @param   numberOfSubProblemSamples
+         * @return
+         */
+        public T numberOfSubProblemSamples(int numberOfSubProblemSamples) {
+            this.numberOfSubProblemSamples = numberOfSubProblemSamples;
+            return self();
+        }
+
         public T numberOfThreads(int numberOfThreads) {
             this.numberOfThreads = numberOfThreads;
             return self();
@@ -204,15 +204,15 @@ public final class ConsensusADMMSolver extends AbstractIterativeSolver {
         relativeTolerance = builder.relativeTolerance;
         checkForPrimalAndDualResidualConvergence = builder.checkForPrimalAndDualResidualConvergence;
         primalResidualSquaredTerms = Vectors.build(objective.getNumberOfTerms(), VectorType.DENSE);
-        subProblemSelectionMethod = builder.subProblemSelectionMethod;
-        subProblemSelector = builder.subProblemSelector;
-        numberOfSubProblemSamples = builder.numberOfSubProblemSamples;
         mu = builder.mu;
         tauIncrement = builder.tauIncrement;
         tauDecrement = builder.tauDecrement;
         penaltyParameterSettingMethod = builder.penaltyParameterSettingMethod;
         penaltyParameter = builder.penaltyParameter;
         subProblemSolver = builder.subProblemSolver;
+        subProblemSelectionMethod = builder.subProblemSelectionMethod;
+        subProblemSelector = builder.subProblemSelector;
+        numberOfSubProblemSamples = builder.numberOfSubProblemSamples;
         taskExecutor = Executors.newFixedThreadPool(builder.numberOfThreads);
         variableCopiesCounts = Vectors.dense(currentPoint.size());
         for (int[] variableIndexes : Iterables.concat(objective.getTermVariables(), constraintsVariablesIndexes)) {

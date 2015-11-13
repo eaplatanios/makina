@@ -3,7 +3,6 @@ package org.platanios.learn.optimization;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.VectorNorm;
 import org.platanios.learn.optimization.function.AbstractFunction;
-import org.platanios.learn.optimization.function.NonSmoothFunctionException;
 
 import java.util.function.Function;
 
@@ -61,6 +60,7 @@ abstract class AbstractIterativeSolver implements Solver {
         protected boolean checkForGradientConvergence = true;
         protected Function<Vector, Boolean> additionalCustomConvergenceCriterion = currentPoint -> false;
         protected int loggingLevel = 0;
+        
         private boolean logObjectiveValue = true;
         private boolean logGradientNorm = true;
 
