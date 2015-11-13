@@ -1,18 +1,22 @@
 package org.platanios.learn.logic;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.platanios.learn.logic.formula.Disjunction;
 import org.platanios.learn.logic.formula.Formula;
 import org.platanios.learn.logic.formula.Negation;
 import org.platanios.learn.logic.formula.Predicate;
 import org.platanios.learn.logic.grounding.GroundPredicate;
+import org.platanios.learn.logic.grounding.GroundingMethod;
 import org.platanios.learn.logic.grounding.InMemoryLazyGrounding;
 import org.platanios.learn.math.matrix.*;
 import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.optimization.ConsensusAlternatingDirectionsMethodOfMultipliersSolver;
+import org.platanios.learn.optimization.ConsensusADMMSolver;
 import org.platanios.learn.optimization.NewtonSolver;
 import org.platanios.learn.optimization.constraint.AbstractConstraint;
 import org.platanios.learn.optimization.function.AbstractFunction;
@@ -22,33 +26,35 @@ import org.platanios.learn.optimization.function.SumFunction;
 import org.platanios.learn.optimization.linesearch.NoLineSearch;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
-public final class ProbabilisticSoftLogicProblem {
+public final class ProbabilisticSoftLogic {
+    private final static Logger logger = LogManager.getFormatterLogger("Probabilistic Soft Logic Problem");
+
     private final LogicManager logicManager;
-    private final ProbabilisticSoftLogicObjectiveFunction objectiveFunction;
+    private final SumFunction objectiveFunction;
     private final ImmutableSet<Constraint> constraints;
-    private final BiMap<Integer, Integer> externalToInternalIdsMap;
-    private final Map<Integer, List<Integer>> internalIdsToFunctionTermsMap;
+    private final BiMap<Long, Integer> externalToInternalIdsMap;
     private final Map<Integer, CholeskyDecomposition> subProblemCholeskyFactors = new HashMap<>();
 
     public static final class Builder {
-        private final List<FunctionTerm> functionTerms = new ArrayList<>();
-        private final List<Constraint> constraints = new ArrayList<>();
         private final List<LogicRule> logicRules = new ArrayList<>();
+        private final List<FunctionTerm> functionTerms = new ArrayList<>();
+        private final Set<Constraint> constraints = new HashSet<>();
 
         private final LogicManager logicManager;
-        private final BiMap<Integer, Integer> externalToInternalIdsMap;
-        private final Map<Integer, List<Integer>> internalIdsToFunctionTermsMap;
+        private final BiMap<Long, Integer> externalToInternalIdsMap;
 
-        private int nextInternalId = 0;
+        private GroundingMethod groundingMethod = GroundingMethod.IN_MEMORY;
+
+        private AtomicInteger nextInternalId = new AtomicInteger();
 
         public Builder(LogicManager logicManager) {
             this.logicManager = logicManager;
             externalToInternalIdsMap = HashBiMap.create((int) logicManager.getNumberOfEntityTypes());
-            internalIdsToFunctionTermsMap = new HashMap<>((int) logicManager.getNumberOfEntityTypes());
         }
 
         public int getNumberOfTerms() {
@@ -71,9 +77,9 @@ public final class ProbabilisticSoftLogicProblem {
         }
 
         public Builder addRule(List<GroundPredicate> groundPredicates,
-                                boolean[] variableNegations,
-                                double power,
-                                double weight) {
+                               boolean[] variableNegations,
+                               double power,
+                               double weight) {
             List<Integer> internalVariableIds = new ArrayList<>();
             List<Boolean> internalVariableNegations = new ArrayList<>();
             double observedConstant = 0;
@@ -85,9 +91,9 @@ public final class ProbabilisticSoftLogicProblem {
                     else
                         observedConstant -= observedValue;
                 } else {
-                    if (!externalToInternalIdsMap.containsKey((int) groundPredicates.get(i).getId()))
-                        externalToInternalIdsMap.put((int) groundPredicates.get(i).getId(), nextInternalId++);
-                    internalVariableIds.add(externalToInternalIdsMap.get((int) groundPredicates.get(i).getId()));
+                    if (!externalToInternalIdsMap.containsKey(groundPredicates.get(i).getId()))
+                        externalToInternalIdsMap.put(groundPredicates.get(i).getId(), nextInternalId.getAndIncrement());
+                    internalVariableIds.add(externalToInternalIdsMap.get(groundPredicates.get(i).getId()));
                     internalVariableNegations.add(variableNegations[i]);
                 }
             }
@@ -98,12 +104,8 @@ public final class ProbabilisticSoftLogicProblem {
             int[] variableIds = ArrayUtils.toPrimitive(variableIdsSet.toArray(new Integer[variableIdsSet.size()]));
             if (variableIds.length == 0)
                 return this;
-            int indexTerm = functionTerms.size();
             LinearFunction linearFunction = new LinearFunction(Vectors.dense(variableIds.length), ruleMaximumValue);
             for (int variableIndex = 0; variableIndex < internalVariableIds.size(); variableIndex++) {
-                if (!internalIdsToFunctionTermsMap.containsKey(internalVariableIds.get(variableIndex)))
-                    internalIdsToFunctionTermsMap.put(internalVariableIds.get(variableIndex), new ArrayList<>());
-                internalIdsToFunctionTermsMap.get(internalVariableIds.get(variableIndex)).add(indexTerm);
                 Vector coefficients = Vectors.dense(variableIds.length);
                 if (internalVariableNegations.get(variableIndex)) {
                     coefficients.set(ArrayUtils.indexOf(variableIds, internalVariableIds.get(variableIndex)), 1);
@@ -132,11 +134,16 @@ public final class ProbabilisticSoftLogicProblem {
 //            return this;
 //        }
 
-        public ProbabilisticSoftLogicProblem build() {
+        public Builder groundingMethod(GroundingMethod groundingMethod) {
+            this.groundingMethod = groundingMethod;
+            return this;
+        }
+
+        public ProbabilisticSoftLogic build() {
             return build(true);
         }
 
-        public ProbabilisticSoftLogicProblem build(boolean groundRules) {
+        public ProbabilisticSoftLogic build(boolean groundRules) {
             if (groundRules) {
                 List<Formula> ruleFormulas = new ArrayList<>();
                 for (LogicRule logicRule : logicRules) {
@@ -150,8 +157,7 @@ public final class ProbabilisticSoftLogicProblem {
                         disjunctionComponents.add(logicRule.headFormulas.get(i));
                     ruleFormulas.add(new Disjunction(disjunctionComponents));
                 }
-            InMemoryLazyGrounding grounding = new InMemoryLazyGrounding(logicManager);
-//                DatabaseLazyGrounding grounding = new DatabaseLazyGrounding((DatabaseLogicManager) logicManager);
+                InMemoryLazyGrounding grounding = groundingMethod.getGrounding(logicManager);
                 ruleFormulas = grounding.ground(ruleFormulas);
                 for (int ruleIndex = 0; ruleIndex < logicRules.size(); ruleIndex++) {
                     Disjunction ruleFormula = ((Disjunction) ruleFormulas.get(ruleIndex));
@@ -159,7 +165,8 @@ public final class ProbabilisticSoftLogicProblem {
                     for (int i = 0; i < ruleFormula.getNumberOfComponents(); ++i)
                         variableNegations[i] = ruleFormula.getComponent(i) instanceof Negation;
                     if (variableNegations.length != 0)
-                        for (List<GroundPredicate> groundedRulePredicates : grounding.getGroundedFormulas().get(ruleIndex))
+                        for (List<GroundPredicate> groundedRulePredicates
+                                : grounding.getGroundedFormulas().get(ruleIndex))
                             if (Double.isNaN(logicRules.get(ruleIndex).weight))
                                 addRule(groundedRulePredicates, variableNegations, 1, 1000);
                             else
@@ -169,7 +176,7 @@ public final class ProbabilisticSoftLogicProblem {
                                         logicRules.get(ruleIndex).weight);
                 }
             }
-            return new ProbabilisticSoftLogicProblem(this);
+            return new ProbabilisticSoftLogic(this);
         }
 
         private static class FunctionTerm {
@@ -178,10 +185,7 @@ public final class ProbabilisticSoftLogicProblem {
             private final double power;
             private final double weight;
 
-            private FunctionTerm(int[] variableIndexes,
-                                 LinearFunction linearFunction,
-                                 double power,
-                                 double weight) {
+            private FunctionTerm(int[] variableIndexes, LinearFunction linearFunction, double power, double weight) {
                 this.linearFunction = linearFunction;
                 this.variableIndexes = variableIndexes;
                 this.power = power;
@@ -206,27 +210,25 @@ public final class ProbabilisticSoftLogicProblem {
         }
     }
 
-    private ProbabilisticSoftLogicProblem(Builder builder) {
+    private ProbabilisticSoftLogic(Builder builder) {
         logicManager = builder.logicManager;
-        externalToInternalIdsMap = builder.externalToInternalIdsMap;
-        SumFunction.Builder sumFunctionBuilder = new SumFunction.Builder(externalToInternalIdsMap.size());
+        SumFunction.Builder sumFunctionBuilder = new SumFunction.Builder(builder.externalToInternalIdsMap.size());
         for (Builder.FunctionTerm function : builder.functionTerms) {
-            MaxFunction.Builder maxFunctionBuilder = new MaxFunction.Builder(externalToInternalIdsMap.size());
-            maxFunctionBuilder.addConstantTerm(0);
-            maxFunctionBuilder.addFunctionTerm(function.linearFunction);
+            MaxFunction maxFunction =
+                    new MaxFunction.Builder(builder.externalToInternalIdsMap.size())
+                            .addConstantTerm(0).addFunctionTerm(function.linearFunction)
+                            .build();
             sumFunctionBuilder.addTerm(
-                    new ProbabilisticSoftLogicSumFunctionTerm(maxFunctionBuilder.build(),
-                                                              function.power,
-                                                              function.weight),
+                    new SumFunctionTerm(maxFunction, function.power, function.weight),
                     function.variableIndexes
             );
         }
-        objectiveFunction = new ProbabilisticSoftLogicObjectiveFunction(sumFunctionBuilder);
+        objectiveFunction = sumFunctionBuilder.build();
         constraints = ImmutableSet.copyOf(builder.constraints);
-        internalIdsToFunctionTermsMap = builder.internalIdsToFunctionTermsMap;
+        externalToInternalIdsMap = builder.externalToInternalIdsMap;
         for (int subProblemIndex = 0; subProblemIndex < objectiveFunction.getNumberOfTerms(); subProblemIndex++) {
-            ProbabilisticSoftLogicSumFunctionTerm objectiveTerm =
-                    (ProbabilisticSoftLogicSumFunctionTerm) objectiveFunction.getTerm(subProblemIndex);
+            SumFunctionTerm objectiveTerm =
+                    (SumFunctionTerm) objectiveFunction.getTerm(subProblemIndex);
             Vector coefficients = objectiveTerm.getLinearFunction().getA();
             if (objectiveTerm.getPower() == 2 && coefficients.size() > 2)
                 subProblemCholeskyFactors.put(
@@ -240,130 +242,145 @@ public final class ProbabilisticSoftLogicProblem {
     }
 
     public List<GroundPredicate> solve() {
-        return solve(ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod.ALL, null, -1);
+        return solve(ConsensusADMMSolver.SubProblemSelectionMethod.ALL, -1);
     }
 
-    public List<GroundPredicate> solve(
-            ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelectionMethod subProblemSelectionMethod,
-            ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelector subProblemSelector,
-            int numberOfSubProblemSamples) {
-        ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder solverBuilder =
-                new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.Builder(
-                        objectiveFunction,
-                        Vectors.dense(objectiveFunction.getNumberOfVariables())
-                )
+    public List<GroundPredicate> solve(ConsensusADMMSolver.SubProblemSelector subProblemSelector,
+                                       int numberOfSubProblemSamples) {
+        ConsensusADMMSolver.Builder solverBuilder =
+                new ConsensusADMMSolver.Builder(objectiveFunction,
+                                                Vectors.dense(objectiveFunction.getNumberOfVariables()))
+                        .subProblemSelector(subProblemSelector)
+                        .numberOfSubProblemSamples(numberOfSubProblemSamples);
+        return solve(solverBuilder);
+    }
+
+    public List<GroundPredicate> solve(ConsensusADMMSolver.SubProblemSelectionMethod subProblemSelectionMethod) {
+        if (subProblemSelectionMethod != ConsensusADMMSolver.SubProblemSelectionMethod.ALL
+                && subProblemSelectionMethod != ConsensusADMMSolver.SubProblemSelectionMethod.CUSTOM)
+            throw new IllegalArgumentException("The selected sub-problem selection method cannot be used with this " +
+                                                       "solve method, as the number of sub-problem samples is " +
+                                                       "required as well.");
+        ConsensusADMMSolver.Builder solverBuilder =
+                new ConsensusADMMSolver.Builder(objectiveFunction,
+                                                Vectors.dense(objectiveFunction.getNumberOfVariables()))
+                        .subProblemSelectionMethod(subProblemSelectionMethod);
+        return solve(solverBuilder);
+    }
+
+    public List<GroundPredicate> solve(ConsensusADMMSolver.SubProblemSelectionMethod subProblemSelectionMethod,
+                                       int numberOfSubProblemSamples) {
+        if (subProblemSelectionMethod == ConsensusADMMSolver.SubProblemSelectionMethod.CUSTOM)
+            throw new IllegalArgumentException("The selected sub-problem selection method cannot be used with this " +
+                                                       "solve method. The one that takes a sub-problem selector as " +
+                                                       "its first argument should be used instead.");
+        ConsensusADMMSolver.Builder solverBuilder =
+                new ConsensusADMMSolver.Builder(objectiveFunction,
+                                                Vectors.dense(objectiveFunction.getNumberOfVariables()))
+                        .subProblemSelectionMethod(subProblemSelectionMethod)
+                        .numberOfSubProblemSamples(numberOfSubProblemSamples);
+        return solve(solverBuilder);
+    }
+
+    private List<GroundPredicate> solve(ConsensusADMMSolver.Builder solverBuilder) {
+        for (Constraint constraint : constraints)
+            solverBuilder.addConstraint(constraint.constraint, constraint.variableIndexes);
+        ConsensusADMMSolver solver =
+                solverBuilder
                         .subProblemSolver(
                                 (subProblem) -> solveProbabilisticSoftLogicSubProblem(subProblem,
                                                                                       subProblemCholeskyFactors)
                         )
-                        .subProblemSelector(subProblemSelector)
-                        .subProblemSelectionMethod(subProblemSelectionMethod)
-                        .numberOfSubProblemSamples(numberOfSubProblemSamples)
+                        .penaltyParameterSettingMethod(ConsensusADMMSolver.PenaltyParameterSettingMethod.CONSTANT)
                         .penaltyParameter(1)
-                        .penaltyParameterSettingMethod(ConsensusAlternatingDirectionsMethodOfMultipliersSolver
-                                        .PenaltyParameterSettingMethod.CONSTANT)
                         .checkForPointConvergence(false)
                         .checkForObjectiveConvergence(false)
                         .checkForGradientConvergence(false)
                         .logObjectiveValue(false)
                         .logGradientNorm(false)
-                        .loggingLevel(3);
-        for (Constraint constraint : constraints)
-            solverBuilder.addConstraint(constraint.constraint, constraint.variableIndexes);
-        ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver = solverBuilder.build();
+                        .loggingLevel(3)
+                        .build();
         Vector result = solver.solve();
         List<GroundPredicate> groundPredicates = new ArrayList<>();
-        for (int internalVariableId = 0; internalVariableId < result.size(); internalVariableId++) {
+        for (int internalId = 0; internalId < result.size(); internalId++) {
             GroundPredicate groundPredicate =
-                    logicManager.getGroundPredicate(externalToInternalIdsMap.inverse().get(internalVariableId));
-            groundPredicate.setValue(result.get(internalVariableId));
+                    logicManager.getGroundPredicate(externalToInternalIdsMap.inverse().get(internalId));
+            groundPredicate.setValue(result.get(internalId));
             groundPredicates.add(groundPredicate);
         }
         return groundPredicates;
     }
 
     private static void solveProbabilisticSoftLogicSubProblem(
-            ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblem subProblem,
+            ConsensusADMMSolver.SubProblem subProblem,
             Map<Integer, CholeskyDecomposition> subProblemCholeskyFactors
     ) {
-        ProbabilisticSoftLogicSumFunctionTerm objectiveTerm =
-                (ProbabilisticSoftLogicSumFunctionTerm) subProblem.objectiveTerm;
-        subProblem.variables.set(
-                subProblem.consensusVariables.sub(subProblem.multipliers.div(subProblem.penaltyParameter))
-        );
-        if (objectiveTerm.getLinearFunction().getValue(subProblem.variables) > 0) {
+        SumFunctionTerm objectiveTerm = (SumFunctionTerm) subProblem.getObjectiveTerm();
+        subProblem.getVariables().set(subProblem.getConsensusVariables()
+                                              .sub(subProblem.getMultipliers().div(subProblem.getPenaltyParameter())));
+        if (objectiveTerm.getLinearFunction().getValue(subProblem.getVariables()) > 0) {
             if (objectiveTerm.getPower() == 1) {
-                subProblem.variables.subInPlace(objectiveTerm.getLinearFunction().getA()
-                                                        .mult(objectiveTerm.getWeight() / subProblem.penaltyParameter));
+                subProblem.getVariables().subInPlace(
+                        objectiveTerm.getLinearFunction().getA()
+                                .mult(objectiveTerm.getWeight() / subProblem.getPenaltyParameter())
+                );
             } else if (objectiveTerm.getPower() == 2) {
                 double weight = objectiveTerm.getWeight();
                 double constant = objectiveTerm.getLinearFunction().getB();
-                subProblem.variables
-                        .multInPlace(subProblem.penaltyParameter)
-                        .subInPlace(objectiveTerm.getLinearFunction().getA()
-                                            .mult(2 * weight * constant));
-                if (subProblem.variables.size() == 1) {
+                subProblem.getVariables()
+                        .multInPlace(subProblem.getPenaltyParameter())
+                        .subInPlace(objectiveTerm.getLinearFunction().getA().mult(2 * weight * constant));
+                if (subProblem.getVariables().size() == 1) {
                     double coefficient = objectiveTerm.getLinearFunction().getA().get(0);
-                    subProblem.variables.divInPlace(2 * weight * coefficient * coefficient
-                                                            + subProblem.penaltyParameter);
-                } else if (subProblem.variables.size() == 2) {
+                    subProblem.getVariables()
+                            .divInPlace(2 * weight * coefficient * coefficient + subProblem.getPenaltyParameter());
+                } else if (subProblem.getVariables().size() == 2) {
                     double coefficient0 = objectiveTerm.getLinearFunction().getA().get(0);
                     double coefficient1 = objectiveTerm.getLinearFunction().getA().get(1);
-                    double a0 = 2 * weight * coefficient0 * coefficient0 + subProblem.penaltyParameter;
-                    double b1 = 2 * weight * coefficient1 * coefficient1 + subProblem.penaltyParameter;
+                    double a0 = 2 * weight * coefficient0 * coefficient0 + subProblem.getPenaltyParameter();
+                    double b1 = 2 * weight * coefficient1 * coefficient1 + subProblem.getPenaltyParameter();
                     double a1b0 = 2 * weight * coefficient0 * coefficient1;
-                    subProblem.variables.set(
+                    subProblem.getVariables().set(
                             1,
-                            (subProblem.variables.get(1) - a1b0 * subProblem.variables.get(0) / a0)
+                            (subProblem.getVariables().get(1) - a1b0 * subProblem.getVariables().get(0) / a0)
                                     / (b1 - a1b0 * a1b0 / a0)
                     );
-                    subProblem.variables.set(
+                    subProblem.getVariables().set(
                             0,
-                            (subProblem.variables.get(0) - a1b0 * subProblem.variables.get(1)) / a0
+                            (subProblem.getVariables().get(0) - a1b0 * subProblem.getVariables().get(1)) / a0
                     );
                 } else {
                     try {
-                        subProblem.variables.set(
-                                subProblemCholeskyFactors.get(subProblem.subProblemIndex).solve(subProblem.variables)
-                        );
+                        subProblem.getVariables().set(subProblemCholeskyFactors.get(subProblem.getSubProblemIndex())
+                                                              .solve(subProblem.getVariables()));
                     } catch (NonSymmetricMatrixException | NonPositiveDefiniteMatrixException e) {
-                        System.err.println("Non-positive definite matrix!!!");
+                        logger.error("Non-positive definite matrix encountered while solving a  probabilistic soft " +
+                                             "logic sub-problem!");
                     }
                 }
             } else {
-                subProblem.variables.set(
+                subProblem.getVariables().set(
                         new NewtonSolver.Builder(
-                                new ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemObjectiveFunction(
+                                new ConsensusADMMSolver.SubProblemObjectiveFunction(
                                         objectiveTerm.getSubProblemObjectiveFunction(),
-                                        subProblem.consensusVariables,
-                                        subProblem.multipliers,
-                                        subProblem.penaltyParameter
+                                        subProblem.getConsensusVariables(),
+                                        subProblem.getMultipliers(),
+                                        subProblem.getPenaltyParameter()
                                 ),
-                                subProblem.variables)
+                                subProblem.getVariables()
+                        )
                                 .lineSearch(new NoLineSearch(1))
                                 .maximumNumberOfIterations(1)
                                 .build()
                                 .solve()
                 );
             }
-            if (objectiveTerm.getLinearFunction().getValue(subProblem.variables) < 0) {
-                subProblem.variables.set(
-                        objectiveTerm.getLinearFunction().projectToHyperplane(subProblem.consensusVariables)
+            if (objectiveTerm.getLinearFunction().getValue(subProblem.getVariables()) < 0) {
+                subProblem.getVariables().set(
+                        objectiveTerm.getLinearFunction().projectToHyperplane(subProblem.getConsensusVariables())
                 );
             }
         }
-    }
-
-    public Map<Integer, Integer> getExternalToInternalIdsMap() {
-        return Collections.unmodifiableMap(this.externalToInternalIdsMap);
-    }
-
-    public Map<Integer, Integer> getInternalToExternalIdsMap() {
-        return Collections.unmodifiableMap(this.externalToInternalIdsMap.inverse());
-    }
-
-    public Map<Integer, List<Integer>> getInternalIdsToFunctionTermsMap() {
-        return Collections.unmodifiableMap(this.internalIdsToFunctionTermsMap);
     }
 
     @Override
@@ -373,58 +390,28 @@ public final class ProbabilisticSoftLogicProblem {
         if (other == null || getClass() != other.getClass())
             return false;
 
-        ProbabilisticSoftLogicProblem that = (ProbabilisticSoftLogicProblem) other;
+        ProbabilisticSoftLogic that = (ProbabilisticSoftLogic) other;
 
-        if (!objectiveFunction.equals(that.objectiveFunction))
-            return false;
-        if (!constraints.equals(that.constraints))
-            return false;
-        if (!externalToInternalIdsMap.equals(that.externalToInternalIdsMap))
-            return false;
-        if (!internalIdsToFunctionTermsMap.equals(that.internalIdsToFunctionTermsMap))
-            return false;
-        if (!subProblemCholeskyFactors.equals(that.subProblemCholeskyFactors))
-            return false;
-
-        return true;
+        return Objects.equal(objectiveFunction, that.objectiveFunction)
+                && Objects.equal(constraints, that.constraints)
+                && Objects.equal(externalToInternalIdsMap, that.externalToInternalIdsMap)
+                && Objects.equal(subProblemCholeskyFactors, that.subProblemCholeskyFactors);
     }
 
     @Override
     public int hashCode() {
-        int result = objectiveFunction.hashCode();
-        result = 31 * result + constraints.hashCode();
-        result = 31 * result + externalToInternalIdsMap.hashCode();
-        result = 31 * result + internalIdsToFunctionTermsMap.hashCode();
-        result = 31 * result + subProblemCholeskyFactors.hashCode();
-        return result;
+        return Objects.hashCode(objectiveFunction,
+                                constraints,
+                                externalToInternalIdsMap,
+                                subProblemCholeskyFactors);
     }
 
-    private static final class ProbabilisticSoftLogicObjectiveFunction extends SumFunction {
-        private ProbabilisticSoftLogicObjectiveFunction(SumFunction.Builder sumFunctionBuilder) {
-            super(sumFunctionBuilder);
-        }
-
-        public LinearFunction getTermLinearFunction(int term) {
-            return ((ProbabilisticSoftLogicSumFunctionTerm) terms.get(term)).getLinearFunction();
-        }
-
-        public double getTermPower(int term) {
-            return ((ProbabilisticSoftLogicSumFunctionTerm) terms.get(term)).getPower();
-        }
-
-        public double getTermWeight(int term) {
-            return ((ProbabilisticSoftLogicSumFunctionTerm) terms.get(term)).getWeight();
-        }
-    }
-
-    private static final class ProbabilisticSoftLogicSubProblemObjectiveFunction extends AbstractFunction {
+    private static final class SubProblemObjectiveFunction extends AbstractFunction {
         private final LinearFunction linearFunction;
         private final double power;
         private final double weight;
 
-        private ProbabilisticSoftLogicSubProblemObjectiveFunction(LinearFunction linearFunction,
-                                                                  double power,
-                                                                  double weight) {
+        private SubProblemObjectiveFunction(LinearFunction linearFunction, double power, double weight) {
             this.linearFunction = linearFunction;
             this.power = power;
             this.weight = weight;
@@ -437,13 +424,12 @@ public final class ProbabilisticSoftLogicProblem {
 
         @Override
         public Vector computeGradient(Vector point) {
-            if (power > 0) {
+            if (power > 0)
                 return linearFunction.computeGradient(point).mult(
                         weight * power * Math.pow(linearFunction.computeValue(point), power - 1)
                 );
-            } else {
+            else
                 return Vectors.build(point.size(), point.type());
-            }
         }
 
         @Override
@@ -465,34 +451,25 @@ public final class ProbabilisticSoftLogicProblem {
             if (other == null || getClass() != other.getClass())
                 return false;
 
-            ProbabilisticSoftLogicSubProblemObjectiveFunction that =
-                    (ProbabilisticSoftLogicSubProblemObjectiveFunction) other;
+            SubProblemObjectiveFunction that = (SubProblemObjectiveFunction) other;
 
-            if (!linearFunction.equals(that.linearFunction))
-                return false;
-            if (power != that.power)
-                return false;
-            if (weight != that.weight)
-                return false;
-
-            return true;
+            return Objects.equal(linearFunction, that.linearFunction)
+                    && Objects.equal(power, that.power)
+                    && Objects.equal(weight, that.weight);
         }
 
         @Override
         public int hashCode() {
-            int result = linearFunction.hashCode();
-            result = 31 * result + Double.valueOf(power).hashCode();
-            result = 31 * result + Double.valueOf(weight).hashCode();
-            return result;
+            return Objects.hashCode(linearFunction, power, weight);
         }
     }
 
-    private static final class ProbabilisticSoftLogicSumFunctionTerm extends AbstractFunction {
+    private static final class SumFunctionTerm extends AbstractFunction {
         private final MaxFunction maxFunction;
         private final double power;
         private final double weight;
 
-        private ProbabilisticSoftLogicSumFunctionTerm(MaxFunction maxFunction, double power, double weight) {
+        private SumFunctionTerm(MaxFunction maxFunction, double power, double weight) {
             this.maxFunction = maxFunction;
             this.power = power;
             this.weight = weight;
@@ -515,8 +492,8 @@ public final class ProbabilisticSoftLogicProblem {
             return weight;
         }
 
-        private ProbabilisticSoftLogicSubProblemObjectiveFunction getSubProblemObjectiveFunction() {
-            return new ProbabilisticSoftLogicSubProblemObjectiveFunction(
+        private SubProblemObjectiveFunction getSubProblemObjectiveFunction() {
+            return new SubProblemObjectiveFunction(
                     (LinearFunction) maxFunction.getFunctionTerm(0),
                     power,
                     weight
@@ -530,24 +507,16 @@ public final class ProbabilisticSoftLogicProblem {
             if (other == null || getClass() != other.getClass())
                 return false;
 
-            ProbabilisticSoftLogicSumFunctionTerm that = (ProbabilisticSoftLogicSumFunctionTerm) other;
+            SumFunctionTerm that = (SumFunctionTerm) other;
 
-            if (!maxFunction.equals(that.maxFunction))
-                return false;
-            if (power != that.power)
-                return false;
-            if (weight != that.weight)
-                return false;
-
-            return true;
+            return Objects.equal(maxFunction, that.maxFunction)
+                    && Objects.equal(power, that.power)
+                    && Objects.equal(weight, that.weight);
         }
 
         @Override
         public int hashCode() {
-            int result = maxFunction.hashCode();
-            result = 31 * result + Double.valueOf(power).hashCode();
-            result = 31 * result + Double.valueOf(weight).hashCode();
-            return result;
+            return Objects.hashCode(maxFunction, power, weight);
         }
     }
 
@@ -569,27 +538,27 @@ public final class ProbabilisticSoftLogicProblem {
 
             Constraint that = (Constraint) other;
 
-            if (!constraint.equals(that.constraint))
-                return false;
-            if (!variableIndexes.equals(that.variableIndexes))
-                return false;
-
-            return true;
+            return Objects.equal(constraint, that.constraint) && Objects.equal(variableIndexes, that.variableIndexes);
         }
 
         @Override
         public int hashCode() {
-            int result = constraint.hashCode();
-            result = 31 * result + variableIndexes.hashCode();
-            return result;
+            return Objects.hashCode(constraint, variableIndexes);
         }
     }
 
     public static class LogicRule {
-        public final List<Formula> bodyFormulas;
-        public final List<Formula> headFormulas;
-        public final double power;
-        public final double weight;
+        private final List<Formula> bodyFormulas;
+        private final List<Formula> headFormulas;
+        private final Double power;
+        private final Double weight;
+
+        public LogicRule(List<Formula> bodyFormulas, List<Formula> headFormulas) {
+            this.bodyFormulas = bodyFormulas;
+            this.headFormulas = headFormulas;
+            power = null;
+            weight = null;
+        }
 
         public LogicRule(List<Formula> bodyFormulas, List<Formula> headFormulas, double power, double weight) {
             this.bodyFormulas = bodyFormulas;
@@ -602,23 +571,23 @@ public final class ProbabilisticSoftLogicProblem {
         public String toString() {
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.append("{");
-            if (Double.isNaN(weight))
+            if (weight == null)
                 stringBuilder.append("constraint");
             else
                 stringBuilder.append(weight);
             stringBuilder.append("} ");
-            for (int bodyFormulaIndex = 0; bodyFormulaIndex < bodyFormulas.size(); ++bodyFormulaIndex) {
+            for (int bodyFormulaIndex = 0; bodyFormulaIndex < bodyFormulas.size(); bodyFormulaIndex++) {
                 if (bodyFormulaIndex > 0)
                     stringBuilder.append(" & ");
                 stringBuilder.append(bodyFormulas.get(bodyFormulaIndex).toString());
             }
-            stringBuilder.append(" >> ");
-            for (int headFormulaIndex = 0; headFormulaIndex < headFormulas.size(); ++headFormulaIndex) {
+            stringBuilder.append(" -> ");
+            for (int headFormulaIndex = 0; headFormulaIndex < headFormulas.size(); headFormulaIndex++) {
                 if (headFormulaIndex > 0)
                     stringBuilder.append(" | ");
                 stringBuilder.append(headFormulas.get(headFormulaIndex).toString());
             }
-            if (!Double.isNaN(weight))
+            if (weight != null)
                 stringBuilder.append(" { power: ").append(power).append("}");
             return stringBuilder.toString();
         }
