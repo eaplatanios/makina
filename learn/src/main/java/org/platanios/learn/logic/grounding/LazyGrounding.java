@@ -1,10 +1,11 @@
 package org.platanios.learn.logic.grounding;
 
-import org.apache.commons.lang3.builder.HashCodeBuilder;
+import com.google.common.base.Objects;
 import org.platanios.learn.logic.LogicManager;
 import org.platanios.learn.logic.formula.Atom;
 import org.platanios.learn.logic.formula.Formula;
 import org.platanios.learn.logic.formula.Negation;
+import org.platanios.learn.logic.formula.Predicate;
 
 import java.util.HashSet;
 import java.util.List;
@@ -56,7 +57,7 @@ public class LazyGrounding extends Grounding {
             if (formula instanceof Negation
                     && !activatedGroundedPredicates.contains(
                     new ActivatedGroundedPredicate<>(
-                            ((Atom) ((Negation) formula).getFormula()).getPredicate().getId(),
+                            ((Atom) ((Negation) formula).getFormula()).getPredicate(),
                             ((Atom) ((Negation) formula).getFormula()).getPredicateArguments().stream().map(variableAssignments::get).collect(Collectors.toList())
                     ))) {
                 return true;
@@ -76,18 +77,18 @@ public class LazyGrounding extends Grounding {
                 groundedRule.stream()
                         .filter(rule -> rule.getValue() == null)
                         .map(groundedPredicate ->
-                                     new ActivatedGroundedPredicate<>(groundedPredicate.getPredicate().getId(),
-                                                                      groundedPredicate.getPredicateArgumentsAssignment()))
+                                     new ActivatedGroundedPredicate<>(groundedPredicate.getPredicate(),
+                                                                      groundedPredicate.getArguments()))
                         .collect(Collectors.toList())
         );
     }
 
     public class ActivatedGroundedPredicate<V> {
-        private final long predicateIdentifier;
+        private final Predicate predicate;
         private final List<V> variableGroundings;
 
-        private ActivatedGroundedPredicate(long predicateIdentifier, List<V> variableGroundings) {
-            this.predicateIdentifier = predicateIdentifier;
+        private ActivatedGroundedPredicate(Predicate predicate, List<V> variableGroundings) {
+            this.predicate = predicate;
             this.variableGroundings = variableGroundings;
         }
 
@@ -104,19 +105,13 @@ public class LazyGrounding extends Grounding {
 
             ActivatedGroundedPredicate<V> that = (ActivatedGroundedPredicate<V>) object;
 
-            if (predicateIdentifier != that.predicateIdentifier)
-                return false;
-            if (!variableGroundings.equals(that.variableGroundings))
-                return false;
-
-            return true;
+            return Objects.equal(predicate, that.predicate)
+                    && Objects.equal(variableGroundings, that.variableGroundings);
         }
 
         @Override
         public int hashCode() {
-            HashCodeBuilder hashCodeBuilder = new HashCodeBuilder().append(predicateIdentifier);
-            variableGroundings.forEach(hashCodeBuilder::append);
-            return hashCodeBuilder.toHashCode();
+            return Objects.hashCode(predicate, variableGroundings);
         }
     }
 }

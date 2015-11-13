@@ -25,10 +25,8 @@ public interface LogicManager {
     GroundPredicate getGroundPredicate(long identifier);
     GroundPredicate getGroundPredicate(Predicate predicate, List<Long> argumentAssignments);
     long getNumberOfEntityTypes();
-    EntityType getEntityType(long identifier);
     EntityType getEntityType(String name);
     Set<Long> getVariableValues(Variable variable);
-    Predicate getPredicate(long identifier);
     Predicate getPredicate(String name);
     List<Predicate> getClosedPredicates();
     Double getPredicateAssignmentTruthValue(Predicate predicate, List<Long> argumentAssignments);

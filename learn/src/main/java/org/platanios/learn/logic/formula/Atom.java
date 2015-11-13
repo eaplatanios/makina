@@ -68,7 +68,7 @@ public class Atom extends Formula {
 
     @Override
     public String toString() {
-        StringBuilder stringBuilder = new StringBuilder(predicate.toStringNoArgumentTypes());
+        StringBuilder stringBuilder = new StringBuilder(predicate.toStringWithoutArgumentTypes());
         stringBuilder.append("(");
         for (int argumentIndex = 0; argumentIndex < predicateArguments.size(); argumentIndex++) {
             stringBuilder.append(predicateArguments.get(argumentIndex));

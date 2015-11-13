@@ -16,7 +16,7 @@ public class InMemoryLazyGrounding {
 
     final LogicManager logicManager;
 
-    Map<Long, Set<GroundPredicate>> activatedGroundedPredicates = new HashMap<>(); // Predicate ID to set of grounded predicates with that predicate ID.
+    Map<Predicate, Set<GroundPredicate>> activatedGroundedPredicates = new HashMap<>(); // Predicate ID to set of grounded predicates with that predicate ID.
     Map<Long, List<Long>> groundedVariables = new HashMap<>(); // Maps from variable ID to list of grounded values -- the list is ordered in the same way as the groundedFormula list.
     List<List<GroundPredicate>> groundedFormula = new ArrayList<>(); // List of groundings -- each grounding is a set of grounded predicates representing the formula terms.
     List<Double> groundedFormulaTruthValues = new ArrayList<>();
@@ -27,9 +27,9 @@ public class InMemoryLazyGrounding {
     public InMemoryLazyGrounding(LogicManager logicManager) {
         this.logicManager = logicManager;
         for (GroundPredicate groundPredicate : logicManager.getGroundPredicates()) {
-            if (!activatedGroundedPredicates.containsKey(groundPredicate.getPredicate().getId()))
-                activatedGroundedPredicates.put(groundPredicate.getPredicate().getId(), new HashSet<>());
-            activatedGroundedPredicates.get(groundPredicate.getPredicate().getId()).add(groundPredicate);
+            if (!activatedGroundedPredicates.containsKey(groundPredicate.getPredicate()))
+                activatedGroundedPredicates.put(groundPredicate.getPredicate(), new HashSet<>());
+            activatedGroundedPredicates.get(groundPredicate.getPredicate()).add(groundPredicate);
         }
     }
 
@@ -50,7 +50,7 @@ public class InMemoryLazyGrounding {
             preprocessedFormulas.add(new Disjunction(disjunctionComponents));
         }
         int previousNumberOfActivatedGroundedPredicates = 0;
-        for (Map.Entry<Long, Set<GroundPredicate>> activatedGroundedPredicate : activatedGroundedPredicates.entrySet())
+        for (Map.Entry<Predicate, Set<GroundPredicate>> activatedGroundedPredicate : activatedGroundedPredicates.entrySet())
             previousNumberOfActivatedGroundedPredicates += activatedGroundedPredicate.getValue().size();
         while (true) {
             for (int currentFormulaIndex = 0; currentFormulaIndex < preprocessedFormulas.size(); currentFormulaIndex++) {
@@ -61,7 +61,7 @@ public class InMemoryLazyGrounding {
                 groundedFormulas.get(currentFormulaIndex).addAll(groundedFormula);
             }
             int currentNumberOfActivatedGroundedPredicates = 0;
-            for (Map.Entry<Long, Set<GroundPredicate>> activatedGroundedPredicate : activatedGroundedPredicates.entrySet())
+            for (Map.Entry<Predicate, Set<GroundPredicate>> activatedGroundedPredicate : activatedGroundedPredicates.entrySet())
                 currentNumberOfActivatedGroundedPredicates += activatedGroundedPredicate.getValue().size();
             if (currentNumberOfActivatedGroundedPredicates == previousNumberOfActivatedGroundedPredicates)
                 break;
@@ -138,12 +138,12 @@ public class InMemoryLazyGrounding {
         if (groundedVariables.size() == 0) {
             for (Variable variable : variables)
                 groundedVariables.put(variable.getId(), new ArrayList<>());
-            for (GroundPredicate groundPredicate : activatedGroundedPredicates.get(predicate.getId())) {
+            for (GroundPredicate groundPredicate : activatedGroundedPredicates.get(predicate)) {
                 Double groundedPredicateValue = groundPredicate.getValue();
                 Double currentTruthValue = groundedPredicateValue == null ? logicManager.logic().falseValue() : logicManager.logic().negation(groundedPredicateValue);
                 if (logicManager.logic().isSatisfied(currentTruthValue))
                     continue;
-                List<Long> variablesAssignment = groundPredicate.getPredicateArgumentsAssignment();
+                List<Long> variablesAssignment = groundPredicate.getArguments();
                 for (int variableIndex = 0; variableIndex < variablesAssignment.size(); variableIndex++)
                     groundedVariables.get(variables.get(variableIndex).getId())
                             .add(variablesAssignment.get(variableIndex));
@@ -170,9 +170,9 @@ public class InMemoryLazyGrounding {
                     else
                         variablesAssignmentTemplate.add(null);
                 }
-                for (GroundPredicate groundPredicate : activatedGroundedPredicates.get(predicate.getId())) {
+                for (GroundPredicate groundPredicate : activatedGroundedPredicates.get(predicate)) {
                     boolean pruneGroundedPredicate = false;
-                    List<Long> variablesAssignment = groundPredicate.getPredicateArgumentsAssignment();
+                    List<Long> variablesAssignment = groundPredicate.getArguments();
                     for (int variableIndex = 0; variableIndex < variablesAssignment.size(); variableIndex++) {
                         if (!variablesAssignment.get(variableIndex).equals(variablesAssignmentTemplate.get(variableIndex))
                                 && variablesAssignmentTemplate.get(variableIndex) != null) {
@@ -297,9 +297,9 @@ public class InMemoryLazyGrounding {
                 newGroundedFormula.add(temporaryList);
                 newGroundedFormulaTruthValues.add(currentPredicateTruthValue);
                 newFormulaUnobservedVariableIndicators.add(unobservedVariable | groundPredicate.getValue() == null);
-                if (!activatedGroundedPredicates.containsKey(groundPredicate.getPredicate().getId()))
-                    activatedGroundedPredicates.put(groundPredicate.getPredicate().getId(), new HashSet<>());
-                activatedGroundedPredicates.get(groundPredicate.getPredicate().getId()).add(groundPredicate);
+                if (!activatedGroundedPredicates.containsKey(groundPredicate.getPredicate()))
+                    activatedGroundedPredicates.put(groundPredicate.getPredicate(), new HashSet<>());
+                activatedGroundedPredicates.get(groundPredicate.getPredicate()).add(groundPredicate);
             }
         }
         groundedVariables = newGroundedVariables;

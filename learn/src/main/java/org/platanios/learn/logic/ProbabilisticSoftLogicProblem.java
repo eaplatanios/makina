@@ -8,8 +8,8 @@ import org.platanios.learn.logic.formula.Disjunction;
 import org.platanios.learn.logic.formula.Formula;
 import org.platanios.learn.logic.formula.Negation;
 import org.platanios.learn.logic.formula.Predicate;
-import org.platanios.learn.logic.grounding.DatabaseLazyGrounding;
 import org.platanios.learn.logic.grounding.GroundPredicate;
+import org.platanios.learn.logic.grounding.InMemoryLazyGrounding;
 import org.platanios.learn.math.matrix.*;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.ConsensusAlternatingDirectionsMethodOfMultipliersSolver;
@@ -150,9 +150,8 @@ public final class ProbabilisticSoftLogicProblem {
                         disjunctionComponents.add(logicRule.headFormulas.get(i));
                     ruleFormulas.add(new Disjunction(disjunctionComponents));
                 }
-//            InMemoryLazyGrounding grounding = new InMemoryLazyGrounding(logicManager);
-                DatabaseLazyGrounding grounding = new DatabaseLazyGrounding((DatabaseLogicManager) logicManager);
-//            grounding.ground(ruleFormulas);
+            InMemoryLazyGrounding grounding = new InMemoryLazyGrounding(logicManager);
+//                DatabaseLazyGrounding grounding = new DatabaseLazyGrounding((DatabaseLogicManager) logicManager);
                 ruleFormulas = grounding.ground(ruleFormulas);
                 for (int ruleIndex = 0; ruleIndex < logicRules.size(); ruleIndex++) {
                     Disjunction ruleFormula = ((Disjunction) ruleFormulas.get(ruleIndex));

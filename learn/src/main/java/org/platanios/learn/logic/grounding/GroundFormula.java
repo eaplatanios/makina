@@ -1,42 +1,21 @@
 package org.platanios.learn.logic.grounding;
 
-import javax.persistence.*;
+import com.google.common.base.Objects;
+
 import java.util.List;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
-@Entity
-@Table(name = "GroundPredicates",
-        catalog = "learn_logic")
 public class GroundFormula {
-    private long id;
-    private List<GroundFormulaPredicate> groundPredicates;
+    private List<GroundPredicate> groundPredicates;
 
-    public GroundFormula() { }
-
-    public GroundFormula(List<GroundFormulaPredicate> groundPredicates) {
+    public GroundFormula(List<GroundPredicate> groundPredicates) {
         this.groundPredicates = groundPredicates;
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
-    public long getId() {
-        return id;
-    }
-
-    private void setId(long id) {
-        this.id = id;
-    }
-
-    @OneToMany(mappedBy = "groundFormula", cascade = CascadeType.ALL, orphanRemoval = true)
-    public List<GroundFormulaPredicate> getGroundPredicates() {
+    public List<GroundPredicate> getGroundPredicates() {
         return groundPredicates;
-    }
-
-    private void setGroundPredicates(List<GroundFormulaPredicate> groundPredicates) {
-        this.groundPredicates = groundPredicates;
     }
 
     @Override
@@ -48,14 +27,11 @@ public class GroundFormula {
 
         GroundFormula that = (GroundFormula) other;
 
-        if (id != that.id)
-            return false;
-
-        return true;
+        return Objects.equal(groundPredicates, that.groundPredicates);
     }
 
     @Override
     public int hashCode() {
-        return (int) (id ^ (id >>> 32));
+        return Objects.hashCode(groundPredicates);
     }
 }

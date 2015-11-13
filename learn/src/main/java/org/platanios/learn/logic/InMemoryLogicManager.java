@@ -14,14 +14,12 @@ import java.util.stream.Collectors;
 public class InMemoryLogicManager implements LogicManager {
     private final Logic logic;
 
-    private final Map<Long, EntityType> entityTypes = new HashMap<>();
-    private final Map<Long, Predicate> predicates = new HashMap<>();
-    private final Map<Long, Map<List<Long>, GroundPredicate>> groundedPredicates = new HashMap<>();
-    private final Map<Long, GroundPredicate> groundedPredicatesMap = new HashMap<>();
-    private final List<Long> closedPredicateIdentifiers = new ArrayList<>();
+    private final List<EntityType> entityTypes = new ArrayList<>();
+    private final List<Predicate> predicates = new ArrayList<>();
+    private final Map<Predicate, Map<List<Long>, GroundPredicate>> groundPredicatesMap = new HashMap<>();
+    private final Map<Long, GroundPredicate> groundPredicates = new HashMap<>();
+    private final List<Predicate> closedPredicates = new ArrayList<>();
 
-    private long newEntityTypeIdentifier = 0;
-    private long newPredicateIdentifier = 0;
     private long newPredicateGroundingIdentifier = 0;
 
     public InMemoryLogicManager(Logic logic) {
@@ -37,8 +35,8 @@ public class InMemoryLogicManager implements LogicManager {
     }
 
     public EntityType addEntityType(String name, Set<Long> allowedValues) {
-        EntityType entityType = new EntityType(newEntityTypeIdentifier, name, allowedValues);
-        entityTypes.put(newEntityTypeIdentifier++, entityType);
+        EntityType entityType = new EntityType(name, allowedValues);
+        entityTypes.add(entityType);
         return entityType;
     }
 
@@ -47,12 +45,11 @@ public class InMemoryLogicManager implements LogicManager {
     }
 
     public Predicate addPredicate(String name, List<EntityType> argumentTypes, boolean closed) {
-        Predicate predicate = new Predicate(newPredicateIdentifier, name, argumentTypes);
-        predicates.put(newPredicateIdentifier, predicate);
-        groundedPredicates.put(newPredicateIdentifier, new HashMap<>());
+        Predicate predicate = new Predicate(name, argumentTypes);
+        predicates.add(predicate);
+        groundPredicatesMap.put(predicate, new HashMap<>());
         if (closed)
-            closedPredicateIdentifiers.add(newPredicateIdentifier);
-        newPredicateIdentifier++;
+            closedPredicates.add(predicate);
         return predicate;
     }
 
@@ -61,12 +58,12 @@ public class InMemoryLogicManager implements LogicManager {
     }
 
     public GroundPredicate addGroundPredicate(Predicate predicate, List<Long> argumentAssignments, Double value) {
-        if (!groundedPredicates.containsKey(predicate.getId()))
+        if (!groundPredicatesMap.containsKey(predicate))
             throw new IllegalArgumentException("The provided predicate identifier does not match any of the " +
                                                        "predicates currently stored in this logic manager.");
-        if (groundedPredicates.get(predicate.getId()).containsKey(argumentAssignments)) {
+        if (groundPredicatesMap.get(predicate).containsKey(argumentAssignments)) {
             GroundPredicate groundPredicate =
-                    groundedPredicates.get(predicate.getId()).get(argumentAssignments);
+                    groundPredicatesMap.get(predicate).get(argumentAssignments);
             if (!(groundPredicate.getValue() == null && value == null) && !groundPredicate.getValue().equals(value))
                 throw new IllegalArgumentException("A grounding for the predicate corresponding to the provided " +
                                                            "identifier and for the provided argument assignments has " +
@@ -80,97 +77,74 @@ public class InMemoryLogicManager implements LogicManager {
                                                                   predicate,
                                                                   argumentAssignments,
                                                                   value);
-            groundedPredicatesMap.put(groundPredicate.getId(), groundPredicate);
-            groundedPredicates.get(predicate.getId()).put(argumentAssignments, groundPredicate);
+            groundPredicates.put(groundPredicate.getId(), groundPredicate);
+            groundPredicatesMap.get(predicate).put(argumentAssignments, groundPredicate);
             return groundPredicate;
         }
     }
 
     public boolean checkIfGroundPredicateExists(Predicate predicate, List<Long> argumentAssignments) {
-        if (!groundedPredicates.containsKey(predicate.getId()))
+        if (!groundPredicatesMap.containsKey(predicate))
             throw new IllegalArgumentException("The provided predicate identifier does not match any of the " +
                                                        "predicates currently stored in this logic manager.");
 
-        return groundedPredicates.get(predicate.getId()).containsKey(argumentAssignments)
-                || closedPredicateIdentifiers.contains(predicate.getId());
+        return groundPredicatesMap.get(predicate).containsKey(argumentAssignments)
+                || closedPredicates.contains(predicate);
     }
 
     // TODO: Maybe change return type to long?
     public long getNumberOfGroundPredicates() {
-        return groundedPredicatesMap.size();
+        return groundPredicates.size();
     }
 
     public List<GroundPredicate> getGroundPredicates() {
         List<GroundPredicate> groundPredicates = new ArrayList<>();
-        for (Map<List<Long>, GroundPredicate> groundedPredicatesSet : this.groundedPredicates.values())
+        for (Map<List<Long>, GroundPredicate> groundedPredicatesSet : this.groundPredicatesMap.values())
             groundPredicates.addAll(groundedPredicatesSet.values().stream().collect(Collectors.toList()));
         return groundPredicates;
     }
 
     // TODO: Fix the way in which the grounded predicates are stored in this manager.
     public GroundPredicate getGroundPredicate(long identifier) {
-        return groundedPredicatesMap.get(identifier);
+        return groundPredicates.get(identifier);
     }
 
     public GroundPredicate getGroundPredicate(Predicate predicate, List<Long> argumentAssignments) {
-        if (!groundedPredicates.containsKey(predicate.getId()))
+        if (!groundPredicatesMap.containsKey(predicate))
             throw new IllegalArgumentException("The provided predicate identifier does not match any of the " +
                                                        "predicates currently stored in this logic manager.");
-        if (!groundedPredicates.get(predicate.getId()).containsKey(argumentAssignments))
+        if (!groundPredicatesMap.get(predicate).containsKey(argumentAssignments))
             throw new IllegalArgumentException("A grounding for the predicate corresponding to the provided " +
                                                        "identifier and for the provided argument assignments has " +
                                                        "not been added to this logic manager.");
 
-        return groundedPredicates.get(predicate.getId()).get(argumentAssignments);
+        return groundPredicatesMap.get(predicate).get(argumentAssignments);
     }
 
-    // TODO: Maybe change return type to long?
     public long getNumberOfEntityTypes() {
-        return entityTypes.keySet().size();
+        return entityTypes.size();
     }
 
-    public EntityType getEntityType(long identifier) {
-        return entityTypes.get(identifier);
-    }
-
-    /**
-     * TODO: Improve this implementation.
-     *
-     * @param name
-     * @return
-     */
     public EntityType getEntityType(String name) {
-        for (Map.Entry<Long, EntityType> variableEntry : entityTypes.entrySet())
-            if (variableEntry.getValue().getName().equals(name))
-                return variableEntry.getValue();
+        for (EntityType entityType : entityTypes)
+            if (entityType.getName().equals(name))
+                return entityType;
         return null;
     }
 
     public Set<Long> getVariableValues(Variable variable) {
-        return entityTypes.get(variable.getType().getId()).getPrimitiveAllowedValues();
+        return variable.getType().getAllowedValues();
     }
 
-    public Predicate getPredicate(long identifier) {
-        return predicates.get(identifier);
-    }
-
-    /**
-     * TODO: Improve this implementation.
-     *
-     * @param name
-     * @return
-     */
     public Predicate getPredicate(String name) {
-        for (Map.Entry<Long, Predicate> predicateEntry : predicates.entrySet())
-            if (predicateEntry.getValue().getName().equals(name))
-                return predicateEntry.getValue();
+        for (Predicate predicate : predicates)
+            if (predicate.getName().equals(name))
+                return predicate;
         return null;
     }
 
     public List<Predicate> getClosedPredicates() {
-        return closedPredicateIdentifiers.stream()
-                .map(predicates::get)
-                .collect(Collectors.toList());
+        return closedPredicates;
     }
 
     /**
@@ -181,14 +155,14 @@ public class InMemoryLogicManager implements LogicManager {
      * @return
      */
     public Double getPredicateAssignmentTruthValue(Predicate predicate, List<Long> argumentAssignments) {
-        if (!groundedPredicates.containsKey(predicate.getId()))
+        if (!groundPredicatesMap.containsKey(predicate))
             throw new IllegalArgumentException("The provided predicate identifier does not match any of the " +
                                                        "predicates currently stored in this logic manager.");
-        if (!groundedPredicates.get(predicate.getId()).containsKey(argumentAssignments))
-            if (closedPredicateIdentifiers.contains(predicate.getId()))
+        if (!groundPredicatesMap.get(predicate).containsKey(argumentAssignments))
+            if (closedPredicates.contains(predicate))
                 return logic.falseValue();
             else
                 return null;
-        return groundedPredicates.get(predicate.getId()).get(argumentAssignments).getValue();
+        return groundPredicatesMap.get(predicate).get(argumentAssignments).getValue();
     }
 }
