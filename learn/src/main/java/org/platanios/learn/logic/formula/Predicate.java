@@ -15,6 +15,7 @@ public class Predicate {
     private boolean closed = false;
 
     public Predicate(long id, String name, List<EntityType> argumentTypes) {
+        this.id = id;
         this.name = name;
         this.argumentTypes = argumentTypes;
     }

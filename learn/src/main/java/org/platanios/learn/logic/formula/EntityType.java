@@ -14,6 +14,7 @@ public class EntityType {
     private Set<Long> allowedValues;
 
     public EntityType(long id, String name, Set<Long> allowedValues) {
+        this.id = id;
         this.name = name;
         this.allowedValues = allowedValues;
     }
