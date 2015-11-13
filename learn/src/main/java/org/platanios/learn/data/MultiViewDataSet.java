@@ -9,20 +9,20 @@ import java.util.Random;
  * @author Emmanouil Antonios Platanios
  */
 public interface MultiViewDataSet<D extends MultiViewDataInstance> extends Iterable<D> {
-    public int size();
-    public <S extends MultiViewDataInstance> MultiViewDataSet<S> newDataSet();
-    public void add(D dataInstance);
-    public void add(List<D> dataInstances);
-    public void remove(int index);
-    public D get(int index);
-    public void set(int index, D dataInstance);
-    public MultiViewDataSet<D> subSet(int fromIndex, int toIndex);
-    public MultiViewDataSet<D> subSetComplement(int fromIndex, int toIndex);
-    public DataSet<? extends DataInstance> getSingleViewDataSet(int view);
-    public MultiViewDataSet<D> sort(Comparator<? super D> comparator);
+    int size();
+    <S extends MultiViewDataInstance> MultiViewDataSet<S> newDataSet();
+    void add(D dataInstance);
+    void add(List<D> dataInstances);
+    void remove(int index);
+    D get(int index);
+    void set(int index, D dataInstance);
+    MultiViewDataSet<D> subSet(int fromIndex, int toIndex);
+    MultiViewDataSet<D> subSetComplement(int fromIndex, int toIndex);
+    DataSet<? extends DataInstance> getSingleViewDataSet(int view);
+    MultiViewDataSet<D> sort(Comparator<? super D> comparator);
     @Override
-    public Iterator<D> iterator();
-    public Iterator<List<D>> batchIterator(int batchSize);
-    public Iterator<List<D>> continuousRandomBatchIterator(int batchSize, boolean sampleWithReplacement);
-    public Iterator<List<D>> continuousRandomBatchIterator(int batchSize, boolean sampleWithReplacement, Random random);
+    Iterator<D> iterator();
+    Iterator<List<D>> batchIterator(int batchSize);
+    Iterator<List<D>> continuousRandomBatchIterator(int batchSize, boolean sampleWithReplacement);
+    Iterator<List<D>> continuousRandomBatchIterator(int batchSize, boolean sampleWithReplacement, Random random);
 }
