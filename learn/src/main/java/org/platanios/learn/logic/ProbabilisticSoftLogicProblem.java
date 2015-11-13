@@ -265,7 +265,7 @@ public final class ProbabilisticSoftLogicProblem {
                         .checkForPointConvergence(false)
                         .checkForObjectiveConvergence(false)
                         .checkForGradientConvergence(false)
-                        .logObjectiveValue(true)
+                        .logObjectiveValue(false)
                         .logGradientNorm(false)
                         .loggingLevel(3);
         for (Constraint constraint : constraints)
