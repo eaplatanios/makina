@@ -6,7 +6,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.platanios.experiment.psl.parser.ComplexPredicateParser;
 import org.platanios.experiment.psl.parser.PrattParserExpression;
 import org.platanios.learn.logic.LogicManager;
-import org.platanios.learn.logic.ProbabilisticSoftLogicProblem;
+import org.platanios.learn.logic.ProbabilisticSoftLogic;
 import org.platanios.learn.logic.formula.*;
 
 import java.io.*;
@@ -109,11 +109,11 @@ public class ProbabilisticSoftLogicReader {
         }
     }
 
-    public static List<ProbabilisticSoftLogicProblem.LogicRule> readRules(BufferedReader reader,
-                                                                          LogicManager logicManager,
-                                                                          List<Variable> variables) throws DataFormatException, IOException {
+    public static List<ProbabilisticSoftLogic.LogicRule> readRules(BufferedReader reader,
+                                                                   LogicManager logicManager,
+                                                                   List<Variable> variables) throws DataFormatException, IOException {
 
-        List<ProbabilisticSoftLogicProblem.LogicRule> result = new ArrayList<>();
+        List<ProbabilisticSoftLogic.LogicRule> result = new ArrayList<>();
 
         String line;
 
@@ -239,7 +239,7 @@ public class ProbabilisticSoftLogicReader {
                     else
                         headParts.add(new Atom(predicate, predicateArguments));
                 }
-                ProbabilisticSoftLogicProblem.LogicRule logicRule = new ProbabilisticSoftLogicProblem.LogicRule(bodyParts, headParts, power, weight);
+                ProbabilisticSoftLogic.LogicRule logicRule = new ProbabilisticSoftLogic.LogicRule(bodyParts, headParts, power, weight);
                 result.add(logicRule);
             }
 

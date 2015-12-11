@@ -1,16 +1,14 @@
 package org.platanios.experiment.psl;
 
-import com.google.common.collect.ImmutableList;
-import org.apache.commons.lang3.ArrayUtils;
 import org.platanios.learn.math.statistics.StatisticsUtilities;
-import org.platanios.learn.optimization.ConsensusAlternatingDirectionsMethodOfMultipliersSolver;
+import org.platanios.learn.optimization.ConsensusADMMSolver;
 
 import java.util.*;
 
 /**
  * Class for
  */
-public class RandomBipartiteWalkSampler implements ConsensusAlternatingDirectionsMethodOfMultipliersSolver.SubProblemSelector {
+public class RandomBipartiteWalkSampler implements ConsensusADMMSolver.SubProblemSelector {
 
     private final List<Integer> graphSampleOrigins;
     private final List<Integer> graphSampleCursorOriginIndices;
@@ -36,10 +34,10 @@ public class RandomBipartiteWalkSampler implements ConsensusAlternatingDirection
 
     }
 
-    public int[] selectSubProblems(ConsensusAlternatingDirectionsMethodOfMultipliersSolver solver) {
+    public int[] selectSubProblems(ConsensusADMMSolver solver) {
 
         // choose which seed to start each cursor from
-        for (int iCursor = this.graphSampleCursorOriginIndices.size(); iCursor < solver.numberOfSubProblemSamples; ++iCursor) {
+        for (int iCursor = this.graphSampleCursorOriginIndices.size(); iCursor < solver.getNumberOfSubProblemSamples(); ++iCursor) {
             int iSeed = random.nextInt(this.graphSampleOrigins.size());
             this.graphSampleCursorOriginIndices.add(iSeed);
             this.graphSampleCursor.add(-1);
@@ -47,7 +45,7 @@ public class RandomBipartiteWalkSampler implements ConsensusAlternatingDirection
 
         HashSet<Integer> subProblemsToSample = new HashSet<>();
 
-        for (int i = 0; i < solver.numberOfSubProblemSamples; ++i) {
+        for (int i = 0; i < solver.getNumberOfSubProblemSamples(); ++i) {
 
             // first choose whether to restart
             double randRestart = this.random.nextDouble();
@@ -69,12 +67,12 @@ public class RandomBipartiteWalkSampler implements ConsensusAlternatingDirection
         }
 
         // back-fill with uniform
-        while (subProblemsToSample.size() < solver.numberOfSubProblemSamples) {
+        while (subProblemsToSample.size() < solver.getNumberOfSubProblemSamples()) {
             subProblemsToSample.add(this.random.nextInt(solver.getNumberOfTerms()));
         }
 
-        int[] sampledSubProblems = new int[solver.numberOfSubProblemSamples];
-        Integer[] sampledFromGraph = StatisticsUtilities.sampleWithoutReplacement(subProblemsToSample.toArray(new Integer[subProblemsToSample.size()]), Math.min(solver.numberOfSubProblemSamples, subProblemsToSample.size()));
+        int[] sampledSubProblems = new int[solver.getNumberOfSubProblemSamples()];
+        Integer[] sampledFromGraph = StatisticsUtilities.sampleWithoutReplacement(subProblemsToSample.toArray(new Integer[subProblemsToSample.size()]), Math.min(solver.getNumberOfSubProblemSamples(), subProblemsToSample.size()));
         for(int i = 0; i < sampledFromGraph.length; ++i) {
             sampledSubProblems[i] = sampledFromGraph[i];
         }

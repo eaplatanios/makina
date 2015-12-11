@@ -456,7 +456,11 @@ public final class ConsensusADMMSolver extends AbstractIterativeSolver {
     }
 
     public int getNumberOfTerms() {
-        return this.objective.getNumberOfTerms();
+        return objective.getNumberOfTerms();
+    }
+
+    public int getNumberOfSubProblemSamples() {
+        return numberOfSubProblemSamples;
     }
 
     private void processSubProblem(int subProblemIndex,
