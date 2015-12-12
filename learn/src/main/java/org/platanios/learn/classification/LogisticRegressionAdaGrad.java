@@ -40,7 +40,7 @@ public class LogisticRegressionAdaGrad extends AbstractTrainableLogisticRegressi
      *              {@link LogisticRegressionAdaGrad} class.
      */
     protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
-            extends AbstractTrainableLogisticRegression.AbstractBuilder<T>{
+            extends AbstractTrainableLogisticRegression.AbstractBuilder<T> {
         protected boolean sampleWithReplacement = false;
         protected int maximumNumberOfIterations = 10000;
         protected int maximumNumberOfIterationsWithNoPointChange = 5;

@@ -235,6 +235,14 @@ public final class ConsensusADMMSolver extends AbstractIterativeSolver {
             currentObjectiveValue = objective.getValue(currentPoint);
     }
 
+    public int getNumberOfTerms() {
+        return objective.getNumberOfTerms();
+    }
+
+    public int getNumberOfSubProblemSamples() {
+        return numberOfSubProblemSamples;
+    }
+
     @Override
     public boolean checkTerminationConditions() {
         if (super.checkTerminationConditions()) {
@@ -453,14 +461,6 @@ public final class ConsensusADMMSolver extends AbstractIterativeSolver {
                 );
             }
         }
-    }
-
-    public int getNumberOfTerms() {
-        return objective.getNumberOfTerms();
-    }
-
-    public int getNumberOfSubProblemSamples() {
-        return numberOfSubProblemSamples;
     }
 
     private void processSubProblem(int subProblemIndex,
