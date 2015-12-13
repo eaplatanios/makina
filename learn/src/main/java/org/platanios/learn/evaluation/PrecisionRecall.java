@@ -28,6 +28,14 @@ public class PrecisionRecall<T extends Vector, S> extends CurveEvaluation<T, S> 
     public void addResult(String name,
                           List<PredictedDataInstance<T, S>> predictions,
                           Function<PredictedDataInstance<T, S>, Boolean> groundTruth) {
+        if (predictions.size() == 0) { // TODO: Do that for other evaluation curves as well.
+            List<CurvePoint> points = new ArrayList<>();
+            points.add(new CurvePoint(0, 1));
+            points.add(new CurvePoint(1, 1));
+            curves.add(new Curve(name, points));
+            areaUnderCurves.add(1.0);
+            return;
+        }
         Collections.sort(predictions,
                          Collections.reverseOrder(Comparator.comparing(PredictedDataInstance::probability)));
         List<CurvePoint> points = new ArrayList<>();
