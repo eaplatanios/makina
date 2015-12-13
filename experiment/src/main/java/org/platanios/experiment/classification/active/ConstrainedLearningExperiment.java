@@ -374,9 +374,9 @@ public class ConstrainedLearningExperiment {
                 int experimentIndex = 1;
                 for (ExperimentResults result : resultsEntry.getValue()) {
                     writer.write("\tExperiment " + experimentIndex++ + ":\n");
-                    writer.write("\t\tAverage AUC: " + mapToString(result.averageAreasUnderTheCurve) + "\n");
-                    writer.write("\t\tAverage Testing AUC: " + mapToString(result.averageTestingAreasUnderTheCurve) + "\n");
-                    writer.write("\t\tActive Learning Times: " + mapToString(result.activeLearningMethodTimesTaken) + "\n");
+                    writer.write("\t\tAverage AUC: " + prettySimpleMapToString(result.averageAreasUnderTheCurve) + "\n");
+                    writer.write("\t\tAverage Testing AUC: " + prettySimpleMapToString(result.averageTestingAreasUnderTheCurve) + "\n");
+                    writer.write("\t\tActive Learning Times: " + prettySimpleMapToString(result.activeLearningMethodTimesTaken) + "\n");
                     writer.write("\t\tTotal time taken: " + result.timeTaken + "\n");
                 }
             }
@@ -387,7 +387,7 @@ public class ConstrainedLearningExperiment {
         }
     }
 
-    private static String mapToString(Map<Integer, ?> map) {
+    private static String prettySimpleMapToString(Map<Integer, ?> map) {
         StringJoiner indexesStringJoiner = new StringJoiner(",", "[", "]");
         StringJoiner valuesStringJoiner = new StringJoiner(",", "[", "]");
         map.entrySet()
@@ -397,8 +397,8 @@ public class ConstrainedLearningExperiment {
                     indexesStringJoiner.add("" + entry.getKey());
                     valuesStringJoiner.add("" + entry.getValue());
                 });
-        return "{ Indexes = " + indexesStringJoiner.toString() + "; " +
-                "{ Values = " + valuesStringJoiner.toString() + "; }";
+        return "Indexes = " + indexesStringJoiner.toString() + "; " +
+                "Values = " + valuesStringJoiner.toString() + ";";
     }
 
     private static class DataSetStatistics {
@@ -425,12 +425,12 @@ public class ConstrainedLearningExperiment {
     }
 
     public static void main(String[] args) {
-        int numberOfExperimentRepetitions = 2;
+        int numberOfExperimentRepetitions = 10;
         int initialNumberOfExamples = 10;
         double initialRatioOfPositiveExamples = 0.5;
-        int numberOfExamplesToPickPerIteration = 10;
+        int numberOfExamplesToPickPerIteration = 50;
         String cplFeatureMapDirectory = "/Volumes/Macintosh HD/Users/Anthony/Development/Data Sets/NELL/Server/all-pairs/all-pairs-OC-2010-12-01-small200-gz";
-        String workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment 0";
+        String workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment 1";
         ActiveLearningMethod[] activeLearningMethods =
                 new ActiveLearningMethod[] { ActiveLearningMethod.RANDOM, ActiveLearningMethod.UNCERTAINTY_HEURISTIC };
         Map<ActiveLearningMethod, List<ExperimentResults>> results = new HashMap<>();
