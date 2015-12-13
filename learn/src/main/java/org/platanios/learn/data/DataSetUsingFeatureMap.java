@@ -3,11 +3,7 @@ package org.platanios.learn.data;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.statistics.StatisticsUtilities;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -61,8 +57,17 @@ public class DataSetUsingFeatureMap<T extends Vector, D extends DataInstance<T>>
     }
 
     @Override
-    public void remove(int index) {
-        dataInstances.remove(index);
+    @SuppressWarnings("unchecked")
+    public D remove(int index) {
+        DataInstanceBase<T> dataInstance = (DataInstanceBase<T>) dataInstances.remove(index);
+        return (D) dataInstance.toDataInstance(featureMap.getFeatureVector(dataInstance.name(), featureMapView));
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public D remove(D dataInstance) {
+        dataInstances.remove(dataInstance.toDataInstanceBase());
+        return dataInstance;
     }
 
     @Override
@@ -105,6 +110,12 @@ public class DataSetUsingFeatureMap<T extends Vector, D extends DataInstance<T>>
                 (D) ((DataInstanceBase<T>) i2)
                         .toDataInstance(featureMap.getFeatureVector(((DataInstanceBase<T>) i2).name(), featureMapView))
         ));
+        return this;
+    }
+
+    @Override
+    public DataSetUsingFeatureMap<T, D> shuffle() {
+        Collections.shuffle(dataInstances);
         return this;
     }
 

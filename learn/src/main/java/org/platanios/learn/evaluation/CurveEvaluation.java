@@ -47,6 +47,10 @@ public abstract class CurveEvaluation<T extends Vector, S> {
         return curves;
     }
 
+    public List<Double> getAreaUnderCurves() {
+        return areaUnderCurves;
+    }
+
     public void plotCurves() {
         Plot.setPlotTitle(getPlotTitle());
         Plot.setHorizontalAxisName(getHorizontalAxisName());

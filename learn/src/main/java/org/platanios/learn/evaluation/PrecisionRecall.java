@@ -28,7 +28,8 @@ public class PrecisionRecall<T extends Vector, S> extends CurveEvaluation<T, S> 
     public void addResult(String name,
                           List<PredictedDataInstance<T, S>> predictions,
                           Function<PredictedDataInstance<T, S>, Boolean> groundTruth) {
-        Collections.sort(predictions, Comparator.comparing(PredictedDataInstance::probability));
+        Collections.sort(predictions,
+                         Collections.reverseOrder(Comparator.comparing(PredictedDataInstance::probability)));
         List<CurvePoint> points = new ArrayList<>();
         int truePositivesNumber = 0;
         int falsePositivesNumber = 0;
@@ -41,14 +42,22 @@ public class PrecisionRecall<T extends Vector, S> extends CurveEvaluation<T, S> 
                 (truePositivesNumber + epsilon) / (truePositivesNumber + falsePositivesNumber + epsilon)
         ));
         double areaUnderCurve = 0;
-        if (numberOfCurvePoints < 0) { // TODO: This is not totally correct -- think of what happens when two predictions have the same probability.
-            for (PredictedDataInstance<T, S> prediction : predictions) {
-                if (groundTruth.apply(prediction)) {
-                    falseNegativesNumber--;
-                    truePositivesNumber++;
-                } else {
-                    falsePositivesNumber++;
-                }
+        if (numberOfCurvePoints < 0) { // TODO: Maybe fixed!!! This is not totally correct -- think of what happens when two predictions have the same probability.
+            for (int predictionIndex = 0; predictionIndex < predictions.size(); predictionIndex++) {
+                do {
+                    if (groundTruth.apply(predictions.get(predictionIndex))) {
+                        falseNegativesNumber--;
+                        truePositivesNumber++;
+                    } else {
+                        falsePositivesNumber++;
+                    }
+                    predictionIndex++;
+                    if (predictionIndex == predictions.size())
+                        break;
+                } while (predictions.get(predictionIndex - 1).probability()
+                        == predictions.get(predictionIndex).probability());
+                if (predictionIndex < predictions.size())
+                    predictionIndex--;
                 points.add(new CurvePoint(
                         (truePositivesNumber + epsilon) / (truePositivesNumber + falseNegativesNumber + epsilon),
                         (truePositivesNumber + epsilon) / (truePositivesNumber + falsePositivesNumber + epsilon)

@@ -2,11 +2,7 @@ package org.platanios.learn.data;
 
 import org.platanios.learn.math.statistics.StatisticsUtilities;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -43,8 +39,14 @@ public class DataSetInMemory<D extends DataInstance> implements DataSet<D> {
     }
 
     @Override
-    public void remove(int index) {
-        dataInstances.remove(index);
+    public D remove(int index) {
+        return dataInstances.remove(index);
+    }
+
+    @Override
+    public D remove(D dataInstance) {
+        dataInstances.remove(dataInstance);
+        return dataInstance;
     }
 
     @Override
@@ -72,6 +74,12 @@ public class DataSetInMemory<D extends DataInstance> implements DataSet<D> {
     @Override
     public DataSetInMemory<D> sort(Comparator<? super D> comparator) {
         dataInstances.sort(comparator);
+        return this;
+    }
+
+    @Override
+    public DataSetInMemory<D> shuffle() {
+        Collections.shuffle(dataInstances);
         return this;
     }
 

@@ -35,7 +35,7 @@ public class IntegratorExperiment {
     );
     private static final String filteredLabeledDataDirectory = "/Volumes/Macintosh HD/Users/Anthony/Development/Data Sets/NELL/Training Data/filtered_labeled_nps.data";
     private static final String integratorWorkingDirectory = "/Volumes/Macintosh HD/Users/Anthony/Development/Data Sets/NELL/Integrator Experiment/City Working Directory 3/";
-    private static final Map<String, Map<String, Boolean>> filteredLabeledData = FeaturesPreprocessing.readStringStringBooleanMap(filteredLabeledDataDirectory);
+    private static final Map<String, Map<String, Boolean>> filteredLabeledData = Utilities.readMap(filteredLabeledDataDirectory);
 //    private static final String category = "animal";
 //    private static final List<String> seeds = Arrays.asList(
 //            "cattle", "livestock", "pigs", "amazons", "badgers", "barbs", "bluegills", "bowhead whales", "brontosauruses",
