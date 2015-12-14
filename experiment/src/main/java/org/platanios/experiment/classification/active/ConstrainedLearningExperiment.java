@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.platanios.experiment.Utilities;
 import org.platanios.learn.classification.LogisticRegressionAdaGrad;
+import org.platanios.learn.classification.TrainableClassifier;
 import org.platanios.learn.classification.active.*;
 import org.platanios.learn.data.DataSet;
 import org.platanios.learn.data.DataSetInMemory;
@@ -42,8 +43,8 @@ public class ConstrainedLearningExperiment {
 
     private final Map<Label, DataSetStatistics> dataSetStatistics = new HashMap<>();
     private final Map<Label, DataSet<LabeledDataInstance<Vector, Double>>> labeledDataSet = new HashMap<>();
+    private final Map<Label, TrainableClassifier<Vector, Double>> classifiers = new HashMap<>();
     private final Map<Label, Map<String, Boolean>> trueLabels = new HashMap<>();
-    private final Map<String, Map<Label, Boolean>> fixedLabels = new HashMap<>();
 
     private ConstrainedLearningExperiment(int initialNumberOfExamples,
                                           double initialRatioOfPositiveToNegativeExamples,
@@ -88,7 +89,6 @@ public class ConstrainedLearningExperiment {
             } else {
                 filteredLabeledNounPhrases.put(nounPhrase, positiveLabels);
                 features = featureMap.get(nounPhrase);
-                fixedLabels.put(nounPhrase, new HashMap<>());
             }
             for (String labelName : positiveLabels) {
                 Label label = new Label(labelName);
@@ -115,11 +115,6 @@ public class ConstrainedLearningExperiment {
         ExperimentResults results = new ExperimentResults();
         Map<Label, DataSet<LabeledDataInstance<Vector, Double>>> trainingDataSet = new HashMap<>();
         Map<Label, DataSet<PredictedDataInstance<Vector, Double>>> testingDataSet = new HashMap<>();
-        ConstrainedLearning.Builder<Vector> learningBuilder =
-                new ConstrainedLearning.Builder<>()
-                        .activeLearningMethod(activeLearningMethod)
-                        .addConstraint(constraint);
-        int numberOfUnlabeledExamples = 0;
         for (Label label : labels) {
             trainingDataSet.put(label, new DataSetInMemory<>());
             testingDataSet.put(label, new DataSetInMemory<>());
@@ -131,12 +126,10 @@ public class ConstrainedLearningExperiment {
             for (LabeledDataInstance<Vector, Double> dataInstance : labeledDataSet.get(label)) {
                 if (dataInstance.label() >= 0.5 && numberOfPositiveExamplesAdded < numberOfPositiveExamplesNeeded) {
                     trainingDataSet.get(label).add(dataInstance);
-                    fixedLabels.get(dataInstance.name()).put(label, true);
                     numberOfPositiveExamplesAdded++;
                 } else if (dataInstance.label() < 0.5
                         && numberOfNegativeExamplesAdded < initialNumberOfExamples - numberOfPositiveExamplesNeeded) {
                     trainingDataSet.get(label).add(dataInstance);
-                    fixedLabels.get(dataInstance.name()).put(label, false);
                     numberOfNegativeExamplesAdded++;
                 } else {
                     testingDataSet.get(label).add(new PredictedDataInstance<>(dataInstance.name(),
@@ -144,36 +137,42 @@ public class ConstrainedLearningExperiment {
                                                                               dataInstance.label(),
                                                                               dataInstance.source(),
                                                                               0.5));
-                    numberOfUnlabeledExamples++;
                 }
             }
-            learningBuilder.addLabel(label,
-                                     new LogisticRegressionAdaGrad.Builder(trainingDataSet.get(label).get(0).features().size())
-                                             .sparse(true)
-                                             .useBiasTerm(true)
-//                                             .useL1Regularization(true)
-//                                             .l1RegularizationWeight(0.01)
-                                             .useL2Regularization(true)
-                                             .l2RegularizationWeight(0.01)
-                                             .loggingLevel(0)
-                                             .sampleWithReplacement(true)
-                                             .maximumNumberOfIterations(1000)
-                                             .maximumNumberOfIterationsWithNoPointChange(10)
-                                             .pointChangeTolerance(1e-5)
-                                             .checkForPointConvergence(true)
-                                             .batchSize(1000)
-                                             .build());
         }
-        numberOfUnlabeledExamples -= propagateConstraints(trainingDataSet, testingDataSet);
+        ConstrainedLearning.Builder<Vector> learningBuilder =
+                new ConstrainedLearning.Builder<>(trainingDataSet, testingDataSet)
+                        .activeLearningMethod(activeLearningMethod)
+                        .addConstraint(constraint);
+        for (Label label : labels) {
+            learningBuilder.addLabel(label);
+            classifiers.put(label,
+                            new LogisticRegressionAdaGrad.Builder(trainingDataSet.get(label).get(0).features().size())
+                                    .sparse(true)
+                                    .useBiasTerm(true)
+//                                    .useL1Regularization(true)
+//                                    .l1RegularizationWeight(0.01)
+                                    .useL2Regularization(true)
+                                    .l2RegularizationWeight(0.01)
+                                    .loggingLevel(0)
+                                    .sampleWithReplacement(true)
+                                    .maximumNumberOfIterations(1000)
+                                    .maximumNumberOfIterationsWithNoPointChange(10)
+                                    .pointChangeTolerance(1e-5)
+                                    .checkForPointConvergence(true)
+                                    .batchSize(1000)
+                                    .build());
+        }
         Learning<Vector> learning = learningBuilder.build();
+        int numberOfUnlabeledExamples = learning.getNumberOfUnlabeledInstances();
         int numberOfExamplesPicked = 0;
         int iterationNumber = 0;
         while (true) {
             PrecisionRecall<Vector, Double> precisionRecall = new PrecisionRecall<>(1000);
             PrecisionRecall<Vector, Double> testingPrecisionRecall = new PrecisionRecall<>(1000);
             labels.parallelStream().forEach(label -> {
-                learning.trainClassifier(label, trainingDataSet.get(label));
-                learning.makePredictions(label, testingDataSet.get(label));
+                classifiers.get(label).train(trainingDataSet.get(label));
+                classifiers.get(label).predictInPlace(testingDataSet.get(label));
                 DataSet<PredictedDataInstance<Vector, Double>> evaluationDataSet = new DataSetInMemory<>();
                 for (LabeledDataInstance<Vector, Double> dataInstance : trainingDataSet.get(label))
                     evaluationDataSet.add(new PredictedDataInstance<>(
@@ -213,50 +212,26 @@ public class ConstrainedLearningExperiment {
                                                                  .average()
                                                                  .orElse(0));
             results.numberOfExamplesPicked.put(iterationNumber, numberOfExamplesPicked);
-            final long startTime = System.currentTimeMillis();
+            final long startTime = System.nanoTime();
             List<Learning.InstanceToLabel<Vector>> selectedInstances =
                     learning.pickInstancesToLabel(testingDataSet, numberOfExamplesToPickPerIteration);
-            final long endTime = System.currentTimeMillis();
+            final long endTime = System.nanoTime();
             results.activeLearningMethodTimesTaken.put(iterationNumber, endTime - startTime);
-
-            for (Learning.InstanceToLabel<Vector> selectedInstance : selectedInstances) {
-                Label label = selectedInstance.getLabel();
-                PredictedDataInstance<Vector, Double> selectedDataInstance =
-                        testingDataSet.get(label).remove(selectedInstance.getInstance());
-                boolean trueLabel = trueLabels.get(label).get(selectedDataInstance.name());
-                selectedDataInstance.label(trueLabel ? 1.0 : 0.0);
-                trainingDataSet.get(label).add(selectedDataInstance);
-                fixedLabels.get(selectedDataInstance.name()).put(label, trueLabel);
-            }
-            numberOfUnlabeledExamples -= propagateConstraints(trainingDataSet, testingDataSet);
-            if (numberOfUnlabeledExamples - numberOfExamplesPicked <= 0)
+            Map<Learning.InstanceToLabel<Vector>, Double> instancesToLabel = new HashMap<>();
+            for (Learning.InstanceToLabel<Vector> instance : selectedInstances)
+                instancesToLabel.put(instance,
+                                     trueLabels.get(instance.getLabel()).get(instance.getInstance().name())
+                                             ? 1.0 : 0.0);
+            learning.labelInstances(instancesToLabel);
+            if (numberOfUnlabeledExamples <= 0)
                 break;
+            numberOfUnlabeledExamples = learning.getNumberOfUnlabeledInstances();
             numberOfExamplesPicked += selectedInstances.size();
             iterationNumber++;
         }
         final long experimentEndTime = System.currentTimeMillis();
         results.timeTaken = experimentEndTime - experimentStartTime;
         return results;
-    }
-
-    // TODO: Make this method more efficient.
-    private int propagateConstraints(Map<Label, DataSet<LabeledDataInstance<Vector, Double>>> trainingDataSet,
-                                     Map<Label, DataSet<PredictedDataInstance<Vector, Double>>> testingDataSet) {
-        int numberOfLabelsFixed = 0;
-        for (Map.Entry<String, Map<Label, Boolean>> fixedLabelsEntry : fixedLabels.entrySet()) {
-            if (constraint.propagate(fixedLabelsEntry.getValue()) > 0)
-                for (Map.Entry<Label, Boolean> fixedLabelEntry : fixedLabelsEntry.getValue().entrySet()) {
-                    for (PredictedDataInstance<Vector, Double> dataInstance : testingDataSet.get(fixedLabelEntry.getKey())) {
-                        if (dataInstance.name().equals(fixedLabelsEntry.getKey())) {
-                            testingDataSet.get(fixedLabelEntry.getKey()).remove(dataInstance);
-                            dataInstance.label(trueLabels.get(fixedLabelEntry.getKey()).get(dataInstance.name()) ? 1.0 : 0.0);
-                            trainingDataSet.get(fixedLabelEntry.getKey()).add(dataInstance);
-                            numberOfLabelsFixed++;
-                        }
-                    }
-                }
-        }
-        return numberOfLabelsFixed;
     }
 
     private Map<String, Vector> buildFeatureMap(String featureMapDirectory, String cplFeatureMapDirectory) {
@@ -376,8 +351,9 @@ public class ConstrainedLearningExperiment {
                     writer.write("\tExperiment " + experimentIndex++ + ":\n");
                     writer.write("\t\tAverage AUC: " + prettySimpleMapToString(result.averageAreasUnderTheCurve) + "\n");
                     writer.write("\t\tAverage Testing AUC: " + prettySimpleMapToString(result.averageTestingAreasUnderTheCurve) + "\n");
-                    writer.write("\t\tActive Learning Times: " + prettySimpleMapToString(result.activeLearningMethodTimesTaken) + "\n");
-                    writer.write("\t\tTotal time taken: " + result.timeTaken + "\n");
+                    writer.write("\t\tNumber of Examples Picked: " + prettySimpleMapToString(result.numberOfExamplesPicked) + "\n");
+                    writer.write("\t\tActive Learning Times (ns): " + prettySimpleMapToString(result.activeLearningMethodTimesTaken) + "\n");
+                    writer.write("\t\tTotal Time Taken (s): " + (int) Math.floor(result.timeTaken / 1000) + "\n");
                 }
             }
             writer.close();
@@ -425,12 +401,12 @@ public class ConstrainedLearningExperiment {
     }
 
     public static void main(String[] args) {
-        int numberOfExperimentRepetitions = 10;
+        int numberOfExperimentRepetitions = 2;
         int initialNumberOfExamples = 10;
         double initialRatioOfPositiveExamples = 0.5;
         int numberOfExamplesToPickPerIteration = 50;
         String cplFeatureMapDirectory = "/Volumes/Macintosh HD/Users/Anthony/Development/Data Sets/NELL/Server/all-pairs/all-pairs-OC-2010-12-01-small200-gz";
-        String workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment 1";
+        String workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment 0";
         ActiveLearningMethod[] activeLearningMethods =
                 new ActiveLearningMethod[] { ActiveLearningMethod.RANDOM, ActiveLearningMethod.UNCERTAINTY_HEURISTIC };
         Map<ActiveLearningMethod, List<ExperimentResults>> results = new HashMap<>();

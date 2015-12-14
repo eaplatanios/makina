@@ -2,38 +2,50 @@ package org.platanios.learn.classification.active;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.platanios.learn.classification.TrainableClassifier;
 import org.platanios.learn.data.DataSet;
 import org.platanios.learn.data.LabeledDataInstance;
 import org.platanios.learn.data.PredictedDataInstance;
 import org.platanios.learn.math.matrix.Vector;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
+ * TODO: Change the code so that we have one data set over everything with a List<Label> as its label type, or something
+ * like that.
+ *
  * @author Emmanouil Antonios Platanios
  */
 public class Learning<V extends Vector> {
-    private static final Logger logger = LogManager.getLogger("Classification / Active");
+    private static final Logger logger = LogManager.getLogger("Classification / Active Learner");
 
-    private final Set<Label> labels;
-    private final Map<Label, TrainableClassifier<V, Double>> classifiers;
-    private final ActiveLearningMethod activeLearningMethod;
+    protected final Set<Label> labels;
+    protected final ActiveLearningMethod activeLearningMethod;
+
+    protected Map<Label, DataSet<LabeledDataInstance<V, Double>>> labeledDataSet;
+    protected Map<Label, DataSet<PredictedDataInstance<V, Double>>> unlabeledDataSet;
 
     protected static abstract class AbstractBuilder<V extends Vector, T extends AbstractBuilder<V, T>> {
         /** A self-reference to this builder class. This is basically part of a small "hack" so that we can have
          * inheritable builder classes. */
         protected abstract T self();
 
+        protected final Map<Label, DataSet<LabeledDataInstance<V, Double>>> labeledDataSet;
+        protected final Map<Label, DataSet<PredictedDataInstance<V, Double>>> unlabeledDataSet;
+
         protected Set<Label> labels = new HashSet<>();
-        protected Map<Label, TrainableClassifier<V, Double>> classifiers = new HashMap<>();
         protected ActiveLearningMethod activeLearningMethod = ActiveLearningMethod.UNCERTAINTY_HEURISTIC;
 
-        protected AbstractBuilder() { }
+        protected AbstractBuilder(Map<Label, DataSet<LabeledDataInstance<V, Double>>> labeledDataSet,
+                                  Map<Label, DataSet<PredictedDataInstance<V, Double>>> unlabeledDataSet) {
+            this.labeledDataSet = labeledDataSet;
+            this.unlabeledDataSet = unlabeledDataSet;
+        }
 
-        public T addLabel(Label label, TrainableClassifier<V, Double> classifier) {
+        public T addLabel(Label label) {
             labels.add(label);
-            classifiers.put(label, classifier);
             return self();
         }
 
@@ -52,8 +64,9 @@ public class Learning<V extends Vector> {
      * inheritable builder classes.
      */
     public static class Builder<V extends Vector> extends AbstractBuilder<V, Builder<V>> {
-        public Builder() {
-            super();
+        public Builder(Map<Label, DataSet<LabeledDataInstance<V, Double>>> labeledDataSet,
+                       Map<Label, DataSet<PredictedDataInstance<V, Double>>> unlabeledDataSet) {
+            super(labeledDataSet, unlabeledDataSet);
         }
 
         /** {@inheritDoc} */
@@ -65,26 +78,47 @@ public class Learning<V extends Vector> {
 
     protected Learning(AbstractBuilder<V, ?> builder) {
         labels = builder.labels;
-        classifiers = builder.classifiers;
         activeLearningMethod = builder.activeLearningMethod;
+        labeledDataSet = builder.labeledDataSet;
+        unlabeledDataSet = builder.unlabeledDataSet;
     }
 
-    public void trainClassifier(Label label, DataSet<LabeledDataInstance<V, Double>> dataSet) {
-        classifiers.get(label).train(dataSet);
+    public Map<Label, DataSet<LabeledDataInstance<V, Double>>> getLabeledDataSet() {
+        return labeledDataSet;
     }
 
-    public void trainClassifiers(Map<Label, DataSet<LabeledDataInstance<V, Double>>> dataSet) {
+    public DataSet<LabeledDataInstance<V, Double>> getLabeledDataSet(Label label) {
+        return labeledDataSet.get(label);
+    }
+
+    public Map<Label, DataSet<PredictedDataInstance<V, Double>>> getUnlabeledDataSet() {
+        return unlabeledDataSet;
+    }
+
+    public DataSet<PredictedDataInstance<V, Double>> getUnlabeledDataSet(Label label) {
+        return unlabeledDataSet.get(label);
+    }
+
+    public int getNumberOfLabeledInstances(Label label) {
+        return labeledDataSet.get(label).size();
+    }
+
+    public int getNumberOfLabeledInstances() {
+        int numberOfInstances = 0;
         for (Label label : labels)
-            trainClassifier(label, dataSet.get(label));
+            numberOfInstances += getNumberOfLabeledInstances(label);
+        return numberOfInstances;
     }
 
-    public void makePredictions(Label label, DataSet<PredictedDataInstance<V, Double>> dataSet) {
-        classifiers.get(label).predictInPlace(dataSet);
+    public int getNumberOfUnlabeledInstances(Label label) {
+        return unlabeledDataSet.get(label).size();
     }
 
-    public void makePredictions(Map<Label, DataSet<PredictedDataInstance<V, Double>>> dataSet) {
+    public int getNumberOfUnlabeledInstances() {
+        int numberOfInstances = 0;
         for (Label label : labels)
-            makePredictions(label, dataSet.get(label));
+            numberOfInstances += getNumberOfUnlabeledInstances(label);
+        return numberOfInstances;
     }
 
     public InstanceToLabel<V> pickInstanceToLabel(Map<Label, DataSet<PredictedDataInstance<V, Double>>> dataSets) {
@@ -94,6 +128,16 @@ public class Learning<V extends Vector> {
     public List<InstanceToLabel<V>> pickInstancesToLabel(Map<Label, DataSet<PredictedDataInstance<V, Double>>> dataSets,
                                                          int numberOfInstancesToPick) {
         return activeLearningMethod.pickInstancesToLabel(this, dataSets, numberOfInstancesToPick);
+    }
+
+    public void labelInstances(Map<InstanceToLabel<V>, Double> instancesToLabel) {
+        for (Map.Entry<InstanceToLabel<V>, Double> instance : instancesToLabel.entrySet()) {
+            Label label = instance.getKey().getLabel();
+            PredictedDataInstance<V, Double> dataInstance =
+                    unlabeledDataSet.get(label).remove(instance.getKey().getInstance());
+            dataInstance.label(instance.getValue());
+            labeledDataSet.get(label).add(dataInstance);
+        }
     }
 
     public static class InstanceToLabel<V extends Vector> {
