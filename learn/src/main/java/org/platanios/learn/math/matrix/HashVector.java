@@ -9,12 +9,14 @@ import java.io.InputStream;
 import java.io.InvalidObjectException;
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.StringJoiner;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
  * Implements a class representing sparse vectors and supporting operations related to them. The sparse vectors are
  * stored in an internal hash map.
+ *
  * TODO: Add toDenseVector() method (or appropriate constructors).
  * TODO: Make this implementation faster by iterating over key-value pairs instead of iterating over keys and then retrieving values.
  * TODO: Add Builder class and remove constructors.
@@ -728,6 +730,17 @@ public class HashVector extends Vector {
                                                    that.hashMap.keys().elements(),
                                                    that.hashMap.values().elements());
         return thisSparse.equals(thatSparse);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+        StringJoiner stringJoiner = new StringJoiner(",", "[", "]");
+        hashMap.forEachPair((i, v) -> {
+            stringJoiner.add(i + ":" + v);
+            return true;
+        });
+        return stringJoiner.toString();
     }
 
     /** {@inheritDoc} */

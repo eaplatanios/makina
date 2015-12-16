@@ -7,11 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InvalidObjectException;
 import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -2242,6 +2238,15 @@ public class SparseVector extends Vector {
         }
 
         return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+        StringJoiner stringJoiner = new StringJoiner(",", "[", "]");
+        for (int elementIndex = 0; elementIndex < numberOfNonzeroEntries; elementIndex++)
+            stringJoiner.add(indexes[elementIndex] + ":" + values[elementIndex]);
+        return stringJoiner.toString();
     }
 
     /** {@inheritDoc} */

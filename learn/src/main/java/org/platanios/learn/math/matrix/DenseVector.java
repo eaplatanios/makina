@@ -10,6 +10,7 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.StringJoiner;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -917,6 +918,15 @@ public class DenseVector extends Vector {
                 return false;
 
         return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+        StringJoiner stringJoiner = new StringJoiner(",", "[", "]");
+        for (double element : array)
+            stringJoiner.add(String.valueOf(element));
+        return stringJoiner.toString();
     }
 
     /** {@inheritDoc} */
