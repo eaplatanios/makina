@@ -130,6 +130,13 @@ public class Learning<V extends Vector> {
         return activeLearningMethod.pickInstancesToLabel(this, dataSets, numberOfInstancesToPick);
     }
 
+    public void labelInstance(InstanceToLabel<V> instance, Double newLabel) {
+        Label label = instance.getLabel();
+        PredictedDataInstance<V, Double> dataInstance = unlabeledDataSet.get(label).remove(instance.getInstance());
+        dataInstance.label(newLabel);
+        labeledDataSet.get(label).add(dataInstance);
+    }
+
     public void labelInstances(Map<InstanceToLabel<V>, Double> instancesToLabel) {
         for (Map.Entry<InstanceToLabel<V>, Double> instance : instancesToLabel.entrySet()) {
             Label label = instance.getKey().getLabel();

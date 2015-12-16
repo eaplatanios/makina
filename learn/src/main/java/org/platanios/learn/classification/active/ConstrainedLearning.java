@@ -73,6 +73,28 @@ public class ConstrainedLearning<V extends Vector> extends Learning<V> {
         propagateConstraints(labeledDataSet, unlabeledDataSet);
     }
 
+    public Constraint getConstraints() {
+        return constraints;
+    }
+
+    public Map<String, Map<Label, Boolean>> getFixedLabels() {
+        return fixedLabels;
+    }
+
+    public Map<Label, Boolean> getFixedLabels(String instanceName) {
+        return fixedLabels.getOrDefault(instanceName, new HashMap<>());
+    }
+
+    @Override
+    public void labelInstance(InstanceToLabel<V> instance, Double newLabel) {
+        super.labelInstance(instance, newLabel);
+        String instanceName = instance.getInstance().name();
+        if (!fixedLabels.containsKey(instanceName))
+            fixedLabels.put(instanceName, new HashMap<>());
+        fixedLabels.get(instanceName).put(instance.getLabel(), newLabel >= 0.5);
+        propagateConstraints(labeledDataSet, unlabeledDataSet);
+    }
+
     @Override
     public void labelInstances(Map<InstanceToLabel<V>, Double> instancesToLabel) {
         super.labelInstances(instancesToLabel);
