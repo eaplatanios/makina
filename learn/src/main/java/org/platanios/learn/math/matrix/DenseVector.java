@@ -1,5 +1,6 @@
 package org.platanios.learn.math.matrix;
 
+import com.google.common.base.Objects;
 import org.platanios.learn.math.MathUtilities;
 import org.platanios.learn.serialization.UnsafeSerializationUtilities;
 
@@ -911,13 +912,14 @@ public class DenseVector extends Vector {
 
         DenseVector that = (DenseVector) object;
 
-        if (size != that.size)
-            return false;
-        for (int index = 0; index < size; index++)
-            if ((Math.abs(array[index] - that.array[index]) >= epsilon))
-                return false;
+        return Objects.equal(size, that.size)
+                && Objects.equal(array, that.array);
+    }
 
-        return true;
+    /** {@inheritDoc} */
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(size, array);
     }
 
     /** {@inheritDoc} */

@@ -2,6 +2,7 @@ package org.platanios.learn.math.matrix;
 
 import cern.colt.list.IntArrayList;
 import cern.colt.map.OpenIntDoubleHashMap;
+import com.google.common.base.Objects;
 import org.platanios.learn.serialization.UnsafeSerializationUtilities;
 
 import java.io.IOException;
@@ -716,20 +717,22 @@ public class HashVector extends Vector {
 
     /** {@inheritDoc} */
     @Override
-    public boolean equals(Object object) { // TODO: Fix this! It is currently implemented in a very "hacky" way.
+    public boolean equals(Object object) {
         if (!(object instanceof Vector))
             return false;
         if (object == this)
             return true;
 
         HashVector that = (HashVector) object;
-        SparseVector thisSparse = new SparseVector(size,
-                                                   hashMap.keys().elements(),
-                                                   hashMap.values().elements());
-        SparseVector thatSparse = new SparseVector(that.size,
-                                                   that.hashMap.keys().elements(),
-                                                   that.hashMap.values().elements());
-        return thisSparse.equals(thatSparse);
+
+        return Objects.equal(size, that.size)
+                && Objects.equal(hashMap, that.hashMap);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(size, hashMap);
     }
 
     /** {@inheritDoc} */

@@ -15,7 +15,6 @@ import java.util.function.Function;
  * Abstract class that needs to be extended by classes representing vectors and supporting operations related to
  * vectors.
  *
- * TODO: Force subclasses to implement the hashCode() method.
  * TODO: Allow transposing all matrix arguments.
  * TODO: Add vector iterators support (over all elements and nonzero elements only).
  *
@@ -792,6 +791,10 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
      */
     @Override
     public abstract boolean equals(Object object);
+
+    // TODO: Add documentation for this and the following method.
+    @Override
+    public abstract int hashCode();
 
     @Override
     public abstract String toString();

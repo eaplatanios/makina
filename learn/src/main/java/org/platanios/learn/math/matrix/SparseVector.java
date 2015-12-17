@@ -1,5 +1,6 @@
 package org.platanios.learn.math.matrix;
 
+import com.google.common.base.Objects;
 import org.platanios.learn.math.MathUtilities;
 import org.platanios.learn.serialization.UnsafeSerializationUtilities;
 
@@ -2238,6 +2239,15 @@ public class SparseVector extends Vector {
         }
 
         return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int hashCode() {
+        int hashCode = Objects.hashCode(numberOfNonzeroEntries);
+        for (int index = 0; index < numberOfNonzeroEntries; index++)
+            hashCode = Objects.hashCode(hashCode, indexes[index], values[index]);
+        return hashCode;
     }
 
     /** {@inheritDoc} */
