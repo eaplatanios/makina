@@ -1,8 +1,7 @@
 package org.platanios.learn.classification.active;
 
 import com.google.common.collect.Iterables;
-import org.platanios.learn.data.DataSet;
-import org.platanios.learn.data.PredictedDataInstance;
+import org.platanios.learn.data.DataInstance;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.statistics.StatisticsUtilities;
 
@@ -15,21 +14,21 @@ import java.util.stream.Collectors;
 public enum ActiveLearningMethod {
     RANDOM {
         @Override
-        public <V extends Vector> Learning.InstanceToLabel<V> pickInstanceToLabel(
-                Learning<V> learning,
-                Map<Label, DataSet<PredictedDataInstance<V, Double>>> dataSets
+        public Learning.InstanceToLabel pickInstanceToLabel(
+                Learning learning,
+                Map<DataInstance<Vector>, Map<Label, Double>> dataSet
         ) {
-            List<Learning.InstanceToLabel<V>> instances = pickInstancesToLabel(learning, dataSets, 1);
+            List<Learning.InstanceToLabel> instances = pickInstancesToLabel(learning, dataSet, 1);
             return instances.size() > 0 ? instances.get(0) : null;
         }
 
         @Override
-        public <V extends Vector> List<Learning.InstanceToLabel<V>> pickInstancesToLabel(
-                Learning<V> learning,
-                Map<Label, DataSet<PredictedDataInstance<V, Double>>> dataSets,
+        public List<Learning.InstanceToLabel> pickInstancesToLabel(
+                Learning learning,
+                Map<DataInstance<Vector>, Map<Label, Double>> dataSet,
                 int numberOfInstancesToPick
         ) {
-            List<Learning.InstanceToLabel<V>> instances = collectInstances(dataSets);
+            List<Learning.InstanceToLabel> instances = collectInstances(dataSet);
             if (instances.size() > 0)
                 return StatisticsUtilities.sampleWithoutReplacement(
                         instances,
@@ -39,26 +38,30 @@ public enum ActiveLearningMethod {
                 return new ArrayList<>();
         }
 
-        private <V extends Vector> List<Learning.InstanceToLabel<V>> collectInstances(
-                Map<Label, DataSet<PredictedDataInstance<V, Double>>> dataSets
+        private List<Learning.InstanceToLabel> collectInstances(
+                Map<DataInstance<Vector>, Map<Label, Double>> dataSet
         ) {
-            List<Learning.InstanceToLabel<V>> instances = new ArrayList<>();
-            for (Map.Entry<Label, DataSet<PredictedDataInstance<V, Double>>> instanceEntry : dataSets.entrySet()) {
-                DataSet<PredictedDataInstance<V, Double>> currentDataSet = instanceEntry.getValue();
-                for (PredictedDataInstance<V, Double> instance : currentDataSet)
-                    instances.add(new Learning.InstanceToLabel<>(instanceEntry.getKey(), instance));
-            }
+            List<Learning.InstanceToLabel> instances = new ArrayList<>();
+            for (Map.Entry<DataInstance<Vector>, Map<Label, Double>> instanceEntry : dataSet.entrySet())
+                instances.addAll(instanceEntry
+                                         .getValue()
+                                         .entrySet()
+                                         .stream()
+                                         .map(instanceLabelEntry ->
+                                                      new Learning.InstanceToLabel(instanceLabelEntry.getKey(),
+                                                                                   instanceEntry.getKey()))
+                                         .collect(Collectors.toList()));
             return instances;
         }
     },
     UNCERTAINTY_HEURISTIC {
         @Override
-        public <V extends Vector> Learning.InstanceToLabel<V> pickInstanceToLabel(
-                Learning<V> learning,
-                Map<Label, DataSet<PredictedDataInstance<V, Double>>> dataSets
+        public Learning.InstanceToLabel pickInstanceToLabel(
+                Learning learning,
+                Map<DataInstance<Vector>, Map<Label, Double>> dataSet
         ) {
-            Set<Map.Entry<Learning.InstanceToLabel<V>, Double>> instanceEntropies =
-                    computeInstanceEntropies(dataSets).entrySet();
+            Set<Map.Entry<Learning.InstanceToLabel, Double>> instanceEntropies =
+                    computeInstanceEntropies(dataSet).entrySet();
             if (instanceEntropies.size() > 0)
                 return instanceEntropies
                         .stream()
@@ -70,13 +73,13 @@ public enum ActiveLearningMethod {
         }
 
         @Override
-        public <V extends Vector> List<Learning.InstanceToLabel<V>> pickInstancesToLabel(
-                Learning<V> learning,
-                Map<Label, DataSet<PredictedDataInstance<V, Double>>> dataSets,
+        public List<Learning.InstanceToLabel> pickInstancesToLabel(
+                Learning learning,
+                Map<DataInstance<Vector>, Map<Label, Double>> dataSet,
                 int numberOfInstancesToPick
         ) {
-            Set<Map.Entry<Learning.InstanceToLabel<V>, Double>> instanceEntropies =
-                    computeInstanceEntropies(dataSets).entrySet();
+            Set<Map.Entry<Learning.InstanceToLabel, Double>> instanceEntropies =
+                    computeInstanceEntropies(dataSet).entrySet();
             if (instanceEntropies.size() > 0)
                 return instanceEntropies
                         .stream()
@@ -90,30 +93,29 @@ public enum ActiveLearningMethod {
                 return new ArrayList<>();
         }
 
-        private <V extends Vector> Map<Learning.InstanceToLabel<V>, Double> computeInstanceEntropies(
-                Map<Label, DataSet<PredictedDataInstance<V, Double>>> dataSets
+        private Map<Learning.InstanceToLabel, Double> computeInstanceEntropies(
+                Map<DataInstance<Vector>, Map<Label, Double>> dataSet
         ) {
-            Map<Learning.InstanceToLabel<V>, Double> instanceEntropies = new HashMap<>();
-            for (Map.Entry<Label, DataSet<PredictedDataInstance<V, Double>>> instanceEntry : dataSets.entrySet()) {
-                DataSet<PredictedDataInstance<V, Double>> currentDataSet = instanceEntry.getValue();
-                for (PredictedDataInstance<V, Double> instance : currentDataSet)
-                    instanceEntropies.put(new Learning.InstanceToLabel<>(instanceEntry.getKey(), instance),
-                                          instance.label() >= 0.5 ? entropy(instance.probability()) : entropy(1 - instance.probability()));
-            }
+            Map<Learning.InstanceToLabel, Double> instanceEntropies = new HashMap<>();
+            for (Map.Entry<DataInstance<Vector>, Map<Label, Double>> instanceEntry : dataSet.entrySet())
+                for (Map.Entry<Label, Double> instanceLabelEntry : instanceEntry.getValue().entrySet())
+                    instanceEntropies.put(new Learning.InstanceToLabel(instanceLabelEntry.getKey(),
+                                                                       instanceEntry.getKey()),
+                                          entropy(instanceLabelEntry.getValue()));
             return instanceEntropies;
         }
     },
     CONSTRAINT_PROPAGATION_HEURISTIC {
         @Override
-        public <V extends Vector> Learning.InstanceToLabel<V> pickInstanceToLabel(
-                Learning<V> learning,
-                Map<Label, DataSet<PredictedDataInstance<V, Double>>> dataSets
+        public Learning.InstanceToLabel pickInstanceToLabel(
+                Learning learning,
+                Map<DataInstance<Vector>, Map<Label, Double>> dataSet
         ) {
             if (!(learning instanceof ConstrainedLearning))
                 throw new IllegalArgumentException("This active learning method can only " +
                                                            "be used with the constrained learner.");
-            Set<Map.Entry<Learning.InstanceToLabel<V>, Double>> instanceScores =
-                    computeInstanceScores((ConstrainedLearning<V>) learning, dataSets).entrySet();
+            Set<Map.Entry<Learning.InstanceToLabel, Double>> instanceScores =
+                    computeInstanceScores((ConstrainedLearning) learning, dataSet).entrySet();
             if (instanceScores.size() > 0)
                 return instanceScores
                         .stream()
@@ -125,16 +127,16 @@ public enum ActiveLearningMethod {
         }
 
         @Override
-        public <V extends Vector> List<Learning.InstanceToLabel<V>> pickInstancesToLabel(
-                Learning<V> learning,
-                Map<Label, DataSet<PredictedDataInstance<V, Double>>> dataSets,
+        public List<Learning.InstanceToLabel> pickInstancesToLabel(
+                Learning learning,
+                Map<DataInstance<Vector>, Map<Label, Double>> dataSet,
                 int numberOfInstancesToPick
         ) {
             if (!(learning instanceof ConstrainedLearning))
                 throw new IllegalArgumentException("This active learning method can only " +
                                                            "be used with the constrained learner.");
-            Set<Map.Entry<Learning.InstanceToLabel<V>, Double>> instanceScores =
-                    computeInstanceScores((ConstrainedLearning<V>) learning, dataSets).entrySet();
+            Set<Map.Entry<Learning.InstanceToLabel, Double>> instanceScores =
+                    computeInstanceScores((ConstrainedLearning) learning, dataSet).entrySet();
             if (instanceScores.size() > 0)
                 return instanceScores
                         .stream()
@@ -148,20 +150,19 @@ public enum ActiveLearningMethod {
                 return new ArrayList<>();
         }
 
-        private <V extends Vector> Map<Learning.InstanceToLabel<V>, Double> computeInstanceScores(
-                ConstrainedLearning<V> learning,
-                Map<Label, DataSet<PredictedDataInstance<V, Double>>> dataSets
+        private Map<Learning.InstanceToLabel, Double> computeInstanceScores(
+                ConstrainedLearning learning,
+                Map<DataInstance<Vector>, Map<Label, Double>> dataSet
         ) {
-            Map<Learning.InstanceToLabel<V>, Double> instanceScores = new HashMap<>();
+            Map<Learning.InstanceToLabel, Double> instanceScores = new HashMap<>();
             if (learning.getConstraintSet() instanceof ConstraintSet
                     && ((ConstraintSet) learning.getConstraintSet()).getConstraints().size() == 1
                     && Iterables.getOnlyElement(((ConstraintSet) learning.getConstraintSet()).getConstraints()) instanceof MutualExclusionConstraint) {
-                for (Map.Entry<Label, DataSet<PredictedDataInstance<V, Double>>> instanceEntry : dataSets.entrySet()) {
-                    DataSet<PredictedDataInstance<V, Double>> currentDataSet = instanceEntry.getValue();
-                    for (PredictedDataInstance<V, Double> instance : currentDataSet)
-                        instanceScores.put(new Learning.InstanceToLabel<>(instanceEntry.getKey(), instance),
-                                           instance.label() >= 0.5 ? instance.probability() : 1 - instance.probability());
-                }
+                for (Map.Entry<DataInstance<Vector>, Map<Label, Double>> instanceEntry : dataSet.entrySet())
+                    for (Map.Entry<Label, Double> instanceLabelEntry : instanceEntry.getValue().entrySet())
+                        instanceScores.put(new Learning.InstanceToLabel(instanceLabelEntry.getKey(),
+                                                                        instanceEntry.getKey()),
+                                           instanceLabelEntry.getValue());
                 return instanceScores;
             }
 //            Map<PredictedDataInstance<V, Double>, Map<Label, Double>> probabilitiesMap = new HashMap<>();
@@ -206,14 +207,14 @@ public enum ActiveLearningMethod {
         }
     };
 
-    public abstract <V extends Vector> Learning.InstanceToLabel<V> pickInstanceToLabel(
-            Learning<V> learning,
-            Map<Label, DataSet<PredictedDataInstance<V, Double>>> dataSets
+    public abstract Learning.InstanceToLabel pickInstanceToLabel(
+            Learning learning,
+            Map<DataInstance<Vector>, Map<Label, Double>> dataSet
     );
 
-    public abstract <V extends Vector> List<Learning.InstanceToLabel<V>> pickInstancesToLabel(
-            Learning<V> learning,
-            Map<Label, DataSet<PredictedDataInstance<V, Double>>> dataSets,
+    public abstract List<Learning.InstanceToLabel> pickInstancesToLabel(
+            Learning learning,
+            Map<DataInstance<Vector>, Map<Label, Double>> dataSet,
             int numberOfInstancesToPick
     );
 

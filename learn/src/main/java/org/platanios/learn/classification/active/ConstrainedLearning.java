@@ -1,8 +1,6 @@
 package org.platanios.learn.classification.active;
 
-import org.platanios.learn.data.DataSet;
-import org.platanios.learn.data.LabeledDataInstance;
-import org.platanios.learn.data.PredictedDataInstance;
+import org.platanios.learn.data.DataInstance;
 import org.platanios.learn.math.matrix.Vector;
 
 import java.util.*;
@@ -10,18 +8,14 @@ import java.util.*;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class ConstrainedLearning<V extends Vector> extends Learning<V> {
+public class ConstrainedLearning extends Learning {
     private final ConstraintSet constraintSet;
 
-    private final Map<String, Map<Label, Boolean>> fixedLabels = new HashMap<>();
-
-    protected static abstract class AbstractBuilder<V extends Vector, T extends AbstractBuilder<V, T>>
-            extends Learning.AbstractBuilder<V, T> {
+    protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>> extends Learning.AbstractBuilder<T> {
         private Set<Constraint> constraintsSet = new HashSet<>();
 
-        protected AbstractBuilder(Map<Label, DataSet<LabeledDataInstance<V, Double>>> labeledDataSet,
-                                  Map<Label, DataSet<PredictedDataInstance<V, Double>>> unlabeledDataSet) {
-            super(labeledDataSet, unlabeledDataSet);
+        protected AbstractBuilder(Map<DataInstance<Vector>, Map<Label, Boolean>> dataSet) {
+            super(dataSet);
         }
 
         public T addConstraint(Constraint constraint) {
@@ -44,8 +38,8 @@ public class ConstrainedLearning<V extends Vector> extends Learning<V> {
             return self();
         }
 
-        public ConstrainedLearning<V> build() {
-            return new ConstrainedLearning<>(this);
+        public ConstrainedLearning build() {
+            return new ConstrainedLearning(this);
         }
     }
 
@@ -53,82 +47,42 @@ public class ConstrainedLearning<V extends Vector> extends Learning<V> {
      * The builder class for this abstract class. This is basically part of a small "hack" so that we can have
      * inheritable builder classes.
      */
-    public static class Builder<V extends Vector> extends AbstractBuilder<V, Builder<V>> {
-        public Builder(Map<Label, DataSet<LabeledDataInstance<V, Double>>> labeledDataSet,
-                       Map<Label, DataSet<PredictedDataInstance<V, Double>>> unlabeledDataSet) {
-            super(labeledDataSet, unlabeledDataSet);
+    public static class Builder extends AbstractBuilder<Builder> {
+        public Builder(Map<DataInstance<Vector>, Map<Label, Boolean>> dataSet) {
+            super(dataSet);
         }
 
         /** {@inheritDoc} */
         @Override
-        protected Builder<V> self() {
+        protected Builder self() {
             return this;
         }
     }
 
-    private ConstrainedLearning(AbstractBuilder<V, ?> builder) {
+    private ConstrainedLearning(AbstractBuilder<?> builder) {
         super(builder);
         constraintSet = new ConstraintSet(builder.constraintsSet);
-        for (Label label : labels)
-            for (LabeledDataInstance<V, Double> dataInstance : labeledDataSet.get(label)) {
-                if (!fixedLabels.containsKey(dataInstance.name()))
-                    fixedLabels.put(dataInstance.name(), new HashMap<>());
-                fixedLabels.get(dataInstance.name()).put(label, dataInstance.label() >= 0.5);
-            }
-        propagateConstraints(labeledDataSet, unlabeledDataSet);
+        propagateConstraints(dataSet);
     }
 
     public Constraint getConstraintSet() {
         return constraintSet;
     }
 
-    public Map<String, Map<Label, Boolean>> getFixedLabels() {
-        return fixedLabels;
-    }
-
-    public Map<Label, Boolean> getFixedLabels(String instanceName) {
-        return fixedLabels.getOrDefault(instanceName, new HashMap<>());
-    }
-
     @Override
-    public void labelInstance(InstanceToLabel<V> instance, Double newLabel) {
-        super.labelInstance(instance, newLabel);
-        String instanceName = instance.getInstance().name();
-        if (!fixedLabels.containsKey(instanceName))
-            fixedLabels.put(instanceName, new HashMap<>());
-        fixedLabels.get(instanceName).put(instance.getLabel(), newLabel >= 0.5);
-        propagateConstraints(labeledDataSet, unlabeledDataSet);
+    public void labelInstance(InstanceToLabel instance, Boolean label) {
+        super.labelInstance(instance, label);
+        propagateInstanceConstraints(dataSet.get(instance.getInstance()));
     }
 
-    @Override
-    public void labelInstances(Map<InstanceToLabel<V>, Double> instancesToLabel) {
-        super.labelInstances(instancesToLabel);
-        for (Map.Entry<InstanceToLabel<V>, Double> instance : instancesToLabel.entrySet()) {
-            String instanceName = instance.getKey().getInstance().name();
-            if (!fixedLabels.containsKey(instanceName))
-                fixedLabels.put(instanceName, new HashMap<>());
-            fixedLabels.get(instanceName).put(instance.getKey().getLabel(), instance.getValue() >= 0.5);
-        }
-        propagateConstraints(labeledDataSet, unlabeledDataSet);
+    private int propagateInstanceConstraints(Map<Label, Boolean> instanceLabels) {
+        return constraintSet.propagate(instanceLabels);
     }
 
-    // TODO: Make this method more efficient.
-    private int propagateConstraints(Map<Label, DataSet<LabeledDataInstance<V, Double>>> labeledDataSet,
-                                     Map<Label, DataSet<PredictedDataInstance<V, Double>>> unlabeledDataSet) {
+    private int propagateConstraints(Map<DataInstance<Vector>, Map<Label, Boolean>> dataSet) {
         int numberOfLabelsFixed = 0;
-        for (Map.Entry<String, Map<Label, Boolean>> fixedLabelsEntry : fixedLabels.entrySet()) {
-            if (constraintSet.propagate(fixedLabelsEntry.getValue()) > 0)
-                for (Map.Entry<Label, Boolean> fixedLabel : fixedLabelsEntry.getValue().entrySet()) {
-                    for (PredictedDataInstance<V, Double> dataInstance : unlabeledDataSet.get(fixedLabel.getKey())) {
-                        if (dataInstance.name().equals(fixedLabelsEntry.getKey())) {
-                            unlabeledDataSet.get(fixedLabel.getKey()).remove(dataInstance);
-                            dataInstance.label(fixedLabel.getValue() ? 1.0 : 0.0);
-                            labeledDataSet.get(fixedLabel.getKey()).add(dataInstance);
-                            numberOfLabelsFixed++;
-                        }
-                    }
-                }
-        }
+        for (Map<Label, Boolean> instanceLabelsMap : dataSet.values())
+            numberOfLabelsFixed += propagateInstanceConstraints(instanceLabelsMap);
         return numberOfLabelsFixed;
     }
 }
