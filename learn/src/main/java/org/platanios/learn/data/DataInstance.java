@@ -1,5 +1,6 @@
 package org.platanios.learn.data;
 
+import com.google.common.base.Objects;
 import org.platanios.learn.math.matrix.Vector;
 
 /**
@@ -29,5 +30,23 @@ public class DataInstance<T extends Vector> {
 
     protected DataInstanceBase<T> toDataInstanceBase() {
         return new DataInstanceBase<>(name);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other)
+            return true;
+        if (other == null || getClass() != other.getClass())
+            return false;
+
+        DataInstance<?> that = (DataInstance<?>) other;
+
+        return Objects.equal(name, that.name)
+                && Objects.equal(features, that.features);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(name, features);
     }
 }

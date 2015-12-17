@@ -1,5 +1,6 @@
 package org.platanios.learn.data;
 
+import com.google.common.base.Objects;
 import org.platanios.learn.math.matrix.Vector;
 
 /**
@@ -29,5 +30,23 @@ public class PredictedDataInstance<T extends Vector, S> extends LabeledDataInsta
     @Override
     protected PredictedDataInstanceBase<T, S> toDataInstanceBase() {
         return new PredictedDataInstanceBase<>(name, label, source, probability);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other)
+            return true;
+        if (other == null || getClass() != other.getClass())
+            return false;
+
+        PredictedDataInstance<?, ?> that = (PredictedDataInstance<?, ?>) other;
+
+        return super.equals(that)
+                && Objects.equal(probability, that.probability);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(super.hashCode(), probability);
     }
 }
