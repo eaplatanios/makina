@@ -34,12 +34,13 @@ public class ConstrainedLearningExperiment {
     private final int initialNumberOfExamples;
     private final double initialRatioOfPositiveExamples;
     private final int numberOfExamplesToPickPerIteration;
+    private final int maximumNumberOfIterations;
     private final ActiveLearningMethod activeLearningMethod;
     private final ExamplePickingMethod examplePickingMethod;
     private final Set<Label> labels;
     private final Map<Label, DataSet<LabeledDataInstance<Vector, Double>>> labeledDataSet;
     private final Map<Label, DataSet<PredictedDataInstance<Vector, Double>>> evaluationDataSet;
-    private final Constraint constraint;
+    private final ConstraintSet constraints;
 
     private final Map<Label, DataSetStatistics> dataSetStatistics = new HashMap<>();
     private final Map<Label, TrainableClassifier<Vector, Double>> classifiers = new HashMap<>();
@@ -48,6 +49,7 @@ public class ConstrainedLearningExperiment {
     private ConstrainedLearningExperiment(int initialNumberOfExamples,
                                           double initialRatioOfPositiveToNegativeExamples,
                                           int numberOfExamplesToPickPerIteration,
+                                          int maximumNumberOfIterations,
                                           ActiveLearningMethod activeLearningMethod,
                                           ExamplePickingMethod examplePickingMethod,
                                           String workingDirectory,
@@ -56,6 +58,7 @@ public class ConstrainedLearningExperiment {
         this(initialNumberOfExamples,
              initialRatioOfPositiveToNegativeExamples,
              numberOfExamplesToPickPerIteration,
+             maximumNumberOfIterations,
              activeLearningMethod,
              examplePickingMethod,
              workingDirectory,
@@ -67,6 +70,7 @@ public class ConstrainedLearningExperiment {
     private ConstrainedLearningExperiment(int initialNumberOfExamples,
                                           double initialRatioOfPositiveToNegativeExamples,
                                           int numberOfExamplesToPickPerIteration,
+                                          int maximumNumberOfIterations,
                                           ActiveLearningMethod activeLearningMethod,
                                           ExamplePickingMethod examplePickingMethod,
                                           String workingDirectory,
@@ -77,13 +81,14 @@ public class ConstrainedLearningExperiment {
         this.initialNumberOfExamples = initialNumberOfExamples;
         this.initialRatioOfPositiveExamples = initialRatioOfPositiveToNegativeExamples;
         this.numberOfExamplesToPickPerIteration = numberOfExamplesToPickPerIteration;
+        this.maximumNumberOfIterations = maximumNumberOfIterations;
         this.activeLearningMethod = activeLearningMethod;
         this.examplePickingMethod = examplePickingMethod;
         this.labels = labels;
         this.labeledDataSet = labeledDataSet;
         this.evaluationDataSet = evaluationDataSet;
         logger.info("Importing constraints...");
-        constraint = importConstraints(workingDirectory);
+        constraints = importConstraints(workingDirectory);
         for (Label label : labels) {
             dataSetStatistics.put(label, new DataSetStatistics());
             trueLabels.put(label, new HashMap<>());
@@ -135,16 +140,16 @@ public class ConstrainedLearningExperiment {
         ConstrainedLearning.Builder<Vector> learningBuilder =
                 new ConstrainedLearning.Builder<>(trainingDataSet, testingDataSet)
                         .activeLearningMethod(activeLearningMethod)
-                        .addConstraint(constraint);
+                        .addConstraints(constraints.getConstraints());
         for (Label label : labels) {
             learningBuilder.addLabel(label);
             LogisticRegressionAdaGrad.Builder classifierBuilder =
                     new LogisticRegressionAdaGrad.Builder(trainingDataSet.get(label).get(0).features().size())
                             .useBiasTerm(true)
                             .useL1Regularization(true)
-                            .l1RegularizationWeight(0.01)
+                            .l1RegularizationWeight(1)
                             .useL2Regularization(true)
-                            .l2RegularizationWeight(0.01)
+                            .l2RegularizationWeight(1)
                             .loggingLevel(0)
                             .sampleWithReplacement(true)
                             .maximumNumberOfIterations(1000)
@@ -183,8 +188,8 @@ public class ConstrainedLearningExperiment {
                 for (PredictedDataInstance<Vector, Double> dataInstance : learning.getUnlabeledDataSet().get(label))
                     fullDataSet.add(dataInstance);
                 fullPrecisionRecall.addResult(label.getName(),
-                                          fullDataSet,
-                                          dataInstance -> trueLabels.get(label).get(dataInstance.name()));
+                                              fullDataSet,
+                                              dataInstance -> trueLabels.get(label).get(dataInstance.name()));
                 testingPrecisionRecall.addResult(label.getName(),
                                                  learning.getUnlabeledDataSet().get(label),
                                                  dataInstance -> trueLabels.get(label).get(dataInstance.name()));
@@ -250,17 +255,16 @@ public class ConstrainedLearningExperiment {
             }
             final long endTime = System.nanoTime();
             results.activeLearningMethodTimesTaken.put(iterationNumber, endTime - startTime);
-            if (numberOfUnlabeledExamples <= 0)
+            if (numberOfUnlabeledExamples <= 0 || ++iterationNumber >= maximumNumberOfIterations)
                 break;
             numberOfUnlabeledExamples = learning.getNumberOfUnlabeledInstances();
-            iterationNumber++;
         }
         final long experimentEndTime = System.currentTimeMillis();
         results.timeTaken = experimentEndTime - experimentStartTime;
         return results;
     }
 
-    private Constraint importConstraints(String workingDirectory) {
+    private ConstraintSet importConstraints(String workingDirectory) {
         Set<Constraint> constraints = new HashSet<>();
         try {
             Files.newBufferedReader(Paths.get(workingDirectory + "/constraints.txt")).lines().forEach(line -> {
@@ -817,6 +821,7 @@ public class ConstrainedLearningExperiment {
                                       int initialNumberOfExamples,
                                       double initialRatioOfPositiveExamples,
                                       int numberOfExamplesToPickPerIteration,
+                                      int maximumNumberOfIterations,
                                       String workingDirectory,
                                       ActiveLearningMethod[] activeLearningMethods,
                                       ExamplePickingMethod examplePickingMethod,
@@ -830,6 +835,7 @@ public class ConstrainedLearningExperiment {
                     initialNumberOfExamples,
                     initialRatioOfPositiveExamples,
                     numberOfExamplesToPickPerIteration,
+                    maximumNumberOfIterations,
                     activeLearningMethod,
                     examplePickingMethod,
                     workingDirectory,
@@ -876,9 +882,10 @@ public class ConstrainedLearningExperiment {
         int initialNumberOfExamples = 1000000;
         double initialRatioOfPositiveExamples = 0.01;
         int numberOfExamplesToPickPerIteration = 1000000;
+        int maximumNumberOfIterations = 1000000000;
         ActiveLearningMethod[] activeLearningMethods = new ActiveLearningMethod[] {
-                ActiveLearningMethod.RANDOM,
-                ActiveLearningMethod.UNCERTAINTY_HEURISTIC,
+//                ActiveLearningMethod.RANDOM,
+//                ActiveLearningMethod.UNCERTAINTY_HEURISTIC,
                 ActiveLearningMethod.CONSTRAINT_PROPAGATION_HEURISTIC
         };
         ExamplePickingMethod examplePickingMethod = ExamplePickingMethod.BATCH;
@@ -887,17 +894,19 @@ public class ConstrainedLearningExperiment {
 
 //        // NELL Data Set Experiment
 //        logger.info("Running NELL experiment...");
-//        numberOfExperimentRepetitions = 10;
-//        initialNumberOfExamples = 10;
+//        numberOfExperimentRepetitions = 1;
+//        initialNumberOfExamples = 5;
 //        initialRatioOfPositiveExamples = 0.2;
-//        numberOfExamplesToPickPerIteration = 50;
-//        String workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment 1";
+//        numberOfExamplesToPickPerIteration = 5;
+//        maximumNumberOfIterations = 100;
+//        String workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment NELL";
 //        String cplFeatureMapDirectory = "/Volumes/Macintosh HD/Users/Anthony/Development/Data Sets/NELL/Server/all-pairs/all-pairs-OC-2010-12-01-small200-gz";
 //        ImportedDataSet importedDataSet = importNELLDataSet(cplFeatureMapDirectory, workingDirectory);
 //        runExperiments(numberOfExperimentRepetitions,
 //                       initialNumberOfExamples,
 //                       initialRatioOfPositiveExamples,
 //                       numberOfExamplesToPickPerIteration,
+//                       maximumNumberOfIterations,
 //                       workingDirectory,
 //                       activeLearningMethods,
 //                       examplePickingMethod,
@@ -905,31 +914,54 @@ public class ConstrainedLearningExperiment {
 //                       resultTypes);
 //        logger.info("Finished all experiments!");
 
-//        // IRIS Data Set Experiment
-//        logger.info("Running IRIS experiment...");
+        // IRIS Data Set Experiment
+        logger.info("Running IRIS experiment...");
+        numberOfExperimentRepetitions = 5;
+        initialNumberOfExamples = 10;
+        initialRatioOfPositiveExamples = 0.3;
+        numberOfExamplesToPickPerIteration = 1;
+        maximumNumberOfIterations = 1000;
+        String workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment IRIS";
+        ImportedDataSet irisDataSet = importISOLETDataSet(workingDirectory);
+        runExperiments(numberOfExperimentRepetitions,
+                       initialNumberOfExamples,
+                       initialRatioOfPositiveExamples,
+                       numberOfExamplesToPickPerIteration,
+                       maximumNumberOfIterations,
+                       workingDirectory,
+                       activeLearningMethods,
+                       examplePickingMethod,
+                       irisDataSet,
+                       resultTypes);
+        logger.info("Finished all experiments!");
+
+//        // WINE Data Set Experiment
+//        logger.info("Running WINE experiment...");
 //        numberOfExperimentRepetitions = 10;
 //        initialNumberOfExamples = 10;
 //        initialRatioOfPositiveExamples = 0.3;
 //        numberOfExamplesToPickPerIteration = 1;
-//        String workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment IRIS";
-//        ImportedDataSet irisDataSet = importISOLETDataSet(workingDirectory);
+//        maximumNumberOfIterations = 1000;
+//        String workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment WINE";
+//        ImportedDataSet wineDataSet = importLIBSVMDataSet(workingDirectory, false);
 //        runExperiments(numberOfExperimentRepetitions,
 //                       initialNumberOfExamples,
 //                       initialRatioOfPositiveExamples,
 //                       numberOfExamplesToPickPerIteration,
+//                       maximumNumberOfIterations,
 //                       workingDirectory,
 //                       activeLearningMethods,
 //                       examplePickingMethod,
-//                       irisDataSet,
+//                       wineDataSet,
 //                       resultTypes);
 //        logger.info("Finished all experiments!");
 
 //        // SENSIT-VEHICLE-SEISMIC Data Set Experiment
 //        logger.info("Running SENSIT-VEHICLE-SEISMIC experiment...");
-//        numberOfExperimentRepetitions = 10;
-//        initialNumberOfExamples = 350;
+//        numberOfExperimentRepetitions = 1;
+//        initialNumberOfExamples = 1000;
 //        initialRatioOfPositiveExamples = 0.3;
-//        numberOfExamplesToPickPerIteration = 350;
+//        numberOfExamplesToPickPerIteration = 10000;
 //        String workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment SENSIT-VEHICLE-SEISMIC";
 //        ImportedDataSet sensitVehicleSeismicTypeDataSet = importLIBSVMDataSet(workingDirectory, false);
 //        runExperiments(numberOfExperimentRepetitions,
@@ -978,6 +1010,27 @@ public class ConstrainedLearningExperiment {
 //                       activeLearningMethods,
 //                       examplePickingMethod,
 //                       vehicleTypeDataSet,
+//                       resultTypes);
+//        logger.info("Finished all experiments!");
+
+//        // MNIST Data Set Experiment
+//        logger.info("Running MNIST experiment...");
+//        numberOfExperimentRepetitions = 1;
+//        initialNumberOfExamples = 1000;
+//        initialRatioOfPositiveExamples = 0.1;
+//        numberOfExamplesToPickPerIteration = 10;
+//        maximumNumberOfIterations = 500;
+//        String workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment MNIST";
+//        ImportedDataSet mnistTypeDataSet = importLIBSVMDataSet(workingDirectory, true);
+//        runExperiments(numberOfExperimentRepetitions,
+//                       initialNumberOfExamples,
+//                       initialRatioOfPositiveExamples,
+//                       numberOfExamplesToPickPerIteration,
+//                       maximumNumberOfIterations,
+//                       workingDirectory,
+//                       activeLearningMethods,
+//                       examplePickingMethod,
+//                       mnistTypeDataSet,
 //                       resultTypes);
 //        logger.info("Finished all experiments!");
 
@@ -1057,24 +1110,24 @@ public class ConstrainedLearningExperiment {
 //                       resultTypes);
 //        logger.info("Finished all experiments!");
 
-        // NEWS20 Data Set Experiment
-        logger.info("Running NEWS20 experiment...");
-        numberOfExperimentRepetitions = 1;
-        initialNumberOfExamples = 1000;
-        initialRatioOfPositiveExamples = 0.3;
-        numberOfExamplesToPickPerIteration = 10000;
-        String workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment NEWS20";
-        ImportedDataSet news20TypeDataSet = importLIBSVMDataSet(workingDirectory, true);
-        runExperiments(numberOfExperimentRepetitions,
-                       initialNumberOfExamples,
-                       initialRatioOfPositiveExamples,
-                       numberOfExamplesToPickPerIteration,
-                       workingDirectory,
-                       activeLearningMethods,
-                       examplePickingMethod,
-                       news20TypeDataSet,
-                       resultTypes);
-        logger.info("Finished all experiments!");
+//        // NEWS20 Data Set Experiment
+//        logger.info("Running NEWS20 experiment...");
+//        numberOfExperimentRepetitions = 1;
+//        initialNumberOfExamples = 1000;
+//        initialRatioOfPositiveExamples = 0.3;
+//        numberOfExamplesToPickPerIteration = 10000;
+//        String workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment NEWS20";
+//        ImportedDataSet news20TypeDataSet = importLIBSVMDataSet(workingDirectory, true);
+//        runExperiments(numberOfExperimentRepetitions,
+//                       initialNumberOfExamples,
+//                       initialRatioOfPositiveExamples,
+//                       numberOfExamplesToPickPerIteration,
+//                       workingDirectory,
+//                       activeLearningMethods,
+//                       examplePickingMethod,
+//                       news20TypeDataSet,
+//                       resultTypes);
+//        logger.info("Finished all experiments!");
 
 //        // ISOLET Data Set Experiment
 //        logger.info("Running ISOLET experiment...");
@@ -1159,10 +1212,6 @@ public class ConstrainedLearningExperiment {
             "    fun2=errBar{2};\n" +
             "    errBar=fun2(y);\n" +
             "    y=fun1(y);\n" +
-            "    [errBar(1,:), ~, ~] = hampel(x, errBar(1,:), 3*median(x(2:end)-x(1:end-1)), 1);\n" +
-            "    [errBar(2,:), ~, ~] = hampel(x, errBar(2,:), 3*median(x(2:end)-x(1:end-1)), 1);\n" +
-            "    [y, ~, ~] = hampel(x, y, 3*median(x(2:end)-x(1:end-1)), 1);\n" +
-            "    y = y';\n" +
             "else\n" +
             "    y=y(:)';\n" +
             "end\n" +

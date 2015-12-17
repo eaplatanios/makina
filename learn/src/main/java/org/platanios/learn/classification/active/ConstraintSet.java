@@ -13,6 +13,10 @@ public class ConstraintSet implements Constraint {
         this.constraints = constraints;
     }
 
+    public Set<Constraint> getConstraints() {
+        return constraints;
+    }
+
     @Override
     public int propagate(Map<Label, Boolean> fixedLabels) {
         int previousNumberOfFixedLabels;

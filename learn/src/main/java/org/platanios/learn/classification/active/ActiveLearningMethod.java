@@ -1,5 +1,6 @@
 package org.platanios.learn.classification.active;
 
+import com.google.common.collect.Iterables;
 import org.platanios.learn.data.DataSet;
 import org.platanios.learn.data.PredictedDataInstance;
 import org.platanios.learn.math.matrix.Vector;
@@ -151,6 +152,18 @@ public enum ActiveLearningMethod {
                 ConstrainedLearning<V> learning,
                 Map<Label, DataSet<PredictedDataInstance<V, Double>>> dataSets
         ) {
+            Map<Learning.InstanceToLabel<V>, Double> instanceScores = new HashMap<>();
+            if (learning.getConstraintSet() instanceof ConstraintSet
+                    && ((ConstraintSet) learning.getConstraintSet()).getConstraints().size() == 1
+                    && Iterables.getOnlyElement(((ConstraintSet) learning.getConstraintSet()).getConstraints()) instanceof MutualExclusionConstraint) {
+                for (Map.Entry<Label, DataSet<PredictedDataInstance<V, Double>>> instanceEntry : dataSets.entrySet()) {
+                    DataSet<PredictedDataInstance<V, Double>> currentDataSet = instanceEntry.getValue();
+                    for (PredictedDataInstance<V, Double> instance : currentDataSet)
+                        instanceScores.put(new Learning.InstanceToLabel<>(instanceEntry.getKey(), instance),
+                                           instance.label() >= 0.5 ? instance.probability() : 1 - instance.probability());
+                }
+                return instanceScores;
+            }
 //            Map<PredictedDataInstance<V, Double>, Map<Label, Double>> probabilitiesMap = new HashMap<>();
 //            for (Map.Entry<Label, DataSet<PredictedDataInstance<V, Double>>> instanceEntry : dataSets.entrySet()) {
 //                DataSet<PredictedDataInstance<V, Double>> currentDataSet = instanceEntry.getValue();
@@ -163,14 +176,13 @@ public enum ActiveLearningMethod {
 //                        System.out.println("error error error");
 //                }
 //            }
-//            Map<Learning.InstanceToLabel<V>, Double> instanceScores = new HashMap<>();
 //            for (Map.Entry<PredictedDataInstance<V, Double>, Map<Label, Double>> instanceEntry : probabilitiesMap.entrySet()) {
 //                for (Map.Entry<Label, Double> instanceEntryLabel : instanceEntry.getValue().entrySet()) {
 //                    double instanceScore = 0.0;
 //                    // Setting label to true and propagating
 //                    Map<Label, Boolean> newFixedLabels = new HashMap<>(learning.getFixedLabels(instanceEntry.getKey().name()));
 //                    newFixedLabels.put(instanceEntryLabel.getKey(), true);
-//                    learning.getConstraints().propagate(newFixedLabels);
+//                    learning.getConstraintSet().propagate(newFixedLabels);
 //                    learning.getFixedLabels(instanceEntry.getKey().name()).keySet().forEach(newFixedLabels::remove);
 //                    newFixedLabels.remove(instanceEntryLabel.getKey());
 //                    for (Map.Entry<Label, Boolean> labelEntry : newFixedLabels.entrySet()) {
@@ -180,7 +192,7 @@ public enum ActiveLearningMethod {
 //                    // Setting label to false and propagating
 //                    newFixedLabels = new HashMap<>(learning.getFixedLabels(instanceEntry.getKey().name()));
 //                    newFixedLabels.put(instanceEntryLabel.getKey(), false);
-//                    learning.getConstraints().propagate(newFixedLabels);
+//                    learning.getConstraintSet().propagate(newFixedLabels);
 //                    learning.getFixedLabels(instanceEntry.getKey().name()).keySet().forEach(newFixedLabels::remove);
 //                    newFixedLabels.remove(instanceEntryLabel.getKey());
 //                    for (Map.Entry<Label, Boolean> labelEntry : newFixedLabels.entrySet()) {
@@ -190,13 +202,6 @@ public enum ActiveLearningMethod {
 //                    instanceScores.put(new Learning.InstanceToLabel<>(instanceEntryLabel.getKey(), instanceEntry.getKey()), instanceScore);
 //                }
 //            }
-            Map<Learning.InstanceToLabel<V>, Double> instanceScores = new HashMap<>();
-            for (Map.Entry<Label, DataSet<PredictedDataInstance<V, Double>>> instanceEntry : dataSets.entrySet()) {
-                DataSet<PredictedDataInstance<V, Double>> currentDataSet = instanceEntry.getValue();
-                for (PredictedDataInstance<V, Double> instance : currentDataSet)
-                    instanceScores.put(new Learning.InstanceToLabel<>(instanceEntry.getKey(), instance),
-                                       instance.label() >= 0.5 ? instance.probability() : 1 - instance.probability());
-            }
             return instanceScores;
         }
     };

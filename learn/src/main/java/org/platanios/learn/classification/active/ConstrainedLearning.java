@@ -11,13 +11,13 @@ import java.util.*;
  * @author Emmanouil Antonios Platanios
  */
 public class ConstrainedLearning<V extends Vector> extends Learning<V> {
-    private final ConstraintSet constraints;
+    private final ConstraintSet constraintSet;
 
     private final Map<String, Map<Label, Boolean>> fixedLabels = new HashMap<>();
 
     protected static abstract class AbstractBuilder<V extends Vector, T extends AbstractBuilder<V, T>>
             extends Learning.AbstractBuilder<V, T> {
-        private Set<Constraint> constraints = new HashSet<>();
+        private Set<Constraint> constraintsSet = new HashSet<>();
 
         protected AbstractBuilder(Map<Label, DataSet<LabeledDataInstance<V, Double>>> labeledDataSet,
                                   Map<Label, DataSet<PredictedDataInstance<V, Double>>> unlabeledDataSet) {
@@ -25,17 +25,22 @@ public class ConstrainedLearning<V extends Vector> extends Learning<V> {
         }
 
         public T addConstraint(Constraint constraint) {
-            constraints.add(constraint);
+            constraintsSet.add(constraint);
+            return self();
+        }
+
+        public T addConstraints(Set<Constraint> constraints) {
+            constraintsSet.addAll(constraints);
             return self();
         }
 
         public T addMutualExclusionConstraint(Set<Label> labels) {
-            constraints.add(new MutualExclusionConstraint(labels));
+            constraintsSet.add(new MutualExclusionConstraint(labels));
             return self();
         }
 
         public T addMutualExclusionConstraint(Label... labels) {
-            constraints.add(new MutualExclusionConstraint(new HashSet<>(Arrays.asList(labels))));
+            constraintsSet.add(new MutualExclusionConstraint(new HashSet<>(Arrays.asList(labels))));
             return self();
         }
 
@@ -63,7 +68,7 @@ public class ConstrainedLearning<V extends Vector> extends Learning<V> {
 
     private ConstrainedLearning(AbstractBuilder<V, ?> builder) {
         super(builder);
-        constraints = new ConstraintSet(builder.constraints);
+        constraintSet = new ConstraintSet(builder.constraintsSet);
         for (Label label : labels)
             for (LabeledDataInstance<V, Double> dataInstance : labeledDataSet.get(label)) {
                 if (!fixedLabels.containsKey(dataInstance.name()))
@@ -73,8 +78,8 @@ public class ConstrainedLearning<V extends Vector> extends Learning<V> {
         propagateConstraints(labeledDataSet, unlabeledDataSet);
     }
 
-    public Constraint getConstraints() {
-        return constraints;
+    public Constraint getConstraintSet() {
+        return constraintSet;
     }
 
     public Map<String, Map<Label, Boolean>> getFixedLabels() {
@@ -112,7 +117,7 @@ public class ConstrainedLearning<V extends Vector> extends Learning<V> {
                                      Map<Label, DataSet<PredictedDataInstance<V, Double>>> unlabeledDataSet) {
         int numberOfLabelsFixed = 0;
         for (Map.Entry<String, Map<Label, Boolean>> fixedLabelsEntry : fixedLabels.entrySet()) {
-            if (constraints.propagate(fixedLabelsEntry.getValue()) > 0)
+            if (constraintSet.propagate(fixedLabelsEntry.getValue()) > 0)
                 for (Map.Entry<Label, Boolean> fixedLabel : fixedLabelsEntry.getValue().entrySet()) {
                     for (PredictedDataInstance<V, Double> dataInstance : unlabeledDataSet.get(fixedLabel.getKey())) {
                         if (dataInstance.name().equals(fixedLabelsEntry.getKey())) {
