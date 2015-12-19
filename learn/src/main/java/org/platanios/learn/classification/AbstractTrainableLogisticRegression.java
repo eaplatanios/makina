@@ -25,15 +25,7 @@ abstract class AbstractTrainableLogisticRegression
         extends LogisticRegressionPrediction implements TrainableClassifier<Vector, Double> {
     /** The data used to train this model. */
     protected DataSet<LabeledDataInstance<Vector, Double>> trainingDataSet;
-    /** Indicates whether /(L_1/) regularization is used. */
-    protected boolean useL1Regularization;
-    /** The /(L_1/) regularization weight used. This variable is only used when {@link #useL1Regularization} is set to
-     * true. */
     protected double l1RegularizationWeight;
-    /** Indicates whether /(L_2/) regularization is used. */
-    protected boolean useL2Regularization;
-    /** The /(L_2/) regularization weight used. This variable is only used when {@link #useL2Regularization} is set to
-     * true. */
     protected double l2RegularizationWeight;
     protected int loggingLevel;
 
@@ -47,16 +39,8 @@ abstract class AbstractTrainableLogisticRegression
      */
     protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
             extends LogisticRegressionPrediction.AbstractBuilder<T> {
-        /** Indicates whether /(L_1/) regularization is used. */
-        protected boolean useL1Regularization = false;
-        /** The /(L_1/) regularization weight used. This variable is only used when {@link #useL1Regularization} is set
-         * to true. */
-        protected double l1RegularizationWeight = 1;
-        /** Indicates whether /(L_2/) regularization is used. */
-        protected boolean useL2Regularization = false;
-        /** The /(L_2/) regularization weight used. This variable is only used when {@link #useL2Regularization} is set
-         * to true. */
-        protected double l2RegularizationWeight = 1;
+        protected double l1RegularizationWeight = 0.0;
+        protected double l2RegularizationWeight = 0.0;
         protected int loggingLevel = 0;
 
         /**
@@ -75,18 +59,6 @@ abstract class AbstractTrainableLogisticRegression
         }
 
         /**
-         * Sets the {@link #useL1Regularization} field that indicates whether /(L_1/) regularization is used.
-         *
-         * @param   useL1Regularization The value to which to set the {@link #useL1Regularization} field.
-         * @return                      This builder object itself. That is done so that we can use a nice and
-         *                              expressive code format when we build objects using this builder class.
-         */
-        public T useL1Regularization(boolean useL1Regularization) {
-            this.useL1Regularization = useL1Regularization;
-            return self();
-        }
-
-        /**
          * Sets the {@link #l1RegularizationWeight} field that contains the value of the /(L_1/) regularization weight
          * used. This variable is only used when {@link #useL1Regularization} is set to true.
          *
@@ -96,18 +68,6 @@ abstract class AbstractTrainableLogisticRegression
          */
         public T l1RegularizationWeight(double l1RegularizationWeight) {
             this.l1RegularizationWeight = l1RegularizationWeight;
-            return self();
-        }
-
-        /**
-         * Sets the {@link #useL2Regularization} field that indicates whether /(L_2/) regularization is used.
-         *
-         * @param   useL2Regularization The value to which to set the {@link #useL2Regularization} field.
-         * @return                      This builder object itself. That is done so that we can use a nice and
-         *                              expressive code format when we build objects using this builder class.
-         */
-        public T useL2Regularization(boolean useL2Regularization) {
-            this.useL2Regularization = useL2Regularization;
             return self();
         }
 
@@ -132,14 +92,8 @@ abstract class AbstractTrainableLogisticRegression
         @Override
         public T setParameter(String name, Object value) {
             switch (name) {
-                case "useL1Regularization":
-                    useL1Regularization = (boolean) value;
-                    break;
                 case "l1RegularizationWeight":
                     l1RegularizationWeight = (double) value;
-                    break;
-                case "useL2Regularization":
-                    useL2Regularization = (boolean) value;
                     break;
                 case "l2RegularizationWeight":
                     l2RegularizationWeight = (double) value;
@@ -186,9 +140,7 @@ abstract class AbstractTrainableLogisticRegression
     protected AbstractTrainableLogisticRegression(AbstractBuilder<?> builder) {
         super(builder);
 
-        useL1Regularization = builder.useL1Regularization;
         l1RegularizationWeight = builder.l1RegularizationWeight;
-        useL2Regularization = builder.useL2Regularization;
         l2RegularizationWeight = builder.l2RegularizationWeight;
         loggingLevel = builder.loggingLevel;
     }
@@ -216,6 +168,8 @@ abstract class AbstractTrainableLogisticRegression
     /**
      * Class implementing the likelihood function for the binary logistic regression model. No function is provided to
      * compute the hessian matrix because no binary logistic regression class has to use it.
+     *
+     * //TODO: Add Hessian method implementation.
      */
     protected class LikelihoodFunction extends AbstractFunction {
         private Iterator<LabeledDataInstance<Vector, Double>> trainingDataIterator;
@@ -330,9 +284,7 @@ abstract class AbstractTrainableLogisticRegression
     public void write(OutputStream outputStream, boolean includeType) throws IOException {
         super.write(outputStream, includeType);
 
-        UnsafeSerializationUtilities.writeBoolean(outputStream, useL1Regularization);
         UnsafeSerializationUtilities.writeDouble(outputStream, l1RegularizationWeight);
-        UnsafeSerializationUtilities.writeBoolean(outputStream, useL2Regularization);
         UnsafeSerializationUtilities.writeDouble(outputStream, l2RegularizationWeight);
         UnsafeSerializationUtilities.writeInt(outputStream, loggingLevel);
     }

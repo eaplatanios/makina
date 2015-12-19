@@ -18,8 +18,6 @@ public class EvaluationDataSetTrainingTest {
         LogisticRegressionAdaGrad.Builder classifierBuilder =
                 new LogisticRegressionAdaGrad.Builder(trainingDataSet.get(0).features().size())
                         .sparse(false)
-                        .useL1Regularization(true)
-                        .useL2Regularization(true)
                         .maximumNumberOfIterations(1000)
                         .maximumNumberOfIterationsWithNoPointChange(10)
                         .loggingLevel(0);
@@ -87,8 +85,6 @@ public class EvaluationDataSetTrainingTest {
         LogisticRegressionAdaGrad.Builder classifierBuilder =
                 new LogisticRegressionAdaGrad.Builder(trainingDataSet.get(0).features().size())
                         .sparse(true)
-                        .useL1Regularization(true)
-                        .useL2Regularization(true)
                         .maximumNumberOfIterations(1000)
                         .maximumNumberOfIterationsWithNoPointChange(10)
                         .loggingLevel(0);

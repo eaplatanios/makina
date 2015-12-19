@@ -70,16 +70,8 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
         protected int batchSize = 100;
         protected StochasticSolverStepSize stepSize = StochasticSolverStepSize.SCALED;
         protected double[] stepSizeParameters = new double[] { 10, 0.75 };
-        /** Indicates whether /(L_1/) regularization is used. */
-        private boolean useL1Regularization = false;
-        /** The /(L_1/) regularization weight used. This variable is only used when {@link #useL1Regularization} is set
-         * to true. */
-        private double l1RegularizationWeight = 1;
-        /** Indicates whether /(L_2/) regularization is used. */
-        private boolean useL2Regularization = false;
-        /** The /(L_2/) regularization weight used. This variable is only used when {@link #useL2Regularization} is set
-         * to true. */
-        private double l2RegularizationWeight = 1;
+        private double l1RegularizationWeight = 0.0;
+        private double l2RegularizationWeight = 0.0;
         private int loggingLevel = 0;
 
         protected AbstractBuilder(AbstractStochasticFunction objective, Vector initialPoint) {
@@ -155,18 +147,6 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
         }
 
         /**
-         * Sets the {@link #useL1Regularization} field that indicates whether /(L_1/) regularization is used.
-         *
-         * @param   useL1Regularization The value to which to set the {@link #useL1Regularization} field.
-         * @return                      This builder object itself. That is done so that we can use a nice and
-         *                              expressive code format when we build objects using this builder class.
-         */
-        public T useL1Regularization(boolean useL1Regularization) {
-            this.useL1Regularization = useL1Regularization;
-            return self();
-        }
-
-        /**
          * Sets the {@link #l1RegularizationWeight} field that contains the value of the /(L_1/) regularization weight
          * used. This variable is only used when {@link #useL1Regularization} is set to true.
          *
@@ -176,18 +156,6 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
          */
         public T l1RegularizationWeight(double l1RegularizationWeight) {
             this.l1RegularizationWeight = l1RegularizationWeight;
-            return self();
-        }
-
-        /**
-         * Sets the {@link #useL2Regularization} field that indicates whether /(L_2/) regularization is used.
-         *
-         * @param   usel2Regularization The value to which to set the {@link #useL2Regularization} field.
-         * @return                      This builder object itself. That is done so that we can use a nice and
-         *                              expressive code format when we build objects using this builder class.
-         */
-        public T useL2Regularization(boolean usel2Regularization) {
-            this.useL2Regularization = usel2Regularization;
             return self();
         }
 
@@ -234,9 +202,9 @@ abstract class AbstractStochasticIterativeSolver implements Solver {
         batchSize = builder.batchSize;
         stepSize = builder.stepSize;
         stepSizeParameters = builder.stepSizeParameters;
-        useL1Regularization = builder.useL1Regularization;
+        useL1Regularization = builder.l1RegularizationWeight > 0;
         l1RegularizationWeight = builder.l1RegularizationWeight;
-        useL2Regularization = builder.useL2Regularization;
+        useL2Regularization = builder.l2RegularizationWeight > 0;
         l2RegularizationWeight = builder.l2RegularizationWeight;
         loggingLevel = builder.loggingLevel;
         currentPoint = builder.initialPoint;

@@ -208,9 +208,7 @@ public class LogisticRegressionSGD extends AbstractTrainableLogisticRegression {
                 .batchSize(batchSize)
                 .stepSize(stepSize)
                 .stepSizeParameters(stepSizeParameters)
-                .useL1Regularization(useL1Regularization)
                 .l1RegularizationWeight(l1RegularizationWeight)
-                .useL2Regularization(useL2Regularization)
                 .l2RegularizationWeight(l2RegularizationWeight)
                 .loggingLevel(loggingLevel)
                 .build()
@@ -244,9 +242,7 @@ public class LogisticRegressionSGD extends AbstractTrainableLogisticRegression {
         int numberOfFeatures = UnsafeSerializationUtilities.readInt(inputStream);
         boolean sparse = UnsafeSerializationUtilities.readBoolean(inputStream);
         Vector weights = Vectors.build(inputStream);
-        boolean usel1Regularization = UnsafeSerializationUtilities.readBoolean(inputStream);
         double l1RegularizationWeight = UnsafeSerializationUtilities.readDouble(inputStream);
-        boolean usel2Regularization = UnsafeSerializationUtilities.readBoolean(inputStream);
         double l2RegularizationWeight = UnsafeSerializationUtilities.readDouble(inputStream);
         int loggingLevel = UnsafeSerializationUtilities.readInt(inputStream);
         boolean sampleWithReplacement = UnsafeSerializationUtilities.readBoolean(inputStream);
@@ -262,9 +258,7 @@ public class LogisticRegressionSGD extends AbstractTrainableLogisticRegression {
                 UnsafeSerializationUtilities.readDoubleArray(inputStream, numberOfStepSizeParameters, 4);
         return new Builder(numberOfFeatures, weights)
                 .sparse(sparse)
-                .useL1Regularization(usel1Regularization)
                 .l1RegularizationWeight(l1RegularizationWeight)
-                .useL2Regularization(usel2Regularization)
                 .l2RegularizationWeight(l2RegularizationWeight)
                 .loggingLevel(loggingLevel)
                 .sampleWithReplacement(sampleWithReplacement)

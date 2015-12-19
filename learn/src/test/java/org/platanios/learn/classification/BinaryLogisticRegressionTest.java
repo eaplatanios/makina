@@ -177,8 +177,6 @@ public class BinaryLogisticRegressionTest {
                         .sparse(true)
                         .maximumNumberOfIterations(100000)
                         .batchSize(10)
-                        .useL1Regularization(false)
-                        .l1RegularizationWeight(0.1)
                         .loggingLevel(2)
                         .useBiasTerm(false)
                         .build();
