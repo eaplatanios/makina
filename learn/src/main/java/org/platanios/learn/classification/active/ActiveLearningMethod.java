@@ -165,44 +165,55 @@ public enum ActiveLearningMethod {
                                            instanceLabelEntry.getValue());
                 return instanceScores;
             }
-//            Map<PredictedDataInstance<V, Double>, Map<Label, Double>> probabilitiesMap = new HashMap<>();
-//            for (Map.Entry<Label, DataSet<PredictedDataInstance<V, Double>>> instanceEntry : dataSets.entrySet()) {
-//                DataSet<PredictedDataInstance<V, Double>> currentDataSet = instanceEntry.getValue();
-//                for (PredictedDataInstance<V, Double> instance : currentDataSet) {
-//                    if (!probabilitiesMap.containsKey(instance))
-//                        probabilitiesMap.put(instance, new HashMap<>());
-//                    if (!probabilitiesMap.get(instance).containsKey(instanceEntry.getKey()))
-//                        probabilitiesMap.get(instance).put(instanceEntry.getKey(), instance.label() >= 0.5 ? instance.probability() : 1 - instance.probability());
+            for (Map.Entry<DataInstance<Vector>, Map<Label, Double>> instanceEntry : dataSet.entrySet()) {
+                for (Map.Entry<Label, Double> instanceEntryLabel : instanceEntry.getValue().entrySet()) {
+                    List<Double> instanceScoreTerms = new ArrayList<>();
+                    // Setting label to true and propagating
+                    Map<Label, Boolean> fixedLabels = new HashMap<>(learning.getLabels(instanceEntry.getKey()));
+                    fixedLabels.put(instanceEntryLabel.getKey(), true);
+                    learning.getConstraintSet().propagate(fixedLabels);
+                    learning.getLabels(instanceEntry.getKey()).keySet().forEach(fixedLabels::remove);
+                    fixedLabels.remove(instanceEntryLabel.getKey());
+//                    instanceScoreTerms.add(Math.log(instanceEntryLabel.getValue()));
+//                    instanceScoreTerms.add(instanceEntryLabel.getValue());
+                    double term = 0.0;
+                    for (Map.Entry<Label, Boolean> labelEntry : fixedLabels.entrySet()) {
+                        double labelProbability = instanceEntry.getValue().get(labelEntry.getKey());
+                        term += instanceEntryLabel.getValue() *
+                                (labelEntry.getValue() ? 1 - labelProbability : labelProbability);
+                    }
+                    instanceScoreTerms.add(term);
+//                    if (term > 0.0)
+//                        instanceScoreTerms.add(Math.log(instanceEntryLabel.getValue()) + Math.log(term));
+                    // Setting label to false and propagating
+                    fixedLabels = new HashMap<>(learning.getLabels(instanceEntry.getKey()));
+                    fixedLabels.put(instanceEntryLabel.getKey(), false);
+                    learning.getConstraintSet().propagate(fixedLabels);
+                    learning.getLabels(instanceEntry.getKey()).keySet().forEach(fixedLabels::remove);
+                    fixedLabels.remove(instanceEntryLabel.getKey());
+                    term = 0.0;
+                    for (Map.Entry<Label, Boolean> labelEntry : fixedLabels.entrySet()) {
+                        double labelProbability = instanceEntry.getValue().get(labelEntry.getKey());
+                        term += labelEntry.getValue() ? 1 - labelProbability : labelProbability;
+                    }
+//                    if (term > 0.0)
+//                        instanceScoreTerms.add(Math.log(1 - instanceEntryLabel.getValue()) + Math.log(term));
+//                    if (instanceScoreTerms.size() > 0)
+                        instanceScores.put(
+                                new Learning.InstanceToLabel(instanceEntryLabel.getKey(), instanceEntry.getKey()),
+                                instanceScoreTerms.stream().mapToDouble(number -> number).sum()
+                        );
 //                    else
-//                        System.out.println("error error error");
-//                }
-//            }
-//            for (Map.Entry<PredictedDataInstance<V, Double>, Map<Label, Double>> instanceEntry : probabilitiesMap.entrySet()) {
-//                for (Map.Entry<Label, Double> instanceEntryLabel : instanceEntry.getValue().entrySet()) {
-//                    double instanceScore = 0.0;
-//                    // Setting label to true and propagating
-//                    Map<Label, Boolean> newFixedLabels = new HashMap<>(learning.getFixedLabels(instanceEntry.getKey().name()));
-//                    newFixedLabels.put(instanceEntryLabel.getKey(), true);
-//                    learning.getConstraintSet().propagate(newFixedLabels);
-//                    learning.getFixedLabels(instanceEntry.getKey().name()).keySet().forEach(newFixedLabels::remove);
-//                    newFixedLabels.remove(instanceEntryLabel.getKey());
-//                    for (Map.Entry<Label, Boolean> labelEntry : newFixedLabels.entrySet()) {
-//                        double labelProbability = probabilitiesMap.get(instanceEntry.getKey()).get(labelEntry.getKey());
-//                        instanceScore += instanceEntryLabel.getValue() * Math.log(labelEntry.getValue() ? 1 - labelProbability : labelProbability);
-//                    }
-//                    // Setting label to false and propagating
-//                    newFixedLabels = new HashMap<>(learning.getFixedLabels(instanceEntry.getKey().name()));
-//                    newFixedLabels.put(instanceEntryLabel.getKey(), false);
-//                    learning.getConstraintSet().propagate(newFixedLabels);
-//                    learning.getFixedLabels(instanceEntry.getKey().name()).keySet().forEach(newFixedLabels::remove);
-//                    newFixedLabels.remove(instanceEntryLabel.getKey());
-//                    for (Map.Entry<Label, Boolean> labelEntry : newFixedLabels.entrySet()) {
-//                        double labelProbability = probabilitiesMap.get(instanceEntry.getKey()).get(labelEntry.getKey());
-//                        instanceScore -= (1 - instanceEntryLabel.getValue()) * Math.log(labelEntry.getValue() ? 1 - labelProbability : labelProbability);
-//                    }
-//                    instanceScores.put(new Learning.InstanceToLabel<>(instanceEntryLabel.getKey(), instanceEntry.getKey()), instanceScore);
-//                }
-//            }
+//                        instanceScores.put(
+//                                new Learning.InstanceToLabel(instanceEntryLabel.getKey(), instanceEntry.getKey()),
+//                                Double.NEGATIVE_INFINITY
+//                        );
+//                    instanceScores.put(
+//                            new Learning.InstanceToLabel(instanceEntryLabel.getKey(), instanceEntry.getKey()),
+//                            Math.log(instanceEntryLabel.getValue())
+//                    );
+                }
+            }
             return instanceScores;
         }
     };
