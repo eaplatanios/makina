@@ -43,7 +43,7 @@ public final class ConsensusADMMSolver extends AbstractIterativeSolver {
     private final Consumer<SubProblem> subProblemSolver;
     private final SubProblemSelectionMethod subProblemSelectionMethod;
     private final SubProblemSelector subProblemSelector;
-    private final ExecutorService taskExecutor;
+    private final int numberOfThreads;
 
     private final SumFunction objective;
     private final List<int[]> constraintsVariablesIndexes;
@@ -56,6 +56,7 @@ public final class ConsensusADMMSolver extends AbstractIterativeSolver {
     private DoubleAdder primalToleranceAdder = new DoubleAdder();
     private DoubleAdder dualToleranceAdder = new DoubleAdder();
 
+    private ExecutorService taskExecutor;
     private Vector primalResidualSquaredTerms;
     private double penaltyParameter;
     private double primalResidual;
@@ -213,7 +214,7 @@ public final class ConsensusADMMSolver extends AbstractIterativeSolver {
         subProblemSelectionMethod = builder.subProblemSelectionMethod;
         subProblemSelector = builder.subProblemSelector;
         numberOfSubProblemSamples = builder.numberOfSubProblemSamples;
-        taskExecutor = Executors.newFixedThreadPool(builder.numberOfThreads);
+        numberOfThreads = builder.numberOfThreads;
         variableCopiesCounts = Vectors.dense(currentPoint.size());
         for (int[] variableIndexes : Iterables.concat(objective.getTermVariables(), constraintsVariablesIndexes)) {
             Vector termPoint = Vectors.build(variableIndexes.length, currentPoint.type());
@@ -241,6 +242,20 @@ public final class ConsensusADMMSolver extends AbstractIterativeSolver {
 
     public int getNumberOfSubProblemSamples() {
         return numberOfSubProblemSamples;
+    }
+
+    @Override
+    public Vector solve() {
+        taskExecutor = Executors.newFixedThreadPool(numberOfThreads);
+        super.solve();
+        taskExecutor.shutdown();
+        while (!taskExecutor.isShutdown())
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                logger.error("Something went wrong while trying to shutdown the task executor.", e);
+            }
+        return currentPoint;
     }
 
     @Override
