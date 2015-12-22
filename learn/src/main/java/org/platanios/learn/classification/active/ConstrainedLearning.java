@@ -1,9 +1,14 @@
 package org.platanios.learn.classification.active;
 
+import org.platanios.learn.classification.Label;
+import org.platanios.learn.classification.constraint.Constraint;
+import org.platanios.learn.classification.constraint.ConstraintSet;
+import org.platanios.learn.classification.constraint.MutualExclusionConstraint;
 import org.platanios.learn.data.DataInstance;
 import org.platanios.learn.math.matrix.Vector;
 
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -14,8 +19,9 @@ public class ConstrainedLearning extends Learning {
     protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>> extends Learning.AbstractBuilder<T> {
         private Set<Constraint> constraintsSet = new HashSet<>();
 
-        protected AbstractBuilder(Map<DataInstance<Vector>, Map<Label, Boolean>> dataSet) {
-            super(dataSet);
+        protected AbstractBuilder(Map<DataInstance<Vector>, Map<Label, Boolean>> dataSet,
+                                  Function<InstanceToLabel, Double> probabilityFunction) {
+            super(dataSet, probabilityFunction);
         }
 
         public T addConstraint(Constraint constraint) {
@@ -48,8 +54,9 @@ public class ConstrainedLearning extends Learning {
      * inheritable builder classes.
      */
     public static class Builder extends AbstractBuilder<Builder> {
-        public Builder(Map<DataInstance<Vector>, Map<Label, Boolean>> dataSet) {
-            super(dataSet);
+        public Builder(Map<DataInstance<Vector>, Map<Label, Boolean>> dataSet,
+                       Function<InstanceToLabel, Double> probabilityFunction) {
+            super(dataSet, probabilityFunction);
         }
 
         /** {@inheritDoc} */

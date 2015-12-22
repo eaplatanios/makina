@@ -1,4 +1,4 @@
-package org.platanios.learn.classification.active;
+package org.platanios.learn.classification;
 
 import com.google.common.base.Objects;
 

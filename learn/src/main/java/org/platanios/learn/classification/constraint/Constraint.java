@@ -1,4 +1,6 @@
-package org.platanios.learn.classification.active;
+package org.platanios.learn.classification.constraint;
+
+import org.platanios.learn.classification.Label;
 
 import java.util.Map;
 
