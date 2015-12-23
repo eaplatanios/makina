@@ -138,7 +138,7 @@ public class InMemoryLazyGrounding {
         if (groundedVariables.size() == 0) {
             for (Variable variable : variables)
                 groundedVariables.put(variable.getId(), new ArrayList<>());
-            for (GroundPredicate groundPredicate : activatedGroundedPredicates.get(predicate)) {
+            for (GroundPredicate groundPredicate : activatedGroundedPredicates.getOrDefault(predicate, new HashSet<>())) {
                 Double groundedPredicateValue = groundPredicate.getValue();
                 Double currentTruthValue = groundedPredicateValue == null ? logicManager.logic().falseValue() : logicManager.logic().negation(groundedPredicateValue);
                 if (logicManager.logic().isSatisfied(currentTruthValue))
@@ -170,7 +170,7 @@ public class InMemoryLazyGrounding {
                     else
                         variablesAssignmentTemplate.add(null);
                 }
-                for (GroundPredicate groundPredicate : activatedGroundedPredicates.get(predicate)) {
+                for (GroundPredicate groundPredicate : activatedGroundedPredicates.getOrDefault(predicate, new HashSet<>())) {
                     boolean pruneGroundedPredicate = false;
                     List<Long> variablesAssignment = groundPredicate.getArguments();
                     for (int variableIndex = 0; variableIndex < variablesAssignment.size(); variableIndex++) {

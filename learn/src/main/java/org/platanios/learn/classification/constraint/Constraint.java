@@ -5,6 +5,8 @@ import org.platanios.learn.classification.Label;
 import java.util.Map;
 
 /**
+ * // TODO: Add equals(), hashCode(), and toString() implementations.
+ *
  * @author Emmanouil Antonios Platanios
  */
 public interface Constraint {

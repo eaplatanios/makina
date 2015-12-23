@@ -116,12 +116,15 @@ public class InMemoryLogicManager implements LogicManager {
         if (!groundPredicatesMap.containsKey(predicate))
             throw new IllegalArgumentException("The provided predicate identifier does not match any of the " +
                                                        "predicates currently stored in this logic manager.");
-        if (!groundPredicatesMap.get(predicate).containsKey(argumentAssignments))
+        if (!groundPredicatesMap.get(predicate).containsKey(argumentAssignments) && !closedPredicates.contains(predicate))
             throw new IllegalArgumentException("A grounding for the predicate corresponding to the provided " +
                                                        "identifier and for the provided argument assignments has " +
                                                        "not been added to this logic manager.");
 
-        return groundPredicatesMap.get(predicate).get(argumentAssignments);
+        if (groundPredicatesMap.get(predicate).containsKey(argumentAssignments))
+            return groundPredicatesMap.get(predicate).get(argumentAssignments);
+        else
+            return addGroundPredicate(predicate, argumentAssignments, logic.falseValue()); // TODO: Fix this hack for handling closed predicates.
     }
 
     public long getNumberOfEntityTypes() {

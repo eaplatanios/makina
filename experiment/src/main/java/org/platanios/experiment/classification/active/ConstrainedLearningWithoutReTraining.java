@@ -11,6 +11,7 @@ import org.platanios.learn.classification.constraint.Constraint;
 import org.platanios.learn.classification.constraint.ConstraintSet;
 import org.platanios.learn.classification.constraint.MutualExclusionConstraint;
 import org.platanios.learn.classification.constraint.SubsumptionConstraint;
+import org.platanios.learn.classification.reflection.LogicIntegrator;
 import org.platanios.learn.data.DataInstance;
 import org.platanios.learn.data.DataSet;
 import org.platanios.learn.data.DataSetInMemory;
@@ -36,16 +37,21 @@ import java.util.zip.GZIPInputStream;
 public class ConstrainedLearningWithoutReTraining {
     private static final Logger logger = LogManager.getLogger("Classification / Active / Constrained Learning Experiment");
 
-    private static final Map<ActiveLearningMethod, String> matlabPlotColorsMap = new HashMap<>();
+    private static final Map<ScoringFunction, String> matlabPlotColorsMap = new HashMap<>();
+
     static {
-        matlabPlotColorsMap.put(ActiveLearningMethod.RANDOM, "[0, 0.4470, 0.7410]");
-        matlabPlotColorsMap.put(ActiveLearningMethod.UNCERTAINTY_HEURISTIC, "[0.8500, 0.3250, 0.0980]");
-        matlabPlotColorsMap.put(ActiveLearningMethod.CONSTRAINT_PROPAGATION_HEURISTIC, "[0.9290, 0.6940, 0.1250]");
+        matlabPlotColorsMap.put(new RandomScoringFunction(), "[0, 0.4470, 0.7410, 0.8]");
+        matlabPlotColorsMap.put(new EntropyScoringFunction(), "[0.8500, 0.3250, 0.0980, 0.8]");
+        matlabPlotColorsMap.put(new ConstraintPropagationScoringFunction(true), "[0.9290, 0.6940, 0.1250, 0.8]");
+        matlabPlotColorsMap.put(new ConstraintPropagationScoringFunction(SurpriseFunction.NEGATIVE_LOGARITHM, false), "[0.3010, 0.7450, 0.9330, 0.8]");
+        matlabPlotColorsMap.put(new ConstraintPropagationScoringFunction(SurpriseFunction.ONE_MINUS_PROBABILITY, false), "[0.6350, 0.0780, 0.1840, 0.8]");
+        matlabPlotColorsMap.put(new ConstraintPropagationScoringFunction(SurpriseFunction.NEGATIVE_LOGARITHM, true), "[0.4940, 0.1840, 0.5560, 0.8]");
+        matlabPlotColorsMap.put(new ConstraintPropagationScoringFunction(SurpriseFunction.ONE_MINUS_PROBABILITY, true), "[0.4660, 0.6740, 0.1880, 0.8]");
     }
 
     private final int numberOfExamplesToPickPerIteration;
     private final int maximumNumberOfIterations;
-    private final ActiveLearningMethod activeLearningMethod;
+    private final ScoringFunction scoringFunction;
     private final ExamplePickingMethod examplePickingMethod;
     private final Set<Label> labels;
     private final Map<DataInstance<Vector>, Map<Label, Boolean>> dataSet;
@@ -56,14 +62,14 @@ public class ConstrainedLearningWithoutReTraining {
 
     private ConstrainedLearningWithoutReTraining(int numberOfExamplesToPickPerIteration,
                                                  int maximumNumberOfIterations,
-                                                 ActiveLearningMethod activeLearningMethod,
+                                                 ScoringFunction scoringFunction,
                                                  ExamplePickingMethod examplePickingMethod,
                                                  String workingDirectory,
                                                  ImportedDataSet importedDataSet,
                                                  Set<ResultType> resultTypes) {
         this.numberOfExamplesToPickPerIteration = numberOfExamplesToPickPerIteration;
         this.maximumNumberOfIterations = maximumNumberOfIterations;
-        this.activeLearningMethod = activeLearningMethod;
+        this.scoringFunction = scoringFunction;
         this.examplePickingMethod = examplePickingMethod;
         this.labels = importedDataSet.labels;
         this.dataSet = importedDataSet.evaluationDataSet;                   // TODO: Temporary fix.
@@ -103,11 +109,16 @@ public class ConstrainedLearningWithoutReTraining {
             activeLearningDataSet.put(instance, new HashMap<>());
         ConstrainedLearning.Builder learningBuilder =
                 new ConstrainedLearning.Builder(activeLearningDataSet,
-                                                instanceToLabel ->
-                                                        predictedDataSet
+                                                instanceToLabel -> {
+                                                    if (predictedDataSet.containsKey(instanceToLabel.getInstance())
+                                                            && predictedDataSet.get(instanceToLabel.getInstance()).containsKey(instanceToLabel.getLabel()))
+                                                        return predictedDataSet
                                                                 .get(instanceToLabel.getInstance())
-                                                                .get(instanceToLabel.getLabel()))
-                        .activeLearningMethod(activeLearningMethod)
+                                                                .get(instanceToLabel.getLabel());
+                                                    else
+                                                        return 0.0;
+                                                })
+                        .activeLearningMethod(scoringFunction)
                         .addConstraints(constraints.getConstraints());
         learningBuilder.addLabels(labels);
         Learning learning = learningBuilder.build();
@@ -241,7 +252,7 @@ public class ConstrainedLearningWithoutReTraining {
     private static void exportResults(int numberOfExperimentRepetitions,
                                       int numberOfExamplesToPickPerIteration,
                                       int maximumNumberOfIterations,
-                                      Map<ActiveLearningMethod, List<ExperimentResults>> results,
+                                      Map<ScoringFunction, List<ExperimentResults>> results,
                                       String filePath,
                                       Set<ResultType> resultTypes,
                                       boolean includeTitle,
@@ -249,9 +260,6 @@ public class ConstrainedLearningWithoutReTraining {
                                       boolean includeVerticalAxisLabel,
                                       boolean includeLegend) {
         try {
-            FileWriter helperFileWriter = new FileWriter(filePath.substring(0, filePath.lastIndexOf("/")) + "/shadedErrorBar.m");
-            helperFileWriter.write(shadedErrorBarMatlabCode);
-            helperFileWriter.close();
             FileWriter writer = new FileWriter(filePath);
             writer.write("% numberOfExperimentRepetitions = " + numberOfExperimentRepetitions + "\n"
                                  + "% numberOfExamplesToPickPerIteration = " + numberOfExamplesToPickPerIteration + "\n"
@@ -263,9 +271,12 @@ public class ConstrainedLearningWithoutReTraining {
             for (int xIndex = 0; xIndex < largestVectorSize; xIndex++)
                 xStringJoiner.add(String.valueOf(xIndex));
             writer.write("x = " + xStringJoiner.toString() + ";\n");
-            for (Map.Entry<ActiveLearningMethod, List<ExperimentResults>> resultsEntry : results.entrySet()) {
-                String methodName = resultsEntry.getKey().name().toLowerCase();
-                writer.write("% " + resultsEntry.getKey().name() + "\n");
+            Map<ScoringFunction, Integer> scoringFunctionIndexMap = new HashMap<>();
+            int currentScoringFunctionIndex = 1;
+            for (Map.Entry<ScoringFunction, List<ExperimentResults>> resultsEntry : results.entrySet()) {
+                scoringFunctionIndexMap.put(resultsEntry.getKey(), currentScoringFunctionIndex++);
+                String methodName = resultsEntry.getKey().toString().toLowerCase().replace("-", "_");
+                writer.write("% " + resultsEntry.getKey().toString() + "\n");
                 if (resultTypes.contains(ResultType.AVERAGE_AUC_FULL_DATA_SET)) {
                     writer.write("x_" + methodName + "_" + ResultType.AVERAGE_AUC_FULL_DATA_SET.name().toLowerCase() + " = zeros(" + resultsEntry.getValue().size() + ", " + largestVectorSize + ");\n");
                     writer.write("y_" + methodName + "_" + ResultType.AVERAGE_AUC_FULL_DATA_SET.name().toLowerCase() + " = zeros(" + resultsEntry.getValue().size() + ", " + largestVectorSize + ");\n");
@@ -314,18 +325,17 @@ public class ConstrainedLearningWithoutReTraining {
             for (ResultType resultTypePlot : resultTypes) {
                 writer.write("subplot(1, " + resultTypes.size() + ", " + plotIndex + ");\n");
                 writer.write("hold on;\n");
-                for (Map.Entry<ActiveLearningMethod, List<ExperimentResults>> resultsEntry : results.entrySet()) {
-                    String methodName = resultsEntry.getKey().name().toLowerCase();
+                for (Map.Entry<ScoringFunction, List<ExperimentResults>> resultsEntry : results.entrySet()) {
+                    String methodName = resultsEntry.getKey().toString().toLowerCase().replace("-", "_");
                     if (plotIndex == 1)
-                        writer.write("H(" + (resultsEntry.getKey().ordinal() + 1) + ") = shadedErrorBar(x, " +
-                                             "y_" + methodName + "_" + resultTypePlot.name().toLowerCase() + ", " +
-                                             "{@(x) mean(x, 1), @(x) [max(x, [], 1) - mean(x, 1); mean(x, 1) - min(x,[], 1)]}, " +
-                                             "{'Color', " + matlabPlotColorsMap.get(resultsEntry.getKey()) + ", 'LineWidth', 3}, 1);\n");
+                        writer.write("p(" + scoringFunctionIndexMap.get(resultsEntry.getKey()) + ") = plot(x, " +
+                                             "mean(y_" + methodName + "_" + resultTypePlot.name().toLowerCase() +
+                                             ", 1), 'Color', " + matlabPlotColorsMap.get(resultsEntry.getKey()) +
+                                             ", 'LineWidth', 3);\n");
                     else
-                        writer.write("shadedErrorBar(x, " +
-                                             "y_" + methodName + "_" + resultTypePlot.name().toLowerCase() + ", " +
-                                             "{@(x) mean(x, 1), @(x) [max(x, [], 1) - mean(x, 1); mean(x, 1) - min(x,[], 1)]}, " +
-                                             "{'Color', " + matlabPlotColorsMap.get(resultsEntry.getKey()) + ", 'LineWidth', 3}, 1);\n");
+                        writer.write("plot(x, mean(y_" + methodName + "_" + resultTypePlot.name().toLowerCase() +
+                                             ", 1), 'Color', " + matlabPlotColorsMap.get(resultsEntry.getKey()) +
+                                             ", 'LineWidth', 3);\n");
                 }
                 if (includeTitle)
                     switch (resultTypePlot) {
@@ -345,7 +355,7 @@ public class ConstrainedLearningWithoutReTraining {
                             writer.write("title('Time Spent in Active Learning Method Per Iteration');\n");
                             break;
                     }
-                writer.write("ylim([0 1]);\n");
+//                writer.write("ylim([0 1]);\n");
                 if (includeHorizontalAxisLabel)
                     writer.write("xlabel('Iteration Number', 'FontSize', 22);\n");
                 if (includeVerticalAxisLabel)
@@ -371,9 +381,13 @@ public class ConstrainedLearningWithoutReTraining {
             if (includeLegend) {
                 StringJoiner legendPlotNames = new StringJoiner(", ", "[", "]");
                 StringJoiner legendPlotDescriptions = new StringJoiner(", ", "{", "}");
-                for (ActiveLearningMethod method : results.keySet()) {
-                    legendPlotNames.add("H(" + (method.ordinal() + 1) + ").mainLine");
-                    legendPlotDescriptions.add("'" + toTitleCase(method.name().toLowerCase().replace("_", " ")) + "'");
+                for (ScoringFunction scoringFunction : results.keySet()) {
+                    String methodName = scoringFunction.toString().toLowerCase().replace("-", "_");
+                    legendPlotNames.add("p(" + scoringFunctionIndexMap.get(scoringFunction) + ")");
+                    legendPlotDescriptions.add("strcat(['" + scoringFunction.toString() + " (' " +
+                                                       "num2str(trapz(x, mean(y_" + methodName + "_" +
+                                                       ResultType.AVERAGE_AUC_FULL_DATA_SET.name().toLowerCase() +
+                                                       ", 1)), '%1.3f') ')'])");
                 }
                 writer.write("legend(" + legendPlotNames.toString() + ", " + legendPlotDescriptions.toString() + ", "
                                      + "'Location', 'Southeast');\n");
@@ -409,8 +423,8 @@ public class ConstrainedLearningWithoutReTraining {
                                                   int largestVectorSize) {
         StringJoiner indexesStringJoiner = new StringJoiner(", ", "[", "]");
         StringJoiner valuesStringJoiner = new StringJoiner(", ", "[", "]");
-        int[] largestIndex = new int[] { 0 };
-        Object[] lastValue = new Object[] { null };
+        int[] largestIndex = new int[]{0};
+        Object[] lastValue = new Object[]{null};
         map.entrySet()
                 .stream()
                 .sorted(Map.Entry.comparingByKey(Integer::compareTo))
@@ -489,7 +503,7 @@ public class ConstrainedLearningWithoutReTraining {
                                 .sampleWithReplacement(true)
                                 .maximumNumberOfIterations(1000)
                                 .maximumNumberOfIterationsWithNoPointChange(10)
-                                .pointChangeTolerance(1e-5)
+                                .pointChangeTolerance(1e-8)
                                 .checkForPointConvergence(true)
                                 .batchSize(100);
                 if (randomFeatureVector instanceof DenseVector)
@@ -527,7 +541,7 @@ public class ConstrainedLearningWithoutReTraining {
                         instance.probability(1 - instance.probability());
                     }
             });
-            evaluationPredictedDataSet = new HashMap<>();
+            Map<DataInstance<Vector>, Map<Label, Double>> evaluationPredictedDataSet = new HashMap<>();
             for (Map.Entry<Label, DataSet<PredictedDataInstance<Vector, Double>>> instanceEntry : evaluationPredictedDataSetInstances.entrySet()) {
                 for (PredictedDataInstance<Vector, Double> predictedInstance : instanceEntry.getValue()) {
                     DataInstance<Vector> instance = new DataInstance<>(predictedInstance.name(),
@@ -537,6 +551,32 @@ public class ConstrainedLearningWithoutReTraining {
                     evaluationPredictedDataSet.get(instance).put(instanceEntry.getKey(), predictedInstance.probability());
                 }
             }
+            // Use logic integrator to make sure all of the constraints are satisfied
+            Map<Label, Set<Integer>> labelClassifiers = new HashMap<>();
+            int labelIndex = 0;
+            for (Label label : labels)
+                labelClassifiers.put(label, new HashSet<>(Collections.singletonList(labelIndex++)));
+            Map<DataInstance<Vector>, Map<Label, Map<Integer, Double>>> logicIntegratorDataSet = new HashMap<>();
+            for (Map.Entry<DataInstance<Vector>, Map<Label, Double>> dataSetEntry : evaluationPredictedDataSet.entrySet()) {
+                DataInstance<Vector> instance = dataSetEntry.getKey();
+                logicIntegratorDataSet.put(instance, new HashMap<>());
+                for (Map.Entry<Label, Double> labelEntry : dataSetEntry.getValue().entrySet()) {
+                    Label label = labelEntry.getKey();
+                    logicIntegratorDataSet.get(instance).put(label, new HashMap<>());
+                    logicIntegratorDataSet.get(instance).get(label).put(labelClassifiers.get(label).iterator().next(),
+                                                                        labelEntry.getValue());
+                }
+            }
+            LogicIntegrator logicIntegrator = new LogicIntegrator.Builder(labelClassifiers, logicIntegratorDataSet)
+                    .build();
+            LogicIntegrator.Output logicIntegratorOutput = logicIntegrator.integratePredictions();
+            this.evaluationPredictedDataSet = logicIntegratorOutput.getIntegratedDataSet();
+            for (Map.Entry<Label, DataSet<PredictedDataInstance<Vector, Double>>> instanceEntry : evaluationPredictedDataSetInstances.entrySet())
+                for (PredictedDataInstance<Vector, Double> predictedInstance : instanceEntry.getValue())
+                    predictedInstance.probability(this.evaluationPredictedDataSet
+                                                          .get(new DataInstance<>(predictedInstance.name(),
+                                                                                  predictedInstance.features()))
+                                                          .getOrDefault(instanceEntry.getKey(), 0.0));
         }
 
         public Set<Label> getLabels() {
@@ -689,7 +729,7 @@ public class ConstrainedLearningWithoutReTraining {
                                                        double l2RegularizationWeight) {
         logger.info("Importing LIBSVM data set...");
         Map<Vector, String> labeledInstances = new HashMap<>();
-        final int[] largestVectorIndex = { 0 };
+        final int[] largestVectorIndex = {0};
         try {
             Files.newBufferedReader(Paths.get(workingDirectory + "/labeled_data.csv")).lines().forEach(line -> {
                 String[] lineParts = line.split(",");
@@ -781,16 +821,19 @@ public class ConstrainedLearningWithoutReTraining {
     private static ImportedDataSet importNELLDataSet(String cplFeatureMapDirectory,
                                                      String workingDirectory,
                                                      double l1RegularizationWeight,
-                                                     double l2RegularizationWeight) { // TODO: Fix this one with respect to evaluation data.
+                                                     double l2RegularizationWeight) {
         logger.info("Importing NELL data set...");
-        Map<DataInstance<Vector>, Map<Label, Boolean>> dataSet = new HashMap<>();
-        logger.info("Importing NELL labeled noun phrases...");
         Map<String, Set<String>> labeledNounPhrases = new HashMap<>();
         try {
             Files.newBufferedReader(Paths.get(workingDirectory + "/labeled_nps.tsv")).lines().forEach(line -> {
                 String[] lineParts = line.split("\t");
                 if (lineParts.length == 2)
-                    labeledNounPhrases.put(lineParts[0], new HashSet<>(Arrays.asList(lineParts[1].split(","))));
+                    labeledNounPhrases.put("LABELED|" + lineParts[0], new HashSet<>(Arrays.asList(lineParts[1].split(","))));
+            });
+            Files.newBufferedReader(Paths.get(workingDirectory + "/evaluation_nps.tsv")).lines().forEach(line -> {
+                String[] lineParts = line.split("\t");
+                if (lineParts.length == 2)
+                    labeledNounPhrases.put("EVALUATION|" + lineParts[0], new HashSet<>(Arrays.asList(lineParts[1].split(","))));
             });
         } catch (IOException e) {
             throw new IllegalArgumentException("There was a problem with the provided labeled noun phrases file.");
@@ -802,17 +845,25 @@ public class ConstrainedLearningWithoutReTraining {
         else
             featureMap = buildFeatureMap(workingDirectory + "/features.bin",
                                          cplFeatureMapDirectory,
-                                         labeledNounPhrases.keySet());
+                                         labeledNounPhrases.keySet()
+                                                 .stream()
+                                                 .map(nounPhrase -> nounPhrase.split("\\|")[1])
+                                                 .collect(Collectors.toSet()));
         Set<Label> labels =
                 labeledNounPhrases.values()
                         .stream()
                         .flatMap(Collection::stream)
                         .map(Label::new)
                         .collect(Collectors.toSet());
+        Map<DataInstance<Vector>, Map<Label, Boolean>> dataSet = new HashMap<>();
+        Map<DataInstance<Vector>, Map<Label, Boolean>> evaluationDataSet = new HashMap<>();
         Set<String> nounPhrasesWithoutFeatures = new HashSet<>();
         Map<String, Set<String>> filteredLabeledNounPhrases = new HashMap<>();
+        Map<String, Set<String>> filteredEvaluationNounPhrases = new HashMap<>();
         for (Map.Entry<String, Set<String>> labeledNounPhraseEntry : labeledNounPhrases.entrySet()) {
-            String nounPhrase = labeledNounPhraseEntry.getKey();
+            String[] nounPhraseParts = labeledNounPhraseEntry.getKey().split("\\|");
+            String nounPhraseType = nounPhraseParts[0];
+            String nounPhrase = nounPhraseParts[1];
             Set<String> positiveLabels = labeledNounPhraseEntry.getValue();
             Set<String> negativeLabels = labels.stream().map(Label::getName).collect(Collectors.toSet());
             negativeLabels.removeAll(positiveLabels);
@@ -821,20 +872,36 @@ public class ConstrainedLearningWithoutReTraining {
                 nounPhrasesWithoutFeatures.add(nounPhrase);
                 continue;
             } else {
-                filteredLabeledNounPhrases.put(nounPhrase, positiveLabels);
+                if (nounPhraseType.equals("LABELED"))
+                    filteredLabeledNounPhrases.put(nounPhrase, positiveLabels);
+                else if (nounPhraseType.equals("EVALUATION"))
+                    filteredEvaluationNounPhrases.put(nounPhrase, positiveLabels);
                 features = featureMap.get(nounPhrase);
             }
             DataInstance<Vector> dataInstance = new DataInstance<>(nounPhrase, features);
-            if (!dataSet.containsKey(dataInstance))
-                dataSet.put(dataInstance, new HashMap<>());
-            for (String labelName : positiveLabels)
-                dataSet.get(dataInstance).put(new Label(labelName), true);
-            for (String labelName : negativeLabels)
-                dataSet.get(dataInstance).put(new Label(labelName), false);
+            if (nounPhraseType.equals("LABELED")) {
+                if (!dataSet.containsKey(dataInstance))
+                    dataSet.put(dataInstance, new HashMap<>());
+                for (String labelName : positiveLabels)
+                    dataSet.get(dataInstance).put(new Label(labelName), true);
+                for (String labelName : negativeLabels)
+                    dataSet.get(dataInstance).put(new Label(labelName), false);
+            } else if (nounPhraseType.equals("EVALUATION")) {
+                if (!evaluationDataSet.containsKey(dataInstance))
+                    evaluationDataSet.put(dataInstance, new HashMap<>());
+                for (String labelName : positiveLabels)
+                    evaluationDataSet.get(dataInstance).put(new Label(labelName), true);
+                for (String labelName : negativeLabels)
+                    evaluationDataSet.get(dataInstance).put(new Label(labelName), false);
+            }
         }
-        logger.info("NELL noun phrases without features that were ignored: " + nounPhrasesWithoutFeatures);
+        if (nounPhrasesWithoutFeatures.size() > 0)
+            logger.info("NELL noun phrases without features that were ignored: " + nounPhrasesWithoutFeatures);
+        else
+            logger.info("There were no NELL noun phrases without features in the provided data.");
         exportLabeledNounPhrases(filteredLabeledNounPhrases, workingDirectory + "/filtered_labeled_nps.tsv");
-        return new ImportedDataSet(labels, dataSet, null, l1RegularizationWeight, l2RegularizationWeight);
+        exportLabeledNounPhrases(filteredEvaluationNounPhrases, workingDirectory + "/filtered_evaluation_nps.tsv");
+        return new ImportedDataSet(labels, dataSet, evaluationDataSet, l1RegularizationWeight, l2RegularizationWeight);
     }
 
     private static Map<String, Vector> buildFeatureMap(String featureMapDirectory, String cplFeatureMapDirectory) {
@@ -905,24 +972,24 @@ public class ConstrainedLearningWithoutReTraining {
         }
     }
 
-    public static Map<ActiveLearningMethod, List<ExperimentResults>> runExperiments(
+    public static Map<ScoringFunction, List<ExperimentResults>> runExperiments(
             int numberOfExperimentRepetitions,
             int numberOfExamplesToPickPerIteration,
             int maximumNumberOfIterations,
             String workingDirectory,
-            ActiveLearningMethod[] activeLearningMethods,
+            ScoringFunction[] scoringFunctions,
             ExamplePickingMethod examplePickingMethod,
             ImportedDataSet importedDataSet,
             Set<ResultType> resultTypes
     ) {
-        Map<ActiveLearningMethod, List<ExperimentResults>> results = new HashMap<>();
-        for (ActiveLearningMethod activeLearningMethod : activeLearningMethods) {
-            logger.info("Running experiment for " + activeLearningMethod.name() + "...");
-            results.put(activeLearningMethod, new ArrayList<>());
+        Map<ScoringFunction, List<ExperimentResults>> results = new LinkedHashMap<>();
+        for (ScoringFunction scoringFunction : scoringFunctions) {
+            logger.info("Running experiment for " + scoringFunction.toString() + "...");
+            results.put(scoringFunction, new ArrayList<>());
             ConstrainedLearningWithoutReTraining experiment = new ConstrainedLearningWithoutReTraining(
                     numberOfExamplesToPickPerIteration,
                     maximumNumberOfIterations,
-                    activeLearningMethod,
+                    scoringFunction,
                     examplePickingMethod,
                     workingDirectory,
                     importedDataSet,
@@ -930,11 +997,11 @@ public class ConstrainedLearningWithoutReTraining {
             );
             Map<Integer, Double> averageAreasUnderTheCurve = new HashMap<>();
             Map<Integer, Integer> countAreasUnderTheCurve = new HashMap<>();
-            int effectiveNumberOfExperimentRepetitions = activeLearningMethod.equals(ActiveLearningMethod.RANDOM) ? numberOfExperimentRepetitions : 1;
+            int effectiveNumberOfExperimentRepetitions = scoringFunction.equals(new RandomScoringFunction()) ? numberOfExperimentRepetitions : 1;
             for (int repetition = 0; repetition < effectiveNumberOfExperimentRepetitions; repetition++) {
                 logger.info("Running experiment repetition " + (repetition + 1) + "...");
                 ExperimentResults experimentResults = experiment.runExperiment();
-                results.get(activeLearningMethod).add(experimentResults);
+                results.get(scoringFunction).add(experimentResults);
                 for (Map.Entry<Integer, Double> aucEntry : experimentResults.averageAreasUnderTheCurve.entrySet()) {
                     int key = aucEntry.getKey();
                     if (averageAreasUnderTheCurve.containsKey(key)) {
@@ -963,11 +1030,15 @@ public class ConstrainedLearningWithoutReTraining {
         boolean includeTitleInResultsPlot = false;
         boolean includeHorizontalAxisLabelInResultsPlot = true;
         boolean includeVerticalAxisLabelInResultsPlot = true;
-        boolean includeLegendInResultsPlot = false;
-        ActiveLearningMethod[] activeLearningMethods = new ActiveLearningMethod[] {
-                ActiveLearningMethod.RANDOM,
-                ActiveLearningMethod.UNCERTAINTY_HEURISTIC,
-                ActiveLearningMethod.CONSTRAINT_PROPAGATION_HEURISTIC
+        boolean includeLegendInResultsPlot = true;
+        ScoringFunction[] scoringFunctions = new ScoringFunction[] {
+                new RandomScoringFunction(),
+                new EntropyScoringFunction(),
+                new ConstraintPropagationScoringFunction(true),
+//                new ConstraintPropagationScoringFunction(SurpriseFunction.NEGATIVE_LOGARITHM, false),
+//                new ConstraintPropagationScoringFunction(SurpriseFunction.ONE_MINUS_PROBABILITY, false),
+                new ConstraintPropagationScoringFunction(SurpriseFunction.NEGATIVE_LOGARITHM, true),
+                new ConstraintPropagationScoringFunction(SurpriseFunction.ONE_MINUS_PROBABILITY, true)
         };
         ExamplePickingMethod examplePickingMethod = ExamplePickingMethod.PSEUDO_SEQUENTIAL;
         Set<ResultType> resultTypes = new HashSet<>();
@@ -975,14 +1046,14 @@ public class ConstrainedLearningWithoutReTraining {
 
         String workingDirectory;
         ImportedDataSet dataSet;
-        Map<ActiveLearningMethod, List<ExperimentResults>> results;
+        Map<ScoringFunction, List<ExperimentResults>> results;
 
 //        // NELL Data Set Experiment
 //        logger.info("Running NELL experiment...");
 //        numberOfExperimentRepetitions = 1;
 //        numberOfExamplesToPickPerIteration = 1;
 //        maximumNumberOfIterations = 100;
-//        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment NELL";
+//        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment NELL 2 Class-";
 //        String cplFeatureMapDirectory = "/Volumes/Macintosh HD/Users/Anthony/Development/Data Sets/NELL/Server/all-pairs/all-pairs-OC-2010-12-01-small200-gz";
 //        dataSet = importNELLDataSet(cplFeatureMapDirectory, workingDirectory, 1.0, 1.0);
 
@@ -1010,13 +1081,21 @@ public class ConstrainedLearningWithoutReTraining {
 //        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment LETTER-";
 //        dataSet = importLIBSVMDataSet(workingDirectory, false, 0.0, 0.0);
 
-        // PENDIGITS Data Set Experiment
-        logger.info("Running PENDIGITS experiment...");
-        numberOfExperimentRepetitions = 10;
-        numberOfExamplesToPickPerIteration = 100;
-        maximumNumberOfIterations = 100000;
-        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment PENDIGITS-";
-        dataSet = importLIBSVMDataSet(workingDirectory, false, 0.0, 0.0);
+//        // PENDIGITS Data Set Experiment
+//        logger.info("Running PENDIGITS experiment...");
+//        numberOfExperimentRepetitions = 10;
+//        numberOfExamplesToPickPerIteration = 100;
+//        maximumNumberOfIterations = 100000;
+//        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment PENDIGITS-";
+//        dataSet = importLIBSVMDataSet(workingDirectory, false, 0.0, 0.0);
+
+//        // ISOLET Data Set Experiment
+//        logger.info("Running ISOLET experiment...");
+//        numberOfExperimentRepetitions = 10;
+//        numberOfExamplesToPickPerIteration = 100;
+//        maximumNumberOfIterations = 100000;
+//        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment ISOLET-";
+//        dataSet = importISOLETDataSet(workingDirectory, 0.0, 0.0);
 
 //        // PROTEIN Data Set Experiment
 //        logger.info("Running PROTEIN experiment...");
@@ -1026,13 +1105,13 @@ public class ConstrainedLearningWithoutReTraining {
 //        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment PROTEIN-";
 //        dataSet = importLIBSVMDataSet(workingDirectory, false, 0.0, 0.0);
 
-//        // SATIMAGE Data Set Experiment
-//        logger.info("Running SATIMAGE experiment...");
-//        numberOfExperimentRepetitions = 10;
-//        numberOfExamplesToPickPerIteration = 100;
-//        maximumNumberOfIterations = 100000;
-//        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment SATIMAGE-";
-//        dataSet = importLIBSVMDataSet(workingDirectory, false, 0.0, 0.0);
+        // SATIMAGE Data Set Experiment
+        logger.info("Running SATIMAGE experiment...");
+        numberOfExperimentRepetitions = 10;
+        numberOfExamplesToPickPerIteration = 100;
+        maximumNumberOfIterations = 100000;
+        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment SATIMAGE-";
+        dataSet = importLIBSVMDataSet(workingDirectory, false, 0.0, 0.0);
 
 //        // VOWEL Data Set Experiment
 //        logger.info("Running VOWEL experiment...");
@@ -1186,7 +1265,7 @@ public class ConstrainedLearningWithoutReTraining {
                                  numberOfExamplesToPickPerIteration,
                                  maximumNumberOfIterations,
                                  workingDirectory,
-                                 activeLearningMethods,
+                                 scoringFunctions,
                                  examplePickingMethod,
                                  dataSet,
                                  resultTypes);
@@ -1203,528 +1282,4 @@ public class ConstrainedLearningWithoutReTraining {
                 includeLegendInResultsPlot);
         logger.info("Finished all experiments!");
     }
-
-    private static String shadedErrorBarMatlabCode =
-            "function varargout=shadedErrorBar(x,y,errBar,lineProps,transparent)\n" +
-                    "% function H=shadedErrorBar(x,y,errBar,lineProps,transparent)\n" +
-                    "%\n" +
-                    "% Purpose \n" +
-                    "% Makes a 2-d line plot with a pretty shaded error bar made\n" +
-                    "% using patch. Error bar color is chosen automatically.\n" +
-                    "%\n" +
-                    "% Inputs\n" +
-                    "% x - vector of x values [optional, can be left empty]\n" +
-                    "% y - vector of y values or a matrix of n observations by m cases\n" +
-                    "%     where m has length(x);\n" +
-                    "% errBar - if a vector we draw symmetric errorbars. If it has a size\n" +
-                    "%          of [2,length(x)] then we draw asymmetric error bars with\n" +
-                    "%          row 1 being the upper bar and row 2 being the lower bar\n" +
-                    "%          (with respect to y). ** alternatively ** errBar can be a\n" +
-                    "%          cellArray of two function handles. The first defines which\n" +
-                    "%          statistic the line should be and the second defines the\n" +
-                    "%          error bar.\n" +
-                    "% lineProps - [optional,'-k' by default] defines the properties of\n" +
-                    "%             the data line. e.g.:    \n" +
-                    "%             'or-', or {'-or','markerfacecolor',[1,0.2,0.2]}\n" +
-                    "% transparent - [optional, 0 by default] if ==1 the shaded error\n" +
-                    "%               bar is made transparent, which forces the renderer\n" +
-                    "%               to be openGl. However, if this is saved as .eps the\n" +
-                    "%               resulting file will contain a raster not a vector\n" +
-                    "%               image. \n" +
-                    "%\n" +
-                    "% Outputs\n" +
-                    "% H - a structure of handles to the generated plot objects.     \n" +
-                    "%\n" +
-                    "%\n" +
-                    "% Examples\n" +
-                    "% y=randn(30,80); x=1:size(y,2);\n" +
-                    "% shadedErrorBar(x,mean(y,1),std(y),'g');\n" +
-                    "% shadedErrorBar(x,y,{@median,@std},{'r-o','markerfacecolor','r'});    \n" +
-                    "% shadedErrorBar([],y,{@median,@std},{'r-o','markerfacecolor','r'});    \n" +
-                    "%\n" +
-                    "% Overlay two transparent lines\n" +
-                    "% y=randn(30,80)*10; x=(1:size(y,2))-40;\n" +
-                    "% shadedErrorBar(x,y,{@mean,@std},'-r',1); \n" +
-                    "% hold on\n" +
-                    "% y=ones(30,1)*x; y=y+0.06*y.^2+randn(size(y))*10;\n" +
-                    "% shadedErrorBar(x,y,{@mean,@std},'-b',1); \n" +
-                    "% hold off\n" +
-                    "%\n" +
-                    "%\n" +
-                    "% Rob Campbell - November 2009\n" +
-                    "\n" +
-                    "\n" +
-                    "    \n" +
-                    "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    \n" +
-                    "% Error checking    \n" +
-                    "error(nargchk(3,5,nargin))\n" +
-                    "\n" +
-                    "\n" +
-                    "%Process y using function handles if needed to make the error bar\n" +
-                    "%dynamically\n" +
-                    "if iscell(errBar) \n" +
-                    "    fun1=errBar{1};\n" +
-                    "    fun2=errBar{2};\n" +
-                    "    errBar=fun2(y);\n" +
-                    "    if ~any(errBar(:))\n" +
-                    "        errBar = repmat(1e-6 * abs(y), [2, 1]);\n" +
-                    "    end\n" +
-                    "    y=fun1(y);\n" +
-                    "else\n" +
-                    "    y=y(:)';\n" +
-                    "end\n" +
-                    "\n" +
-                    "if isempty(x)\n" +
-                    "    x=1:length(y);\n" +
-                    "else\n" +
-                    "    x=x(:)';\n" +
-                    "end\n" +
-                    "\n" +
-                    "\n" +
-                    "%Make upper and lower error bars if only one was specified\n" +
-                    "if length(errBar)==length(errBar(:))\n" +
-                    "    errBar=repmat(errBar(:)',2,1);\n" +
-                    "else\n" +
-                    "    s=size(errBar);\n" +
-                    "    f=find(s==2);\n" +
-                    "    if isempty(f), error('errBar has the wrong size'), end\n" +
-                    "    if f==2, errBar=errBar'; end\n" +
-                    "end\n" +
-                    "\n" +
-                    "if length(x) ~= length(errBar)\n" +
-                    "    error('length(x) must equal length(errBar)')\n" +
-                    "end\n" +
-                    "\n" +
-                    "%Set default options\n" +
-                    "defaultProps={'-k'};\n" +
-                    "if nargin<4, lineProps=defaultProps; end\n" +
-                    "if isempty(lineProps), lineProps=defaultProps; end\n" +
-                    "if ~iscell(lineProps), lineProps={lineProps}; end\n" +
-                    "\n" +
-                    "if nargin<5, transparent=0; end\n" +
-                    "\n" +
-                    "\n" +
-                    "\n" +
-                    "\n" +
-                    "\n" +
-                    "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    \n" +
-                    "% Plot to get the parameters of the line \n" +
-                    "H.mainLine=plot(x,y,lineProps{:});\n" +
-                    "\n" +
-                    "\n" +
-                    "% Work out the color of the shaded region and associated lines\n" +
-                    "% Using alpha requires the render to be openGL and so you can't\n" +
-                    "% save a vector image. On the other hand, you need alpha if you're\n" +
-                    "% overlaying lines. There we have the option of choosing alpha or a\n" +
-                    "% de-saturated solid colour for the patch surface .\n" +
-                    "\n" +
-                    "col=get(H.mainLine,'color');\n" +
-                    "edgeColor=col+(1-col)*0.55;\n" +
-                    "patchSaturation=0.15; %How de-saturated or transparent to make patch\n" +
-                    "if transparent\n" +
-                    "    faceAlpha=patchSaturation;\n" +
-                    "    patchColor=col;\n" +
-                    "    set(gcf,'renderer','openGL')\n" +
-                    "else\n" +
-                    "    faceAlpha=1;\n" +
-                    "    patchColor=col+(1-col)*(1-patchSaturation);\n" +
-                    "    set(gcf,'renderer','painters')\n" +
-                    "end\n" +
-                    "\n" +
-                    "    \n" +
-                    "%Calculate the error bars\n" +
-                    "uE=y+errBar(1,:);\n" +
-                    "lE=y-errBar(2,:);\n" +
-                    "\n" +
-                    "\n" +
-                    "%Add the patch error bar\n" +
-                    "holdStatus=ishold;\n" +
-                    "if ~holdStatus, hold on,  end\n" +
-                    "\n" +
-                    "\n" +
-                    "%Make the patch\n" +
-                    "yP=[lE,fliplr(uE)];\n" +
-                    "xP=[x,fliplr(x)];\n" +
-                    "\n" +
-                    "%remove nans otherwise patch won't work\n" +
-                    "xP(isnan(yP))=[];\n" +
-                    "yP(isnan(yP))=[];\n" +
-                    "\n" +
-                    "\n" +
-                    "H.patch=patch(xP,yP,1,'facecolor',patchColor,...\n" +
-                    "              'edgecolor','none',...\n" +
-                    "              'facealpha',faceAlpha);\n" +
-                    "\n" +
-                    "\n" +
-                    "%Make pretty edges around the patch. \n" +
-                    "H.edge(1)=plot(x,lE,'-','color',edgeColor);\n" +
-                    "H.edge(2)=plot(x,uE,'-','color',edgeColor);\n" +
-                    "\n" +
-                    "%Now replace the line (this avoids having to bugger about with z coordinates)\n" +
-                    "delete(H.mainLine)\n" +
-                    "H.mainLine=plot(x,y,lineProps{:});\n" +
-                    "\n" +
-                    "\n" +
-                    "if ~holdStatus, hold off, end\n" +
-                    "\n" +
-                    "\n" +
-                    "if nargout==1\n" +
-                    "    varargout{1}=H;\n" +
-                    "end\n" +
-                    "\n" +
-                    "end\n" +
-                    "\n" +
-                    "function [YY, I, Y0, LB, UB, ADX, NO] = hampel(X, Y, DX, T, varargin)\n" +
-                    "% HAMPEL    Hampel Filter.\n" +
-                    "%   HAMPEL(X,Y,DX,T,varargin) returns the Hampel filtered values of the \n" +
-                    "%   elements in Y. It was developed to detect outliers in a time series, \n" +
-                    "%   but it can also be used as an alternative to the standard median \n" +
-                    "%   filter.\n" +
-                    "%\n" +
-                    "%   References\n" +
-                    "%   Chapters 1.4.2, 3.2.2 and 4.3.4 in Mining Imperfect Data: Dealing with \n" +
-                    "%   Contamination and Incomplete Records by Ronald K. Pearson.\n" +
-                    "%\n" +
-                    "%   Acknowledgements\n" +
-                    "%   I would like to thank Ronald K. Pearson for the introduction to moving\n" +
-                    "%   window filters. Please visit his blog at:\n" +
-                    "%   http://exploringdatablog.blogspot.com/2012/01/moving-window-filters-and\n" +
-                    "%   -pracma.html\n" +
-                    "%\n" +
-                    "%   X,Y are row or column vectors with an equal number of elements.\n" +
-                    "%   The elements in Y should be Gaussian distributed.\n" +
-                    "%\n" +
-                    "%   Input DX,T,varargin must not contain NaN values!\n" +
-                    "%\n" +
-                    "%   DX,T are optional scalar values.\n" +
-                    "%   DX is a scalar which defines the half width of the filter window. \n" +
-                    "%   It is required that DX > 0 and DX should be dimensionally equivalent to\n" +
-                    "%   the values in X.\n" +
-                    "%   T is a scalar which defines the threshold value used in the equation\n" +
-                    "%   |Y - Y0| > T*S0.\n" +
-                    "%\n" +
-                    "%   Standard Parameters for DX and T:\n" +
-                    "%   DX  = 3*median(X(2:end)-X(1:end-1)); \n" +
-                    "%   T   = 3;\n" +
-                    "%\n" +
-                    "%   varargin covers addtional optional input. The optional input must be in\n" +
-                    "%   the form of 'PropertyName', PropertyValue.\n" +
-                    "%   Supported PropertyNames: \n" +
-                    "%   'standard': Use the standard Hampel filter. \n" +
-                    "%   'adaptive': Use an experimental adaptive Hampel filter. Explained under\n" +
-                    "%   Revision 1 details below.\n" +
-                    "% \n" +
-                    "%   Supported PropertyValues: Scalar value which defines the tolerance of\n" +
-                    "%   the adaptive filter. In the case of standard Hampel filter this value \n" +
-                    "%   is ignored.\n" +
-                    "%\n" +
-                    "%   Output YY,I,Y0,LB,UB,ADX are column vectors containing Hampel filtered\n" +
-                    "%   values of Y, a logical index of the replaced values, nominal data,\n" +
-                    "%   lower and upper bounds on the Hampel filter and the relative half size \n" +
-                    "%   of the local window, respectively.\n" +
-                    "%\n" +
-                    "%   NO is a scalar that specifies the Number of Outliers detected.\n" +
-                    "%\n" +
-                    "%   Examples\n" +
-                    "%   1. Hampel filter removal of outliers\n" +
-                    "%       X           = 1:1000;                           % Pseudo Time\n" +
-                    "%       Y           = 5000 + randn(1000, 1);            % Pseudo Data\n" +
-                    "%       Outliers    = randi(1000, 10, 1);               % Index of Outliers\n" +
-                    "%       Y(Outliers) = Y(Outliers) + randi(1000, 10, 1); % Pseudo Outliers\n" +
-                    "%       [YY,I,Y0,LB,UB] = hampel(X,Y);\n" +
-                    "%\n" +
-                    "%       plot(X, Y, 'b.'); hold on;      % Original Data\n" +
-                    "%       plot(X, YY, 'r');               % Hampel Filtered Data\n" +
-                    "%       plot(X, Y0, 'b--');             % Nominal Data\n" +
-                    "%       plot(X, LB, 'r--');             % Lower Bounds on Hampel Filter\n" +
-                    "%       plot(X, UB, 'r--');             % Upper Bounds on Hampel Filter\n" +
-                    "%       plot(X(I), Y(I), 'ks');         % Identified Outliers\n" +
-                    "%\n" +
-                    "%   2. Adaptive Hampel filter removal of outliers\n" +
-                    "%       DX          = 1;                                % Window Half size\n" +
-                    "%       T           = 3;                                % Threshold\n" +
-                    "%       Threshold   = 0.1;                              % AdaptiveThreshold\n" +
-                    "%       X           = 1:DX:1000;                        % Pseudo Time\n" +
-                    "%       Y           = 5000 + randn(1000, 1);            % Pseudo Data\n" +
-                    "%       Outliers    = randi(1000, 10, 1);               % Index of Outliers\n" +
-                    "%       Y(Outliers) = Y(Outliers) + randi(1000, 10, 1); % Pseudo Outliers\n" +
-                    "%       [YY,I,Y0,LB,UB] = hampel(X,Y,DX,T,'Adaptive',Threshold);\n" +
-                    "%\n" +
-                    "%       plot(X, Y, 'b.'); hold on;      % Original Data\n" +
-                    "%       plot(X, YY, 'r');               % Hampel Filtered Data\n" +
-                    "%       plot(X, Y0, 'b--');             % Nominal Data\n" +
-                    "%       plot(X, LB, 'r--');             % Lower Bounds on Hampel Filter\n" +
-                    "%       plot(X, UB, 'r--');             % Upper Bounds on Hampel Filter\n" +
-                    "%       plot(X(I), Y(I), 'ks');         % Identified Outliers\n" +
-                    "%\n" +
-                    "%   3. Median Filter Based on Filter Window\n" +
-                    "%       DX        = 3;                        % Filter Half Size\n" +
-                    "%       T         = 0;                        % Threshold\n" +
-                    "%       X         = 1:1000;                   % Pseudo Time\n" +
-                    "%       Y         = 5000 + randn(1000, 1);    % Pseudo Data\n" +
-                    "%       [YY,I,Y0] = hampel(X,Y,DX,T);\n" +
-                    "%\n" +
-                    "%       plot(X, Y, 'b.'); hold on;    % Original Data\n" +
-                    "%       plot(X, Y0, 'r');             % Median Filtered Data\n" +
-                    "%\n" +
-                    "%   Version: 1.5\n" +
-                    "%   Last Update: 09.02.2012\n" +
-                    "%\n" +
-                    "%   Copyright (c) 2012:\n" +
-                    "%   Michael Lindholm Nielsen\n" +
-                    "%\n" +
-                    "%   --- Revision 5 --- 09.02.2012\n" +
-                    "%   (1) Corrected potential error in internal median function.\n" +
-                    "%   (2) Removed internal \"keyboard\" command.\n" +
-                    "%   (3) Optimized internal Gauss filter.\n" +
-                    "%\n" +
-                    "%   --- Revision 4 --- 08.02.2012\n" +
-                    "%   (1) The elements in X and Y are now temporarily sorted for internal\n" +
-                    "%       computations.\n" +
-                    "%   (2) Performance optimization.\n" +
-                    "%   (3) Added Example 3.\n" +
-                    "%\n" +
-                    "%   --- Revision 3 --- 06.02.2012\n" +
-                    "%   (1) If the number of elements (X,Y) are below 2 the output YY will be a\n" +
-                    "%       copy of Y. No outliers will be detected. No error will be issued.\n" +
-                    "%\n" +
-                    "%   --- Revision 2 --- 05.02.2012\n" +
-                    "%   (1) Changed a calculation in the adaptive Hampel filter. The threshold\n" +
-                    "%       parameter is now compared to the percentage difference between the\n" +
-                    "%       j'th and the j-1 value. Also notice the change from Threshold = 1.1\n" +
-                    "%       to Threshold = 0.1 in example 2 above.\n" +
-                    "%   (2) Checks if DX,T or varargin contains NaN values.\n" +
-                    "%   (3) Now capable of ignoring NaN values in X and Y.\n" +
-                    "%   (4) Added output Y0 - Nominal Data.\n" +
-                    "%\n" +
-                    "%   --- Revision 1 --- 28.01.2012\n" +
-                    "%   (1) Replaced output S (Local Scaled Median Absolute Deviation) with\n" +
-                    "%       lower (LB) and upper (UB) bounds on the Hampel filter.\n" +
-                    "%   (2) Added option to use an experimental adaptive Hampel filter.\n" +
-                    "%       The Principle behind this filter is described below.\n" +
-                    "%   a) The filter changes the local window size until the change in the \n" +
-                    "%       local scaled median absolute deviation is below a threshold value \n" +
-                    "%       set by the user. In the above example (2) this parameter is set to \n" +
-                    "%       0.1 corresponding to a maximum acceptable change of 10% in the \n" +
-                    "%       local scaled median absolute deviation. This process leads to three\n" +
-                    "%       locally optimized parameters Y0 (Local Nominal Data Reference \n" +
-                    "%       value), S0 (Local Scale of Natural Variation), ADX (Local Adapted \n" +
-                    "%       Window half size relative to DX).\n" +
-                    "%   b) The optimized parameters are then smoothed by a Gaussian filter with\n" +
-                    "%       a standard deviation of DX=2*median(XSort(2:end) - XSort(1:end-1)).\n" +
-                    "%       This means that local values are weighted highest, but nearby data \n" +
-                    "%       (which should be Gaussian distributed) is also used in refining \n" +
-                    "%       ADX, Y0, S0.\n" +
-                    "%   \n" +
-                    "%   --- Revision 0 --- 26.01.2012\n" +
-                    "%   (1) Release of first edition.\n" +
-                    "\n" +
-                    "%% Error Checking\n" +
-                    "% Check for correct number of input arguments\n" +
-                    "if nargin < 2\n" +
-                    "    error('Not enough input arguments.');\n" +
-                    "end\n" +
-                    "\n" +
-                    "% Check that the number of elements in X match those of Y.\n" +
-                    "if ~isequal(numel(X), numel(Y))\n" +
-                    "    error('Inputs X and Y must have the same number of elements.');\n" +
-                    "end\n" +
-                    "\n" +
-                    "% Check that X is either a row or column vector\n" +
-                    "if size(X, 1) == 1\n" +
-                    "    X   = X';   % Change to column vector\n" +
-                    "elseif size(X, 2) == 1\n" +
-                    "else\n" +
-                    "    error('Input X must be either a row or column vector.')\n" +
-                    "end\n" +
-                    "\n" +
-                    "% Check that Y is either a row or column vector\n" +
-                    "if size(Y, 1) == 1\n" +
-                    "    Y   = Y';   % Change to column vector\n" +
-                    "elseif size(Y, 2) == 1\n" +
-                    "else\n" +
-                    "    error('Input Y must be either a row or column vector.')\n" +
-                    "end\n" +
-                    "\n" +
-                    "% Sort X\n" +
-                    "SortX   = sort(X);\n" +
-                    "\n" +
-                    "% Check that DX is of type scalar\n" +
-                    "if exist('DX', 'var')\n" +
-                    "    if ~isscalar(DX)\n" +
-                    "        error('DX must be a scalar.');\n" +
-                    "    elseif DX < 0\n" +
-                    "        error('DX must be larger than zero.');\n" +
-                    "    end\n" +
-                    "else\n" +
-                    "    DX  = 3*median(SortX(2:end) - SortX(1:end-1));\n" +
-                    "end\n" +
-                    "\n" +
-                    "% Check that T is of type scalar\n" +
-                    "if exist('T', 'var')\n" +
-                    "    if ~isscalar(T)\n" +
-                    "        error('T must be a scalar.');\n" +
-                    "    end\n" +
-                    "else\n" +
-                    "    T   = 3;\n" +
-                    "end\n" +
-                    "\n" +
-                    "% Check optional input\n" +
-                    "if isempty(varargin)\n" +
-                    "    Option  = 'standard';\n" +
-                    "elseif numel(varargin) < 2\n" +
-                    "    error('Optional input must also contain threshold value.');\n" +
-                    "else\n" +
-                    "    % varargin{1}\n" +
-                    "    if ischar(varargin{1})\n" +
-                    "        Option      = varargin{1};\n" +
-                    "    else\n" +
-                    "        error('PropertyName must be of type char.');\n" +
-                    "    end\n" +
-                    "    % varargin{2}\n" +
-                    "    if isscalar(varargin{2})\n" +
-                    "        Threshold   = varargin{2};\n" +
-                    "    else\n" +
-                    "        error('PropertyValue value must be a scalar.');\n" +
-                    "    end\n" +
-                    "end\n" +
-                    "\n" +
-                    "% Check that DX,T does not contain NaN values\n" +
-                    "if any(isnan(DX) | isnan(T))\n" +
-                    "    error('Inputs DX and T must not contain NaN values.');\n" +
-                    "end\n" +
-                    "\n" +
-                    "% Check that varargin does not contain NaN values\n" +
-                    "CheckNaN    = cellfun(@isnan, varargin, 'UniformOutput', 0);\n" +
-                    "if any(cellfun(@any, CheckNaN))\n" +
-                    "    error('Optional inputs must not contain NaN values.');\n" +
-                    "end\n" +
-                    "\n" +
-                    "% Detect/Ignore NaN values in X and Y\n" +
-                    "IdxNaN  = isnan(X) | isnan(Y);\n" +
-                    "X       = X(~IdxNaN);\n" +
-                    "Y       = Y(~IdxNaN);\n" +
-                    "\n" +
-                    "%% Calculation\n" +
-                    "% Preallocation\n" +
-                    "YY  = Y;\n" +
-                    "I   = false(size(Y));\n" +
-                    "S0  = NaN(size(YY));\n" +
-                    "Y0  = S0;\n" +
-                    "ADX = repmat(DX, size(Y));\n" +
-                    "\n" +
-                    "if numel(X) > 1\n" +
-                    "    switch lower(Option)\n" +
-                    "        case 'standard'\n" +
-                    "            for i = 1:numel(Y)\n" +
-                    "                % Calculate Local Nominal Data Reference value\n" +
-                    "                % and Local Scale of Natural Variation\n" +
-                    "                [Y0(i), S0(i)]  = localwindow(X, Y, DX, i);\n" +
-                    "            end\n" +
-                    "        case 'adaptive'\n" +
-                    "            % Preallocate\n" +
-                    "            Y0Tmp   = S0;\n" +
-                    "            S0Tmp   = S0;\n" +
-                    "            DXTmp   = (1:numel(S0))'*DX; % Integer variation of Window Half Size\n" +
-                    "            \n" +
-                    "            % Calculate Initial Guess of Optimal Parameters Y0, S0, ADX\n" +
-                    "            for i = 1:numel(Y)\n" +
-                    "                % Setup/Reset temporary counter etc.\n" +
-                    "                j       = 1;\n" +
-                    "                S0Rel   = inf;\n" +
-                    "                while S0Rel > Threshold\n" +
-                    "                    % Calculate Local Nominal Data Reference value\n" +
-                    "                    % and Local Scale of Natural Variation using DXTmp window\n" +
-                    "                    [Y0Tmp(j), S0Tmp(j)]    = localwindow(X, Y, DXTmp(j), i);\n" +
-                    "                    \n" +
-                    "                    % Calculate percent difference relative to previous value\n" +
-                    "                    if j > 1\n" +
-                    "                        S0Rel   = abs((S0Tmp(j-1) - S0Tmp(j))/(S0Tmp(j-1) + S0Tmp(j))/2);\n" +
-                    "                    end\n" +
-                    "                    \n" +
-                    "                    % Iterate counter\n" +
-                    "                    j   = j + 1;\n" +
-                    "                end\n" +
-                    "                Y0(i)   = Y0Tmp(j - 2);     % Local Nominal Data Reference value\n" +
-                    "                S0(i)   = S0Tmp(j - 2);     % Local Scale of Natural Variation\n" +
-                    "                ADX(i)  = DXTmp(j - 2)/DX;  % Local Adapted Window size relative to DX\n" +
-                    "            end\n" +
-                    "            \n" +
-                    "            % Gaussian smoothing of relevant parameters\n" +
-                    "            DX  = 2*median(SortX(2:end) - SortX(1:end-1));\n" +
-                    "            ADX = smgauss(X, ADX, DX);\n" +
-                    "            S0  = smgauss(X, S0, DX);\n" +
-                    "            Y0  = smgauss(X, Y0, DX);\n" +
-                    "        otherwise\n" +
-                    "            error('Unknown option ''%s''.', varargin{1});\n" +
-                    "    end\n" +
-                    "end\n" +
-                    "\n" +
-                    "%% Prepare Output\n" +
-                    "UB      = Y0 + T*S0;            % Save information about local scale\n" +
-                    "LB      = Y0 - T*S0;            % Save information about local scale\n" +
-                    "Idx     = abs(Y - Y0) > T*S0;   % Index of possible outlier\n" +
-                    "YY(Idx) = Y0(Idx);              % Replace outliers with local median value\n" +
-                    "I(Idx)  = true;                 % Set Outlier detection\n" +
-                    "NO      = sum(I);               % Output number of detected outliers\n" +
-                    "\n" +
-                    "% Reinsert NaN values detected at error checking stage\n" +
-                    "if any(IdxNaN)\n" +
-                    "    [YY, I, Y0, LB, UB, ADX]    = rescale(IdxNaN, YY, I, Y0, LB, UB, ADX);\n" +
-                    "end\n" +
-                    "\n" +
-                    "%% Built-in functions\n" +
-                    "    function [Y0, S0] = localwindow(X, Y, DX, i)\n" +
-                    "        % Index relevant to Local Window\n" +
-                    "        Idx = X(i) - DX <= X & X <= X(i) + DX;\n" +
-                    "\n" +
-                    "        % Calculate Local Nominal Data Reference Value\n" +
-                    "        Y0  = median(Y(Idx));\n" +
-                    "        \n" +
-                    "        % Calculate Local Scale of Natural Variation\n" +
-                    "        S0  = 1.4826*median(abs(Y(Idx) - Y0));\n" +
-                    "    end\n" +
-                    "\n" +
-                    "    function M = median(YM)\n" +
-                    "        % Isolate relevant values in Y\n" +
-                    "        YM  = sort(YM);\n" +
-                    "        NYM = numel(YM);\n" +
-                    "        \n" +
-                    "        % Calculate median\n" +
-                    "        if mod(NYM,2)   % Uneven\n" +
-                    "            M   = YM((NYM + 1)/2);\n" +
-                    "        else            % Even\n" +
-                    "            M   = (YM(NYM/2)+YM(NYM/2+1))/2;\n" +
-                    "        end\n" +
-                    "    end\n" +
-                    "\n" +
-                    "    function G = smgauss(X, V, DX)\n" +
-                    "        % Prepare Xj and Xk\n" +
-                    "        Xj  = repmat(X', numel(X), 1);\n" +
-                    "        Xk  = repmat(X, 1, numel(X));\n" +
-                    "        \n" +
-                    "        % Calculate Gaussian weight\n" +
-                    "        Wjk = exp(-((Xj - Xk)/(2*DX)).^2);\n" +
-                    "        \n" +
-                    "        % Calculate Gaussian Filter\n" +
-                    "        G   = Wjk*V./sum(Wjk,1)';\n" +
-                    "    end\n" +
-                    "\n" +
-                    "    function varargout = rescale(IdxNaN, varargin)\n" +
-                    "        % Output Rescaled Elements\n" +
-                    "        varargout    = cell(nargout, 1);\n" +
-                    "        for k = 1:nargout\n" +
-                    "            Element     = varargin{k};\n" +
-                    "            \n" +
-                    "            if islogical(Element)\n" +
-                    "                ScaledElement   = false(size(IdxNaN));\n" +
-                    "            elseif isnumeric(Element)\n" +
-                    "                ScaledElement   = NaN(size(IdxNaN));\n" +
-                    "            end\n" +
-                    "            \n" +
-                    "            ScaledElement(~IdxNaN)  = Element;\n" +
-                    "            varargout(k)            = {ScaledElement};\n" +
-                    "        end\n" +
-                    "    end\n" +
-                    "end";
 }

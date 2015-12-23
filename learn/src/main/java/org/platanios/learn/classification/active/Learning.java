@@ -21,7 +21,7 @@ public class Learning {
 
     protected final Function<InstanceToLabel, Double> probabilityFunction;
     protected final Set<Label> labels;
-    protected final ActiveLearningMethod activeLearningMethod;
+    protected final ScoringFunction scoringFunction;
 
     protected final TreeSet<InstanceToLabel> instancesToLabel = new TreeSet<>(
             Collections.reverseOrder(Comparator.comparing(instance -> instance.informationGainHeuristicValue))
@@ -38,7 +38,7 @@ public class Learning {
         protected final Function<InstanceToLabel, Double> probabilityFunction;
 
         protected Set<Label> labels = new HashSet<>();
-        protected ActiveLearningMethod activeLearningMethod = ActiveLearningMethod.UNCERTAINTY_HEURISTIC;
+        protected ScoringFunction scoringFunction = new EntropyScoringFunction();
 
         protected AbstractBuilder(Map<DataInstance<Vector>, Map<Label, Boolean>> dataSet,
                                   Function<InstanceToLabel, Double> probabilityFunction) {
@@ -56,8 +56,8 @@ public class Learning {
             return self();
         }
 
-        public T activeLearningMethod(ActiveLearningMethod activeLearningMethod) {
-            this.activeLearningMethod = activeLearningMethod;
+        public T activeLearningMethod(ScoringFunction scoringFunction) {
+            this.scoringFunction = scoringFunction;
             return self();
         }
 
@@ -86,7 +86,7 @@ public class Learning {
     protected Learning(AbstractBuilder<?> builder) {
         probabilityFunction = builder.probabilityFunction;
         labels = builder.labels;
-        activeLearningMethod = builder.activeLearningMethod;
+        scoringFunction = builder.scoringFunction;
         dataSet = builder.dataSet;
     }
 
@@ -119,7 +119,7 @@ public class Learning {
 
     public void addInstanceToLabel(InstanceToLabel instanceToLabel) {
         instanceToLabel.setInformationGainHeuristicValue(
-                activeLearningMethod.computeInformationGainHeuristicValue(this, instanceToLabel)
+                scoringFunction.computeInformationGainHeuristicValue(this, instanceToLabel)
         );
         instancesToLabel.add(instanceToLabel);
     }
