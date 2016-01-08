@@ -7,6 +7,10 @@ public abstract class ScoringFunction {
     public abstract Double computeInformationGainHeuristicValue(Learning learning,
                                                                 Learning.InstanceToLabel instanceToLabel);
 
+    public boolean propagateConstraints() {
+        return true;
+    }
+
     @Override
     public abstract boolean equals(Object other);
 

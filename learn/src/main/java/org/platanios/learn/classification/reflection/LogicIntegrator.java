@@ -37,6 +37,8 @@ public class LogicIntegrator {
     private final EntityType instanceType;
     private final EntityType labelType;
     private final EntityType classifierType;
+    private final Predicate mutualExclusionPredicate;
+    private final Predicate subsumptionPredicate;
     private final Predicate labelPredicate;
     private final Predicate equalLabelsPredicate;
     private final Predicate labelPredictionPredicate;
@@ -114,6 +116,11 @@ public class LogicIntegrator {
         classifierType = logicManager.addEntityType("{classifier}", classifierKeysMap.keySet());
         logger.info("Adding predicates to the logic manager.");
         List<EntityType> argumentTypes = new ArrayList<>(2);
+        argumentTypes.add(labelType);
+        argumentTypes.add(labelType);
+        mutualExclusionPredicate = logicManager.addPredicate("MUTUAL_EXCLUSION", argumentTypes, true);
+        subsumptionPredicate = logicManager.addPredicate("SUBSUMPTION", argumentTypes, true);
+        argumentTypes = new ArrayList<>(2);
         argumentTypes.add(instanceType);
         argumentTypes.add(labelType);
         labelPredicate = logicManager.addPredicate("LABEL", argumentTypes, false);
@@ -139,6 +146,7 @@ public class LogicIntegrator {
         double power = 1;
         double weight = 1;
         List<Formula> bodyFormulas = new ArrayList<>();
+        bodyFormulas.add(new Atom(mutualExclusionPredicate, Arrays.asList(label1Variable, label2Variable)));
         bodyFormulas.add(new Atom(labelPredictionPredicate, Arrays.asList(instanceVariable,
                                                                           classifierVariable,
                                                                           label1Variable)));
@@ -147,6 +155,40 @@ public class LogicIntegrator {
                                                                                    label2Variable))));
         List<Formula> headFormulas = new ArrayList<>();
         headFormulas.add(new Atom(errorRatePredicate, Arrays.asList(classifierVariable, label1Variable)));
+        pslBuilder.addLogicRule(new ProbabilisticSoftLogic.LogicRule(bodyFormulas,
+                                                                     headFormulas,
+                                                                     power,
+                                                                     weight));
+        // Subsumption Rule #1
+        power = 1;
+        weight = 1;
+        bodyFormulas = new ArrayList<>();
+        bodyFormulas.add(new Atom(subsumptionPredicate, Arrays.asList(label1Variable, label2Variable)));
+        bodyFormulas.add(new Atom(labelPredictionPredicate, Arrays.asList(instanceVariable,
+                                                                          classifierVariable,
+                                                                          label1Variable)));
+        bodyFormulas.add(new Negation(new Atom(labelPredicate, Arrays.asList(instanceVariable, label2Variable))));
+        bodyFormulas.add(new Negation(new Atom(equalLabelsPredicate, Arrays.asList(label1Variable,
+                                                                                   label2Variable))));
+        headFormulas = new ArrayList<>();
+        headFormulas.add(new Atom(errorRatePredicate, Arrays.asList(classifierVariable, label1Variable)));
+        pslBuilder.addLogicRule(new ProbabilisticSoftLogic.LogicRule(bodyFormulas,
+                                                                     headFormulas,
+                                                                     power,
+                                                                     weight));
+        // Subsumption Rule #2
+        power = 1;
+        weight = 1;
+        bodyFormulas = new ArrayList<>();
+        bodyFormulas.add(new Atom(subsumptionPredicate, Arrays.asList(label1Variable, label2Variable)));
+        bodyFormulas.add(new Atom(labelPredictionPredicate, Arrays.asList(instanceVariable,
+                                                                          classifierVariable,
+                                                                          label2Variable)));
+        bodyFormulas.add(new Negation(new Atom(labelPredicate, Arrays.asList(instanceVariable, label1Variable))));
+        bodyFormulas.add(new Negation(new Atom(equalLabelsPredicate, Arrays.asList(label1Variable,
+                                                                                   label2Variable))));
+        headFormulas = new ArrayList<>();
+        headFormulas.add(new Atom(errorRatePredicate, Arrays.asList(classifierVariable, label2Variable)));
         pslBuilder.addLogicRule(new ProbabilisticSoftLogic.LogicRule(bodyFormulas,
                                                                      headFormulas,
                                                                      power,
@@ -171,6 +213,28 @@ public class LogicIntegrator {
                                                                 Arrays.asList(labelKeysMap.inverse().get(label),
                                                                               labelKeysMap.inverse().get(label)),
                                                                 1.0));
+        for (Constraint constraint : constraints) {
+            if (constraint instanceof MutualExclusionConstraint) {
+                List<Label> labelsList = new ArrayList<>(((MutualExclusionConstraint) constraint).getLabels());
+                for (int label1Index = 0; label1Index < labelsList.size(); label1Index++)
+                    for (int label2Index = label1Index + 1; label2Index < labelsList.size(); label2Index++)
+                        logicManager.addGroundPredicate(
+                                mutualExclusionPredicate,
+                                Arrays.asList(labelKeysMap.inverse().get(labelsList.get(label1Index)),
+                                              labelKeysMap.inverse().get(labelsList.get(label2Index))),
+                                1.0
+                        );
+            } else if (constraint instanceof SubsumptionConstraint) {
+                Label parentLabel = ((SubsumptionConstraint) constraint).getParentLabel();
+                Label childLabel = ((SubsumptionConstraint) constraint).getChildLabel();
+                logicManager.addGroundPredicate(
+                        subsumptionPredicate,
+                        Arrays.asList(labelKeysMap.inverse().get(parentLabel),
+                                      labelKeysMap.inverse().get(childLabel)),
+                        1.0
+                );
+            }
+        }
         for (Map.Entry<DataInstance<Vector>, Map<Label, Map<Integer, Double>>> dataSetEntry : dataSet.entrySet()) {
             for (Map.Entry<Label, Map<Integer, Double>> dataInstanceEntry : dataSetEntry.getValue().entrySet()) {
                 for (Map.Entry<Integer, Double> classifierEntry : dataInstanceEntry.getValue().entrySet()) {

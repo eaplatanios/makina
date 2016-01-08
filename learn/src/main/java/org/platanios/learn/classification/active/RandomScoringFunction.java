@@ -9,18 +9,36 @@ import java.util.Random;
  */
 public class RandomScoringFunction extends ScoringFunction {
     private final Random random;
+    private final boolean propagateConstraints;
 
     public RandomScoringFunction() {
         random = new Random();
+        propagateConstraints = false;
+    }
+
+    public RandomScoringFunction(boolean propagateConstraints) {
+        random = new Random();
+        this.propagateConstraints = propagateConstraints;
     }
 
     public RandomScoringFunction(long randomSeed) {
         random = new Random(randomSeed);
+        propagateConstraints = false;
+    }
+
+    public RandomScoringFunction(boolean propagateConstraints, long randomSeed) {
+        random = new Random(randomSeed);
+        this.propagateConstraints = propagateConstraints;
     }
 
     @Override
     public Double computeInformationGainHeuristicValue(Learning learning, Learning.InstanceToLabel instanceToLabel) {
         return random.nextDouble();
+    }
+
+    @Override
+    public boolean propagateConstraints() {
+        return propagateConstraints;
     }
 
     @Override
@@ -30,7 +48,9 @@ public class RandomScoringFunction extends ScoringFunction {
         if (other == null || getClass() != other.getClass())
             return false;
 
-        return true;
+        RandomScoringFunction that = (RandomScoringFunction) other;
+
+        return Objects.equal(propagateConstraints, that.propagateConstraints);
     }
 
     @Override
@@ -40,6 +60,9 @@ public class RandomScoringFunction extends ScoringFunction {
 
     @Override
     public String toString() {
-        return "RANDOM";
+        if (!propagateConstraints)
+            return "RANDOM";
+        else
+            return "RANDOM-CP";
     }
 }

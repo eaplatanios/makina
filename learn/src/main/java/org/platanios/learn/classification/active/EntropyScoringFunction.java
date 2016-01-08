@@ -6,6 +6,16 @@ import com.google.common.base.Objects;
  * @author Emmanouil Antonios Platanios
  */
 public class EntropyScoringFunction extends ScoringFunction {
+    private final boolean propagateConstraints;
+
+    public EntropyScoringFunction() {
+        this(false);
+    }
+
+    public EntropyScoringFunction(boolean propagateConstraints) {
+        this.propagateConstraints = propagateConstraints;
+    }
+
     @Override
     public Double computeInformationGainHeuristicValue(Learning learning, Learning.InstanceToLabel instanceToLabel) {
         return entropy(instanceToLabel.getProbability());
@@ -19,22 +29,32 @@ public class EntropyScoringFunction extends ScoringFunction {
     }
 
     @Override
+    public boolean propagateConstraints() {
+        return propagateConstraints;
+    }
+
+    @Override
     public boolean equals(Object other) {
         if (this == other)
             return true;
         if (other == null || getClass() != other.getClass())
             return false;
 
-        return true;
+        EntropyScoringFunction that = (EntropyScoringFunction) other;
+
+        return Objects.equal(propagateConstraints, that.propagateConstraints);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(this.getClass());
+        return Objects.hashCode(this.getClass(), propagateConstraints);
     }
 
     @Override
     public String toString() {
-        return "ENTROPY";
+        if (!propagateConstraints)
+            return "ENTROPY";
+        else
+            return "ENTROPY-CP";
     }
 }

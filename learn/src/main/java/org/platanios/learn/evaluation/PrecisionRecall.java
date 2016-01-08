@@ -46,8 +46,8 @@ public class PrecisionRecall<T extends Vector, S> extends CurveEvaluation<T, S> 
             if (groundTruth.apply(prediction))
                 falseNegativesNumber++;
         points.add(new CurvePoint(
-                (truePositivesNumber + epsilon) / (truePositivesNumber + falseNegativesNumber + epsilon),
-                (truePositivesNumber + epsilon) / (truePositivesNumber + falsePositivesNumber + epsilon)
+                computePrecision(truePositivesNumber, falseNegativesNumber),
+                computeRecall(truePositivesNumber, falsePositivesNumber)
         ));
         double areaUnderCurve = 0;
         if (numberOfCurvePoints < 0) { // TODO: Maybe fixed!!! This is not totally correct -- think of what happens when two predictions have the same probability.
@@ -67,8 +67,8 @@ public class PrecisionRecall<T extends Vector, S> extends CurveEvaluation<T, S> 
                 if (predictionIndex < predictions.size())
                     predictionIndex--;
                 points.add(new CurvePoint(
-                        (truePositivesNumber + epsilon) / (truePositivesNumber + falseNegativesNumber + epsilon),
-                        (truePositivesNumber + epsilon) / (truePositivesNumber + falsePositivesNumber + epsilon)
+                        computePrecision(truePositivesNumber, falseNegativesNumber),
+                        computeRecall(truePositivesNumber, falsePositivesNumber)
                 ));
                 int k = points.size() - 1;
                 areaUnderCurve += 0.5
@@ -93,8 +93,8 @@ public class PrecisionRecall<T extends Vector, S> extends CurveEvaluation<T, S> 
                         break;
                 }
                 points.add(new CurvePoint(
-                        (truePositivesNumber + epsilon) / (truePositivesNumber + falseNegativesNumber + epsilon),
-                        (truePositivesNumber + epsilon) / (truePositivesNumber + falsePositivesNumber + epsilon)
+                        computePrecision(truePositivesNumber, falseNegativesNumber),
+                        computeRecall(truePositivesNumber, falsePositivesNumber)
                 ));
                 int k = points.size() - 1;
                 areaUnderCurve += 0.5
@@ -106,6 +106,20 @@ public class PrecisionRecall<T extends Vector, S> extends CurveEvaluation<T, S> 
         }
         curves.add(new Curve(name, points));
         areaUnderCurves.add(areaUnderCurve);
+    }
+
+    private double computePrecision(int truePositivesNumber, int falseNegativesNumber) {
+        if (truePositivesNumber + falseNegativesNumber > 0)
+            return (double) truePositivesNumber / (truePositivesNumber + falseNegativesNumber);
+        else
+            return 1.0;
+    }
+
+    private double computeRecall(int truePositivesNumber, int falsePositivesNumber) {
+        if (truePositivesNumber + falsePositivesNumber > 0)
+            return (double) truePositivesNumber / (truePositivesNumber + falsePositivesNumber);
+        else
+            return 1.0;
     }
 
     @Override

@@ -65,14 +65,19 @@ public class SparseVector extends Vector {
     public SparseVector(int size, Map<Integer, Double> vectorElements) {
         this.size = size;
         numberOfNonzeroEntries = vectorElements.size();
-        TreeMap<Integer, Double> sortingMap = new TreeMap<>();
-        sortingMap.putAll(vectorElements);
+        SortedMap<Integer, Double> sortedMap;
+        if (vectorElements instanceof SortedMap) {
+            sortedMap = (SortedMap<Integer, Double>) vectorElements;
+        } else {
+            sortedMap = new TreeMap<>();
+            sortedMap.putAll(vectorElements);
+        }
         indexes = new int[numberOfNonzeroEntries];
         values = new double[numberOfNonzeroEntries];
         int i = 0;
-        for (int key : sortingMap.keySet()) {
+        for (int key : sortedMap.keySet()) {
             indexes[i] = key;
-            values[i] = sortingMap.get(key);
+            values[i] = sortedMap.get(key);
             i++;
         }
     }

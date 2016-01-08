@@ -23,9 +23,10 @@ public class Learning {
     protected final Set<Label> labels;
     protected final ScoringFunction scoringFunction;
 
-    protected final TreeSet<InstanceToLabel> instancesToLabel = new TreeSet<>(
-            Collections.reverseOrder(Comparator.comparing(instance -> instance.informationGainHeuristicValue))
-    );
+    protected final TreeSet<InstanceToLabel> instancesToLabel = new TreeSet<>(Collections.reverseOrder(
+            Comparator.comparing((InstanceToLabel instance) -> instance.informationGainHeuristicValue)
+                    .thenComparing(InstanceToLabel::getProbability)
+    ));
 
     protected Map<DataInstance<Vector>, Map<Label, Boolean>> dataSet;
 

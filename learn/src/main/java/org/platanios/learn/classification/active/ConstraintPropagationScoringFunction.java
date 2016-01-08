@@ -56,6 +56,8 @@ public class ConstraintPropagationScoringFunction extends ScoringFunction {
             if (constraints.size() == 1 && constraints.iterator().next() instanceof MutualExclusionConstraint)
                 return instanceToLabel.getProbability();
         }
+//        if (useMutualExclusionSpecialCase)
+//            return instanceToLabel.getProbability();
         double score = 0.0;
         // Setting label to true and propagating
         Map<Label, Boolean> fixedLabels = new HashMap<>(learning.getLabels(instanceToLabel.getInstance()));

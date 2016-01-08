@@ -41,7 +41,9 @@ public class ConstrainedLearningWithoutReTraining {
 
     static {
         matlabPlotColorsMap.put(new RandomScoringFunction(), "[0, 0.4470, 0.7410, 0.8]");
+        matlabPlotColorsMap.put(new RandomScoringFunction(true), "[0, 0.7470, 1, 0.8]");
         matlabPlotColorsMap.put(new EntropyScoringFunction(), "[0.8500, 0.3250, 0.0980, 0.8]");
+        matlabPlotColorsMap.put(new EntropyScoringFunction(true), "[1, 0.7250, 0.1980, 0.8]");
         matlabPlotColorsMap.put(new ConstraintPropagationScoringFunction(true), "[0.9290, 0.6940, 0.1250, 0.8]");
         matlabPlotColorsMap.put(new ConstraintPropagationScoringFunction(SurpriseFunction.NEGATIVE_LOGARITHM, false), "[0.3010, 0.7450, 0.9330, 0.8]");
         matlabPlotColorsMap.put(new ConstraintPropagationScoringFunction(SurpriseFunction.ONE_MINUS_PROBABILITY, false), "[0.6350, 0.0780, 0.1840, 0.8]");
@@ -76,8 +78,7 @@ public class ConstrainedLearningWithoutReTraining {
         this.predictedDataSet = importedDataSet.evaluationPredictedDataSet; // TODO: Temporary fix.
         this.predictedDataSetInstances = importedDataSet.evaluationPredictedDataSetInstances; // TODO: Temporary fix.
         this.resultTypes = resultTypes;
-        logger.info("Importing constraints...");
-        constraints = importConstraints(workingDirectory);
+        this.constraints = importedDataSet.constraints;
     }
 
     private ExperimentResults runExperiment() {
@@ -107,21 +108,37 @@ public class ConstrainedLearningWithoutReTraining {
         Map<DataInstance<Vector>, Map<Label, Boolean>> activeLearningDataSet = new HashMap<>();
         for (DataInstance<Vector> instance : dataSet.keySet())
             activeLearningDataSet.put(instance, new HashMap<>());
-        ConstrainedLearning.Builder learningBuilder =
-                new ConstrainedLearning.Builder(activeLearningDataSet,
-                                                instanceToLabel -> {
-                                                    if (predictedDataSet.containsKey(instanceToLabel.getInstance())
-                                                            && predictedDataSet.get(instanceToLabel.getInstance()).containsKey(instanceToLabel.getLabel()))
-                                                        return predictedDataSet
-                                                                .get(instanceToLabel.getInstance())
-                                                                .get(instanceToLabel.getLabel());
-                                                    else
-                                                        return 0.0;
-                                                })
-                        .activeLearningMethod(scoringFunction)
-                        .addConstraints(constraints.getConstraints());
-        learningBuilder.addLabels(labels);
-        Learning learning = learningBuilder.build();
+        Learning learning;
+        if (scoringFunction.propagateConstraints())
+            learning =
+                    new ConstrainedLearning.Builder(activeLearningDataSet,
+                                                    instanceToLabel -> {
+                                                        if (predictedDataSet.containsKey(instanceToLabel.getInstance())
+                                                                && predictedDataSet.get(instanceToLabel.getInstance()).containsKey(instanceToLabel.getLabel()))
+                                                            return predictedDataSet
+                                                                    .get(instanceToLabel.getInstance())
+                                                                    .get(instanceToLabel.getLabel());
+                                                        else
+                                                            return 0.0;
+                                                    })
+                            .activeLearningMethod(scoringFunction)
+                            .addConstraints(constraints.getConstraints())
+                            .addLabels(labels)
+                            .build();
+        else
+            learning =
+                    new Learning.Builder(activeLearningDataSet,
+                                         instanceToLabel -> {
+                                             if (predictedDataSet.containsKey(instanceToLabel.getInstance())
+                                                     && predictedDataSet.get(instanceToLabel.getInstance()).containsKey(instanceToLabel.getLabel()))
+                                                 return predictedDataSet
+                                                         .get(instanceToLabel.getInstance())
+                                                         .get(instanceToLabel.getLabel());
+                                             else
+                                                 return 0.0;
+                                         })
+                            .activeLearningMethod(scoringFunction)
+                            .addLabels(labels).build();
         for (Map.Entry<Label, DataSet<PredictedDataInstance<Vector, Double>>> instanceEntry : classifierDataSet.entrySet())
             for (PredictedDataInstance<Vector, Double> predictedInstance : instanceEntry.getValue())
                 learning.addInstanceToLabel(new DataInstance<>(predictedInstance.name(), predictedInstance.features()),
@@ -229,7 +246,7 @@ public class ConstrainedLearningWithoutReTraining {
         return results;
     }
 
-    private ConstraintSet importConstraints(String workingDirectory) {
+    private static ConstraintSet importConstraints(String workingDirectory) {
         Set<Constraint> constraints = new HashSet<>();
         try {
             Files.newBufferedReader(Paths.get(workingDirectory + "/constraints.txt")).lines().forEach(line -> {
@@ -240,7 +257,9 @@ public class ConstrainedLearningWithoutReTraining {
                                                                           .collect(Collectors.toSet())));
                 } else {
                     String[] lineParts = line.split(" -> ");
-                    constraints.add(new SubsumptionConstraint(new Label(lineParts[0]), new Label(lineParts[1])));
+                    String[] childrenLabels = lineParts[1].split(",");
+                    for (String childLabel : childrenLabels)
+                        constraints.add(new SubsumptionConstraint(new Label(lineParts[0]), new Label(childLabel)));
                 }
             });
         } catch (IOException e) {
@@ -454,6 +473,7 @@ public class ConstrainedLearningWithoutReTraining {
 
     private static class ImportedDataSet {
         private final Set<Label> labels;
+        private final ConstraintSet constraints;
         private final Map<DataInstance<Vector>, Map<Label, Boolean>> dataSet;
         private final Map<DataInstance<Vector>, Map<Label, Boolean>> evaluationDataSet;
         private final Map<DataInstance<Vector>, Map<Label, Double>> evaluationPredictedDataSet;
@@ -462,17 +482,20 @@ public class ConstrainedLearningWithoutReTraining {
         private final Map<Label, TrainableClassifier<Vector, Double>> classifiers;
 
         public ImportedDataSet(Set<Label> labels,
+                               ConstraintSet constraints,
                                Map<DataInstance<Vector>, Map<Label, Boolean>> dataSet,
                                Map<DataInstance<Vector>, Map<Label, Boolean>> evaluationDataSet) {
-            this(labels, dataSet, evaluationDataSet, 0.0, 0.0);
+            this(labels, constraints, dataSet, evaluationDataSet, 0.0, 0.0);
         }
 
         public ImportedDataSet(Set<Label> labels,
+                               ConstraintSet constraints,
                                Map<DataInstance<Vector>, Map<Label, Boolean>> dataSet,
                                Map<DataInstance<Vector>, Map<Label, Boolean>> evaluationDataSet,
                                double l1RegularizationWeight,
                                double l2RegularizationWeight) {
             this.labels = labels;
+            this.constraints = constraints;
             this.dataSet = dataSet;
             this.evaluationDataSet = evaluationDataSet;
             statistics = new HashMap<>();
@@ -499,7 +522,7 @@ public class ConstrainedLearningWithoutReTraining {
                                 .useBiasTerm(true)
                                 .l1RegularizationWeight(l1RegularizationWeight)
                                 .l2RegularizationWeight(l2RegularizationWeight)
-                                .loggingLevel(0)
+                                .loggingLevel(1)
                                 .sampleWithReplacement(true)
                                 .maximumNumberOfIterations(1000)
                                 .maximumNumberOfIterationsWithNoPointChange(10)
@@ -532,7 +555,7 @@ public class ConstrainedLearningWithoutReTraining {
                                                         1.0);
                     evaluationPredictedDataSetInstances.get(instanceLabelEntry.getKey()).add(predictedInstance);
                 }
-            labels.stream().forEach(label -> {
+            labels.parallelStream().forEach(label -> {
                 classifiers.get(label).train(predictedDataSet.get(label));
                 classifiers.get(label).predictInPlace(evaluationPredictedDataSetInstances.get(label));
                 for (PredictedDataInstance<Vector, Double> instance : evaluationPredictedDataSetInstances.get(label))
@@ -567,9 +590,14 @@ public class ConstrainedLearningWithoutReTraining {
                                                                         labelEntry.getValue());
                 }
             }
-            LogicIntegrator logicIntegrator = new LogicIntegrator.Builder(labelClassifiers, logicIntegratorDataSet)
-                    .build();
-            LogicIntegrator.Output logicIntegratorOutput = logicIntegrator.integratePredictions();
+            LogicIntegrator.Builder logicIntegratorBuilder = new LogicIntegrator.Builder(labelClassifiers,
+                                                                                         logicIntegratorDataSet);
+            for (Constraint constraint : constraints.getConstraints())
+                if (constraint instanceof MutualExclusionConstraint)
+                    logicIntegratorBuilder.addConstraint((MutualExclusionConstraint) constraint);
+                else if (constraint instanceof SubsumptionConstraint)
+                    logicIntegratorBuilder.addConstraint((SubsumptionConstraint) constraint);
+            LogicIntegrator.Output logicIntegratorOutput = logicIntegratorBuilder.build().integratePredictions();
             this.evaluationPredictedDataSet = logicIntegratorOutput.getIntegratedDataSet();
             for (Map.Entry<Label, DataSet<PredictedDataInstance<Vector, Double>>> instanceEntry : evaluationPredictedDataSetInstances.entrySet())
                 for (PredictedDataInstance<Vector, Double> predictedInstance : instanceEntry.getValue())
@@ -720,7 +748,12 @@ public class ConstrainedLearningWithoutReTraining {
         } catch (IOException e) {
             throw new IllegalArgumentException("There was a problem with the provided labeled noun phrases file.");
         }
-        return new ImportedDataSet(labels, dataSet, evaluationDataSet, l1RegularizationWeight, l2RegularizationWeight);
+        return new ImportedDataSet(labels,
+                                   importConstraints(workingDirectory),
+                                   dataSet,
+                                   evaluationDataSet,
+                                   l1RegularizationWeight,
+                                   l2RegularizationWeight);
     }
 
     private static ImportedDataSet importLIBSVMDataSet(String workingDirectory,
@@ -815,7 +848,12 @@ public class ConstrainedLearningWithoutReTraining {
         } catch (IOException e) {
             throw new IllegalArgumentException("There was a problem with the provided labeled noun phrases file.");
         }
-        return new ImportedDataSet(labels, dataSet, evaluationDataSet, l1RegularizationWeight, l2RegularizationWeight);
+        return new ImportedDataSet(labels,
+                                   importConstraints(workingDirectory),
+                                   dataSet,
+                                   evaluationDataSet,
+                                   l1RegularizationWeight,
+                                   l2RegularizationWeight);
     }
 
     private static ImportedDataSet importNELLDataSet(String cplFeatureMapDirectory,
@@ -843,8 +881,7 @@ public class ConstrainedLearningWithoutReTraining {
         if (Files.exists(Paths.get(workingDirectory + "/features.bin")))
             featureMap = Utilities.readMap(workingDirectory + "/features.bin");
         else
-            featureMap = buildFeatureMap(workingDirectory + "/features.bin",
-                                         cplFeatureMapDirectory,
+            featureMap = buildFeatureMap(cplFeatureMapDirectory,
                                          labeledNounPhrases.keySet()
                                                  .stream()
                                                  .map(nounPhrase -> nounPhrase.split("\\|")[1])
@@ -901,60 +938,73 @@ public class ConstrainedLearningWithoutReTraining {
             logger.info("There were no NELL noun phrases without features in the provided data.");
         exportLabeledNounPhrases(filteredLabeledNounPhrases, workingDirectory + "/filtered_labeled_nps.tsv");
         exportLabeledNounPhrases(filteredEvaluationNounPhrases, workingDirectory + "/filtered_evaluation_nps.tsv");
-        return new ImportedDataSet(labels, dataSet, evaluationDataSet, l1RegularizationWeight, l2RegularizationWeight);
+        return new ImportedDataSet(labels,
+                                   importConstraints(workingDirectory),
+                                   dataSet,
+                                   evaluationDataSet,
+                                   l1RegularizationWeight,
+                                   l2RegularizationWeight);
     }
 
-    private static Map<String, Vector> buildFeatureMap(String featureMapDirectory, String cplFeatureMapDirectory) {
-        return buildFeatureMap(featureMapDirectory, cplFeatureMapDirectory, null);
+    private static Map<String, Vector> buildFeatureMap(String cplFeatureMapDirectory) {
+        return buildFeatureMap(cplFeatureMapDirectory, null);
     }
 
-    private static Map<String, Vector> buildFeatureMap(String featureMapDirectory,
-                                                       String cplFeatureMapDirectory,
-                                                       Set<String> nounPhrases) {
+    private static Map<String, Vector> buildFeatureMap(String cplFeatureMapDirectory, Set<String> nounPhrases) {
         Map<String, Vector> featureMap = new HashMap<>();
         Map<String, Integer> contexts;
         try {
-            if (Files.exists(Paths.get(cplFeatureMapDirectory + "/contexts.bin")))
-                contexts = Utilities.readMap(cplFeatureMapDirectory + "/contexts.bin");
-            else
-                contexts = buildContextsMap(cplFeatureMapDirectory);
             Stream<String> npContextPairsLines = new BufferedReader(new InputStreamReader(new GZIPInputStream(
                     Files.newInputStream(Paths.get(cplFeatureMapDirectory + "/cat_pairs_np-idx.txt.gz"))
             ))).lines();
-            npContextPairsLines.forEachOrdered(line -> {
+            Map<String, Map<String, Double>> preprocessedFeatureMap = new HashMap<>();
+            npContextPairsLines.forEach(line -> {
                 String[] lineParts = line.split("\t");
                 String np = lineParts[0];
                 if (nounPhrases == null || nounPhrases.contains(np)) {
-                    SparseVector features = (SparseVector) Vectors.build(contexts.size(), VectorType.SPARSE);
+                    Map<String, Double> contextValues = new HashMap<>();
                     for (int i = 1; i < lineParts.length; i++) {
                         String[] contextParts = lineParts[i].split(" -#- ");
-                        if (contexts.containsKey(contextParts[0]))
-                            features.set(contexts.get(contextParts[0]), Double.parseDouble(contextParts[1]));
-                        else
-                            System.out.println("error error");
+                        contextValues.put(contextParts[0], Double.parseDouble(contextParts[1]));
                     }
-                    featureMap.put(np, features);
+                    preprocessedFeatureMap.put(np, contextValues);
                 }
             });
+            contexts = buildContextsMap(
+                    cplFeatureMapDirectory,
+                    preprocessedFeatureMap.values()
+                            .stream()
+                            .map(Map::keySet)
+                            .flatMap(Collection::stream)
+                            .collect(Collectors.toSet())
+            );
+            for (Map.Entry<String, Map<String, Double>> preprocessedFeatures : preprocessedFeatureMap.entrySet()) {
+                Map<Integer, Double> featuresMap = new TreeMap<>();
+                preprocessedFeatures.getValue().entrySet()
+                        .stream()
+                        .filter(preprocessedFeature -> contexts.containsKey(preprocessedFeature.getKey()))
+                        .forEach(preprocessedFeature -> featuresMap.put(contexts.get(preprocessedFeature.getKey()),
+                                                                        preprocessedFeature.getValue()));
+                featureMap.put(preprocessedFeatures.getKey(), Vectors.sparse(contexts.size(), featuresMap));
+            }
         } catch (IOException e) {
             logger.error("An exception was thrown while trying to build the CPL feature map.", e);
         }
-//        Utilities.writeMap(featureMap, featureMapDirectory); // TODO: Fix this.
         return featureMap;
     }
 
-    private static Map<String, Integer> buildContextsMap(String cplFeatureMapDirectory) throws IOException {
+    private static Map<String, Integer> buildContextsMap(String cplFeatureMapDirectory,
+                                                         Set<String> uniqueContexts) throws IOException {
         Map<String, Integer> contexts = new HashMap<>();
         Stream<String> npContextPairsLines = new BufferedReader(new InputStreamReader(new GZIPInputStream(
                 Files.newInputStream(Paths.get(cplFeatureMapDirectory + "/cat_contexts.txt.gz"))
         ))).lines();
-        int[] contextIndex = {0};
+        int[] contextIndex = { 0 };
         npContextPairsLines.forEachOrdered(line -> {
             String[] lineParts = line.split("\t");
-            if (!contexts.containsKey(lineParts[0]))
+            if (uniqueContexts.contains(lineParts[0]) && !contexts.containsKey(lineParts[0]))
                 contexts.put(lineParts[0], contextIndex[0]++);
         });
-        Utilities.writeMap(contexts, cplFeatureMapDirectory + "/contexts.bin");
         return contexts;
     }
 
@@ -1033,7 +1083,9 @@ public class ConstrainedLearningWithoutReTraining {
         boolean includeLegendInResultsPlot = true;
         ScoringFunction[] scoringFunctions = new ScoringFunction[] {
                 new RandomScoringFunction(),
+                new RandomScoringFunction(true),
                 new EntropyScoringFunction(),
+                new EntropyScoringFunction(true),
                 new ConstraintPropagationScoringFunction(true),
 //                new ConstraintPropagationScoringFunction(SurpriseFunction.NEGATIVE_LOGARITHM, false),
 //                new ConstraintPropagationScoringFunction(SurpriseFunction.ONE_MINUS_PROBABILITY, false),
@@ -1048,14 +1100,14 @@ public class ConstrainedLearningWithoutReTraining {
         ImportedDataSet dataSet;
         Map<ScoringFunction, List<ExperimentResults>> results;
 
-//        // NELL Data Set Experiment
-//        logger.info("Running NELL experiment...");
-//        numberOfExperimentRepetitions = 1;
-//        numberOfExamplesToPickPerIteration = 1;
-//        maximumNumberOfIterations = 100;
-//        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment NELL 2 Class-";
-//        String cplFeatureMapDirectory = "/Volumes/Macintosh HD/Users/Anthony/Development/Data Sets/NELL/Server/all-pairs/all-pairs-OC-2010-12-01-small200-gz";
-//        dataSet = importNELLDataSet(cplFeatureMapDirectory, workingDirectory, 1.0, 1.0);
+        // NELL Data Set Experiment
+        logger.info("Running NELL experiment...");
+        numberOfExperimentRepetitions = 1;
+        numberOfExamplesToPickPerIteration = 500;
+        maximumNumberOfIterations = 100000;
+        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment NELL 11 Class-";
+        String cplFeatureMapDirectory = "/Volumes/Macintosh HD/Users/Anthony/Development/Data Sets/NELL/Server/all-pairs/all-pairs-OC-2011-02-02-smallcontexts50-gz";
+        dataSet = importNELLDataSet(cplFeatureMapDirectory, workingDirectory, 0, 0);
 
 //        // IRIS Data Set Experiment
 //        logger.info("Running IRIS experiment...");
@@ -1105,13 +1157,13 @@ public class ConstrainedLearningWithoutReTraining {
 //        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment PROTEIN-";
 //        dataSet = importLIBSVMDataSet(workingDirectory, false, 0.0, 0.0);
 
-        // SATIMAGE Data Set Experiment
-        logger.info("Running SATIMAGE experiment...");
-        numberOfExperimentRepetitions = 10;
-        numberOfExamplesToPickPerIteration = 100;
-        maximumNumberOfIterations = 100000;
-        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment SATIMAGE-";
-        dataSet = importLIBSVMDataSet(workingDirectory, false, 0.0, 0.0);
+//        // SATIMAGE Data Set Experiment
+//        logger.info("Running SATIMAGE experiment...");
+//        numberOfExperimentRepetitions = 10;
+//        numberOfExamplesToPickPerIteration = 100;
+//        maximumNumberOfIterations = 100000;
+//        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment SATIMAGE-";
+//        dataSet = importLIBSVMDataSet(workingDirectory, false, 0.0, 0.0);
 
 //        // VOWEL Data Set Experiment
 //        logger.info("Running VOWEL experiment...");
