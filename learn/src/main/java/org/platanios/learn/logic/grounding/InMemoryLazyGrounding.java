@@ -34,6 +34,10 @@ public class InMemoryLazyGrounding {
     }
 
     public List<Formula> ground(List<Formula> formulas) {
+        return ground(formulas, false);
+    }
+
+    public List<Formula> ground(List<Formula> formulas, boolean logProgress) {
         List<Formula> preprocessedFormulas = new ArrayList<>();
         for (Formula formula : formulas) {
             formula = formula.toDisjunctiveNormalForm();
@@ -57,7 +61,8 @@ public class InMemoryLazyGrounding {
                 if (!groundedFormulas.containsKey(currentFormulaIndex))
                     groundedFormulas.put(currentFormulaIndex, new HashSet<>());
                 ground(preprocessedFormulas.get(currentFormulaIndex));
-                logger.info("Generated " + groundedFormula.size() + " groundings for rule " + currentFormulaIndex);
+                if (logProgress)
+                    logger.info("Generated " + groundedFormula.size() + " groundings for rule " + currentFormulaIndex);
                 groundedFormulas.get(currentFormulaIndex).addAll(groundedFormula);
             }
             int currentNumberOfActivatedGroundedPredicates = 0;

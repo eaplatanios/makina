@@ -8,3 +8,17 @@ jar {
 dependencies {
     compile project(':learn')
 }
+
+task allJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'org.platanios.experiment',
+                   'Implementation-Version': version
+    }
+    baseName = project.name + '-all'
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    with jar
+}

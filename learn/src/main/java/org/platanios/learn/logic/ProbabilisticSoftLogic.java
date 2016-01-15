@@ -19,6 +19,7 @@ import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.optimization.ConsensusADMMSolver;
 import org.platanios.learn.optimization.NewtonSolver;
 import org.platanios.learn.optimization.constraint.AbstractConstraint;
+import org.platanios.learn.optimization.constraint.LinearEqualityConstraint;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.LinearFunction;
 import org.platanios.learn.optimization.function.MaxFunction;
@@ -39,6 +40,9 @@ public final class ProbabilisticSoftLogic {
     private final ImmutableSet<Constraint> constraints;
     private final BiMap<Long, Integer> externalToInternalIdsMap;
     private final Map<Integer, CholeskyDecomposition> subProblemCholeskyFactors = new HashMap<>();
+
+    private ConsensusADMMSolver solver;
+    private ConsensusADMMSolver.Builder solverBuilder;
 
     public static final class Builder {
         private final List<LogicRule> logicRules = new ArrayList<>();
@@ -247,12 +251,12 @@ public final class ProbabilisticSoftLogic {
 
     public List<GroundPredicate> solve(ConsensusADMMSolver.SubProblemSelector subProblemSelector,
                                        int numberOfSubProblemSamples) {
-        ConsensusADMMSolver.Builder solverBuilder =
-                new ConsensusADMMSolver.Builder(objectiveFunction,
-                                                Vectors.dense(objectiveFunction.getNumberOfVariables()))
-                        .subProblemSelector(subProblemSelector)
-                        .numberOfSubProblemSamples(numberOfSubProblemSamples);
-        return solve(solverBuilder);
+        if (solverBuilder == null)
+            solverBuilder = new ConsensusADMMSolver.Builder(objectiveFunction,
+                                                            Vectors.dense(objectiveFunction.getNumberOfVariables()));
+        return solve(solverBuilder
+                             .subProblemSelector(subProblemSelector)
+                             .numberOfSubProblemSamples(numberOfSubProblemSamples));
     }
 
     public List<GroundPredicate> solve(ConsensusADMMSolver.SubProblemSelectionMethod subProblemSelectionMethod) {
@@ -261,11 +265,10 @@ public final class ProbabilisticSoftLogic {
             throw new IllegalArgumentException("The selected sub-problem selection method cannot be used with this " +
                                                        "solve method, as the number of sub-problem samples is " +
                                                        "required as well.");
-        ConsensusADMMSolver.Builder solverBuilder =
-                new ConsensusADMMSolver.Builder(objectiveFunction,
-                                                Vectors.dense(objectiveFunction.getNumberOfVariables()))
-                        .subProblemSelectionMethod(subProblemSelectionMethod);
-        return solve(solverBuilder);
+        if (solverBuilder == null)
+            solverBuilder = new ConsensusADMMSolver.Builder(objectiveFunction,
+                                                            Vectors.dense(objectiveFunction.getNumberOfVariables()));
+        return solve(solverBuilder.subProblemSelectionMethod(subProblemSelectionMethod));
     }
 
     public List<GroundPredicate> solve(ConsensusADMMSolver.SubProblemSelectionMethod subProblemSelectionMethod,
@@ -274,18 +277,18 @@ public final class ProbabilisticSoftLogic {
             throw new IllegalArgumentException("The selected sub-problem selection method cannot be used with this " +
                                                        "solve method. The one that takes a sub-problem selector as " +
                                                        "its first argument should be used instead.");
-        ConsensusADMMSolver.Builder solverBuilder =
-                new ConsensusADMMSolver.Builder(objectiveFunction,
-                                                Vectors.dense(objectiveFunction.getNumberOfVariables()))
-                        .subProblemSelectionMethod(subProblemSelectionMethod)
-                        .numberOfSubProblemSamples(numberOfSubProblemSamples);
-        return solve(solverBuilder);
+        if (solverBuilder == null)
+            solverBuilder = new ConsensusADMMSolver.Builder(objectiveFunction,
+                                                            Vectors.dense(objectiveFunction.getNumberOfVariables()));
+        return solve(solverBuilder
+                             .subProblemSelectionMethod(subProblemSelectionMethod)
+                             .numberOfSubProblemSamples(numberOfSubProblemSamples));
     }
 
     private List<GroundPredicate> solve(ConsensusADMMSolver.Builder solverBuilder) {
         for (Constraint constraint : constraints)
             solverBuilder.addConstraint(constraint.constraint, constraint.variableIndexes);
-        ConsensusADMMSolver solver =
+        solver =
                 solverBuilder
                         .subProblemSolver(
                                 (subProblem) -> solveProbabilisticSoftLogicSubProblem(subProblem,
@@ -298,9 +301,10 @@ public final class ProbabilisticSoftLogic {
                         .checkForGradientConvergence(false)
                         .logObjectiveValue(false)
                         .logGradientNorm(false)
-                        .loggingLevel(3)
+                        .loggingLevel(0)
                         .build();
         Vector result = solver.solve();
+        this.solverBuilder = solverBuilder.initialPoint(solver.currentPoint);
         List<GroundPredicate> groundPredicates = new ArrayList<>();
         for (int internalId = 0; internalId < result.size(); internalId++) {
             GroundPredicate groundPredicate =
@@ -309,6 +313,12 @@ public final class ProbabilisticSoftLogic {
             groundPredicates.add(groundPredicate);
         }
         return groundPredicates;
+    }
+
+    public void fixDataInstanceLabel(GroundPredicate groundPredicate) {
+        if (externalToInternalIdsMap.containsKey(groundPredicate.getId()))
+            solverBuilder.addConstraint(new LinearEqualityConstraint(Vectors.dense(1, 1), groundPredicate.getValue()),
+                                        externalToInternalIdsMap.get(groundPredicate.getId()));
     }
 
     private static void solveProbabilisticSoftLogicSubProblem(

@@ -48,8 +48,8 @@ abstract class AbstractIterativeSolver implements Solver {
         protected abstract T self();
 
         protected final AbstractFunction objective;
-        protected final Vector initialPoint;
 
+        protected Vector initialPoint;
         protected int maximumNumberOfIterations = 1000;
         protected int maximumNumberOfFunctionEvaluations = 1000000;
         protected double pointChangeTolerance = 1e-10;
@@ -68,6 +68,11 @@ abstract class AbstractIterativeSolver implements Solver {
                                   Vector initialPoint) {
             this.objective = objective;
             this.initialPoint = initialPoint;
+        }
+
+        public T initialPoint(Vector initialPoint) {
+            this.initialPoint = initialPoint;
+            return self();
         }
 
         public T maximumNumberOfIterations(int maximumNumberOfIterations) {

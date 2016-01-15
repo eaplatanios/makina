@@ -19,6 +19,9 @@ public interface LogicManager {
     Predicate addPredicate(String name, List<EntityType> argumentTypes, boolean closed);
     GroundPredicate addGroundPredicate(Predicate predicate, List<Long> argumentAssignments);
     GroundPredicate addGroundPredicate(Predicate predicate, List<Long> argumentAssignments, Double value);
+    GroundPredicate addOrReplaceGroundPredicate(Predicate predicate, List<Long> argumentAssignments);
+    GroundPredicate addOrReplaceGroundPredicate(Predicate predicate, List<Long> argumentAssignments, Double value);
+    GroundPredicate removeGroundPredicate(Predicate predicate, List<Long> argumentAssignments);
     boolean checkIfGroundPredicateExists(Predicate predicate, List<Long> argumentAssignments);
     long getNumberOfGroundPredicates();
     List<GroundPredicate> getGroundPredicates();

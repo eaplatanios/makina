@@ -1,6 +1,9 @@
 package org.platanios.learn.classification.constraint;
 
 import org.platanios.learn.classification.Label;
+import org.platanios.learn.classification.active.ConstrainedLearning;
+import org.platanios.learn.data.DataInstance;
+import org.platanios.learn.math.matrix.Vector;
 
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +30,18 @@ public class ConstraintSet implements Constraint {
             previousNumberOfFixedLabels = currentNumberOfFixedLabels;
             for (Constraint constraint : constraints)
                 currentNumberOfFixedLabels += constraint.propagate(fixedLabels);
+        } while (currentNumberOfFixedLabels != previousNumberOfFixedLabels);
+        return currentNumberOfFixedLabels;
+    }
+
+    @Override
+    public int propagate(Map<Label, Boolean> fixedLabels, ConstrainedLearning learning, DataInstance<Vector> instance) {
+        int previousNumberOfFixedLabels;
+        int currentNumberOfFixedLabels = 0;
+        do {
+            previousNumberOfFixedLabels = currentNumberOfFixedLabels;
+            for (Constraint constraint : constraints)
+                currentNumberOfFixedLabels += constraint.propagate(fixedLabels, learning, instance);
         } while (currentNumberOfFixedLabels != previousNumberOfFixedLabels);
         return currentNumberOfFixedLabels;
     }

@@ -1,6 +1,7 @@
 package org.platanios.learn.classification.active;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.ComparisonChain;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.platanios.learn.classification.Label;
@@ -23,10 +24,7 @@ public class Learning {
     protected final Set<Label> labels;
     protected final ScoringFunction scoringFunction;
 
-    protected final TreeSet<InstanceToLabel> instancesToLabel = new TreeSet<>(Collections.reverseOrder(
-            Comparator.comparing((InstanceToLabel instance) -> instance.informationGainHeuristicValue)
-                    .thenComparing(InstanceToLabel::getProbability)
-    ));
+    protected final TreeSet<InstanceToLabel> instancesToLabel = new TreeSet<>();
 
     protected Map<DataInstance<Vector>, Map<Label, Boolean>> dataSet;
 
@@ -114,6 +112,10 @@ public class Learning {
         return numberOfInstances;
     }
 
+    public int getNumberOfUnlabeledInstances() {
+        return instancesToLabel.size();
+    }
+
     public void addInstanceToLabel(DataInstance<Vector> instance, Label label) {
         addInstanceToLabel(new InstanceToLabel(instance, label));
     }
@@ -145,7 +147,7 @@ public class Learning {
 
     public InstanceToLabel pickInstanceToLabel() {
         if (instancesToLabel.size() > 0)
-            return instancesToLabel.first();
+            return instancesToLabel.last();
         else
             return null;
     }
@@ -172,7 +174,7 @@ public class Learning {
             labelInstance(instance.getKey(), instance.getValue());
     }
 
-    public class InstanceToLabel {
+    public class InstanceToLabel implements Comparable<InstanceToLabel> {
         private final DataInstance<Vector> instance;
         private final Label label;
 
@@ -202,6 +204,15 @@ public class Learning {
 
         public double getInformationGainHeuristicValue() {
             return informationGainHeuristicValue;
+        }
+
+        @Override
+        public int compareTo(InstanceToLabel other) {
+            return ComparisonChain.start()
+                    .compare(informationGainHeuristicValue, other.informationGainHeuristicValue)
+                    .compare(instance.name(), other.instance.name())
+                    .compare(label.getName(), other.label.getName())
+                    .result();
         }
 
         @Override

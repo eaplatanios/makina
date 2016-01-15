@@ -1,6 +1,9 @@
 package org.platanios.learn.classification.constraint;
 
 import org.platanios.learn.classification.Label;
+import org.platanios.learn.classification.active.ConstrainedLearning;
+import org.platanios.learn.data.DataInstance;
+import org.platanios.learn.math.matrix.Vector;
 
 import java.util.Map;
 
@@ -25,4 +28,6 @@ public interface Constraint {
      * @return              The number of other labels fixed by propagating the constraints.
      */
     int propagate(Map<Label, Boolean> fixedLabels);
+
+    int propagate(Map<Label, Boolean> fixedLabels, ConstrainedLearning learning, DataInstance<Vector> instance);
 }

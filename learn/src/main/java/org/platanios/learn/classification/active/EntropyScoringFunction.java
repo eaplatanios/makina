@@ -22,7 +22,7 @@ public class EntropyScoringFunction extends ScoringFunction {
     }
 
     private double entropy(double probability) {
-        if (probability > 0)
+        if (probability > 0 && probability < 1)
             return -probability * Math.log(probability) - (1 - probability) * Math.log(1 - probability);
         else
             return 0;

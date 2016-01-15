@@ -86,6 +86,39 @@ public class InMemoryLogicManager implements LogicManager {
         }
     }
 
+    public GroundPredicate addOrReplaceGroundPredicate(Predicate predicate, List<Long> argumentAssignments) {
+        return addOrReplaceGroundPredicate(predicate, argumentAssignments, null);
+    }
+
+    public GroundPredicate addOrReplaceGroundPredicate(Predicate predicate,
+                                                       List<Long> argumentAssignments,
+                                                       Double value) {
+        if (!groundPredicatesMap.containsKey(predicate))
+            throw new IllegalArgumentException("The provided predicate identifier does not match any of the " +
+                                                       "predicates currently stored in this logic manager.");
+        if (groundPredicatesMap.get(predicate).containsKey(argumentAssignments)) {
+            GroundPredicate groundPredicate =
+                    groundPredicatesMap.get(predicate).get(argumentAssignments);
+            groundPredicate.setValue(value);
+            return groundPredicate;
+        } else {
+            GroundPredicate groundPredicate = new GroundPredicate(newGroundPredicateId.getAndIncrement(),
+                                                                  predicate,
+                                                                  argumentAssignments,
+                                                                  value);
+            groundPredicates.put(groundPredicate.getId(), groundPredicate);
+            groundPredicatesMap.get(predicate).put(argumentAssignments, groundPredicate);
+            return groundPredicate;
+        }
+    }
+
+    public GroundPredicate removeGroundPredicate(Predicate predicate, List<Long> argumentAssignments) {
+        if (!groundPredicatesMap.containsKey(predicate)
+                || !groundPredicatesMap.get(predicate).containsKey(argumentAssignments))
+            return null;
+        return groundPredicatesMap.get(predicate).remove(argumentAssignments);
+    }
+
     public boolean checkIfGroundPredicateExists(Predicate predicate, List<Long> argumentAssignments) {
         if (!groundPredicatesMap.containsKey(predicate))
             throw new IllegalArgumentException("The provided predicate identifier does not match any of the " +

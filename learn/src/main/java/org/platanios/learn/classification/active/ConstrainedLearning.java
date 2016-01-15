@@ -1,5 +1,7 @@
 package org.platanios.learn.classification.active;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import org.platanios.learn.classification.Label;
 import org.platanios.learn.classification.constraint.Constraint;
 import org.platanios.learn.classification.constraint.ConstraintSet;
@@ -15,6 +17,8 @@ import java.util.function.Function;
  */
 public class ConstrainedLearning extends Learning {
     private final ConstraintSet constraintSet;
+
+    private final Table<DataInstance<Vector>, Label, InstanceToLabel> instancesTable = HashBasedTable.create();
 
     protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>> extends Learning.AbstractBuilder<T> {
         private Set<Constraint> constraintsSet = new HashSet<>();
@@ -77,19 +81,29 @@ public class ConstrainedLearning extends Learning {
     }
 
     @Override
-    public void labelInstance(InstanceToLabel instance, Boolean label) {
-        super.labelInstance(instance, label);
-        propagateInstanceConstraints(dataSet.get(instance.getInstance()));
+    public void addInstanceToLabel(InstanceToLabel instanceToLabel) {
+        super.addInstanceToLabel(instanceToLabel);
+        instancesTable.put(instanceToLabel.getInstance(), instanceToLabel.getLabel(), instanceToLabel);
     }
 
-    private int propagateInstanceConstraints(Map<Label, Boolean> instanceLabels) {
-        return constraintSet.propagate(instanceLabels);
+    @Override
+    public void labelInstance(InstanceToLabel instance, Boolean label) {
+        super.labelInstance(instance, label);
+        propagateInstanceConstraints(instance.getInstance(), dataSet.get(instance.getInstance()));
+    }
+
+    public void labelInstanceWithoutPropagation(DataInstance<Vector> instance, Label label, Boolean value) {
+        super.labelInstance(instancesTable.get(instance, label), value);
+    }
+
+    private int propagateInstanceConstraints(DataInstance<Vector> instance, Map<Label, Boolean> instanceLabels) {
+        return constraintSet.propagate(instanceLabels, this, instance);
     }
 
     private int propagateConstraints(Map<DataInstance<Vector>, Map<Label, Boolean>> dataSet) {
         int numberOfLabelsFixed = 0;
-        for (Map<Label, Boolean> instanceLabelsMap : dataSet.values())
-            numberOfLabelsFixed += propagateInstanceConstraints(instanceLabelsMap);
+        for (Map.Entry<DataInstance<Vector>, Map<Label, Boolean>> dataSetEntry : dataSet.entrySet())
+            numberOfLabelsFixed += propagateInstanceConstraints(dataSetEntry.getKey(), dataSetEntry.getValue());
         return numberOfLabelsFixed;
     }
 }
