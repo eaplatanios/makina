@@ -3,10 +3,8 @@ package org.platanios.learn.classification.reflection;
 import org.apache.commons.math3.random.RandomDataGenerator;
 import org.platanios.learn.math.matrix.MatrixUtilities;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 import static org.apache.commons.math3.special.Beta.logBeta;
 
@@ -16,10 +14,10 @@ import static org.apache.commons.math3.special.Beta.logBeta;
 public class CoupledErrorEstimationGraphicalModel {
     private final Random random = new Random();
     private final RandomDataGenerator randomDataGenerator = new RandomDataGenerator();
-    private final double alpha_p = 1;
-    private final double beta_p = 1;
-    private final double alpha_e = 1;
-    private final double beta_e = 1;
+    private final double labelsPriorAlpha = 1;
+    private final double labelsPriorBeta = 1;
+    private final double errorRatesPriorAlpha = 1;
+    private final double errorRatesPriorBeta = 1;
 
     private final double alpha;
     private final int numberOfIterations;
@@ -31,7 +29,7 @@ public class CoupledErrorEstimationGraphicalModel {
     private int[] numberOfDataSamples;
     private int[][][] labelsSamples;
     private int[][][] functionOutputsArray;
-    private int[][] zSamples;
+    private int[][] clusterAssignmentSamples;
     private final double[][] priorSamples;
     private final double[][][] errorRateSamples;
 
@@ -45,10 +43,8 @@ public class CoupledErrorEstimationGraphicalModel {
     private double[][] labelVariances;
     private double[][] errorRateMeans;
     private double[][] errorRateVariances;
-
-    public int numberOfClusters = 1;
     
-    private FastDirichletProcessPrior dp;
+    private DirichletProcessPrior dpPrior;
 
     public CoupledErrorEstimationGraphicalModel(List<boolean[][]> functionOutputs, int numberOfIterations, int thinning, double alpha) {
         this.alpha = alpha;
@@ -67,12 +63,12 @@ public class CoupledErrorEstimationGraphicalModel {
                     functionOutputsArray[j][p][i] = functionOutputs.get(p)[i][j] ? 1 : 0;
             }
         }
-        dp = new FastDirichletProcessPrior(alpha, numberOfDomains);
+        dpPrior = new DirichletProcessPrior(alpha, numberOfDomains);
         
         numberOfSamples = (numberOfIterations - burnInIterations) / thinning;
         priorSamples = new double[numberOfSamples][numberOfDomains];
         errorRateSamples = new double[numberOfSamples][numberOfDomains][numberOfFunctions];
-        zSamples = new int[numberOfSamples][numberOfDomains];
+        clusterAssignmentSamples = new int[numberOfSamples][numberOfDomains];
         labelsSamples = new int[numberOfSamples][numberOfDomains][];
 
         disagreements = new double[numberOfFunctions][numberOfDomains];
@@ -88,8 +84,8 @@ public class CoupledErrorEstimationGraphicalModel {
         for (int p = 0; p < numberOfDomains; p++) {
             labelMeans[p] = new double[numberOfDataSamples[p]];
             labelVariances[p] = new double[numberOfDataSamples[p]];
-            zSamples[0][p] = 0;
-            dp.addMemberToCluster(0);
+            clusterAssignmentSamples[0][p] = 0;
+            dpPrior.addMemberToCluster(0);
             priorSamples[0][p] = 0.5;
             labelsSamples[0][p] = new int[numberOfDataSamples[p]];
             for (int i = 0; i < numberOfDataSamples[p]; i++) {
@@ -112,7 +108,7 @@ public class CoupledErrorEstimationGraphicalModel {
                 sum_1[j][k] = 0;
                 sum_2[j][k] = 0;
                 for (int p = 0; p < numberOfDomains; p++) {
-                    if (zSamples[0][p] == k) {
+                    if (clusterAssignmentSamples[0][p] == k) {
                         sum_1[j][k] += numberOfDataSamples[p];
                         sum_2[j][k] += disagreements[j][p];
                     }
@@ -148,25 +144,12 @@ public class CoupledErrorEstimationGraphicalModel {
             sampleZ(iterationNumber);
             sampleLabels(iterationNumber);
         }
-        Set<Integer> uniqueClusters = new HashSet<>();
-        for (int p = 0; p < numberOfDomains; p++)
-            uniqueClusters.add(zSamples[zSamples.length - 1][p]);
-        numberOfClusters = uniqueClusters.size();
         // Aggregate values for means and variances computation
         for (int sampleNumber = 0; sampleNumber < numberOfSamples; sampleNumber++) {
             for (int p = 0; p < numberOfDomains; p++) {
-//                int numberOfPhiBelowChance = 0;
-//                for (int j = 0; j < numberOfFunctions; j++)
-//                    if (errorRateSamples[sampleNumber][zSamples[sampleNumber][p]][j] < 0.5)
-//                        numberOfPhiBelowChance++;
-//                if (numberOfPhiBelowChance < numberOfFunctions / 2.0) {
-//                    priorSamples[sampleNumber][p] = 1 - priorSamples[sampleNumber][p];
-//                    for (int j = 0; j < numberOfFunctions; j++)
-//                        errorRateSamples[sampleNumber][zSamples[sampleNumber][p]][j] = 1 - errorRateSamples[sampleNumber][zSamples[sampleNumber][p]][j];
-//                }
                 priorMeans[p] += priorSamples[sampleNumber][p];
                 for (int j = 0; j < numberOfFunctions; j++)
-                    errorRateMeans[p][j] += errorRateSamples[sampleNumber][zSamples[sampleNumber][p]][j];
+                    errorRateMeans[p][j] += errorRateSamples[sampleNumber][clusterAssignmentSamples[sampleNumber][p]][j];
                 for (int i = 0; i < numberOfDataSamples[p]; i++)
                     labelMeans[p][i] += labelsSamples[sampleNumber][p][i];
             }
@@ -182,7 +165,7 @@ public class CoupledErrorEstimationGraphicalModel {
                 double temp = priorSamples[sampleNumber][p] - priorMeans[p];
                 priorVariances[p] += temp * temp;
                 for (int j = 0; j < numberOfFunctions; j++) {
-                    temp = errorRateSamples[sampleNumber][zSamples[sampleNumber][p]][j] - errorRateMeans[p][j];
+                    temp = errorRateSamples[sampleNumber][clusterAssignmentSamples[sampleNumber][p]][j] - errorRateMeans[p][j];
                     errorRateVariances[p][j] += temp * temp;
                 }
                 for (int i = 0; i < numberOfDataSamples[p]; i++) {
@@ -203,7 +186,7 @@ public class CoupledErrorEstimationGraphicalModel {
             int labelsCount = 0;
             for (int i = 0; i < numberOfDataSamples[p]; i++)
                 labelsCount += labelsSamples[iterationNumber][p][i];
-            priorSamples[iterationNumber][p] = randomDataGenerator.nextBeta(alpha_p + labelsCount, beta_p + numberOfDataSamples[p] - labelsCount);
+            priorSamples[iterationNumber][p] = randomDataGenerator.nextBeta(labelsPriorAlpha + labelsCount, labelsPriorBeta + numberOfDataSamples[p] - labelsCount);
         }
     }
 
@@ -212,7 +195,7 @@ public class CoupledErrorEstimationGraphicalModel {
             int labelsCount = 0;
             for (int i = 0; i < numberOfDataSamples[p]; i++)
                 labelsCount += labelsSamples[iterationNumber][p][i];
-            priorSamples[iterationNumber + 1][p] = randomDataGenerator.nextBeta(alpha_p + labelsCount, beta_p + numberOfDataSamples[p] - labelsCount);
+            priorSamples[iterationNumber + 1][p] = randomDataGenerator.nextBeta(labelsPriorAlpha + labelsCount, labelsPriorBeta + numberOfDataSamples[p] - labelsCount);
         }
     }
 
@@ -223,14 +206,14 @@ public class CoupledErrorEstimationGraphicalModel {
                 int disagreementCount = 0;
                 int zCount = 0;
                 for (int k = 0; k < numberOfDomains; k++) {
-                    if (zSamples[iterationNumber][k] == p) {
+                    if (clusterAssignmentSamples[iterationNumber][k] == p) {
                         for (int i = 0; i < numberOfDataSamples[k]; i++)
                             if (functionOutputsArray[j][k][i] != labelsSamples[iterationNumber][k][i])
                                 disagreementCount++;
                         zCount += numberOfDataSamples[k];
                     }
                 }
-                errorRateSamples[iterationNumber][p][j] = randomDataGenerator.nextBeta(alpha_e + disagreementCount, beta_e + zCount - disagreementCount);
+                errorRateSamples[iterationNumber][p][j] = randomDataGenerator.nextBeta(errorRatesPriorAlpha + disagreementCount, errorRatesPriorBeta + zCount - disagreementCount);
                 if (errorRateSamples[iterationNumber][p][j] < 0.5)
                     numberOfErrorRatesBelowChance += 1;
             }
@@ -247,14 +230,14 @@ public class CoupledErrorEstimationGraphicalModel {
                 int disagreementCount = 0;
                 int zCount = 0;
                 for (int k = 0; k < numberOfDomains; k++) {
-                    if (zSamples[iterationNumber][k] == p) {
+                    if (clusterAssignmentSamples[iterationNumber][k] == p) {
                         for (int i = 0; i < numberOfDataSamples[k]; i++)
                             if (functionOutputsArray[j][k][i] != labelsSamples[iterationNumber][k][i])
                                 disagreementCount++;
                         zCount += numberOfDataSamples[k];
                     }
                 }
-                errorRateSamples[iterationNumber + 1][p][j] = randomDataGenerator.nextBeta(alpha_e + disagreementCount, beta_e + zCount - disagreementCount);
+                errorRateSamples[iterationNumber + 1][p][j] = randomDataGenerator.nextBeta(errorRatesPriorAlpha + disagreementCount, errorRatesPriorBeta + zCount - disagreementCount);
                 if (errorRateSamples[iterationNumber + 1][p][j] < 0.5)
                     numberOfErrorRatesBelowChance += 1;
             }
@@ -268,199 +251,199 @@ public class CoupledErrorEstimationGraphicalModel {
 
     private void sampleZAndBurnWithCollapsedErrorRates(int iterationNumber) {
         for (int p = 0; p < numberOfDomains; p++) {
-            dp.removeMemberFromCluster(zSamples[iterationNumber][p]);
-            int currentNumberOfClusters = dp.computeClustersDistribution();
+            dpPrior.removeMemberFromCluster(clusterAssignmentSamples[iterationNumber][p]);
+            int currentNumberOfClusters = dpPrior.computeClustersDistribution();
             double z_probabilities[] = new double[currentNumberOfClusters];
             for(int i = 0; i < currentNumberOfClusters; i++)
-                z_probabilities[i] = Math.log(dp.getClusterUnnormalizedProbability(i));
+                z_probabilities[i] = Math.log(dpPrior.getClusterUnnormalizedProbability(i));
             for (int j = 0; j < numberOfFunctions; j++) {
-                sum_1[j][zSamples[iterationNumber][p]] -= numberOfDataSamples[p];
-                sum_2[j][zSamples[iterationNumber][p]] -= disagreements[j][p];
+                sum_1[j][clusterAssignmentSamples[iterationNumber][p]] -= numberOfDataSamples[p];
+                sum_2[j][clusterAssignmentSamples[iterationNumber][p]] -= disagreements[j][p];
                 for(int i = 0; i < currentNumberOfClusters - 1; i++) {
-                    int clusterID = dp.getClusterID(i);
+                    int clusterID = dpPrior.getClusterID(i);
                     z_probabilities[i] +=
-                            logBeta(alpha_e + sum_2[j][clusterID] + disagreements[j][p],
-                                    beta_e + sum_1[j][clusterID] - sum_2[j][clusterID] + numberOfDataSamples[p] - disagreements[j][p])
-                                    - logBeta(alpha_e + sum_2[j][clusterID], beta_e + sum_1[j][clusterID] - sum_2[j][clusterID]);
+                            logBeta(errorRatesPriorAlpha + sum_2[j][clusterID] + disagreements[j][p],
+                                    errorRatesPriorBeta + sum_1[j][clusterID] - sum_2[j][clusterID] + numberOfDataSamples[p] - disagreements[j][p])
+                                    - logBeta(errorRatesPriorAlpha + sum_2[j][clusterID], errorRatesPriorBeta + sum_1[j][clusterID] - sum_2[j][clusterID]);
                 }
                 z_probabilities[currentNumberOfClusters - 1] +=
-                        logBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p])
-                                - logBeta(alpha_e, beta_e);
+                        logBeta(errorRatesPriorAlpha + disagreements[j][p], errorRatesPriorBeta + numberOfDataSamples[p] - disagreements[j][p])
+                                - logBeta(errorRatesPriorAlpha, errorRatesPriorBeta);
             }
             for (int i = 1; i < currentNumberOfClusters; i++)
                 z_probabilities[i] = MatrixUtilities.computeLogSumExp(z_probabilities[i - 1], z_probabilities[i]);
             double uniform = Math.log(random.nextDouble()) + z_probabilities[currentNumberOfClusters - 1];
-            int newClusterID = dp.getClusterID(currentNumberOfClusters - 1);
-            zSamples[iterationNumber][p] = newClusterID;
+            int newClusterID = dpPrior.getClusterID(currentNumberOfClusters - 1);
+            clusterAssignmentSamples[iterationNumber][p] = newClusterID;
             for(int i = 0; i < currentNumberOfClusters - 1; i++)  {
                 if (z_probabilities[i] > uniform) {
-                    int clusterID = dp.getClusterID(i);
-                    zSamples[iterationNumber][p] = clusterID;
+                    int clusterID = dpPrior.getClusterID(i);
+                    clusterAssignmentSamples[iterationNumber][p] = clusterID;
                     for (int j = 0; j < numberOfFunctions; j++) {
                         sum_1[j][clusterID] += numberOfDataSamples[p];
                         sum_2[j][clusterID] += disagreements[j][p];
                     }
-                    dp.addMemberToCluster(clusterID);
+                    dpPrior.addMemberToCluster(clusterID);
                     break;
                 }
             }
-            if (zSamples[iterationNumber][p] == newClusterID) {
+            if (clusterAssignmentSamples[iterationNumber][p] == newClusterID) {
                 for (int j = 0; j < numberOfFunctions; j++) {
                     sum_1[j][newClusterID] += numberOfDataSamples[p];
                     sum_2[j][newClusterID] += disagreements[j][p];
                 }
-                dp.addMemberToCluster(newClusterID);
+                dpPrior.addMemberToCluster(newClusterID);
             }
         }
     }
 
     private void sampleZWithCollapsedErrorRates(int iterationNumber) {
         for (int p = 0; p < numberOfDomains; p++) {
-            dp.removeMemberFromCluster(zSamples[iterationNumber][p]);
-            int currentNumberOfClusters = dp.computeClustersDistribution();
+            dpPrior.removeMemberFromCluster(clusterAssignmentSamples[iterationNumber][p]);
+            int currentNumberOfClusters = dpPrior.computeClustersDistribution();
             double z_probabilities[] = new double[currentNumberOfClusters];
             for(int i = 0; i < currentNumberOfClusters; i++)
-                z_probabilities[i] = Math.log(dp.getClusterUnnormalizedProbability(i));
+                z_probabilities[i] = Math.log(dpPrior.getClusterUnnormalizedProbability(i));
             for (int j = 0; j < numberOfFunctions; j++) {
-                sum_1[j][zSamples[iterationNumber][p]] -= numberOfDataSamples[p];
-                sum_2[j][zSamples[iterationNumber][p]] -= disagreements[j][p];
+                sum_1[j][clusterAssignmentSamples[iterationNumber][p]] -= numberOfDataSamples[p];
+                sum_2[j][clusterAssignmentSamples[iterationNumber][p]] -= disagreements[j][p];
                 for(int i = 0; i < currentNumberOfClusters - 1; i++) {
-                    int clusterID = dp.getClusterID(i);
+                    int clusterID = dpPrior.getClusterID(i);
                     z_probabilities[i] +=
-                            logBeta(alpha_e + sum_2[j][clusterID] + disagreements[j][p],
-                                    beta_e + sum_1[j][clusterID] - sum_2[j][clusterID] + numberOfDataSamples[p] - disagreements[j][p])
-                                    - logBeta(alpha_e + sum_2[j][clusterID], beta_e + sum_1[j][clusterID] - sum_2[j][clusterID]);
+                            logBeta(errorRatesPriorAlpha + sum_2[j][clusterID] + disagreements[j][p],
+                                    errorRatesPriorBeta + sum_1[j][clusterID] - sum_2[j][clusterID] + numberOfDataSamples[p] - disagreements[j][p])
+                                    - logBeta(errorRatesPriorAlpha + sum_2[j][clusterID], errorRatesPriorBeta + sum_1[j][clusterID] - sum_2[j][clusterID]);
                 }
                 z_probabilities[currentNumberOfClusters - 1] +=
-                        logBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p])
-                                - logBeta(alpha_e, beta_e);
+                        logBeta(errorRatesPriorAlpha + disagreements[j][p], errorRatesPriorBeta + numberOfDataSamples[p] - disagreements[j][p])
+                                - logBeta(errorRatesPriorAlpha, errorRatesPriorBeta);
             }
             for (int i = 1; i < currentNumberOfClusters; i++)
                 z_probabilities[i] = MatrixUtilities.computeLogSumExp(z_probabilities[i - 1], z_probabilities[i]);
             double uniform = Math.log(random.nextDouble()) + z_probabilities[currentNumberOfClusters - 1];
-            int newClusterID = dp.getClusterID(currentNumberOfClusters - 1);
-            zSamples[iterationNumber + 1][p] = newClusterID;
+            int newClusterID = dpPrior.getClusterID(currentNumberOfClusters - 1);
+            clusterAssignmentSamples[iterationNumber + 1][p] = newClusterID;
             for(int i = 0; i < currentNumberOfClusters - 1; i++)  {
                 if (z_probabilities[i] > uniform) {
-                    int clusterID = dp.getClusterID(i);
-                    zSamples[iterationNumber + 1][p] = clusterID;
+                    int clusterID = dpPrior.getClusterID(i);
+                    clusterAssignmentSamples[iterationNumber + 1][p] = clusterID;
                     for (int j = 0; j < numberOfFunctions; j++) {
                         sum_1[j][clusterID] += numberOfDataSamples[p];
                         sum_2[j][clusterID] += disagreements[j][p];
                     }
-                    dp.addMemberToCluster(clusterID);
+                    dpPrior.addMemberToCluster(clusterID);
                     break;
                 }
             }
-            if (zSamples[iterationNumber + 1][p] == newClusterID) {
+            if (clusterAssignmentSamples[iterationNumber + 1][p] == newClusterID) {
                 for (int j = 0; j < numberOfFunctions; j++) {
                     sum_1[j][newClusterID] += numberOfDataSamples[p];
                     sum_2[j][newClusterID] += disagreements[j][p];
                 }
-                dp.addMemberToCluster(newClusterID);
+                dpPrior.addMemberToCluster(newClusterID);
             }
         }
     }
 
     private void sampleZAndBurn(int iterationNumber) {
         for (int p = 0; p < numberOfDomains; p++) {
-            dp.removeMemberFromCluster(zSamples[iterationNumber][p]);
-            int currentNumberOfClusters = dp.computeClustersDistribution();
+            dpPrior.removeMemberFromCluster(clusterAssignmentSamples[iterationNumber][p]);
+            int currentNumberOfClusters = dpPrior.computeClustersDistribution();
             double z_probabilities[] = new double[currentNumberOfClusters];
             for(int i = 0; i < currentNumberOfClusters; i++)
-                z_probabilities[i] = Math.log(dp.getClusterUnnormalizedProbability(i));
+                z_probabilities[i] = Math.log(dpPrior.getClusterUnnormalizedProbability(i));
             for (int j = 0; j < numberOfFunctions; j++) {
                 disagreements[j][p] = 0;
                 for (int i = 0; i < numberOfDataSamples[p]; i++)
                     if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
                         disagreements[j][p]++;
                 for(int i = 0; i < currentNumberOfClusters - 1; i++)  {
-                    int clusterID = dp.getClusterID(i);
+                    int clusterID = dpPrior.getClusterID(i);
                     z_probabilities[i] += disagreements[j][p] * Math.log(errorRateSamples[iterationNumber][clusterID][j]);
                     z_probabilities[i] += (numberOfDataSamples[p] - disagreements[j][p])
                             * Math.log(1 - errorRateSamples[iterationNumber][clusterID][j]);
                 }
                 z_probabilities[currentNumberOfClusters - 1] +=
-                        logBeta(alpha_e + disagreements[j][p],
-                                beta_e + numberOfDataSamples[p] - disagreements[j][p])
-                                - logBeta(alpha_e, beta_e);
+                        logBeta(errorRatesPriorAlpha + disagreements[j][p],
+                                errorRatesPriorBeta + numberOfDataSamples[p] - disagreements[j][p])
+                                - logBeta(errorRatesPriorAlpha, errorRatesPriorBeta);
             }
             for (int i = 1; i < currentNumberOfClusters; i++)
                 z_probabilities[i] = MatrixUtilities.computeLogSumExp(z_probabilities[i - 1], z_probabilities[i]);
             double uniform = Math.log(random.nextDouble()) + z_probabilities[currentNumberOfClusters - 1];
-            int newClusterID = dp.getClusterID(currentNumberOfClusters - 1);
-            zSamples[iterationNumber][p] = newClusterID;
+            int newClusterID = dpPrior.getClusterID(currentNumberOfClusters - 1);
+            clusterAssignmentSamples[iterationNumber][p] = newClusterID;
             for(int i = 0; i < currentNumberOfClusters - 1; i++)  {
-                if(z_probabilities[i] > uniform){
-                    int clusterID = dp.getClusterID(i);
-                    zSamples[iterationNumber][p] = clusterID;
-                    dp.addMemberToCluster(clusterID);
+                if(z_probabilities[i] > uniform) {
+                    int clusterID = dpPrior.getClusterID(i);
+                    clusterAssignmentSamples[iterationNumber][p] = clusterID;
+                    dpPrior.addMemberToCluster(clusterID);
                     break;
                 }
             }
-            if (zSamples[iterationNumber][p] == newClusterID) {
-                dp.addMemberToCluster(newClusterID);
+            if (clusterAssignmentSamples[iterationNumber][p] == newClusterID) {
+                dpPrior.addMemberToCluster(newClusterID);
 //                int numberOfErrorRatesBelowChance = 0;
 //                for (int j = 0; j < numberOfFunctions; j++) {
-//                    errorRateSamples[iterationNumber][dp.clustersDistribution[totalMembersCount - 1].topic][j] = randomDataGenerator.nextBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]);
-//                    if (errorRateSamples[iterationNumber][dp.clustersDistribution[totalMembersCount - 1].topic][j] < 0.5)
+//                    errorRateSamples[iterationNumber][dpPrior.clustersDistribution[totalMembersCount - 1].topic][j] = randomDataGenerator.nextBeta(errorRatesPriorAlpha + disagreements[j][p], errorRatesPriorBeta + numberOfDataSamples[p] - disagreements[j][p]);
+//                    if (errorRateSamples[iterationNumber][dpPrior.clustersDistribution[totalMembersCount - 1].topic][j] < 0.5)
 //                        numberOfErrorRatesBelowChance += 1;
 //                }
 //                if (numberOfErrorRatesBelowChance < numberOfFunctions / 2.0)
 //                    for (int j = 0; j < numberOfFunctions; j++)
-//                        errorRateSamples[iterationNumber][dp.clustersDistribution[totalMembersCount - 1].topic][j] = 1 - errorRateSamples[iterationNumber][dp.clustersDistribution[totalMembersCount - 1].topic][j];
+//                        errorRateSamples[iterationNumber][dpPrior.clustersDistribution[totalMembersCount - 1].topic][j] = 1 - errorRateSamples[iterationNumber][dpPrior.clustersDistribution[totalMembersCount - 1].topic][j];
             }
         }
     }
 
     private void sampleZ(int iterationNumber) {
         for (int p = 0; p < numberOfDomains; p++) {
-            dp.removeMemberFromCluster(zSamples[iterationNumber][p]);
-            int currentNumberOfClusters = dp.computeClustersDistribution();
+            dpPrior.removeMemberFromCluster(clusterAssignmentSamples[iterationNumber][p]);
+            int currentNumberOfClusters = dpPrior.computeClustersDistribution();
             double z_probabilities[] = new double[currentNumberOfClusters];
             for(int i = 0; i < currentNumberOfClusters; i++)
-                z_probabilities[i] = Math.log(dp.getClusterUnnormalizedProbability(i));
+                z_probabilities[i] = Math.log(dpPrior.getClusterUnnormalizedProbability(i));
             for (int j = 0; j < numberOfFunctions; j++) {
                 disagreements[j][p] = 0;
                 for (int i = 0; i < numberOfDataSamples[p]; i++)
                     if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i])
                         disagreements[j][p]++;
                 for(int i=0;i<currentNumberOfClusters - 1;i++) {
-                    int clusterID = dp.getClusterID(i);
+                    int clusterID = dpPrior.getClusterID(i);
                     z_probabilities[i] += disagreements[j][p] * Math.log(errorRateSamples[iterationNumber + 1][clusterID][j]);
                     z_probabilities[i] += (numberOfDataSamples[p] - disagreements[j][p])
                             * Math.log(1 - errorRateSamples[iterationNumber + 1][clusterID][j]);
                 }
-                z_probabilities[currentNumberOfClusters - 1] += logBeta(alpha_e + disagreements[j][p],
-                                                          beta_e + numberOfDataSamples[p] - disagreements[j][p])
-                        - logBeta(alpha_e, beta_e);
+                z_probabilities[currentNumberOfClusters - 1] += logBeta(errorRatesPriorAlpha + disagreements[j][p],
+                                                                        errorRatesPriorBeta + numberOfDataSamples[p] - disagreements[j][p])
+                        - logBeta(errorRatesPriorAlpha, errorRatesPriorBeta);
             }
             for(int i=1;i<currentNumberOfClusters;i++){
                 z_probabilities[i] = MatrixUtilities.computeLogSumExp(z_probabilities[i-1],z_probabilities[i]);
             }
 
             double uniform = Math.log(random.nextDouble()) + z_probabilities[currentNumberOfClusters - 1];
-            int newClusterID = dp.getClusterID(currentNumberOfClusters - 1);
-            zSamples[iterationNumber + 1][p] = newClusterID;
+            int newClusterID = dpPrior.getClusterID(currentNumberOfClusters - 1);
+            clusterAssignmentSamples[iterationNumber + 1][p] = newClusterID;
             for (int i = 0; i < currentNumberOfClusters - 1; i++) {
                 if (z_probabilities[i] > uniform) {
-                    int clusterID = dp.getClusterID(i);
-                    zSamples[iterationNumber + 1][p] = clusterID;
-                    dp.addMemberToCluster(clusterID);
+                    int clusterID = dpPrior.getClusterID(i);
+                    clusterAssignmentSamples[iterationNumber + 1][p] = clusterID;
+                    dpPrior.addMemberToCluster(clusterID);
                     break;
                 }
             }
-            if (zSamples[iterationNumber + 1][p] == newClusterID) {
-                dp.addMemberToCluster(newClusterID);
+            if (clusterAssignmentSamples[iterationNumber + 1][p] == newClusterID) {
+                dpPrior.addMemberToCluster(newClusterID);
 //                int numberOfErrorRatesBelowChance = 0;
 //                for (int j = 0; j < numberOfFunctions; j++) {
-//                    errorRateSamples[iterationNumber + 1][dp.clustersDistribution[totalMembersCount - 1].topic][j] = randomDataGenerator.nextBeta(alpha_e + disagreements[j][p], beta_e + numberOfDataSamples[p] - disagreements[j][p]);
-//                    if (errorRateSamples[iterationNumber + 1][dp.clustersDistribution[totalMembersCount - 1].topic][j] < 0.5)
+//                    errorRateSamples[iterationNumber + 1][dpPrior.clustersDistribution[totalMembersCount - 1].topic][j] = randomDataGenerator.nextBeta(errorRatesPriorAlpha + disagreements[j][p], errorRatesPriorBeta + numberOfDataSamples[p] - disagreements[j][p]);
+//                    if (errorRateSamples[iterationNumber + 1][dpPrior.clustersDistribution[totalMembersCount - 1].topic][j] < 0.5)
 //                        numberOfErrorRatesBelowChance += 1;
 //                }
 //                if (numberOfErrorRatesBelowChance < numberOfFunctions / 2.0)
 //                    for (int j = 0; j < numberOfFunctions; j++)
-//                        errorRateSamples[iterationNumber + 1][dp.clustersDistribution[totalMembersCount - 1].topic][j] = 1 - errorRateSamples[iterationNumber + 1][dp.clustersDistribution[totalMembersCount - 1].topic][j];
+//                        errorRateSamples[iterationNumber + 1][dpPrior.clustersDistribution[totalMembersCount - 1].topic][j] = 1 - errorRateSamples[iterationNumber + 1][dpPrior.clustersDistribution[totalMembersCount - 1].topic][j];
             }
         }
     }
@@ -468,15 +451,15 @@ public class CoupledErrorEstimationGraphicalModel {
     private void sampleLabelsAndBurnWithCollapsedErrorRates(int iterationNumber) {
         for (int p = 0; p < numberOfDomains; p++) {
             for (int j = 0; j < numberOfFunctions; j++)
-                sum_2[j][zSamples[iterationNumber][p]] -= disagreements[j][p];
+                sum_2[j][clusterAssignmentSamples[iterationNumber][p]] -= disagreements[j][p];
             for (int i = 0; i < numberOfDataSamples[p]; i++) {
-                double a1 = alpha_e;
-                double a0 = beta_e;
+                double a1 = errorRatesPriorAlpha;
+                double a0 = errorRatesPriorBeta;
                 double sum1 = 0;
                 for (int j = 0; j < numberOfFunctions; j++) {
                     if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i]) {
-                        a1 += --disagreements[j][p] + sum_2[j][zSamples[iterationNumber][p]];
-                        a0 += sum_1[j][zSamples[iterationNumber][p]] - sum_2[j][zSamples[iterationNumber][p]] - disagreements[j][p];
+                        a1 += --disagreements[j][p] + sum_2[j][clusterAssignmentSamples[iterationNumber][p]];
+                        a0 += sum_1[j][clusterAssignmentSamples[iterationNumber][p]] - sum_2[j][clusterAssignmentSamples[iterationNumber][p]] - disagreements[j][p];
                     }
                     if (functionOutputsArray[j][p][i] != 1)
                         sum1++;
@@ -497,7 +480,7 @@ public class CoupledErrorEstimationGraphicalModel {
                         disagreements[j][p]++;
             }
             for (int j = 0; j < numberOfFunctions; j++)
-                sum_2[j][zSamples[iterationNumber][p]] += disagreements[j][p];
+                sum_2[j][clusterAssignmentSamples[iterationNumber][p]] += disagreements[j][p];
         }
     }
 
@@ -505,15 +488,15 @@ public class CoupledErrorEstimationGraphicalModel {
         for (int p = 0; p < numberOfDomains; p++) {
             labelsSamples[iterationNumber + 1][p] = new int[numberOfDataSamples[p]];
             for (int j = 0; j < numberOfFunctions; j++)
-                sum_2[j][zSamples[iterationNumber + 1][p]] -= disagreements[j][p];
+                sum_2[j][clusterAssignmentSamples[iterationNumber + 1][p]] -= disagreements[j][p];
             for (int i = 0; i < numberOfDataSamples[p]; i++) {
-                double a1 = alpha_e;
-                double a0 = beta_e;
+                double a1 = errorRatesPriorAlpha;
+                double a0 = errorRatesPriorBeta;
                 double sum1 = 0;
                 for (int j = 0; j < numberOfFunctions; j++) {
                     if (functionOutputsArray[j][p][i] != labelsSamples[iterationNumber][p][i]) {
-                        a1 += --disagreements[j][p] + sum_2[j][zSamples[iterationNumber + 1][p]];
-                        a0 += sum_1[j][zSamples[iterationNumber + 1][p]] - sum_2[j][zSamples[iterationNumber + 1][p]] - disagreements[j][p];
+                        a1 += --disagreements[j][p] + sum_2[j][clusterAssignmentSamples[iterationNumber + 1][p]];
+                        a0 += sum_1[j][clusterAssignmentSamples[iterationNumber + 1][p]] - sum_2[j][clusterAssignmentSamples[iterationNumber + 1][p]] - disagreements[j][p];
                     }
                     if (functionOutputsArray[j][p][i] != 1)
                         sum1++;
@@ -534,7 +517,7 @@ public class CoupledErrorEstimationGraphicalModel {
                         disagreements[j][p]++;
             }
             for (int j = 0; j < numberOfFunctions; j++)
-                sum_2[j][zSamples[iterationNumber + 1][p]] += disagreements[j][p];
+                sum_2[j][clusterAssignmentSamples[iterationNumber + 1][p]] += disagreements[j][p];
         }
     }
 
@@ -542,15 +525,15 @@ public class CoupledErrorEstimationGraphicalModel {
         for (int p = 0; p < numberOfDomains; p++) {
             labelsSamples[iterationNumber][p] = new int[numberOfDataSamples[p]];
             for (int i = 0; i < numberOfDataSamples[p]; i++) {
-                double p0 = 1 - priorSamples[iterationNumber][p];
+                double p0 = 1 - priorSamples[iterationNumber][p]; // TODO: Compute this in log-space
                 double p1 = priorSamples[iterationNumber][p];
                 for (int j = 0; j < numberOfFunctions; j++) {
                     if (functionOutputsArray[j][p][i] == 0) {
-                        p0 *= (1 - errorRateSamples[iterationNumber][zSamples[iterationNumber][p]][j]);
-                        p1 *= errorRateSamples[iterationNumber][zSamples[iterationNumber][p]][j];
+                        p0 *= (1 - errorRateSamples[iterationNumber][clusterAssignmentSamples[iterationNumber][p]][j]);
+                        p1 *= errorRateSamples[iterationNumber][clusterAssignmentSamples[iterationNumber][p]][j];
                     } else {
-                        p0 *= errorRateSamples[iterationNumber][zSamples[iterationNumber][p]][j];
-                        p1 *= (1 - errorRateSamples[iterationNumber][zSamples[iterationNumber][p]][j]);
+                        p0 *= errorRateSamples[iterationNumber][clusterAssignmentSamples[iterationNumber][p]][j];
+                        p1 *= (1 - errorRateSamples[iterationNumber][clusterAssignmentSamples[iterationNumber][p]][j]);
                     }
                 }
                 labelsSamples[iterationNumber][p][i] = randomDataGenerator.nextBinomial(1, p1 / (p0 + p1));
@@ -562,15 +545,15 @@ public class CoupledErrorEstimationGraphicalModel {
         for (int p = 0; p < numberOfDomains; p++) {
             labelsSamples[iterationNumber + 1][p] = new int[numberOfDataSamples[p]];
             for (int i = 0; i < numberOfDataSamples[p]; i++) {
-                double p0 = 1 - priorSamples[iterationNumber + 1][p];
+                double p0 = 1 - priorSamples[iterationNumber + 1][p]; // TODO: Compute this in log-space
                 double p1 = priorSamples[iterationNumber + 1][p];
                 for (int j = 0; j < numberOfFunctions; j++) {
                     if (functionOutputsArray[j][p][i] == 0) {
-                        p0 *= (1 - errorRateSamples[iterationNumber + 1][zSamples[iterationNumber + 1][p]][j]);
-                        p1 *= errorRateSamples[iterationNumber + 1][zSamples[iterationNumber + 1][p]][j];
+                        p0 *= (1 - errorRateSamples[iterationNumber + 1][clusterAssignmentSamples[iterationNumber + 1][p]][j]);
+                        p1 *= errorRateSamples[iterationNumber + 1][clusterAssignmentSamples[iterationNumber + 1][p]][j];
                     } else {
-                        p0 *= errorRateSamples[iterationNumber + 1][zSamples[iterationNumber + 1][p]][j];
-                        p1 *= (1 - errorRateSamples[iterationNumber + 1][zSamples[iterationNumber + 1][p]][j]);
+                        p0 *= errorRateSamples[iterationNumber + 1][clusterAssignmentSamples[iterationNumber + 1][p]][j];
+                        p1 *= (1 - errorRateSamples[iterationNumber + 1][clusterAssignmentSamples[iterationNumber + 1][p]][j]);
                     }
                 }
                 labelsSamples[iterationNumber + 1][p][i] = randomDataGenerator.nextBinomial(1, p1 / (p0 + p1));
@@ -589,15 +572,15 @@ public class CoupledErrorEstimationGraphicalModel {
                     functionOutputsArray[j][p][i] = functionOutputs.get(p)[i][j] ? 1 : 0;
             }
         }
-        dp = new FastDirichletProcessPrior(alpha, numberOfDomains);
-        zSamples = new int[numberOfSamples][numberOfDomains];
+        dpPrior = new DirichletProcessPrior(alpha, numberOfDomains);
+        clusterAssignmentSamples = new int[numberOfSamples][numberOfDomains];
         labelsSamples = new int[numberOfSamples][numberOfDomains][];
         disagreements = new double[numberOfFunctions][numberOfDomains];
         sum_1 = new double[numberOfFunctions][numberOfDomains];
         sum_2 = new double[numberOfFunctions][numberOfDomains];
         for (int p = 0; p < numberOfDomains; p++) {
-            zSamples[0][p] = 0;
-            dp.addMemberToCluster(0);
+            clusterAssignmentSamples[0][p] = 0;
+            dpPrior.addMemberToCluster(0);
             labelsSamples[0][p] = new int[numberOfDataSamples[p]];
             for (int i = 0; i < numberOfDataSamples[p]; i++) {
                 int sum = 0;
@@ -617,7 +600,7 @@ public class CoupledErrorEstimationGraphicalModel {
                 sum_1[j][k] = 0;
                 sum_2[j][k] = 0;
                 for (int p = 0; p < numberOfDomains; p++) {
-                    if (zSamples[0][p] == k) {
+                    if (clusterAssignmentSamples[0][p] == k) {
                         sum_1[j][k] += numberOfDataSamples[p];
                         sum_2[j][k] += disagreements[j][p];
                     }
@@ -651,19 +634,19 @@ public class CoupledErrorEstimationGraphicalModel {
                     double p1 = priorSamples[0][p];
                     for (int j = 0; j < numberOfFunctions; j++) {
                         if (functionOutputsArray[j][p][i] == 0) {
-                            p0 *= (1 - errorRateSamples[0][zSamples[0][p]][j]);
-                            p1 *= errorRateSamples[0][zSamples[0][p]][j];
+                            p0 *= (1 - errorRateSamples[0][clusterAssignmentSamples[0][p]][j]);
+                            p1 *= errorRateSamples[0][clusterAssignmentSamples[0][p]][j];
                             if (labelsSamples[0][p][i] == 1)
-                                logLikelihood += Math.log(errorRateSamples[0][zSamples[0][p]][j]);
+                                logLikelihood += Math.log(errorRateSamples[0][clusterAssignmentSamples[0][p]][j]);
                             else
-                                logLikelihood += Math.log(1 - errorRateSamples[0][zSamples[0][p]][j]);
+                                logLikelihood += Math.log(1 - errorRateSamples[0][clusterAssignmentSamples[0][p]][j]);
                         } else {
-                            p0 *= errorRateSamples[0][zSamples[0][p]][j];
-                            p1 *= (1 - errorRateSamples[0][zSamples[0][p]][j]);
+                            p0 *= errorRateSamples[0][clusterAssignmentSamples[0][p]][j];
+                            p1 *= (1 - errorRateSamples[0][clusterAssignmentSamples[0][p]][j]);
                             if (labelsSamples[0][p][i] == 0)
-                                logLikelihood += Math.log(errorRateSamples[0][zSamples[0][p]][j]);
+                                logLikelihood += Math.log(errorRateSamples[0][clusterAssignmentSamples[0][p]][j]);
                             else
-                                logLikelihood += Math.log(1 - errorRateSamples[0][zSamples[0][p]][j]);
+                                logLikelihood += Math.log(1 - errorRateSamples[0][clusterAssignmentSamples[0][p]][j]);
                         }
                     }
                     if (labelsSamples[0][p][i] == 1)
