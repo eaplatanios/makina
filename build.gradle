@@ -30,6 +30,10 @@ subprojects {
     mainClassName = System.getProperty('mainClass')
     applicationDefaultJvmArgs = ['-Xmx20G']
 
+    test {
+        exclude 'org/platanios/**'
+    }
+
     run {
         if ( project.hasProperty('appArgs') ) {
             args Eval.me(appArgs)

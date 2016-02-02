@@ -120,7 +120,7 @@ public class ExhaustiveGroundingTest {
         ExhaustiveGrounding exhaustiveGrounding = new ExhaustiveGrounding(logicManager);
         exhaustiveGrounding.ground(disjunctionFormula);
 
-        Assert.assertEquals("knows(A, B)", disjunctionFormula.toString());
+        Assert.assertEquals("knows(A, B) | knows(B, C)", disjunctionFormula.toString());
     }
 
     @Test
@@ -163,6 +163,6 @@ public class ExhaustiveGroundingTest {
         ExhaustiveGrounding exhaustiveGrounding = new ExhaustiveGrounding(logicManager);
         exhaustiveGrounding.ground(disjunctionFormula);
 
-        Assert.assertEquals("knows(A, B)", disjunctionFormula.toString());
+        Assert.assertEquals("knows(A, B) | !knows(B, C)", disjunctionFormula.toString());
     }
 }
