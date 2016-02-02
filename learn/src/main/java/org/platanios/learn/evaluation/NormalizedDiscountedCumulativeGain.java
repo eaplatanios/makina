@@ -75,8 +75,8 @@ public class NormalizedDiscountedCumulativeGain<T extends Vector, S> extends Cur
                     * (points.get(k).getHorizontalAxisValue() - points.get(k - 1).getHorizontalAxisValue())
                     * (points.get(k).getVerticalAxisValue() + points.get(k - 1).getVerticalAxisValue());
         }
-        curves.add(new Curve(name, points));
-        areaUnderCurves.add(areaUnderCurve);
+        curves.put(name, new Curve(name, points));
+        areaUnderCurves.put(name, areaUnderCurve);
     }
 
     @Override

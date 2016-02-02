@@ -92,8 +92,8 @@ public class ReceiverOperatingCharacteristic<T extends Vector, S> extends CurveE
                     break;
             }
         }
-        curves.add(new Curve(name, points));
-        areaUnderCurves.add(areaUnderCurve);
+        curves.put(name, new Curve(name, points));
+        areaUnderCurves.put(name, areaUnderCurve);
     }
 
     @Override

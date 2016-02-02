@@ -7,13 +7,15 @@ import com.google.common.base.Objects;
  */
 public class EntropyScoringFunction extends ScoringFunction {
     private final boolean propagateConstraints;
+    private final boolean onlyConsiderLeafNodes;
 
     public EntropyScoringFunction() {
-        this(false);
+        this(false, false);
     }
 
-    public EntropyScoringFunction(boolean propagateConstraints) {
+    public EntropyScoringFunction(boolean propagateConstraints, boolean onlyConsiderLeafNodes) {
         this.propagateConstraints = propagateConstraints;
+        this.onlyConsiderLeafNodes = onlyConsiderLeafNodes;
     }
 
     @Override
@@ -34,6 +36,11 @@ public class EntropyScoringFunction extends ScoringFunction {
     }
 
     @Override
+    public boolean onlyConsiderLeafNodes() {
+        return onlyConsiderLeafNodes;
+    }
+
+    @Override
     public boolean equals(Object other) {
         if (this == other)
             return true;
@@ -42,19 +49,24 @@ public class EntropyScoringFunction extends ScoringFunction {
 
         EntropyScoringFunction that = (EntropyScoringFunction) other;
 
-        return Objects.equal(propagateConstraints, that.propagateConstraints);
+        return Objects.equal(propagateConstraints, that.propagateConstraints)
+                && Objects.equal(onlyConsiderLeafNodes, that.onlyConsiderLeafNodes);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(this.getClass(), propagateConstraints);
+        return Objects.hashCode(this.getClass(), propagateConstraints, onlyConsiderLeafNodes);
     }
 
     @Override
     public String toString() {
-        if (!propagateConstraints)
-            return "ENTROPY";
-        else
+        if (propagateConstraints && onlyConsiderLeafNodes)
+            return "ENTROPY-LEAF-CP";
+        else if (propagateConstraints)
             return "ENTROPY-CP";
+        else if (onlyConsiderLeafNodes)
+            return "ENTROPY-LEAF";
+        else
+            return "ENTROPY";
     }
 }

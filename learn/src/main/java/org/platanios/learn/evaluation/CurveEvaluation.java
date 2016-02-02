@@ -13,20 +13,25 @@ import org.platanios.learn.math.MathUtilities;
 import org.platanios.learn.math.matrix.Vector;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
 public abstract class CurveEvaluation<T extends Vector, S> {
     protected static final double epsilon = MathUtilities.computeMachineEpsilonDouble();
-    protected final List<Curve> curves = new ArrayList<>();
-    protected final List<Double> areaUnderCurves = new ArrayList<>();
+
+    protected final Map<String, Curve> curves = new HashMap<>();
+    protected final Map<String, Double> areaUnderCurves = new HashMap<>();
 
     protected CurveEvaluation() { }
 
     // TODO: It is maybe better to have a getList() method in the data set classes.
+    // TODO: Assumes that the labels of all predicted data instances are positive.
     public void addResult(String name,
                           DataSet<PredictedDataInstance<T, S>> predictions,
                           Function<PredictedDataInstance<T, S>, Boolean> groundTruth) {
@@ -44,18 +49,26 @@ public abstract class CurveEvaluation<T extends Vector, S> {
     protected abstract String getHorizontalAxisName();
 
     public List<Curve> getCurves() {
-        return curves;
+        return curves.values().stream().collect(Collectors.toList());
+    }
+
+    public Curve getCurve(String name) {
+        return curves.get(name);
     }
 
     public List<Double> getAreaUnderCurves() {
-        return areaUnderCurves;
+        return areaUnderCurves.values().stream().collect(Collectors.toList());
+    }
+
+    public Double getAreaUnderCurve(String name) {
+        return areaUnderCurves.get(name);
     }
 
     public void plotCurves() {
         Plot.setPlotTitle(getPlotTitle());
         Plot.setHorizontalAxisName(getHorizontalAxisName());
         Plot.setVerticalAxisName(getVerticalAxisName());
-        Plot.addCurves(curves, areaUnderCurves);
+        Plot.addCurves(getCurves(), getAreaUnderCurves());
         Application.launch(Plot.class);
     }
 

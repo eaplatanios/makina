@@ -50,6 +50,19 @@ public enum ClassifierType {
             return LogisticRegressionAdaGrad.read(inputStream, includeType);
         }
     },
+    LOGISTIC_REGRESSION_QUASI_NEWTON {
+        @Override
+        public Set<ClassifierType> getStorageCompatibleTypes() {
+            Set<ClassifierType> storageCompatibleTypesSet = new TreeSet<>();
+            storageCompatibleTypesSet.add(LOGISTIC_REGRESSION_QUASI_NEWTON);
+            return storageCompatibleTypesSet;
+        }
+
+        @Override
+        public Classifier read(InputStream inputStream, boolean includeType) throws IOException {
+            return LogisticRegressionQuasiNewton.read(inputStream, includeType);
+        }
+    },
     SUPPORT_VECTOR_MACHINE_PREDICTION {
         @Override
         public Set<ClassifierType> getStorageCompatibleTypes() {

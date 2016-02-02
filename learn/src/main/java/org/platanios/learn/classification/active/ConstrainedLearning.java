@@ -6,6 +6,7 @@ import org.platanios.learn.classification.Label;
 import org.platanios.learn.classification.constraint.Constraint;
 import org.platanios.learn.classification.constraint.ConstraintSet;
 import org.platanios.learn.classification.constraint.MutualExclusionConstraint;
+import org.platanios.learn.classification.constraint.SubsumptionConstraint;
 import org.platanios.learn.data.DataInstance;
 import org.platanios.learn.math.matrix.Vector;
 
@@ -16,6 +17,8 @@ import java.util.function.Function;
  * @author Emmanouil Antonios Platanios
  */
 public class ConstrainedLearning extends Learning {
+    private final Set<Label> leafLabels = new HashSet<>();
+
     private final ConstraintSet constraintSet;
 
     private final Table<DataInstance<Vector>, Label, InstanceToLabel> instancesTable = HashBasedTable.create();
@@ -80,9 +83,23 @@ public class ConstrainedLearning extends Learning {
         return constraintSet;
     }
 
+    public boolean containsInstanceToLabel(DataInstance<Vector> instance, Label label) {
+        return instancesTable.contains(instance, label);
+    }
+
+    public InstanceToLabel getInstanceToLabel(DataInstance<Vector> instance, Label label) {
+        return instancesTable.get(instance, label);
+    }
+
     @Override
     public void addInstanceToLabel(InstanceToLabel instanceToLabel) {
-        super.addInstanceToLabel(instanceToLabel);
+        if (!scoringFunction.onlyConsiderLeafNodes() || isLeafLabel(instanceToLabel.getLabel()))
+            instanceToLabel.setInformationGainHeuristicValue(
+                    scoringFunction.computeInformationGainHeuristicValue(this, instanceToLabel)
+            );
+        else
+            instanceToLabel.setInformationGainHeuristicValue(Double.NEGATIVE_INFINITY);
+        instancesToLabel.add(instanceToLabel);
         instancesTable.put(instanceToLabel.getInstance(), instanceToLabel.getLabel(), instanceToLabel);
     }
 
@@ -105,5 +122,16 @@ public class ConstrainedLearning extends Learning {
         for (Map.Entry<DataInstance<Vector>, Map<Label, Boolean>> dataSetEntry : dataSet.entrySet())
             numberOfLabelsFixed += propagateInstanceConstraints(dataSetEntry.getKey(), dataSetEntry.getValue());
         return numberOfLabelsFixed;
+    }
+
+    private boolean isLeafLabel(Label label) {
+        if (leafLabels.contains(label))
+            return true;
+        for (Constraint constraint : constraintSet.getConstraints())
+            if (constraint instanceof SubsumptionConstraint
+                    && ((SubsumptionConstraint) constraint).getParentLabel().equals(label))
+                return false;
+        leafLabels.add(label);
+        return true;
     }
 }

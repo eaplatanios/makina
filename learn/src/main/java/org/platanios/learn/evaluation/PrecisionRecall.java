@@ -32,8 +32,8 @@ public class PrecisionRecall<T extends Vector, S> extends CurveEvaluation<T, S> 
             List<CurvePoint> points = new ArrayList<>();
             points.add(new CurvePoint(0, 1));
             points.add(new CurvePoint(1, 1));
-            curves.add(new Curve(name, points));
-            areaUnderCurves.add(1.0);
+            curves.put(name, new Curve(name, points));
+            areaUnderCurves.put(name, 1.0);
             return;
         }
         Collections.sort(predictions,
@@ -104,8 +104,8 @@ public class PrecisionRecall<T extends Vector, S> extends CurveEvaluation<T, S> 
                     break;
             }
         }
-        curves.add(new Curve(name, points));
-        areaUnderCurves.add(areaUnderCurve);
+        curves.put(name, new Curve(name, points));
+        areaUnderCurves.put(name, areaUnderCurve);
     }
 
     private double computePrecision(int truePositivesNumber, int falseNegativesNumber) {

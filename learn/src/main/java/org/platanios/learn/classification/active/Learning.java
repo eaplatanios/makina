@@ -166,7 +166,8 @@ public class Learning {
         if (!dataSet.containsKey(instance.instance))
             dataSet.put(instance.instance, new HashMap<>());
         dataSet.get(instance.instance).put(instance.label, label);
-        instancesToLabel.remove(instance);
+        if (instancesToLabel.contains(instance))
+            instancesToLabel.remove(instance);
     }
 
     public void labelInstances(Map<InstanceToLabel, Boolean> instancesToLabel) {
@@ -184,6 +185,13 @@ public class Learning {
             this.instance = instance;
             this.label = label;
         }
+
+        public InstanceToLabel(DataInstance<Vector> instance, Label label, double informationGainHeuristicValue) {
+            this.instance = instance;
+            this.label = label;
+            this.informationGainHeuristicValue = informationGainHeuristicValue;
+        }
+
 
         public DataInstance<Vector> getInstance() {
             return instance;

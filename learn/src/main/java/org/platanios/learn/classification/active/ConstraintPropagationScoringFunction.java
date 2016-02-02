@@ -19,30 +19,38 @@ public class ConstraintPropagationScoringFunction extends ScoringFunction {
     private final SurpriseFunction surpriseFunction;
     private final boolean useMutualExclusionSpecialCase;
     private final boolean includeFixedVariableTermInTotalSurprise;
+    private final boolean onlyConsiderLeafNodes;
 
     public ConstraintPropagationScoringFunction() {
-        this(SurpriseFunction.NEGATIVE_LOGARITHM, false, true);
+        this(SurpriseFunction.NEGATIVE_LOGARITHM, false, true, false);
     }
 
     public ConstraintPropagationScoringFunction(SurpriseFunction surpriseFunction) {
-        this(surpriseFunction, false, true);
+        this(surpriseFunction, false, true, false);
     }
 
     public ConstraintPropagationScoringFunction(boolean useMutualExclusionSpecialCase) {
-        this(SurpriseFunction.NEGATIVE_LOGARITHM, useMutualExclusionSpecialCase, true);
+        this(SurpriseFunction.NEGATIVE_LOGARITHM, useMutualExclusionSpecialCase, true, false);
+    }
+
+    public ConstraintPropagationScoringFunction(boolean useMutualExclusionSpecialCase,
+                                                boolean onlyConsiderLeafNodes) {
+        this(SurpriseFunction.NEGATIVE_LOGARITHM, useMutualExclusionSpecialCase, true, onlyConsiderLeafNodes);
     }
 
     public ConstraintPropagationScoringFunction(SurpriseFunction surpriseFunction,
                                                 boolean includeFixedVariableTermInTotalSurprise) {
-        this(surpriseFunction, false, includeFixedVariableTermInTotalSurprise);
+        this(surpriseFunction, false, includeFixedVariableTermInTotalSurprise, false);
     }
 
-    private ConstraintPropagationScoringFunction(SurpriseFunction surpriseFunction,
-                                                 boolean useMutualExclusionSpecialCase,
-                                                 boolean includeFixedVariableTermInTotalSurprise) {
+    public ConstraintPropagationScoringFunction(SurpriseFunction surpriseFunction,
+                                                boolean useMutualExclusionSpecialCase,
+                                                boolean includeFixedVariableTermInTotalSurprise,
+                                                boolean onlyConsiderLeafNodes) {
         this.surpriseFunction = surpriseFunction;
         this.useMutualExclusionSpecialCase = useMutualExclusionSpecialCase;
         this.includeFixedVariableTermInTotalSurprise = includeFixedVariableTermInTotalSurprise;
+        this.onlyConsiderLeafNodes = onlyConsiderLeafNodes;
     }
 
     @Override
@@ -91,6 +99,11 @@ public class ConstraintPropagationScoringFunction extends ScoringFunction {
     }
 
     @Override
+    public boolean onlyConsiderLeafNodes() {
+        return onlyConsiderLeafNodes;
+    }
+
+    @Override
     public boolean equals(Object other) {
         if (this == other)
             return true;
@@ -101,7 +114,8 @@ public class ConstraintPropagationScoringFunction extends ScoringFunction {
 
         return Objects.equal(surpriseFunction, that.surpriseFunction)
                 && Objects.equal(useMutualExclusionSpecialCase, that.useMutualExclusionSpecialCase)
-                && Objects.equal(includeFixedVariableTermInTotalSurprise, that.includeFixedVariableTermInTotalSurprise);
+                && Objects.equal(includeFixedVariableTermInTotalSurprise, that.includeFixedVariableTermInTotalSurprise)
+                && Objects.equal(onlyConsiderLeafNodes, that.onlyConsiderLeafNodes);
     }
 
     @Override
@@ -109,26 +123,32 @@ public class ConstraintPropagationScoringFunction extends ScoringFunction {
         return Objects.hashCode(this.getClass(),
                                 surpriseFunction,
                                 useMutualExclusionSpecialCase,
-                                includeFixedVariableTermInTotalSurprise);
+                                includeFixedVariableTermInTotalSurprise,
+                                onlyConsiderLeafNodes);
     }
 
     @Override
     public String toString() {
-        StringBuilder stringBuilder = new StringBuilder("CP");
+        StringBuilder stringBuilder = new StringBuilder();
         if (!useMutualExclusionSpecialCase) {
             switch (surpriseFunction) {
                 case NEGATIVE_LOGARITHM:
-                    stringBuilder.append("-LOG");
+                    stringBuilder.append("LOG");
                     break;
                 case ONE_MINUS_PROBABILITY:
-                    stringBuilder.append("-PROB");
+                    stringBuilder.append("LINEAR");
                     break;
             }
             if (!includeFixedVariableTermInTotalSurprise)
-                return stringBuilder.append("-EXCL").toString();
-            return stringBuilder.toString();
+                stringBuilder.append("-EXCL");
+            if (onlyConsiderLeafNodes)
+                stringBuilder.append("-LEAF");
+            return stringBuilder.append("-CP").toString();
         } else {
-            return stringBuilder.append("-ME").toString();
+            stringBuilder.append("PROBABILITY");
+            if (onlyConsiderLeafNodes)
+                stringBuilder.append("-LEAF");
+            return stringBuilder.append("-CP").toString();
         }
     }
 }
