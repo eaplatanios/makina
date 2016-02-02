@@ -1,5 +1,7 @@
 package org.platanios.learn.math.statistics;
 
+import org.platanios.learn.math.matrix.Vector;
+
 import java.util.*;
 
 /**
@@ -13,6 +15,59 @@ public class StatisticsUtilities {
     // Suppress default constructor for noninstantiability
     private StatisticsUtilities() {
         throw new AssertionError();
+    }
+
+    public static double mean(double[] values) {
+        double mean = 0;
+        for (double value : values)
+            mean += value;
+        return mean / values.length;
+    }
+
+    public static double mean(List<Double> values) {
+        double mean = 0;
+        for (double value : values)
+            mean += value;
+        return mean / values.size();
+    }
+
+    public static double mean(Vector vector) {
+        return vector.sum() / vector.size();
+    }
+
+    public static double variance(double[] values) {
+        double mean = mean(values);
+        double variance = 0;
+        for (double value : values)
+            variance += Math.pow(value - mean, 2);
+        return variance / values.length;
+    }
+
+    public static double variance(List<Double> values) {
+        double mean = mean(values);
+        double variance = 0;
+        for (double value : values)
+            variance += Math.pow(value - mean, 2);
+        return variance / values.size();
+    }
+
+    public static double variance(Vector vector) {
+        double mean = mean(vector);
+        final double[] variance = { 0 };
+        vector.iterator().forEachRemaining(element -> variance[0] += Math.pow(element.value() - mean, 2));
+        return variance[0] / vector.size();
+    }
+
+    public static double standardDeviation(double[] values) {
+        return Math.sqrt(variance(values));
+    }
+
+    public static double standardDeviation(List<Double> values) {
+        return Math.sqrt(variance(values));
+    }
+
+    public static double standardDeviation(Vector vector) {
+        return Math.sqrt(variance(vector));
     }
 
     /**
