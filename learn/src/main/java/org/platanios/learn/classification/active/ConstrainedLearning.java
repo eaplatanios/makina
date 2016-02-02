@@ -6,11 +6,13 @@ import org.platanios.learn.classification.Label;
 import org.platanios.learn.classification.constraint.Constraint;
 import org.platanios.learn.classification.constraint.ConstraintSet;
 import org.platanios.learn.classification.constraint.MutualExclusionConstraint;
-import org.platanios.learn.classification.constraint.SubsumptionConstraint;
 import org.platanios.learn.data.DataInstance;
 import org.platanios.learn.math.matrix.Vector;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -93,12 +95,9 @@ public class ConstrainedLearning extends Learning {
 
     @Override
     public void addInstanceToLabel(InstanceToLabel instanceToLabel) {
-        if (!scoringFunction.onlyConsiderLeafNodes() || isLeafLabel(instanceToLabel.getLabel()))
-            instanceToLabel.setInformationGainHeuristicValue(
-                    scoringFunction.computeInformationGainHeuristicValue(this, instanceToLabel)
-            );
-        else
-            instanceToLabel.setInformationGainHeuristicValue(Double.NEGATIVE_INFINITY);
+        instanceToLabel.setInformationGainHeuristicValue(
+                scoringFunction.computeInformationGainHeuristicValue(this, instanceToLabel)
+        );
         instancesToLabel.add(instanceToLabel);
         instancesTable.put(instanceToLabel.getInstance(), instanceToLabel.getLabel(), instanceToLabel);
     }
@@ -122,16 +121,5 @@ public class ConstrainedLearning extends Learning {
         for (Map.Entry<DataInstance<Vector>, Map<Label, Boolean>> dataSetEntry : dataSet.entrySet())
             numberOfLabelsFixed += propagateInstanceConstraints(dataSetEntry.getKey(), dataSetEntry.getValue());
         return numberOfLabelsFixed;
-    }
-
-    private boolean isLeafLabel(Label label) {
-        if (leafLabels.contains(label))
-            return true;
-        for (Constraint constraint : constraintSet.getConstraints())
-            if (constraint instanceof SubsumptionConstraint
-                    && ((SubsumptionConstraint) constraint).getParentLabel().equals(label))
-                return false;
-        leafLabels.add(label);
-        return true;
     }
 }
