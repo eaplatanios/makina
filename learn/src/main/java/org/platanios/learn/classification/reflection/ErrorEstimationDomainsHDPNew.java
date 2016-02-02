@@ -34,7 +34,7 @@ public class ErrorEstimationDomainsHDPNew {
     double error_rate[]; // indexed by topic_id
 
     double alphae = 1;
-    double betae = 1;
+    double betae = 10;
 
     int li_cnt[][];    // indexed by domain_id, possitive/negative prediction
     int sum_li[];       // indexed by domain_id
@@ -629,7 +629,8 @@ public class ErrorEstimationDomainsHDPNew {
     public void sample_error_rate_uncollapsed() {
         int topics[] = hdp.get_topics();
         for (int topic_id : topics) {
-            error_rate[topic_id] = randomDataGenerator.nextBeta(alphae + err_cnt[topic_id][0], betae + err_cnt[topic_id][1]);
+//            error_rate[topic_id] = randomDataGenerator.nextBeta(alphae + err_cnt[topic_id][0], betae + err_cnt[topic_id][1]);
+            error_rate[topic_id] = (alphae + err_cnt[topic_id][0]) / (alphae + err_cnt[topic_id][0] + betae + err_cnt[topic_id][1]);
         }
     }
     

@@ -1,9 +1,9 @@
 package org.platanios.experiment.psl.parser;
 
 import org.junit.Test;
-import org.platanios.learn.logic.ProbabilisticSoftLogicProblem;
+import org.platanios.learn.logic.InMemoryLogicManager;
+import org.platanios.learn.logic.ProbabilisticSoftLogic;
 import org.platanios.experiment.psl.ProbabilisticSoftLogicReader;
-import org.platanios.learn.logic.DatabaseLogicManager;
 import org.platanios.learn.logic.LogicManager;
 import org.platanios.learn.logic.LukasiewiczLogic;
 import org.platanios.learn.logic.formula.EntityType;
@@ -30,7 +30,7 @@ public class ProbabilisticSoftLogicTest {
     public void testEndToEnd() {
         String experimentName = "uci_trust";
 
-        LogicManager logicManager = new DatabaseLogicManager(new LukasiewiczLogic());
+        LogicManager logicManager = new InMemoryLogicManager(new LukasiewiczLogic());
 
         Set<Long> personValues = new HashSet<>();
         try {
@@ -66,7 +66,7 @@ public class ProbabilisticSoftLogicTest {
         InputStream trustTrainStream = ProbabilisticSoftLogicTest.class.getResourceAsStream("../" + experimentName + "/train.txt");
         InputStream trustTestStream = ProbabilisticSoftLogicTest.class.getResourceAsStream("../" + experimentName + "/test.txt");
 
-        List<ProbabilisticSoftLogicProblem.LogicRule> logicRules = null;
+        List<ProbabilisticSoftLogic.LogicRule> logicRules = null;
 
         try (
                 BufferedReader modelReader = new BufferedReader(new InputStreamReader(modelStream));
@@ -92,12 +92,12 @@ public class ProbabilisticSoftLogicTest {
 //        double[] observedWeights = new double[(int) logicManager.getNumberOfGroundPredicates()];
 //        List<GroundPredicate> groundPredicates = logicManager.getGroundPredicates();
 //        for (int index = 0; index < logicManager.getNumberOfGroundPredicates(); index++) {
-//            observedIndexes[index] = (int) groundPredicates.get(index).getId();
+//            observedIndexes[index] = (int) groundPredicates.get(index).getName();
 //            observedWeights[index] = (double) groundPredicates.get(index).getValue();
 //        }
 
-        ProbabilisticSoftLogicProblem problem =
-                new ProbabilisticSoftLogicProblem.Builder(logicManager)
+        ProbabilisticSoftLogic problem =
+                new ProbabilisticSoftLogic.Builder(logicManager)
                         .addLogicRules(logicRules)
                         .build();
         List<GroundPredicate> result = problem.solve();

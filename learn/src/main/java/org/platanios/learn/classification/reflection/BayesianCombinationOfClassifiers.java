@@ -3,8 +3,11 @@ package org.platanios.learn.classification.reflection;
 import org.apache.commons.math3.random.RandomDataGenerator;
 
 import java.lang.reflect.Array;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -22,9 +25,9 @@ public class BayesianCombinationOfClassifiers {
     private final double alpha;
     private final int numberOfFunctions;
     private final int numberOfDomains;
-    private final int[] numberOfDataSamples;
-    private final int[][][] labelsSamples;
-    private final int[][][] functionOutputsArray;
+    private int[] numberOfDataSamples;
+    private int[][][] labelsSamples;
+    private int[][][] functionOutputsArray;
     private final double[][] priorSamples;      // indexed by sample, domain
     private final double[][] priorCounts;       // indexed by domain, 0/1
     private final double[][][][][] confusionMatrixSamples;  // indexed by sample, domain, cluster id, 0/1, 0/1
@@ -107,7 +110,6 @@ public class BayesianCombinationOfClassifiers {
                 confusionMatrixSamples[0][p][0][1][1] = 1 - confusionMatrixSamples[0][p][0][1][0];
             }
         }
-
     }
 
     public void runGibbsSampler() {
@@ -130,9 +132,16 @@ public class BayesianCombinationOfClassifiers {
         for (int sampleNumber = 0; sampleNumber < numberOfSamples; sampleNumber++) {
             for (int p = 0; p < numberOfDomains; p++) {
                 priorMeans[p] += priorSamples[sampleNumber][p];
-                for (int j = 0; j < numberOfFunctions; j++)
-                    errorRateMeans[p][j] += confusionMatrixSamples[sampleNumber][p][clusterAssignmentSamples[sampleNumber][p][j]][0][1]
-                            + confusionMatrixSamples[sampleNumber][p][clusterAssignmentSamples[sampleNumber][p][j]][1][0];
+                for (int j = 0; j < numberOfFunctions; j++) {
+                    double errorRate = 0;
+                    for (int i = 0; i < numberOfDataSamples[p]; i++)
+                        errorRate += functionOutputsArray[j][p][i] != labelsSamples[sampleNumber][p][i] ? 1 : 0;
+                    errorRateMeans[p][j] += errorRate / numberOfDataSamples[p];
+                }
+//                for (int j = 0; j < numberOfFunctions; j++) {
+//                    errorRateMeans[p][j] += confusionMatrixSamples[sampleNumber][p][clusterAssignmentSamples[sampleNumber][p][j]][0][1] * priorSamples[sampleNumber][p]
+//                            + confusionMatrixSamples[sampleNumber][p][clusterAssignmentSamples[sampleNumber][p][j]][1][0] * (1 - priorSamples[sampleNumber][p]);
+//                }
                 for (int i = 0; i < numberOfDataSamples[p]; i++)
                     labelMeans[p][i] += labelsSamples[sampleNumber][p][i];
             }
@@ -148,8 +157,8 @@ public class BayesianCombinationOfClassifiers {
                 double temp = priorSamples[sampleNumber][p] - priorMeans[p];
                 priorVariances[p] += temp * temp;
                 for (int j = 0; j < numberOfFunctions; j++) {
-                    temp = confusionMatrixSamples[sampleNumber][p][clusterAssignmentSamples[sampleNumber][p][j]][0][1]
-                            + confusionMatrixSamples[sampleNumber][p][clusterAssignmentSamples[sampleNumber][p][j]][1][0]
+                    temp = (confusionMatrixSamples[sampleNumber][p][clusterAssignmentSamples[sampleNumber][p][j]][0][1] * priorSamples[sampleNumber][p]
+                            + confusionMatrixSamples[sampleNumber][p][clusterAssignmentSamples[sampleNumber][p][j]][1][0] * (1 - priorSamples[sampleNumber][p]))
                             - errorRateMeans[p][j];
                     errorRateVariances[p][j] += temp * temp;
                 }
@@ -168,7 +177,7 @@ public class BayesianCombinationOfClassifiers {
 
     private void samplePriors(int sampleNumber) {
         for (int p = 0; p < numberOfDomains; p++)
-            priorSamples[sampleNumber][p] = randomDataGenerator.nextBeta(labelsPriorAlpha + priorCounts[p][0], labelsPriorBeta + priorCounts[p][1]);
+            priorSamples[sampleNumber][p] = randomDataGenerator.nextBeta(labelsPriorAlpha + priorCounts[p][1], labelsPriorBeta + priorCounts[p][0]);
     }
 
     private void sampleConfusionMatrix(int sampleNumber) { // TODO: Add checking for number of error rates below chance.
@@ -208,8 +217,10 @@ public class BayesianCombinationOfClassifiers {
                 for (int k = 0; k < currentNumberOfClusters; k++) {
                     int clusterID = dpPriors[p].getClusterID(k);
                     cdf[k] = Math.log(dpPriors[p].getClusterUnnormalizedProbability(clusterID));
-                    for (int i = 0; i < numberOfDataSamples[p]; i++)
-                        cdf[k] += Math.log(confusionMatrixSamples[sampleNumber][p][clusterID][labelsSamples[sampleNumber][p][i]][functionOutputsArray[j][p][i]]);
+                    cdf[k] += confusionMatrixCounts[p][clusterID][0][0] * Math.log(confusionMatrixSamples[sampleNumber][p][clusterID][0][0]);
+                    cdf[k] += confusionMatrixCounts[p][clusterID][0][1] * Math.log(confusionMatrixSamples[sampleNumber][p][clusterID][0][1]);
+                    cdf[k] += confusionMatrixCounts[p][clusterID][1][0] * Math.log(confusionMatrixSamples[sampleNumber][p][clusterID][1][0]);
+                    cdf[k] += confusionMatrixCounts[p][clusterID][1][1] * Math.log(confusionMatrixSamples[sampleNumber][p][clusterID][1][1]);
                     if (max < cdf[k])
                         max = cdf[k];
                 }
@@ -254,15 +265,73 @@ public class BayesianCombinationOfClassifiers {
                     p0 *= confusionMatrixSamples[sampleNumber][p][clusterAssignmentSamples[sampleNumber][p][j]][0][functionOutputsArray[j][p][i]];
                     p1 *= confusionMatrixSamples[sampleNumber][p][clusterAssignmentSamples[sampleNumber][p][j]][1][functionOutputsArray[j][p][i]];
                 }
-                updateCountsBeforeSamplingLabel(sampleNumber, p, i);
-                labelsSamples[sampleNumber][p][i] = randomDataGenerator.nextBinomial(1, p1 / (p0 + p1));
-                updateCountsAfterSamplingLabel(sampleNumber, p, i);
+                int newLabel = randomDataGenerator.nextBinomial(1, p1 / (p0 + p1));
+                if (labelsSamples[sampleNumber][p][i] != newLabel) {
+                    updateCountsBeforeSamplingLabel(sampleNumber, p, i);
+                    labelsSamples[sampleNumber][p][i] = newLabel;
+                    updateCountsAfterSamplingLabel(sampleNumber, p, i);
+                }
             }
         }
     }
 
     public double logLikelihood(List<boolean[][]> functionOutputs) {
-        return 0; // TODO: Fix this.
+        numberOfDataSamples = new int[numberOfDomains];
+        functionOutputsArray = new int[numberOfFunctions][numberOfDomains][];
+        for (int p = 0; p < numberOfDomains; p++) {
+            numberOfDataSamples[p] = functionOutputs.get(p).length;
+            for (int j = 0; j < numberOfFunctions; j++) {
+                functionOutputsArray[j][p] = new int[numberOfDataSamples[p]];
+                for (int i = 0; i < numberOfDataSamples[p]; i++)
+                    functionOutputsArray[j][p][i] = functionOutputs.get(p)[i][j] ? 1 : 0;
+            }
+        }
+        for (int p = 0; p < numberOfDomains; p++) {
+            labelsSamples[0][p] = new int[numberOfDataSamples[p]];
+            for (int i = 0; i < numberOfDataSamples[p]; i++) {
+                int sum = 0;
+                for (int j = 0; j < numberOfFunctions; j++)
+                    sum += functionOutputsArray[j][p][i];
+                labelsSamples[0][p][i] = sum >= (numberOfFunctions / 2) ? 1 : 0;
+            }
+        }
+        double logLikelihood = 0;
+        for (int sampleNumber = 0; sampleNumber < numberOfSamples; sampleNumber++) {
+            sampleLabels(sampleNumber);
+            for (int p = 0; p < numberOfDomains; p++) {
+                // Label prior term
+                logLikelihood += (labelsPriorAlpha - 1) * Math.log(priorSamples[sampleNumber][p])
+                        + (labelsPriorBeta - 1) * Math.log(1 - priorSamples[sampleNumber][p]);
+                // Cluster assignments term
+                Map<Integer, AtomicInteger> clusterCounts = new HashMap<>();
+                for (int j = 0; j < numberOfFunctions; j++)
+                    if (!clusterCounts.containsKey(clusterAssignmentSamples[sampleNumber][p][j]))
+                        clusterCounts.put(clusterAssignmentSamples[sampleNumber][p][j], new AtomicInteger(1));
+                    else
+                        clusterCounts.get(clusterAssignmentSamples[sampleNumber][p][j]).incrementAndGet();
+                for (int j = 0; j < numberOfFunctions; j++)
+                    logLikelihood += Math.log(clusterCounts.get(clusterAssignmentSamples[sampleNumber][p][j]).intValue()) - Math.log(numberOfFunctions);
+                // Labels term
+                for (int i = 0; i < numberOfDataSamples[p]; i++) {
+                    if (labelsSamples[sampleNumber][p][i] == 1)
+                        logLikelihood += Math.log(priorSamples[sampleNumber][p]);
+                    else
+                        logLikelihood += Math.log(1 - priorSamples[sampleNumber][p]);
+                }
+                // Confusion matrix term
+                for (int clusterID : clusterCounts.keySet()) {
+                    logLikelihood += confusionMatrixPrior[0][0] * Math.log(confusionMatrixSamples[sampleNumber][p][clusterID][0][0]);
+                    logLikelihood += confusionMatrixPrior[0][1] * Math.log(confusionMatrixSamples[sampleNumber][p][clusterID][0][1]);
+                    logLikelihood += confusionMatrixPrior[1][0] * Math.log(confusionMatrixSamples[sampleNumber][p][clusterID][1][0]);
+                    logLikelihood += confusionMatrixPrior[1][1] * Math.log(confusionMatrixSamples[sampleNumber][p][clusterID][1][1]);
+                }
+                // Function outputs term
+                for (int j = 0; j < numberOfFunctions; j++)
+                    for (int i = 0; i < numberOfDataSamples[p]; i++)
+                        logLikelihood += Math.log(confusionMatrixSamples[sampleNumber][p][clusterAssignmentSamples[sampleNumber][p][j]][labelsSamples[sampleNumber][p][i]][functionOutputsArray[j][p][i]]);
+            }
+        }
+        return logLikelihood / numberOfSamples;
     }
 
     private void storeSample(int sampleIndex) {

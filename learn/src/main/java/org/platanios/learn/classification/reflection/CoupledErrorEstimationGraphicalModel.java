@@ -3,8 +3,11 @@ package org.platanios.learn.classification.reflection;
 import org.apache.commons.math3.random.RandomDataGenerator;
 import org.platanios.learn.math.matrix.MatrixUtilities;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.commons.math3.special.Beta.logBeta;
 
@@ -17,9 +20,8 @@ public class CoupledErrorEstimationGraphicalModel {
     private final double labelsPriorAlpha = 1;
     private final double labelsPriorBeta = 1;
     private final double errorRatesPriorAlpha = 1;
-    private final double errorRatesPriorBeta = 1;
+    private final double errorRatesPriorBeta = 10;
 
-    private final double alpha;
     private final int numberOfIterations;
     private final int burnInIterations;
     private final int thinning;
@@ -47,7 +49,6 @@ public class CoupledErrorEstimationGraphicalModel {
     private DirichletProcessPrior dpPrior;
 
     public CoupledErrorEstimationGraphicalModel(List<boolean[][]> functionOutputs, int numberOfIterations, int thinning, double alpha) {
-        this.alpha = alpha;
         this.numberOfIterations = numberOfIterations;
         burnInIterations = numberOfIterations * 9 / 10;
         this.thinning = thinning;
@@ -139,8 +140,8 @@ public class CoupledErrorEstimationGraphicalModel {
                 sampleZAndBurn(iterationNumber);
                 sampleLabelsAndBurn(iterationNumber);
             }
-            samplePriors(iterationNumber);
-            sampleErrorRates(iterationNumber);
+            samplePriors(iterationNumber, true);
+            sampleErrorRates(iterationNumber, true);
             sampleZ(iterationNumber);
             sampleLabels(iterationNumber);
         }
@@ -191,11 +192,18 @@ public class CoupledErrorEstimationGraphicalModel {
     }
 
     private void samplePriors(int iterationNumber) {
+        samplePriors(iterationNumber, false);
+    }
+
+    private void samplePriors(int iterationNumber, boolean sampleMean) {
         for (int p = 0; p < numberOfDomains; p++) {
             int labelsCount = 0;
             for (int i = 0; i < numberOfDataSamples[p]; i++)
                 labelsCount += labelsSamples[iterationNumber][p][i];
-            priorSamples[iterationNumber + 1][p] = randomDataGenerator.nextBeta(labelsPriorAlpha + labelsCount, labelsPriorBeta + numberOfDataSamples[p] - labelsCount);
+            if (sampleMean)
+                priorSamples[iterationNumber + 1][p] = (labelsPriorAlpha + labelsCount) / (labelsPriorAlpha + labelsPriorBeta + numberOfDataSamples[p]);
+            else
+                priorSamples[iterationNumber + 1][p] = randomDataGenerator.nextBeta(labelsPriorAlpha + labelsCount, labelsPriorBeta + numberOfDataSamples[p] - labelsCount);
         }
     }
 
@@ -206,7 +214,7 @@ public class CoupledErrorEstimationGraphicalModel {
                 int disagreementCount = 0;
                 int zCount = 0;
                 for (int k = 0; k < numberOfDomains; k++) {
-                    if (clusterAssignmentSamples[iterationNumber][k] == p) {
+                    if (clusterAssignmentSamples[iterationNumber][k] == clusterAssignmentSamples[iterationNumber][p]) {
                         for (int i = 0; i < numberOfDataSamples[k]; i++)
                             if (functionOutputsArray[j][k][i] != labelsSamples[iterationNumber][k][i])
                                 disagreementCount++;
@@ -224,20 +232,27 @@ public class CoupledErrorEstimationGraphicalModel {
     }
 
     private void sampleErrorRates(int iterationNumber) {
+        sampleErrorRates(iterationNumber, false);
+    }
+
+    private void sampleErrorRates(int iterationNumber, boolean sampleMean) {
         for (int p = 0; p < numberOfDomains; p++) {
             int numberOfErrorRatesBelowChance = 0;
             for (int j = 0; j < numberOfFunctions; j++) {
                 int disagreementCount = 0;
                 int zCount = 0;
                 for (int k = 0; k < numberOfDomains; k++) {
-                    if (clusterAssignmentSamples[iterationNumber][k] == p) {
+                    if (clusterAssignmentSamples[iterationNumber][k] == clusterAssignmentSamples[iterationNumber][p]) {
                         for (int i = 0; i < numberOfDataSamples[k]; i++)
                             if (functionOutputsArray[j][k][i] != labelsSamples[iterationNumber][k][i])
                                 disagreementCount++;
                         zCount += numberOfDataSamples[k];
                     }
                 }
-                errorRateSamples[iterationNumber + 1][p][j] = randomDataGenerator.nextBeta(errorRatesPriorAlpha + disagreementCount, errorRatesPriorBeta + zCount - disagreementCount);
+                if (sampleMean)
+                    errorRateSamples[iterationNumber + 1][p][j] = (errorRatesPriorAlpha + disagreementCount) / (errorRatesPriorAlpha + errorRatesPriorBeta + zCount);
+                else
+                    errorRateSamples[iterationNumber + 1][p][j] = randomDataGenerator.nextBeta(errorRatesPriorAlpha + disagreementCount, errorRatesPriorBeta + zCount - disagreementCount);
                 if (errorRateSamples[iterationNumber + 1][p][j] < 0.5)
                     numberOfErrorRatesBelowChance += 1;
             }
@@ -572,15 +587,7 @@ public class CoupledErrorEstimationGraphicalModel {
                     functionOutputsArray[j][p][i] = functionOutputs.get(p)[i][j] ? 1 : 0;
             }
         }
-        dpPrior = new DirichletProcessPrior(alpha, numberOfDomains);
-        clusterAssignmentSamples = new int[numberOfSamples][numberOfDomains];
-        labelsSamples = new int[numberOfSamples][numberOfDomains][];
-        disagreements = new double[numberOfFunctions][numberOfDomains];
-        sum_1 = new double[numberOfFunctions][numberOfDomains];
-        sum_2 = new double[numberOfFunctions][numberOfDomains];
         for (int p = 0; p < numberOfDomains; p++) {
-            clusterAssignmentSamples[0][p] = 0;
-            dpPrior.addMemberToCluster(0);
             labelsSamples[0][p] = new int[numberOfDataSamples[p]];
             for (int i = 0; i < numberOfDataSamples[p]; i++) {
                 int sum = 0;
@@ -588,76 +595,45 @@ public class CoupledErrorEstimationGraphicalModel {
                     sum += functionOutputsArray[j][p][i];
                 labelsSamples[0][p][i] = sum >= (numberOfFunctions / 2) ? 1 : 0;
             }
-            for (int j = 0; j < numberOfFunctions; j++) {
-                disagreements[j][p] = 0;
-                for (int i = 0; i < numberOfDataSamples[p]; i++)
-                    if (functionOutputsArray[j][p][i] != labelsSamples[0][p][i])
-                        disagreements[j][p]++;
-            }
-        }
-        for (int k = 0; k < numberOfDomains; k++) {
-            for (int j = 0; j < numberOfFunctions; j++) {
-                sum_1[j][k] = 0;
-                sum_2[j][k] = 0;
-                for (int p = 0; p < numberOfDomains; p++) {
-                    if (clusterAssignmentSamples[0][p] == k) {
-                        sum_1[j][k] += numberOfDataSamples[p];
-                        sum_2[j][k] += disagreements[j][p];
-                    }
-                }
-            }
-        }
-//        int sample = 0;
-//        int length = 1000;
-        for (int iterationNumber = 0; iterationNumber < 100; iterationNumber++) {
-            sampleZAndBurnWithCollapsedErrorRates(0);
-//            sample++;
-//            if (sample == errorRateSamples.length) {
-//                sample = 0;
-//                length = errorRateSamples.length;
-//            }
         }
         double logLikelihood = 0;
-        for (int iterationNumber = 0; iterationNumber < 1000; iterationNumber++) {
-            priorSamples[0] = priorSamples[iterationNumber % errorRateSamples.length];
-            errorRateSamples[0] = errorRateSamples[iterationNumber % errorRateSamples.length];
-            sampleLabelsAndBurnWithCollapsedErrorRates(0);
-            sampleZAndBurnWithCollapsedErrorRates(0);
-//            sample++;
-//            if (sample == errorRateSamples.length) {
-//                sample = 0;
-//                length = errorRateSamples.length;
-//            }
+        for (int sampleNumber = 0; sampleNumber < numberOfSamples; sampleNumber++) {
+            sampleLabelsAndBurn(sampleNumber);
+            Map<Integer, AtomicInteger> clusterCounts = new HashMap<>();
             for (int p = 0; p < numberOfDomains; p++) {
+                if (!clusterCounts.containsKey(clusterAssignmentSamples[sampleNumber][p]))
+                    clusterCounts.put(clusterAssignmentSamples[sampleNumber][p], new AtomicInteger(1));
+                else
+                    clusterCounts.get(clusterAssignmentSamples[sampleNumber][p]).incrementAndGet();
+            }
+            for (int p = 0; p < numberOfDomains; p++) {
+                // Label prior term
+                logLikelihood += (labelsPriorAlpha - 1) * Math.log(priorSamples[sampleNumber][p])
+                        + (labelsPriorBeta - 1) * Math.log(1 - priorSamples[sampleNumber][p]);
+                // Cluster assignments term
+                logLikelihood += Math.log(clusterCounts.get(clusterAssignmentSamples[sampleNumber][p]).intValue()) - Math.log(numberOfDomains);
+                // Labels term
                 for (int i = 0; i < numberOfDataSamples[p]; i++) {
-                    double p0 = 1 - priorSamples[0][p];
-                    double p1 = priorSamples[0][p];
-                    for (int j = 0; j < numberOfFunctions; j++) {
-                        if (functionOutputsArray[j][p][i] == 0) {
-                            p0 *= (1 - errorRateSamples[0][clusterAssignmentSamples[0][p]][j]);
-                            p1 *= errorRateSamples[0][clusterAssignmentSamples[0][p]][j];
-                            if (labelsSamples[0][p][i] == 1)
-                                logLikelihood += Math.log(errorRateSamples[0][clusterAssignmentSamples[0][p]][j]);
-                            else
-                                logLikelihood += Math.log(1 - errorRateSamples[0][clusterAssignmentSamples[0][p]][j]);
-                        } else {
-                            p0 *= errorRateSamples[0][clusterAssignmentSamples[0][p]][j];
-                            p1 *= (1 - errorRateSamples[0][clusterAssignmentSamples[0][p]][j]);
-                            if (labelsSamples[0][p][i] == 0)
-                                logLikelihood += Math.log(errorRateSamples[0][clusterAssignmentSamples[0][p]][j]);
-                            else
-                                logLikelihood += Math.log(1 - errorRateSamples[0][clusterAssignmentSamples[0][p]][j]);
-                        }
-                    }
-                    if (labelsSamples[0][p][i] == 1)
-                        logLikelihood += Math.log(p1 / (p0 + p1));
+                    if (labelsSamples[sampleNumber][p][i] == 1)
+                        logLikelihood += Math.log(priorSamples[sampleNumber][p]);
                     else
-                        logLikelihood += Math.log(p0 / (p0 + p1));
+                        logLikelihood += Math.log(1 - priorSamples[sampleNumber][p]);
                 }
+                // Error rates term
+                for (int j = 0; j < numberOfFunctions; j++)
+                    logLikelihood += (errorRatesPriorAlpha - 1) * Math.log(errorRateSamples[sampleNumber][clusterAssignmentSamples[sampleNumber][p]][j])
+                            + (errorRatesPriorBeta - 1) * Math.log(1 - errorRateSamples[sampleNumber][clusterAssignmentSamples[sampleNumber][p]][j]);
+                // Function outputs term
+                for (int j = 0; j < numberOfFunctions; j++)
+                    for (int i = 0; i < numberOfDataSamples[p]; i++) {
+                        if (functionOutputsArray[j][p][i] != labelsSamples[sampleNumber][p][i])
+                            logLikelihood += Math.log(errorRateSamples[sampleNumber][clusterAssignmentSamples[sampleNumber][p]][j]);
+                        else
+                            logLikelihood += Math.log(1 - errorRateSamples[sampleNumber][clusterAssignmentSamples[sampleNumber][p]][j]);
+                    }
             }
         }
-        logLikelihood /= 1000;
-        return logLikelihood;
+        return logLikelihood / numberOfSamples;
     }
 
     public double[] getPriorMeans() {

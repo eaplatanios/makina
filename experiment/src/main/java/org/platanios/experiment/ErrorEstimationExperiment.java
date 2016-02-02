@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
  */
 public class ErrorEstimationExperiment {
     public static void main(String[] args) {
-        int numberOfExperimentRepetitions = 1;
+        int numberOfExperimentRepetitions = 10;
         int loggingLevel = 2;
         String filename = args[0];
         String separator = ",";
@@ -43,12 +43,12 @@ public class ErrorEstimationExperiment {
         for (int repetition = 0; repetition < numberOfExperimentRepetitions; repetition++) {
             System.out.println("Running experiment repetition " + (repetition + 1) + "...");
             ErrorEstimationMethod[] errorEstimationMethods = new ErrorEstimationMethod[] {
-//                    ErrorEstimationMethod.BAYESIAN_COMBINATION_OF_CLASSIFIERS,
-//                    ErrorEstimationMethod.AR_2,
+                    ErrorEstimationMethod.BAYESIAN_COMBINATION_OF_CLASSIFIERS,
+                    ErrorEstimationMethod.AR_2,
 //                    ErrorEstimationMethod.AR_N,
-//                    ErrorEstimationMethod.ERROR_ESTIMATION_GM,
-//                    ErrorEstimationMethod.COUPLED_ERROR_ESTIMATION_GM,
-                    ErrorEstimationMethod.HIERARCHICAL_COUPLED_ERROR_ESTIMATION_GM
+                    ErrorEstimationMethod.ERROR_ESTIMATION_GM,
+                    ErrorEstimationMethod.COUPLED_ERROR_ESTIMATION_GM,
+//                    ErrorEstimationMethod.HIERARCHICAL_COUPLED_ERROR_ESTIMATION_GM
             };
             Double[] alphaValues = new Double[] {
 //                    1e-6,
@@ -56,15 +56,15 @@ public class ErrorEstimationExperiment {
 //                    1e-4,
 //                    1e-3,
 //                    1e-2,
-                    1e-1,
-                    1e0,
-                    1e1,
+//                    1e-1,
+//                    1e0,
+//                    1e1,
 //                    1e2,
-//                    1e3,
-//                    1e4,
-//                    1e5,
-//                    1e6,
-//                1e7,
+                    1e3,
+                    1e4,
+                    1e5,
+                    1e6,
+                    1e7,
 //                1e8,
 //                1e9,
 //                1e10,
@@ -76,9 +76,11 @@ public class ErrorEstimationExperiment {
 //                1e16
             };
             Double[] gammaValues = new Double[] {
-                    1e1,
-                    1e2,
-                    1e3,
+                    1e-1,
+                    1e0
+//                    1e1,
+//                    1e2,
+//                    1e3,
 //                    1e4,
 //                    1e5,
 //                    1e6,
@@ -170,7 +172,7 @@ public class ErrorEstimationExperiment {
                 Arrays.asList(alphaValues).parallelStream().forEach(alpha -> {
                     if (method == ErrorEstimationMethod.HIERARCHICAL_COUPLED_ERROR_ESTIMATION_GM) {
                         Arrays.asList(gammaValues).parallelStream().forEach(gamma -> {
-                            ExperimentResults results = runExperiment(method, functionOutputs, trueLabels, evaluationFunctionOutputs, alpha, gamma);
+                            ExperimentResults results = runExperiment(method, functionOutputs, trueLabels, evaluationFunctionOutputs, gamma, alpha);
                             differentParameterizationResults.add(results);
                             String resultsString =
                                     "====================================================================================================\n"
@@ -315,7 +317,7 @@ public class ErrorEstimationExperiment {
                 }
                 break;
             case ERROR_ESTIMATION_GM:
-                ErrorEstimationGraphicalModel eesgm = new ErrorEstimationGraphicalModel(functionOutputs, 18000, 10, 200);
+                ErrorEstimationGraphicalModel eesgm = new ErrorEstimationGraphicalModel(functionOutputs, 4000, 10, 200);
                 eesgm.runGibbsSampler();
                 errorRates = eesgm.getErrorRatesMeans();
                 double[][] labelMeansEesgm = eesgm.getLabelMeans();
@@ -337,7 +339,7 @@ public class ErrorEstimationExperiment {
 //                }
                 break;
             case COUPLED_ERROR_ESTIMATION_GM:
-                CoupledErrorEstimationGraphicalModel eedfdpgm = new CoupledErrorEstimationGraphicalModel(functionOutputs, 20000, 10, alpha);
+                CoupledErrorEstimationGraphicalModel eedfdpgm = new CoupledErrorEstimationGraphicalModel(functionOutputs, 5000, 10, alpha);
                 eedfdpgm.performGibbsSampling();
                 errorRates = eedfdpgm.getErrorRatesMeans();
                 logLikelihood = eedfdpgm.logLikelihood(evaluationFunctionOutputs);
@@ -351,8 +353,8 @@ public class ErrorEstimationExperiment {
                 break;
             case HIERARCHICAL_COUPLED_ERROR_ESTIMATION_GM:
                 ErrorEstimationDomainsHDPNew eedfhdp = new ErrorEstimationDomainsHDPNew(functionOutputs, alpha, gamma);
-                eedfhdp.run_gibbs_collapsed(18000);
-                eedfhdp.run_gibbs_uncollapsed(1000, 100, 200);
+                eedfhdp.run_gibbs_collapsed(3000);
+                eedfhdp.run_gibbs_uncollapsed(1000, 10, 200);
                 errorRates = eedfhdp.rates_to_return;
                 double[][] labelMeansEedfhdpmgm = eedfhdp.labels_to_return;
                 int li_cnt[][] = new int[functionOutputs.size()][2];

@@ -13,7 +13,7 @@ public class ErrorEstimationGraphicalModel {
     private final double labelsPriorAlpha = 1;
     private final double labelsPriorBeta = 1;
     private final double errorRatesPriorAlpha = 1;
-    private final double errorRatesPriorBeta = 100;
+    private final double errorRatesPriorBeta = 10;
 
     private final int numberOfBurnInSamples;
     private final int numberOfThinningSamples;
@@ -79,10 +79,12 @@ public class ErrorEstimationGraphicalModel {
             sampleLabels(0);
         }
         for (int sampleIndex = 1; sampleIndex < numberOfSamples; sampleIndex++) {
-            for (int i = 0; i < numberOfThinningSamples + 1; i++) {
+            for (int i = 0; i < numberOfThinningSamples; i++) {
                 samplePriorsAndErrorRates(sampleIndex - 1);
                 sampleLabels(sampleIndex - 1);
             }
+            samplePriorsAndErrorRates(sampleIndex - 1, true);
+            sampleLabels(sampleIndex - 1);
             storeSample(sampleIndex);
         }
         // Aggregate values for means and variances computation
@@ -115,21 +117,29 @@ public class ErrorEstimationGraphicalModel {
     }
 
     private void samplePriorsAndErrorRates(int sampleNumber) {
+        samplePriorsAndErrorRates(sampleNumber, false);
+    }
+
+    private void samplePriorsAndErrorRates(int sampleNumber, boolean sampleMean) {
         for (int p = 0; p < numberOfDomains; p++) {
             int labelsCount = 0;
             for (int i = 0; i < numberOfDataSamples[p]; i++)
                 labelsCount += labelsSamples[sampleNumber][p][i];
-            priorSamples[sampleNumber][p] = randomDataGenerator.nextBeta(labelsPriorAlpha + labelsCount,
-                                                                         labelsPriorBeta + numberOfDataSamples[p] - labelsCount);
+            if (sampleMean)
+                priorSamples[sampleNumber][p] = (labelsPriorAlpha + labelsCount) / (labelsPriorAlpha + labelsPriorBeta + numberOfDataSamples[p]);
+            else
+                priorSamples[sampleNumber][p] = randomDataGenerator.nextBeta(labelsPriorAlpha + labelsCount, labelsPriorBeta + numberOfDataSamples[p] - labelsCount);
             int numberOfErrorRatesBelowChance = 0;
             for (int j = 0; j < numberOfFunctions; j++) {
                 int disagreementCount = 0;
                 for (int i = 0; i < numberOfDataSamples[p]; i++)
                     if (functionOutputsArray[j][p][i] != labelsSamples[sampleNumber][p][i])
                         disagreementCount++;
-                errorRatesSamples[sampleNumber][p][j] =
-                        randomDataGenerator.nextBeta(errorRatesPriorAlpha + disagreementCount,
-                                                     errorRatesPriorBeta + numberOfDataSamples[p] - disagreementCount);
+                if (sampleMean)
+                    errorRatesSamples[sampleNumber][p][j] = (errorRatesPriorAlpha + disagreementCount) / (errorRatesPriorAlpha + errorRatesPriorBeta + numberOfDataSamples[p]);
+                else
+                    errorRatesSamples[sampleNumber][p][j] =
+                            randomDataGenerator.nextBeta(errorRatesPriorAlpha + disagreementCount, errorRatesPriorBeta + numberOfDataSamples[p] - disagreementCount);
                 if (errorRatesSamples[sampleNumber][p][j] < 0.5)
                     numberOfErrorRatesBelowChance += 1;
             }
