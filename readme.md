@@ -1,1 +1,1 @@
-[![Build Status](https://travis-ci.com/eaplatanios/org.platanios.svg?token=VBPxqvcGXTuwbjkVyN68&branch=master)](https://travis-ci.com/eaplatanios/org.platanios)
+[![Build Status](https://travis-ci.com/eaplatanios/org.platanios.svg?token=VBPxqvcGXTuwbjkVyN68&branch=master,style=flat-square)](https://travis-ci.com/eaplatanios/org.platanios)
