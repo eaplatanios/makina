@@ -10,30 +10,25 @@ import java.util.Random;
 public class RandomScoringFunction extends ScoringFunction {
     private final Random random;
     private final boolean propagateConstraints;
-    private final boolean onlyConsiderLeafNodes;
 
     public RandomScoringFunction() {
         random = new Random();
         propagateConstraints = false;
-        onlyConsiderLeafNodes = false;
     }
 
-    public RandomScoringFunction(boolean propagateConstraints, boolean onlyConsiderLeafNodes) {
+    public RandomScoringFunction(boolean propagateConstraints) {
         random = new Random();
         this.propagateConstraints = propagateConstraints;
-        this.onlyConsiderLeafNodes = onlyConsiderLeafNodes;
     }
 
     public RandomScoringFunction(long randomSeed) {
         random = new Random(randomSeed);
         propagateConstraints = false;
-        onlyConsiderLeafNodes = false;
     }
 
     public RandomScoringFunction(boolean propagateConstraints, boolean onlyConsiderLeafNodes, long randomSeed) {
         random = new Random(randomSeed);
         this.propagateConstraints = propagateConstraints;
-        this.onlyConsiderLeafNodes = onlyConsiderLeafNodes;
     }
 
     @Override
@@ -47,11 +42,6 @@ public class RandomScoringFunction extends ScoringFunction {
     }
 
     @Override
-    public boolean onlyConsiderLeafNodes() {
-        return onlyConsiderLeafNodes;
-    }
-
-    @Override
     public boolean equals(Object other) {
         if (this == other)
             return true;
@@ -60,23 +50,18 @@ public class RandomScoringFunction extends ScoringFunction {
 
         RandomScoringFunction that = (RandomScoringFunction) other;
 
-        return Objects.equal(propagateConstraints, that.propagateConstraints)
-                && Objects.equal(onlyConsiderLeafNodes, that.onlyConsiderLeafNodes);
+        return Objects.equal(propagateConstraints, that.propagateConstraints);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(this.getClass(), propagateConstraints, onlyConsiderLeafNodes);
+        return Objects.hashCode(this.getClass(), propagateConstraints);
     }
 
     @Override
     public String toString() {
-        if (propagateConstraints && onlyConsiderLeafNodes)
-            return "RANDOM-LEAF-CP";
-        else if (propagateConstraints)
+        if (propagateConstraints)
             return "RANDOM-CP";
-        else if (onlyConsiderLeafNodes)
-            return "RANDOM-LEAF";
         else
             return "RANDOM";
     }

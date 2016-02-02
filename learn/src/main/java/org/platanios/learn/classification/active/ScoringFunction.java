@@ -11,10 +11,6 @@ public abstract class ScoringFunction {
         return true;
     }
 
-    public boolean onlyConsiderLeafNodes() {
-        return false;
-    }
-
     @Override
     public abstract boolean equals(Object other);
 
