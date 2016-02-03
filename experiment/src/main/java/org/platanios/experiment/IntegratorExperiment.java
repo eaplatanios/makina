@@ -142,7 +142,7 @@ public class IntegratorExperiment {
                 workingDirectory = integratorWorkingDirectory + "Robust Co-Training/";
                 break;
             case "2":
-                coTrainingMethod = Integrator.CoTrainingMethod.ROBUST_CO_TRAINING_GM;
+                coTrainingMethod = Integrator.CoTrainingMethod.ROBUST_CO_TRAINING_BEE;
                 workingDirectory = integratorWorkingDirectory + "Robust Co-Training GM/";
                 break;
             case "3":
