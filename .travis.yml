@@ -2,14 +2,10 @@ language: java
 jdk:
   - oraclejdk8
 
-env:
-  global:
-    - CODECOV_TOKEN=:zQjCSZzyUk
-
 before_install:
   - pip install --user codecov
 after_success:
-  - codecov
+  - bash <(curl -s https://codecov.io/bash) -t :zQjCSZzyUk
 
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
