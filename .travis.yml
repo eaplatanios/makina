@@ -2,10 +2,8 @@ language: java
 jdk:
   - oraclejdk8
 
-before_install:
-  - pip install --user codecov
 after_success:
-  - bash <(curl -s https://codecov.io/bash) -t :zQjCSZzyUk
+  - bash <(curl -s https://codecov.io/bash) -t :VBPxqvcGXTuwbjkVyN68
 
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
