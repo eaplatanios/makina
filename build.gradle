@@ -31,10 +31,6 @@ subprojects {
     mainClassName = System.getProperty('mainClass')
     applicationDefaultJvmArgs = ['-Xmx20G']
 
-    test {
-        exclude 'org/platanios/**'
-    }
-
     jacocoTestReport {
         reports {
             xml.enabled = true

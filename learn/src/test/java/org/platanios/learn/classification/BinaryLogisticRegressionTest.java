@@ -168,39 +168,39 @@ public class BinaryLogisticRegressionTest {
         Assert.assertArrayEquals(expectedPredictions, actualPredictions);
     }
 
-    @Test
-    public void testLargeSparseBinaryLogisticRegressionUsingAdaGrad() {
-        String filename = "/Users/Anthony/Development/Data Sets/Classification/url.binary.txt";
-        DataSet<PredictedDataInstance<Vector, Double>> trainingDataSet = Utilities.parseURLDataFromFile(filename, true);
-        LogisticRegressionAdaGrad classifier =
-                new LogisticRegressionAdaGrad.Builder(trainingDataSet.get(0).features().size())
-                        .sparse(true)
-                        .maximumNumberOfIterations(100000)
-                        .batchSize(10)
-                        .loggingLevel(2)
-                        .useBiasTerm(false)
-                        .build();
-        classifier.train(trainingDataSet.subSet(0, 20000));
-        DataSet<PredictedDataInstance<Vector, Double>> testingDataSet = new DataSetInMemory<>();
-        for (LabeledDataInstance<Vector, Double> dataInstance : trainingDataSet.subSet(20000, trainingDataSet.size()))
-            testingDataSet.add(new PredictedDataInstance<>(dataInstance.name(),
-                                                           dataInstance.features(),
-                                                           dataInstance.label(),
-                                                           dataInstance.source(),
-                                                           1));
-        int[] expectedPredictions = new int[testingDataSet.size()];
-        for (int i = 0; i < expectedPredictions.length; i++)
-            expectedPredictions[i] = (int) (double) testingDataSet.get(i).label();
-        DataSet<PredictedDataInstance<Vector, Double>> predictedDataSet = classifier.predictInPlace(testingDataSet);
-        int[] actualPredictions = new int[testingDataSet.size()];
-        double accuracy = 0;
-        for (int i = 0; i < actualPredictions.length; i++) {
-            actualPredictions[i] = (int) (double) predictedDataSet.get(i).label();
-            accuracy += actualPredictions[i] == expectedPredictions[i] ? 1 : 0;
-        }
-        accuracy /= actualPredictions.length;
-        Assert.assertArrayEquals(expectedPredictions, actualPredictions);
-    }
+//    @Test
+//    public void testLargeSparseBinaryLogisticRegressionUsingAdaGrad() {
+//        String filename = "/Users/Anthony/Development/Data Sets/Classification/url.binary.txt";
+//        DataSet<PredictedDataInstance<Vector, Double>> trainingDataSet = Utilities.parseURLDataFromFile(filename, true);
+//        LogisticRegressionAdaGrad classifier =
+//                new LogisticRegressionAdaGrad.Builder(trainingDataSet.get(0).features().size())
+//                        .sparse(true)
+//                        .maximumNumberOfIterations(100000)
+//                        .batchSize(10)
+//                        .loggingLevel(2)
+//                        .useBiasTerm(false)
+//                        .build();
+//        classifier.train(trainingDataSet.subSet(0, 20000));
+//        DataSet<PredictedDataInstance<Vector, Double>> testingDataSet = new DataSetInMemory<>();
+//        for (LabeledDataInstance<Vector, Double> dataInstance : trainingDataSet.subSet(20000, trainingDataSet.size()))
+//            testingDataSet.add(new PredictedDataInstance<>(dataInstance.name(),
+//                                                           dataInstance.features(),
+//                                                           dataInstance.label(),
+//                                                           dataInstance.source(),
+//                                                           1));
+//        int[] expectedPredictions = new int[testingDataSet.size()];
+//        for (int i = 0; i < expectedPredictions.length; i++)
+//            expectedPredictions[i] = (int) (double) testingDataSet.get(i).label();
+//        DataSet<PredictedDataInstance<Vector, Double>> predictedDataSet = classifier.predictInPlace(testingDataSet);
+//        int[] actualPredictions = new int[testingDataSet.size()];
+//        double accuracy = 0;
+//        for (int i = 0; i < actualPredictions.length; i++) {
+//            actualPredictions[i] = (int) (double) predictedDataSet.get(i).label();
+//            accuracy += actualPredictions[i] == expectedPredictions[i] ? 1 : 0;
+//        }
+//        accuracy /= actualPredictions.length;
+//        Assert.assertArrayEquals(expectedPredictions, actualPredictions);
+//    }
 
     @Test
     public void testDenseBinaryLogisticRegressionPrediction() {
