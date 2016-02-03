@@ -2,6 +2,7 @@ group = 'org.platanios'
 
 subprojects {
     apply plugin: 'java'
+    apply plugin: 'jacoco'
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
@@ -30,9 +31,18 @@ subprojects {
     mainClassName = System.getProperty('mainClass')
     applicationDefaultJvmArgs = ['-Xmx20G']
 
-    test {
-        exclude 'org/platanios/**'
+//    test {
+//        exclude 'org/platanios/**'
+//    }
+
+    jacocoTestReport {
+        reports {
+            xml.enabled = true
+            html.enabled = true
+        }
     }
+
+    check.dependsOn jacocoTestReport
 
     run {
         if ( project.hasProperty('appArgs') ) {
