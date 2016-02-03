@@ -1,1 +1,2 @@
 [![Build Status](https://travis-ci.com/eaplatanios/org.platanios.svg?token=VBPxqvcGXTuwbjkVyN68&branch=master)](https://travis-ci.com/eaplatanios/org.platanios)
+[![codecov.io](https://codecov.io/github/eaplatanios/org.platanios/coverage.svg?token=zQjCSZzyUk&branch=master)](https://codecov.io/github/eaplatanios/org.platanios?branch=master)
