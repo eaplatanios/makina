@@ -30,9 +30,16 @@ subprojects {
     mainClassName = System.getProperty('mainClass')
     applicationDefaultJvmArgs = ['-Xmx20G']
 
-    test {
-        exclude 'org/platanios/**'
+    plugins {
+        id "net.saliman.cobertura" version "2.3.0"
+        id "com.github.kt3k.coveralls" version "2.6.3"
     }
+
+    cobertura.coverageFormats = ['html', 'xml'] // coveralls plugin depends on xml format report
+
+//    test {
+//        exclude 'org/platanios/**'
+//    }
 
     run {
         if ( project.hasProperty('appArgs') ) {
