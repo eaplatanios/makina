@@ -5,7 +5,7 @@ jdk:
 before_install:
   - pip install --user codecov
 after_success:
-  - codecov --token=VBPxqvcGXTuwbjkVyN68
+  - codecov --token=zQjCSZzyUk
 
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
