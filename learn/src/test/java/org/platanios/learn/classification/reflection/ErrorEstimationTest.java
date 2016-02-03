@@ -93,7 +93,7 @@ public class ErrorEstimationTest {
         List<boolean[][]> functionOutputs = parseLabeledDataFromCSVFileForSimpleGM(dataInputStream,
                                                                                    separator,
                                                                                    classificationThresholds);
-        ErrorEstimationGraphicalModel eegm = new ErrorEstimationGraphicalModel(functionOutputs, 90, 1, 10);
+        BayesianErrorEstimation eegm = new BayesianErrorEstimation(functionOutputs, 90, 1, 10);
         eegm.runGibbsSampler();
 
         double[] obtainedErrorRates = eegm.getErrorRatesMeans()[0];
