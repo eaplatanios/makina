@@ -22,14 +22,13 @@ public class BayesianCombinationOfClassifiers {
     private final int numberOfBurnInSamples;
     private final int numberOfThinningSamples;
     private final int numberOfSamples;
-    private final double alpha;
     private final int numberOfFunctions;
     private final int numberOfDomains;
     private int[] numberOfDataSamples;
     private int[][][] labelsSamples;
     private int[][][] functionOutputsArray;
-    private final double[][] priorSamples;      // indexed by sample, domain
-    private final double[][] priorCounts;       // indexed by domain, 0/1
+    private final double[][] labelPriorsSamples;      // indexed by sample, domain
+    private final double[][] labelPriorsCounts;       // indexed by domain, 0/1
     private final double[][][][][] confusionMatrixSamples;  // indexed by sample, domain, cluster id, 0/1, 0/1
     private final double[][][][] confusionMatrixCounts;     // indexed by domain, cluster id, 0/1, 0/1
     private final int[][][] clusterAssignmentSamples;
@@ -41,7 +40,7 @@ public class BayesianCombinationOfClassifiers {
     private double[][] errorRateMeans;
     private double[][] errorRateVariances;
 
-    private DirichletProcessPrior dpPriors[];
+    private DirichletProcess dpPriors[];
 
     public BayesianCombinationOfClassifiers(List<boolean[][]> functionOutputs,
                                             int numberOfBurnInSamples,
@@ -51,7 +50,6 @@ public class BayesianCombinationOfClassifiers {
         this.numberOfBurnInSamples = numberOfBurnInSamples;
         this.numberOfThinningSamples = numberOfThinningSamples;
         this.numberOfSamples = numberOfSamples;
-        this.alpha = alpha;
         numberOfFunctions = functionOutputs.get(0)[0].length;
         numberOfDomains = functionOutputs.size();
         numberOfDataSamples = new int[numberOfDomains];
@@ -64,11 +62,11 @@ public class BayesianCombinationOfClassifiers {
                     functionOutputsArray[j][p][i] = functionOutputs.get(p)[i][j] ? 1 : 0;
             }
         }
-        dpPriors = new DirichletProcessPrior[numberOfDomains];
+        dpPriors = new DirichletProcess[numberOfDomains];
 
         labelsSamples = new int[numberOfSamples][numberOfDomains][];
-        priorSamples = new double[numberOfSamples][numberOfDomains];
-        priorCounts = new double[numberOfDomains][2];
+        labelPriorsSamples = new double[numberOfSamples][numberOfDomains];
+        labelPriorsCounts = new double[numberOfDomains][2];
         confusionMatrixSamples = new double[numberOfSamples][numberOfDomains][numberOfFunctions][2][2];
         confusionMatrixCounts = new double[numberOfDomains][numberOfFunctions][2][2];
         clusterAssignmentSamples = new int[numberOfSamples][numberOfDomains][numberOfFunctions];
@@ -85,11 +83,11 @@ public class BayesianCombinationOfClassifiers {
         for (int p = 0; p < numberOfDomains; p++) {
             labelMeans[p] = new double[numberOfDataSamples[p]];
             labelVariances[p] = new double[numberOfDataSamples[p]];
-            dpPriors[p] = new DirichletProcessPrior(alpha, numberOfFunctions);
-            priorSamples[0][p] = 0.5;
+            dpPriors[p] = new DirichletProcess(alpha, numberOfFunctions);
+            labelPriorsSamples[0][p] = 0.5;
             for (int j = 0; j < numberOfFunctions; j++) {
                 clusterAssignmentSamples[0][p][j] = 0;
-                updateCountsAfterSamplingClusterAssignment(0, p, j);
+                dpPriors[p].addMemberToCluster(clusterAssignmentSamples[0][p][j]);
             }
             for (int i = 0; i < numberOfDataSamples[p]; i++) {
                 int sum = 0;
@@ -131,7 +129,7 @@ public class BayesianCombinationOfClassifiers {
         // Aggregate values for means and variances computation
         for (int sampleNumber = 0; sampleNumber < numberOfSamples; sampleNumber++) {
             for (int p = 0; p < numberOfDomains; p++) {
-                priorMeans[p] += priorSamples[sampleNumber][p];
+                priorMeans[p] += labelPriorsSamples[sampleNumber][p];
                 for (int j = 0; j < numberOfFunctions; j++) {
                     double errorRate = 0;
                     for (int i = 0; i < numberOfDataSamples[p]; i++)
@@ -139,8 +137,8 @@ public class BayesianCombinationOfClassifiers {
                     errorRateMeans[p][j] += errorRate / numberOfDataSamples[p];
                 }
 //                for (int j = 0; j < numberOfFunctions; j++) {
-//                    errorRateMeans[p][j] += confusionMatrixSamples[sampleNumber][p][clusterAssignmentSamples[sampleNumber][p][j]][0][1] * priorSamples[sampleNumber][p]
-//                            + confusionMatrixSamples[sampleNumber][p][clusterAssignmentSamples[sampleNumber][p][j]][1][0] * (1 - priorSamples[sampleNumber][p]);
+//                    errorRateMeans[p][j] += confusionMatrixSamples[sampleNumber][p][clusterAssignmentSamples[sampleNumber][p][j]][0][1] * labelPriorsSamples[sampleNumber][p]
+//                            + confusionMatrixSamples[sampleNumber][p][clusterAssignmentSamples[sampleNumber][p][j]][1][0] * (1 - labelPriorsSamples[sampleNumber][p]);
 //                }
                 for (int i = 0; i < numberOfDataSamples[p]; i++)
                     labelMeans[p][i] += labelsSamples[sampleNumber][p][i];
@@ -154,11 +152,11 @@ public class BayesianCombinationOfClassifiers {
             for (int i = 0; i < numberOfDataSamples[p]; i++)
                 labelMeans[p][i] /= numberOfSamples;
             for (int sampleNumber = 0; sampleNumber < numberOfSamples; sampleNumber++) {
-                double temp = priorSamples[sampleNumber][p] - priorMeans[p];
+                double temp = labelPriorsSamples[sampleNumber][p] - priorMeans[p];
                 priorVariances[p] += temp * temp;
                 for (int j = 0; j < numberOfFunctions; j++) {
-                    temp = (confusionMatrixSamples[sampleNumber][p][clusterAssignmentSamples[sampleNumber][p][j]][0][1] * priorSamples[sampleNumber][p]
-                            + confusionMatrixSamples[sampleNumber][p][clusterAssignmentSamples[sampleNumber][p][j]][1][0] * (1 - priorSamples[sampleNumber][p]))
+                    temp = (confusionMatrixSamples[sampleNumber][p][clusterAssignmentSamples[sampleNumber][p][j]][0][1] * labelPriorsSamples[sampleNumber][p]
+                            + confusionMatrixSamples[sampleNumber][p][clusterAssignmentSamples[sampleNumber][p][j]][1][0] * (1 - labelPriorsSamples[sampleNumber][p]))
                             - errorRateMeans[p][j];
                     errorRateVariances[p][j] += temp * temp;
                 }
@@ -177,7 +175,7 @@ public class BayesianCombinationOfClassifiers {
 
     private void samplePriors(int sampleNumber) {
         for (int p = 0; p < numberOfDomains; p++)
-            priorSamples[sampleNumber][p] = randomDataGenerator.nextBeta(labelsPriorAlpha + priorCounts[p][1], labelsPriorBeta + priorCounts[p][0]);
+            labelPriorsSamples[sampleNumber][p] = randomDataGenerator.nextBeta(labelsPriorAlpha + labelPriorsCounts[p][1], labelsPriorBeta + labelPriorsCounts[p][0]);
     }
 
     private void sampleConfusionMatrix(int sampleNumber) { // TODO: Add checking for number of error rates below chance.
@@ -245,13 +243,13 @@ public class BayesianCombinationOfClassifiers {
     }
 
     private void updateCountsBeforeSamplingLabel(int sampleNumber, int p, int i) {
-        priorCounts[p][labelsSamples[sampleNumber][p][i]]--;
+        labelPriorsCounts[p][labelsSamples[sampleNumber][p][i]]--;
         for (int j = 0; j < numberOfFunctions; j++)
             confusionMatrixCounts[p][clusterAssignmentSamples[sampleNumber][p][j]][labelsSamples[sampleNumber][p][i]][functionOutputsArray[j][p][i]]--;
     }
 
     private void updateCountsAfterSamplingLabel(int sampleNumber, int p, int i) {
-        priorCounts[p][labelsSamples[sampleNumber][p][i]]++;
+        labelPriorsCounts[p][labelsSamples[sampleNumber][p][i]]++;
         for (int j = 0; j < numberOfFunctions; j++)
             confusionMatrixCounts[p][clusterAssignmentSamples[sampleNumber][p][j]][labelsSamples[sampleNumber][p][i]][functionOutputsArray[j][p][i]]++;
     }
@@ -259,8 +257,8 @@ public class BayesianCombinationOfClassifiers {
     private void sampleLabels(int sampleNumber) {
         for (int p = 0; p < numberOfDomains; p++) {
             for (int i = 0; i < numberOfDataSamples[p]; i++) {
-                double p0 = 1 - priorSamples[sampleNumber][p]; // TODO: Compute this in log-space
-                double p1 = priorSamples[sampleNumber][p];
+                double p0 = 1 - labelPriorsSamples[sampleNumber][p]; // TODO: Compute this in log-space
+                double p1 = labelPriorsSamples[sampleNumber][p];
                 for (int j = 0; j < numberOfFunctions; j++) {
                     p0 *= confusionMatrixSamples[sampleNumber][p][clusterAssignmentSamples[sampleNumber][p][j]][0][functionOutputsArray[j][p][i]];
                     p1 *= confusionMatrixSamples[sampleNumber][p][clusterAssignmentSamples[sampleNumber][p][j]][1][functionOutputsArray[j][p][i]];
@@ -300,8 +298,8 @@ public class BayesianCombinationOfClassifiers {
             sampleLabels(sampleNumber);
             for (int p = 0; p < numberOfDomains; p++) {
                 // Label prior term
-                logLikelihood += (labelsPriorAlpha - 1) * Math.log(priorSamples[sampleNumber][p])
-                        + (labelsPriorBeta - 1) * Math.log(1 - priorSamples[sampleNumber][p]);
+                logLikelihood += (labelsPriorAlpha - 1) * Math.log(labelPriorsSamples[sampleNumber][p])
+                        + (labelsPriorBeta - 1) * Math.log(1 - labelPriorsSamples[sampleNumber][p]);
                 // Cluster assignments term
                 Map<Integer, AtomicInteger> clusterCounts = new HashMap<>();
                 for (int j = 0; j < numberOfFunctions; j++)
@@ -314,9 +312,9 @@ public class BayesianCombinationOfClassifiers {
                 // Labels term
                 for (int i = 0; i < numberOfDataSamples[p]; i++) {
                     if (labelsSamples[sampleNumber][p][i] == 1)
-                        logLikelihood += Math.log(priorSamples[sampleNumber][p]);
+                        logLikelihood += Math.log(labelPriorsSamples[sampleNumber][p]);
                     else
-                        logLikelihood += Math.log(1 - priorSamples[sampleNumber][p]);
+                        logLikelihood += Math.log(1 - labelPriorsSamples[sampleNumber][p]);
                 }
                 // Confusion matrix term
                 for (int clusterID : clusterCounts.keySet()) {
@@ -335,7 +333,7 @@ public class BayesianCombinationOfClassifiers {
     }
 
     private void storeSample(int sampleIndex) {
-        copyArray(priorSamples[sampleIndex - 1], priorSamples[sampleIndex]);
+        copyArray(labelPriorsSamples[sampleIndex - 1], labelPriorsSamples[sampleIndex]);
         copyArray(confusionMatrixSamples[sampleIndex - 1], confusionMatrixSamples[sampleIndex]);
         copyArray(clusterAssignmentSamples[sampleIndex - 1], clusterAssignmentSamples[sampleIndex]);
         copyArray(labelsSamples[sampleIndex - 1], labelsSamples[sampleIndex]);

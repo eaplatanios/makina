@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class ErrorEstimationGraphicalModel {
+public class BayesianErrorEstimation {
     private final RandomDataGenerator randomDataGenerator = new RandomDataGenerator();
     private final double labelsPriorAlpha = 1;
     private final double labelsPriorBeta = 1;
@@ -22,18 +22,18 @@ public class ErrorEstimationGraphicalModel {
     private final int numberOfDomains;
     private final int[] numberOfDataSamples;
     private final int[][][] functionOutputsArray;
-    private final double[][] priorSamples;
+    private final double[][] labelPriorsSamples;
     private final int[][][] labelsSamples;
     private final double[][][] errorRatesSamples;
 
-    private double[] priorMeans;
-    private double[][] labelMeans;
-    private double[][] errorRateMeans;
+    private final double[] labelPriorMeans;
+    private final double[][] labelMeans;
+    private final double[][] errorRateMeans;
 
-    public ErrorEstimationGraphicalModel(List<boolean[][]> functionOutputs,
-                                         int numberOfBurnInSamples,
-                                         int numberOfThinningSamples,
-                                         int numberOfSamples) {
+    public BayesianErrorEstimation(List<boolean[][]> functionOutputs,
+                                   int numberOfBurnInSamples,
+                                   int numberOfThinningSamples,
+                                   int numberOfSamples) {
         this.numberOfBurnInSamples = numberOfBurnInSamples;
         this.numberOfThinningSamples = numberOfThinningSamples;
         this.numberOfSamples = numberOfSamples;
@@ -49,14 +49,14 @@ public class ErrorEstimationGraphicalModel {
                     functionOutputsArray[j][p][i] = functionOutputs.get(p)[i][j] ? 1 : 0;
             }
         }
-        priorSamples = new double[numberOfSamples][numberOfDomains];
+        labelPriorsSamples = new double[numberOfSamples][numberOfDomains];
         labelsSamples = new int[numberOfSamples][numberOfDomains][];
         errorRatesSamples = new double[numberOfSamples][numberOfDomains][numberOfFunctions];
         for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++)
             for (int p = 0; p < numberOfDomains; p++)
                 labelsSamples[sampleIndex][p] = new int[numberOfDataSamples[p]];
         for (int p = 0; p < numberOfDomains; p++) {
-            priorSamples[0][p] = 0.5;
+            labelPriorsSamples[0][p] = 0.5;
             for (int j = 0; j < numberOfFunctions; j++)
                 errorRatesSamples[0][p][j] = 0.25;
             for (int i = 0; i < numberOfDataSamples[p]; i++) {
@@ -66,11 +66,9 @@ public class ErrorEstimationGraphicalModel {
                 labelsSamples[0][p][i] = sum >= (numberOfFunctions / 2) ? 1 : 0;
             }
         }
-        priorMeans = new double[numberOfDomains];
+        labelPriorMeans = new double[numberOfDomains];
         labelMeans = new double[numberOfDomains][];
         errorRateMeans = new double[numberOfDomains][numberOfFunctions];
-        for (int p = 0; p < numberOfDomains; p++)
-            labelMeans[p] = new double[numberOfDataSamples[p]];
     }
 
     public void runGibbsSampler() {
@@ -83,7 +81,7 @@ public class ErrorEstimationGraphicalModel {
                 samplePriorsAndErrorRates(sampleIndex - 1);
                 sampleLabels(sampleIndex - 1);
             }
-            samplePriorsAndErrorRates(sampleIndex - 1, true);
+            samplePriorsAndErrorRates(sampleIndex - 1);
             sampleLabels(sampleIndex - 1);
             storeSample(sampleIndex);
         }
@@ -95,20 +93,21 @@ public class ErrorEstimationGraphicalModel {
                     if (errorRatesSamples[sampleNumber][p][j] < 0.5)
                         numberOfPhiBelowChance++;
                 if (numberOfPhiBelowChance < numberOfFunctions / 2.0) {
-                    priorSamples[sampleNumber][p] = 1 - priorSamples[sampleNumber][p];
+                    labelPriorsSamples[sampleNumber][p] = 1 - labelPriorsSamples[sampleNumber][p];
                     for (int j = 0; j < numberOfFunctions; j++)
                         errorRatesSamples[sampleNumber][p][j] = 1 - errorRatesSamples[sampleNumber][p][j];
                 }
-                priorMeans[p] += priorSamples[sampleNumber][p];
+                labelPriorMeans[p] += labelPriorsSamples[sampleNumber][p];
                 for (int j = 0; j < numberOfFunctions; j++)
                     errorRateMeans[p][j] += errorRatesSamples[sampleNumber][p][j];
+                labelMeans[p] = new double[numberOfDataSamples[p]];
                 for (int i = 0; i < numberOfDataSamples[p]; i++)
                     labelMeans[p][i] += labelsSamples[sampleNumber][p][i];
             }
         }
         // Compute values for the means and the variances
         for (int p = 0; p < numberOfDomains; p++) {
-            priorMeans[p] /= numberOfSamples;
+            labelPriorMeans[p] /= numberOfSamples;
             for (int j = 0; j < numberOfFunctions; j++)
                 errorRateMeans[p][j] /= numberOfSamples;
             for (int i = 0; i < numberOfDataSamples[p]; i++)
@@ -117,34 +116,23 @@ public class ErrorEstimationGraphicalModel {
     }
 
     private void samplePriorsAndErrorRates(int sampleNumber) {
-        samplePriorsAndErrorRates(sampleNumber, false);
-    }
-
-    private void samplePriorsAndErrorRates(int sampleNumber, boolean sampleMean) {
         for (int p = 0; p < numberOfDomains; p++) {
             int labelsCount = 0;
             for (int i = 0; i < numberOfDataSamples[p]; i++)
                 labelsCount += labelsSamples[sampleNumber][p][i];
-            if (sampleMean)
-                priorSamples[sampleNumber][p] = (labelsPriorAlpha + labelsCount) / (labelsPriorAlpha + labelsPriorBeta + numberOfDataSamples[p]);
-            else
-                priorSamples[sampleNumber][p] = randomDataGenerator.nextBeta(labelsPriorAlpha + labelsCount, labelsPriorBeta + numberOfDataSamples[p] - labelsCount);
+            labelPriorsSamples[sampleNumber][p] = randomDataGenerator.nextBeta(labelsPriorAlpha + labelsCount, labelsPriorBeta + numberOfDataSamples[p] - labelsCount);
             int numberOfErrorRatesBelowChance = 0;
             for (int j = 0; j < numberOfFunctions; j++) {
                 int disagreementCount = 0;
                 for (int i = 0; i < numberOfDataSamples[p]; i++)
                     if (functionOutputsArray[j][p][i] != labelsSamples[sampleNumber][p][i])
                         disagreementCount++;
-                if (sampleMean)
-                    errorRatesSamples[sampleNumber][p][j] = (errorRatesPriorAlpha + disagreementCount) / (errorRatesPriorAlpha + errorRatesPriorBeta + numberOfDataSamples[p]);
-                else
-                    errorRatesSamples[sampleNumber][p][j] =
-                            randomDataGenerator.nextBeta(errorRatesPriorAlpha + disagreementCount, errorRatesPriorBeta + numberOfDataSamples[p] - disagreementCount);
+                errorRatesSamples[sampleNumber][p][j] = randomDataGenerator.nextBeta(errorRatesPriorAlpha + disagreementCount, errorRatesPriorBeta + numberOfDataSamples[p] - disagreementCount);
                 if (errorRatesSamples[sampleNumber][p][j] < 0.5)
                     numberOfErrorRatesBelowChance += 1;
             }
             if (numberOfErrorRatesBelowChance < numberOfFunctions / 2.0) {
-                priorSamples[sampleNumber][p] = 1 - priorSamples[sampleNumber][p];
+                labelPriorsSamples[sampleNumber][p] = 1 - labelPriorsSamples[sampleNumber][p];
                 for (int j = 0; j < numberOfFunctions; j++)
                     errorRatesSamples[sampleNumber][p][j] = 1 - errorRatesSamples[sampleNumber][p][j];
             }
@@ -154,8 +142,8 @@ public class ErrorEstimationGraphicalModel {
     private void sampleLabels(int sampleNumber) {
         for (int p = 0; p < numberOfDomains; p++) {
             for (int i = 0; i < numberOfDataSamples[p]; i++) {
-                double p0 = 1 - priorSamples[sampleNumber][p];
-                double p1 = priorSamples[sampleNumber][p];
+                double p0 = 1 - labelPriorsSamples[sampleNumber][p];
+                double p1 = labelPriorsSamples[sampleNumber][p];
                 for (int j = 0; j < numberOfFunctions; j++) {
                     if (functionOutputsArray[j][p][i] == 0) {
                         p0 *= (1 - errorRatesSamples[sampleNumber][p][j]);
@@ -171,7 +159,7 @@ public class ErrorEstimationGraphicalModel {
     }
 
     private void storeSample(int sampleIndex) {
-        copyArray(priorSamples[sampleIndex - 1], priorSamples[sampleIndex]);
+        copyArray(labelPriorsSamples[sampleIndex - 1], labelPriorsSamples[sampleIndex]);
         copyArray(labelsSamples[sampleIndex - 1], labelsSamples[sampleIndex]);
         copyArray(errorRatesSamples[sampleIndex - 1], errorRatesSamples[sampleIndex]);
     }
@@ -187,12 +175,12 @@ public class ErrorEstimationGraphicalModel {
         }
     }
 
-    public double[] getPriorMeans() {
-        return priorMeans;
+    public double[] getLabelPriorMeans() {
+        return labelPriorMeans;
     }
 
-    public double[][] getPriorSamples() {
-        return priorSamples;
+    public double[][] getLabelPriorsSamples() {
+        return labelPriorsSamples;
     }
 
     public double[][] getLabelMeans() {

@@ -7,7 +7,7 @@ import gnu.trove.set.hash.TIntHashSet;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class DirichletProcessPrior {
+public class DirichletProcess {
     private final double alpha;
     private final int clusterMemberCounts[];
     private final TIntHashSet freeClusters;
@@ -17,7 +17,7 @@ public class DirichletProcessPrior {
 
     private int currentNumberOfClusters;
     
-    public DirichletProcessPrior(double alpha, int maximumNumberOfClusters) {
+    public DirichletProcess(double alpha, int maximumNumberOfClusters) {
         this.alpha = alpha;
         clusterMemberCounts = new int[maximumNumberOfClusters];
         freeClusters = new TIntHashSet();

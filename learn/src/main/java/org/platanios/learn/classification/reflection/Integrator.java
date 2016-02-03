@@ -364,7 +364,7 @@ public class Integrator<T extends Vector, S> {
                 }
             }
         },
-        ROBUST_CO_TRAINING_GM {
+        ROBUST_CO_TRAINING_BEE {
             @Override
             protected <T extends Vector, S> void updatePredictions(
                     List<Future<DataSet<PredictedDataInstance<T, S>>>> predictionResults,
@@ -381,7 +381,7 @@ public class Integrator<T extends Vector, S> {
                 }
                 List<boolean[][]> functionOutputs = new ArrayList<>();
                 functionOutputs.add(classifierOutputs.toArray(new boolean[classifierOutputs.size()][]));
-                ErrorEstimationGraphicalModel eegm = new ErrorEstimationGraphicalModel(functionOutputs, 90, 1, 10);
+                BayesianErrorEstimation eegm = new BayesianErrorEstimation(functionOutputs, 90, 1, 10);
                 eegm.runGibbsSampler();
                 integrator.errorRates = eegm.getErrorRatesMeans()[0];
                 for (int i = 0; i < predictionResults.size(); i++) {

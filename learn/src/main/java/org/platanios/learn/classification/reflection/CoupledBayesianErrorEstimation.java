@@ -14,7 +14,7 @@ import static org.apache.commons.math3.special.Beta.logBeta;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class CoupledErrorEstimationGraphicalModel {
+public class CoupledBayesianErrorEstimation {
     private final Random random = new Random();
     private final RandomDataGenerator randomDataGenerator = new RandomDataGenerator();
     private final double labelsPriorAlpha = 1;
@@ -46,9 +46,9 @@ public class CoupledErrorEstimationGraphicalModel {
     private double[][] errorRateMeans;
     private double[][] errorRateVariances;
     
-    private DirichletProcessPrior dpPrior;
+    private DirichletProcess dpPrior;
 
-    public CoupledErrorEstimationGraphicalModel(List<boolean[][]> functionOutputs, int numberOfIterations, int thinning, double alpha) {
+    public CoupledBayesianErrorEstimation(List<boolean[][]> functionOutputs, int numberOfIterations, int thinning, double alpha) {
         this.numberOfIterations = numberOfIterations;
         burnInIterations = numberOfIterations * 9 / 10;
         this.thinning = thinning;
@@ -64,7 +64,7 @@ public class CoupledErrorEstimationGraphicalModel {
                     functionOutputsArray[j][p][i] = functionOutputs.get(p)[i][j] ? 1 : 0;
             }
         }
-        dpPrior = new DirichletProcessPrior(alpha, numberOfDomains);
+        dpPrior = new DirichletProcess(alpha, numberOfDomains);
         
         numberOfSamples = (numberOfIterations - burnInIterations) / thinning;
         priorSamples = new double[numberOfSamples][numberOfDomains];
