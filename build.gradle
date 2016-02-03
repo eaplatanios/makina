@@ -2,7 +2,6 @@ group = 'org.platanios'
 
 subprojects {
     apply plugin: 'java'
-    apply plugin: 'jacoco'
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
@@ -26,10 +25,11 @@ subprojects {
         options.forkOptions.executable = 'javac'
     }
 
-    apply plugin: 'application'
+    test {
+        ignoreFailures = true
+    }
 
-    mainClassName = System.getProperty('mainClass')
-    applicationDefaultJvmArgs = ['-Xmx20G']
+    apply plugin: 'jacoco'
 
     jacocoTestReport {
         reports {
@@ -39,6 +39,11 @@ subprojects {
     }
 
     check.dependsOn jacocoTestReport
+
+    apply plugin: 'application'
+
+    mainClassName = System.getProperty('mainClass')
+    applicationDefaultJvmArgs = ['-Xmx6G']
 
     run {
         if ( project.hasProperty('appArgs') ) {

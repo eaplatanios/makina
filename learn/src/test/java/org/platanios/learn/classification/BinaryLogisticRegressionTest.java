@@ -116,34 +116,34 @@ public class BinaryLogisticRegressionTest {
         Assert.assertArrayEquals(expectedPredictions, actualPredictions);
     }
 
-    @Test
-    public void testSparseBinaryLogisticRegressionUsingAdaGrad() {
-        String filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.txt";
-        DataSet<PredictedDataInstance<Vector, Double>> trainingDataSet = Utilities.parseCovTypeDataFromFile(filename, true);
-        LogisticRegressionAdaGrad classifier =
-                new LogisticRegressionAdaGrad.Builder(trainingDataSet.get(0).features().size())
-                        .batchSize(1000)
-                        .maximumNumberOfIterations(1000)
-                        .loggingLevel(2)
-                        .sparse(true)
-                        .build();
-        classifier.train(trainingDataSet.subSet(0, 500000));
-        DataSet<PredictedDataInstance<Vector, Double>> testingDataSet = new DataSetInMemory<>();
-        for (LabeledDataInstance<Vector, Double> dataInstance : trainingDataSet.subSet(500000, trainingDataSet.size()))
-            testingDataSet.add(new PredictedDataInstance<>(dataInstance.name(),
-                                                           dataInstance.features(),
-                                                           dataInstance.label(),
-                                                           dataInstance.source(),
-                                                           1));
-        int[] expectedPredictions = new int[testingDataSet.size()];
-        for (int i = 0; i < expectedPredictions.length; i++)
-            expectedPredictions[i] = (int) (double) testingDataSet.get(i).label();
-        DataSet<PredictedDataInstance<Vector, Double>> predictedDataSet = classifier.predictInPlace(testingDataSet);
-        int[] actualPredictions = new int[testingDataSet.size()];
-        for (int i = 0; i < actualPredictions.length; i++)
-            actualPredictions[i] = (int) (double) predictedDataSet.get(i).label();
-        Assert.assertArrayEquals(expectedPredictions, actualPredictions);
-    }
+//    @Test
+//    public void testSparseBinaryLogisticRegressionUsingAdaGrad() {
+//        String filename = "/Users/Anthony/Development/Data Sets/Classification/covtype.binary.scale.txt";
+//        DataSet<PredictedDataInstance<Vector, Double>> trainingDataSet = Utilities.parseCovTypeDataFromFile(filename, true);
+//        LogisticRegressionAdaGrad classifier =
+//                new LogisticRegressionAdaGrad.Builder(trainingDataSet.get(0).features().size())
+//                        .batchSize(1000)
+//                        .maximumNumberOfIterations(1000)
+//                        .loggingLevel(2)
+//                        .sparse(true)
+//                        .build();
+//        classifier.train(trainingDataSet.subSet(0, 500000));
+//        DataSet<PredictedDataInstance<Vector, Double>> testingDataSet = new DataSetInMemory<>();
+//        for (LabeledDataInstance<Vector, Double> dataInstance : trainingDataSet.subSet(500000, trainingDataSet.size()))
+//            testingDataSet.add(new PredictedDataInstance<>(dataInstance.name(),
+//                                                           dataInstance.features(),
+//                                                           dataInstance.label(),
+//                                                           dataInstance.source(),
+//                                                           1));
+//        int[] expectedPredictions = new int[testingDataSet.size()];
+//        for (int i = 0; i < expectedPredictions.length; i++)
+//            expectedPredictions[i] = (int) (double) testingDataSet.get(i).label();
+//        DataSet<PredictedDataInstance<Vector, Double>> predictedDataSet = classifier.predictInPlace(testingDataSet);
+//        int[] actualPredictions = new int[testingDataSet.size()];
+//        for (int i = 0; i < actualPredictions.length; i++)
+//            actualPredictions[i] = (int) (double) predictedDataSet.get(i).label();
+//        Assert.assertArrayEquals(expectedPredictions, actualPredictions);
+//    }
 
     @Test
     public void testSmallDenseBinaryLogisticRegressionUsingAdaGradAndDataSetWithPredictedDataInstances() {

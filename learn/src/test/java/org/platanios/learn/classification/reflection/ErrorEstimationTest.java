@@ -39,43 +39,43 @@ public class ErrorEstimationTest {
         Assert.assertArrayEquals(expectedResult, actualResult, 1E-15);
     }
 
-    @Test
-    public void testErrorRatesEstimationVector() {
-        InputStream dataInputStream = ErrorEstimationTest.class.getResourceAsStream("./nell/input/animal.csv");
-//        dataInputStream = ErrorEstimationTest.class.getResourceAsStream("./brain/input/region_1.csv");
-        String separator = ",";
-        int highestOrder = 4;
-        double[] classificationThresholds = new double[] { 0.05, 0.05, 0.1, 0.05 };
-//        classificationThresholds = new double[] { 0.5 };
-        ErrorEstimationData data = parseLabeledDataFromCSVFile(dataInputStream,
-                                                               separator,
-                                                               classificationThresholds,
-                                                               highestOrder,
-                                                               true);
-        ErrorEstimation ere = new ErrorEstimation.Builder(data)
-                .optimizationSolverType(ErrorEstimationInternalSolver.IP_OPT)
-                .build();
-        data = ere.solve();
-
-        double[] obtainedErrorRates = data.getErrorRates().array;
-        double[] sampleErrorRates = data.getSampleErrorRates().array;
-
-        double mad = 0.0;
-        double mad_ind = 0.0;
-
-        for (int i = 0; i < obtainedErrorRates.length; i++) {
-            mad += Math.abs(sampleErrorRates[i] - obtainedErrorRates[i]);
-            if (i < data.getNumberOfFunctions()) {
-                mad_ind += Math.abs(sampleErrorRates[i] - obtainedErrorRates[i]);
-            }
-        }
-
-        mad /= sampleErrorRates.length;
-        mad_ind /= data.getNumberOfFunctions();
-
-        Assert.assertEquals(0.022264846242268578, mad, 1E-10);
-        Assert.assertEquals(0.03873716293662867, mad_ind, 1E-10);
-    }
+//    @Test
+//    public void testErrorRatesEstimationVector() {
+//        InputStream dataInputStream = ErrorEstimationTest.class.getResourceAsStream("./nell/input/animal.csv");
+////        dataInputStream = ErrorEstimationTest.class.getResourceAsStream("./brain/input/region_1.csv");
+//        String separator = ",";
+//        int highestOrder = 4;
+//        double[] classificationThresholds = new double[] { 0.05, 0.05, 0.1, 0.05 };
+////        classificationThresholds = new double[] { 0.5 };
+//        ErrorEstimationData data = parseLabeledDataFromCSVFile(dataInputStream,
+//                                                               separator,
+//                                                               classificationThresholds,
+//                                                               highestOrder,
+//                                                               true);
+//        ErrorEstimation ere = new ErrorEstimation.Builder(data)
+//                .optimizationSolverType(ErrorEstimationInternalSolver.IP_OPT)
+//                .build();
+//        data = ere.solve();
+//
+//        double[] obtainedErrorRates = data.getErrorRates().array;
+//        double[] sampleErrorRates = data.getSampleErrorRates().array;
+//
+//        double mad = 0.0;
+//        double mad_ind = 0.0;
+//
+//        for (int i = 0; i < obtainedErrorRates.length; i++) {
+//            mad += Math.abs(sampleErrorRates[i] - obtainedErrorRates[i]);
+//            if (i < data.getNumberOfFunctions()) {
+//                mad_ind += Math.abs(sampleErrorRates[i] - obtainedErrorRates[i]);
+//            }
+//        }
+//
+//        mad /= sampleErrorRates.length;
+//        mad_ind /= data.getNumberOfFunctions();
+//
+//        Assert.assertEquals(0.022264846242268578, mad, 1E-10);
+//        Assert.assertEquals(0.03873716293662867, mad_ind, 1E-10);
+//    }
 
     @Test
     public void testErrorEstimationSimpleGraphicalModel() {
@@ -107,41 +107,41 @@ public class ErrorEstimationTest {
         Assert.assertEquals(0.03873716293662867, mad_ind, 1E-10);
     }
 
-    @Test
-    public void testErrorRatesEstimationVectorWith3Classifiers() {
-        InputStream dataInputStream = ErrorEstimationTest.class.getResourceAsStream("./nell/input/animal.csv");
-        String separator = ",";
-        int highestOrder = 3;
-        double[] classificationThresholds = new double[] { 0.05, 0.05, 0.1 };
-        ErrorEstimationData data = parseLabeledDataFromCSVFileWith3Classifiers(dataInputStream,
-                                                                               separator,
-                                                                               classificationThresholds,
-                                                                               highestOrder,
-                                                                               true);
-        ErrorEstimation ere = new ErrorEstimation.Builder(data)
-                .optimizationSolverType(ErrorEstimationInternalSolver.IP_OPT)
-                .build();
-        data = ere.solve();
-
-        double[] obtainedErrorRates = data.getErrorRates().array;
-        double[] sampleErrorRates = data.getSampleErrorRates().array;
-
-        double mad = 0.0;
-        double mad_ind = 0.0;
-
-        for (int i = 0; i < obtainedErrorRates.length; i++) {
-            mad += Math.abs(sampleErrorRates[i] - obtainedErrorRates[i]);
-            if (i < data.getNumberOfFunctions()) {
-                mad_ind += Math.abs(sampleErrorRates[i] - obtainedErrorRates[i]);
-            }
-        }
-
-        mad /= sampleErrorRates.length;
-        mad_ind /= data.getNumberOfFunctions();
-
-        Assert.assertEquals(0.022264846242268578, mad, 1E-10);
-        Assert.assertEquals(0.03873716293662867, mad_ind, 1E-10);
-    }
+//    @Test
+//    public void testErrorRatesEstimationVectorWith3Classifiers() {
+//        InputStream dataInputStream = ErrorEstimationTest.class.getResourceAsStream("./nell/input/animal.csv");
+//        String separator = ",";
+//        int highestOrder = 3;
+//        double[] classificationThresholds = new double[] { 0.05, 0.05, 0.1 };
+//        ErrorEstimationData data = parseLabeledDataFromCSVFileWith3Classifiers(dataInputStream,
+//                                                                               separator,
+//                                                                               classificationThresholds,
+//                                                                               highestOrder,
+//                                                                               true);
+//        ErrorEstimation ere = new ErrorEstimation.Builder(data)
+//                .optimizationSolverType(ErrorEstimationInternalSolver.IP_OPT)
+//                .build();
+//        data = ere.solve();
+//
+//        double[] obtainedErrorRates = data.getErrorRates().array;
+//        double[] sampleErrorRates = data.getSampleErrorRates().array;
+//
+//        double mad = 0.0;
+//        double mad_ind = 0.0;
+//
+//        for (int i = 0; i < obtainedErrorRates.length; i++) {
+//            mad += Math.abs(sampleErrorRates[i] - obtainedErrorRates[i]);
+//            if (i < data.getNumberOfFunctions()) {
+//                mad_ind += Math.abs(sampleErrorRates[i] - obtainedErrorRates[i]);
+//            }
+//        }
+//
+//        mad /= sampleErrorRates.length;
+//        mad_ind /= data.getNumberOfFunctions();
+//
+//        Assert.assertEquals(0.022264846242268578, mad, 1E-10);
+//        Assert.assertEquals(0.03873716293662867, mad_ind, 1E-10);
+//    }
 
     public static ErrorEstimationData parseLabeledDataFromCSVFile(InputStream dataInputStream, String separator) {
         return parseLabeledDataFromCSVFile(dataInputStream, separator, null, -1, true);
