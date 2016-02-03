@@ -214,7 +214,7 @@ public class CoupledBayesianErrorEstimation {
                 int disagreementCount = 0;
                 int zCount = 0;
                 for (int k = 0; k < numberOfDomains; k++) {
-                    if (clusterAssignmentSamples[iterationNumber][k] == clusterAssignmentSamples[iterationNumber][p]) {
+                    if (clusterAssignmentSamples[iterationNumber][k] == p) {
                         for (int i = 0; i < numberOfDataSamples[k]; i++)
                             if (functionOutputsArray[j][k][i] != labelsSamples[iterationNumber][k][i])
                                 disagreementCount++;
@@ -242,7 +242,7 @@ public class CoupledBayesianErrorEstimation {
                 int disagreementCount = 0;
                 int zCount = 0;
                 for (int k = 0; k < numberOfDomains; k++) {
-                    if (clusterAssignmentSamples[iterationNumber][k] == clusterAssignmentSamples[iterationNumber][p]) {
+                    if (clusterAssignmentSamples[iterationNumber][k] == p) {
                         for (int i = 0; i < numberOfDataSamples[k]; i++)
                             if (functionOutputsArray[j][k][i] != labelsSamples[iterationNumber][k][i])
                                 disagreementCount++;
@@ -256,11 +256,9 @@ public class CoupledBayesianErrorEstimation {
                 if (errorRateSamples[iterationNumber + 1][p][j] < 0.5)
                     numberOfErrorRatesBelowChance += 1;
             }
-            if (numberOfErrorRatesBelowChance < numberOfFunctions / 2.0) {
-                priorSamples[iterationNumber + 1][p] = 1 - priorSamples[iterationNumber + 1][p];
+            if (numberOfErrorRatesBelowChance < numberOfFunctions / 2.0)
                 for (int j = 0; j < numberOfFunctions; j++)
                     errorRateSamples[iterationNumber + 1][p][j] = 1 - errorRateSamples[iterationNumber + 1][p][j];
-            }
         }
     }
 

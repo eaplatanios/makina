@@ -86,6 +86,8 @@ public class BayesianErrorEstimation {
             storeSample(sampleIndex);
         }
         // Aggregate values for means and variances computation
+        for (int p = 0; p < numberOfDomains; p++)
+            labelMeans[p] = new double[numberOfDataSamples[p]];
         for (int sampleNumber = 0; sampleNumber < numberOfSamples; sampleNumber++) {
             for (int p = 0; p < numberOfDomains; p++) {
                 int numberOfPhiBelowChance = 0;
@@ -100,7 +102,6 @@ public class BayesianErrorEstimation {
                 labelPriorMeans[p] += labelPriorsSamples[sampleNumber][p];
                 for (int j = 0; j < numberOfFunctions; j++)
                     errorRateMeans[p][j] += errorRatesSamples[sampleNumber][p][j];
-                labelMeans[p] = new double[numberOfDataSamples[p]];
                 for (int i = 0; i < numberOfDataSamples[p]; i++)
                     labelMeans[p][i] += labelsSamples[sampleNumber][p][i];
             }
@@ -131,11 +132,9 @@ public class BayesianErrorEstimation {
                 if (errorRatesSamples[sampleNumber][p][j] < 0.5)
                     numberOfErrorRatesBelowChance += 1;
             }
-            if (numberOfErrorRatesBelowChance < numberOfFunctions / 2.0) {
-                labelPriorsSamples[sampleNumber][p] = 1 - labelPriorsSamples[sampleNumber][p];
+            if (numberOfErrorRatesBelowChance < numberOfFunctions / 2.0)
                 for (int j = 0; j < numberOfFunctions; j++)
                     errorRatesSamples[sampleNumber][p][j] = 1 - errorRatesSamples[sampleNumber][p][j];
-            }
         }
     }
 

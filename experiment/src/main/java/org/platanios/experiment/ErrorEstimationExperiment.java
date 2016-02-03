@@ -53,13 +53,13 @@ public class ErrorEstimationExperiment {
             Double[] alphaValues = new Double[] {
 //                    1e-6,
 //                    1e-5,
-                    1e-4,
-                    1e-3,
-                    1e-2,
-                    1e-1,
-                    1e0,
-                    1e1,
-                    1e2,
+//                    1e-4,
+//                    1e-3,
+//                    1e-2,
+//                    1e-1,
+//                    1e0,
+//                    1e1,
+//                    1e2,
 //                    1e3,
 //                    1e4,
 //                    1e5,
@@ -73,21 +73,21 @@ public class ErrorEstimationExperiment {
 //                1e13,
 //                1e14,
 //                1e15,
-//                1e16
+                1e16
             };
             Double[] gammaValues = new Double[] {
 //                    1e-4,
 //                    1e-3,
 //                    1e-2,
-                    1e-1,
-                    1e0,
-                    1e1,
-                    1e2,
-                    1e3,
-                    1e4,
+//                    1e-1,
+//                    1e0,
+//                    1e1,
+//                    1e2,
+//                    1e3,
+//                    1e4,
 //                    1e5,
 //                    1e6,
-//                    1e7
+                    1e7
             };
             runExperiments(loggingLevel, domainNames, errorEstimationMethods, alphaValues, gammaValues, functionOutputs, trueLabels, evaluationFunctionOutputs, results);
         }
@@ -355,7 +355,7 @@ public class ErrorEstimationExperiment {
                 }
                 break;
             case HIERARCHICAL_COUPLED_ERROR_ESTIMATION_GM:
-                HierarchicalCoupledBayesianErrorEstimation hcee = new HierarchicalCoupledBayesianErrorEstimation(functionOutputs, 10000, 10, 200, alpha, gamma);
+                HierarchicalCoupledBayesianErrorEstimation hcee = new HierarchicalCoupledBayesianErrorEstimation(functionOutputs, 4000, 10, 200, alpha, gamma);
                 hcee.runGibbsSampler();
                 errorRates = hcee.getErrorRatesMeans();
                 logLikelihood = hcee.logLikelihood(evaluationFunctionOutputs);
