@@ -17,7 +17,7 @@ public class BayesianCombinationOfClassifiers {
     private final RandomDataGenerator randomDataGenerator = new RandomDataGenerator();
     private final double labelsPriorAlpha = 1;
     private final double labelsPriorBeta = 1;
-    private final double[][] confusionMatrixPrior = new double[][] { new double[] { 1, 1 }, new double[] { 1, 1 } };
+    private final double[][] confusionMatrixPrior = new double[][] { new double[] { 10, 1 }, new double[] { 1, 10 } };
 
     private final int numberOfBurnInSamples;
     private final int numberOfThinningSamples;
@@ -87,6 +87,7 @@ public class BayesianCombinationOfClassifiers {
             labelPriorsSamples[0][p] = 0.5;
             for (int j = 0; j < numberOfFunctions; j++) {
                 clusterAssignmentSamples[0][p][j] = 0;
+//                clusterAssignmentSamples[0][p][j] = j;
                 dpPriors[p].addMemberToCluster(clusterAssignmentSamples[0][p][j]);
             }
             for (int i = 0; i < numberOfDataSamples[p]; i++) {
@@ -98,16 +99,7 @@ public class BayesianCombinationOfClassifiers {
             }
         }
         samplePriors(0);
-        for (int p = 0; p < numberOfDomains; p++) {
-            for (int j = 0; j < numberOfFunctions; j++) {
-                confusionMatrixSamples[0][p][0][0][0] = randomDataGenerator.nextBeta(confusionMatrixPrior[0][0] + confusionMatrixCounts[p][0][0][0],
-                                                                                     confusionMatrixPrior[0][1] + confusionMatrixCounts[p][0][0][1]);
-                confusionMatrixSamples[0][p][0][1][0] = randomDataGenerator.nextBeta(confusionMatrixPrior[1][0] + confusionMatrixCounts[p][0][1][0],
-                                                                                     confusionMatrixPrior[1][1] + confusionMatrixCounts[p][0][1][1]);
-                confusionMatrixSamples[0][p][0][0][1] = 1 - confusionMatrixSamples[0][p][0][0][0];
-                confusionMatrixSamples[0][p][0][1][1] = 1 - confusionMatrixSamples[0][p][0][1][0];
-            }
-        }
+        sampleConfusionMatrix(0);
     }
 
     public void runGibbsSampler() {
@@ -180,15 +172,13 @@ public class BayesianCombinationOfClassifiers {
 
     private void sampleConfusionMatrix(int sampleNumber) { // TODO: Add checking for number of error rates below chance.
         for (int p = 0; p < numberOfDomains; p++) {
-            int currentNumberOfClusters = dpPriors[p].computeClustersDistribution();
-            for(int k = 0; k < currentNumberOfClusters; k++) {
-                int clusterID = dpPriors[p].getClusterID(k);
-                confusionMatrixSamples[sampleNumber][p][clusterID][0][0] = randomDataGenerator.nextBeta(confusionMatrixPrior[0][0] + confusionMatrixCounts[p][clusterID][0][0],
-                                                                                                        confusionMatrixPrior[0][1] + confusionMatrixCounts[p][clusterID][0][1]);
-                confusionMatrixSamples[sampleNumber][p][clusterID][1][0] = randomDataGenerator.nextBeta(confusionMatrixPrior[1][0] + confusionMatrixCounts[p][clusterID][1][0],
-                                                                                                        confusionMatrixPrior[1][1] + confusionMatrixCounts[p][clusterID][1][1]);
-                confusionMatrixSamples[sampleNumber][p][clusterID][0][1] = 1 - confusionMatrixSamples[sampleNumber][p][clusterID][0][0];
-                confusionMatrixSamples[sampleNumber][p][clusterID][1][1] = 1 - confusionMatrixSamples[sampleNumber][p][clusterID][1][0];
+            for(int j = 0; j < numberOfFunctions; j++) {
+                confusionMatrixSamples[sampleNumber][p][j][0][0] = randomDataGenerator.nextBeta(confusionMatrixPrior[0][0] + confusionMatrixCounts[p][j][0][0],
+                                                                                                confusionMatrixPrior[0][1] + confusionMatrixCounts[p][j][0][1]);
+                confusionMatrixSamples[sampleNumber][p][j][1][0] = randomDataGenerator.nextBeta(confusionMatrixPrior[1][0] + confusionMatrixCounts[p][j][1][0],
+                                                                                                confusionMatrixPrior[1][1] + confusionMatrixCounts[p][j][1][1]);
+                confusionMatrixSamples[sampleNumber][p][j][0][1] = 1 - confusionMatrixSamples[sampleNumber][p][j][0][0];
+                confusionMatrixSamples[sampleNumber][p][j][1][1] = 1 - confusionMatrixSamples[sampleNumber][p][j][1][0];
             }
         }
     }
@@ -208,6 +198,9 @@ public class BayesianCombinationOfClassifiers {
     private void sampleClusterAssignments(int sampleNumber) {
         for (int p = 0; p < numberOfDomains; p++) {
             for (int j = 0; j < numberOfFunctions; j++) {
+                int cnt_errs[][] = new int[2][2];
+                for (int i = 0; i < numberOfDataSamples[p]; i++)
+                    cnt_errs[labelsSamples[sampleNumber][p][i]][functionOutputsArray[j][p][i]]++;
                 updateCountsBeforeSamplingClusterAssignment(sampleNumber, p, j);
                 int currentNumberOfClusters = dpPriors[p].computeClustersDistribution();
                 double cdf[] = new double[currentNumberOfClusters];
@@ -215,10 +208,10 @@ public class BayesianCombinationOfClassifiers {
                 for (int k = 0; k < currentNumberOfClusters; k++) {
                     int clusterID = dpPriors[p].getClusterID(k);
                     cdf[k] = Math.log(dpPriors[p].getClusterUnnormalizedProbability(clusterID));
-                    cdf[k] += confusionMatrixCounts[p][clusterID][0][0] * Math.log(confusionMatrixSamples[sampleNumber][p][clusterID][0][0]);
-                    cdf[k] += confusionMatrixCounts[p][clusterID][0][1] * Math.log(confusionMatrixSamples[sampleNumber][p][clusterID][0][1]);
-                    cdf[k] += confusionMatrixCounts[p][clusterID][1][0] * Math.log(confusionMatrixSamples[sampleNumber][p][clusterID][1][0]);
-                    cdf[k] += confusionMatrixCounts[p][clusterID][1][1] * Math.log(confusionMatrixSamples[sampleNumber][p][clusterID][1][1]);
+                    cdf[k] += cnt_errs[0][0] * Math.log(confusionMatrixSamples[sampleNumber][p][clusterID][0][0]);
+                    cdf[k] += cnt_errs[0][1] * Math.log(confusionMatrixSamples[sampleNumber][p][clusterID][0][1]);
+                    cdf[k] += cnt_errs[1][0] * Math.log(confusionMatrixSamples[sampleNumber][p][clusterID][1][0]);
+                    cdf[k] += cnt_errs[1][1] * Math.log(confusionMatrixSamples[sampleNumber][p][clusterID][1][1]);
                     if (max < cdf[k])
                         max = cdf[k];
                 }
