@@ -3,5 +3,5 @@ package org.platanios.learn.classification.reflection;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class BayesianCombinationOfClassifiers {
+public class HierarchicalCoupledErrorEstimationConfusion {
 }
