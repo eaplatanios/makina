@@ -167,7 +167,7 @@ abstract class AbstractIterativeSolver implements Solver {
     }
 
     public int getCurrentIteration() {
-        return this.currentIteration;
+        return currentIteration;
     }
 
     @Override

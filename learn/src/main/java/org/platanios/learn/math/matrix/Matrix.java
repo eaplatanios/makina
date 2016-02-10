@@ -213,6 +213,14 @@ public class Matrix {
         return elements;
     }
 
+    public Vector getColumnPackedVectorCopy() {
+        Vector vector = Vectors.dense(rowDimension * columnDimension);
+        for (int i = 0; i < rowDimension; i++)
+            for (int j = 0; j < columnDimension; j++)
+                vector.set(i + j * rowDimension, array[i][j]);
+        return vector;
+    }
+
     /**
      * Makes a one-dimensional row packed copy of the internal two-dimensional array.
      *
@@ -226,6 +234,14 @@ public class Matrix {
             }
         }
         return elements;
+    }
+
+    public Vector getRowPackedVectorCopy() {
+        Vector vector = Vectors.dense(rowDimension * columnDimension);
+        for (int i = 0; i < rowDimension; i++)
+            for (int j = 0; j < columnDimension; j++)
+                vector.set(i * columnDimension + j, array[i][j]);
+        return vector;
     }
 
     /**

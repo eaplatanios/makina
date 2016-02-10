@@ -1,0 +1,10 @@
+*EqualLabels(label, label)
+*MutuallyExclusiveLabels(label, label)
+*SubsumingLabels(label, label)
+LabelPrediction(instance, classifier, label)
+Label(instance, label)
+ErrorRate(classifier, label)
+
+1 !EqualLabels(l1, l2), MutuallyExclusiveLabels(l1, l2), LabelPrediction(i, c, l1), Label(i, l2) => ErrorRate(c, l1)
+1 !EqualLabels(l1, l2), SubsumingLabels(l1, l2), !LabelPrediction(i, c, l1), Label(i, l2) => ErrorRate(c, l1)
+1 LabelPrediction(i, c, l1), !ErrorRate(c, l1) => Label(i, l1)

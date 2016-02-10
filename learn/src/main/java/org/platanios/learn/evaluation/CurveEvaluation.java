@@ -155,7 +155,7 @@ public abstract class CurveEvaluation<T extends Vector, S> {
                 areaChart.getData().add(curveSeries);
             }
             Scene scene = new Scene(areaChart, 350, 400);
-            scene.getStylesheets().add("org.platanios.learn.evaluation/CurveEvaluation.Plot.css");
+            scene.getStylesheets().add("org/platanios/learn/evaluation/CurveEvaluation.Plot.css");
             stage.setScene(scene);
             stage.show();
         }
