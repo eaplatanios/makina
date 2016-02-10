@@ -6,6 +6,7 @@ jar {
 }
 
 dependencies {
+    compile project(':utilities')
     compile 'org.apache.commons:commons-lang3:3.3.2'
     compile 'org.apache.commons:commons-math3:3.4.1'
     compile 'com.google.guava:guava:18.0'

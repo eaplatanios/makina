@@ -1,0 +1,20 @@
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'org.platanios.utilities',
+                   'Implementation-Version': version
+    }
+}
+
+task allJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'org.platanios.utilities',
+                   'Implementation-Version': version
+    }
+    baseName = project.name + '-all'
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    with jar
+}
