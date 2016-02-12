@@ -3,8 +3,6 @@ package org.platanios.learn.graph;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Set;
-
 /**
  * @author Emmanouil Antonios Platanios
  */
@@ -110,12 +108,10 @@ public class PageRankAlgorithm<E> {
             logger.info("Iteration #: %10d", currentIteration);
     }
 
-    private VertexContentType vertexComputeFunction(VertexContentType vertexContent,
-                                                    Set<Edge<VertexContentType, E>> incomingEdges,
-                                                    Set<Edge<VertexContentType, E>> outgoingEdges) {
-        double oldRank = vertexContent.rank;
+    private VertexContentType vertexComputeFunction(Vertex<VertexContentType, E> vertex) {
+        double oldRank = vertex.getContent().rank;
         double newRank = 0.0;
-        for (Edge<VertexContentType, E> incomingEdge : incomingEdges)
+        for (Edge<VertexContentType, E> incomingEdge : vertex.getIncomingEdges())
             newRank += incomingEdge.getSourceVertex().getContent().rank / incomingEdge.getSourceVertex().getNumberOfOutgoingEdges();
         newRank *= dampingFactor;
         newRank += dampingTerm;

@@ -1,6 +1,6 @@
 package org.platanios.learn.graph;
 
-import org.platanios.utilities.TriFunction;
+import java.util.function.Function;
 
 /**
  * @param   <V> Vertex content type.
@@ -43,8 +43,8 @@ public class Edge<V, E> {
         return updatedContent;
     }
 
-    public void computeUpdatedContent(TriFunction<E, Vertex<V, E>, Vertex<V, E>, E> computeFunction) {
-        updatedContent = computeFunction.apply(content, sourceVertex, destinationVertex);
+    public void computeUpdatedContent(Function<Edge<V, E>, E> computeFunction) {
+        updatedContent = computeFunction.apply(this);
     }
 
     public void updateContent() {

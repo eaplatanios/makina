@@ -1,9 +1,8 @@
 package org.platanios.learn.graph;
 
-import org.platanios.utilities.TriFunction;
-
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * @param   <V> Vertex content type.
@@ -60,16 +59,16 @@ public class Graph<V, E> {
         return edges.size();
     }
 
-    public void computeVerticesUpdatedContent(TriFunction<V, Set<Edge<V, E>>, Set<Edge<V, E>>, V> computeFunction) {
+    public void computeVerticesUpdatedContent(Function<Vertex<V, E>, V> computeFunction) {
         vertices.parallelStream().forEach(vertex -> vertex.computeUpdatedContent(computeFunction));
     }
 
-    public void computeEdgesUpdatedContent(TriFunction<E, Vertex<V, E>, Vertex<V, E>, E> computeFunction) {
+    public void computeEdgesUpdatedContent(Function<Edge<V, E>, E> computeFunction) {
         edges.parallelStream().forEach(edge -> edge.computeUpdatedContent(computeFunction));
     }
 
-    public void computeUpdatedContent(TriFunction<V, Set<Edge<V, E>>, Set<Edge<V, E>>, V> vertexComputeFunction,
-                                      TriFunction<E, Vertex<V, E>, Vertex<V, E>, E> edgeComputeFunction) {
+    public void computeUpdatedContent(Function<Vertex<V, E>, V> vertexComputeFunction,
+                                      Function<Edge<V, E>, E> edgeComputeFunction) {
         computeVerticesUpdatedContent(vertexComputeFunction);
         computeEdgesUpdatedContent(edgeComputeFunction);
     }
