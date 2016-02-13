@@ -791,8 +791,8 @@ public class DenseVector extends Vector {
         DenseVector resultVector = new DenseVector(matrix.getColumnDimension());
         double[] resultVectorArray = resultVector.getArray();
         for (int i = 0; i < matrix.getRowDimension(); i++) {
-            for (int j = 0; j < size; j++) {
-                resultVectorArray[i] += array[j] * matrix.getElement(i, j);
+            for (int j = 0; j < matrix.getColumnDimension(); j++) {
+                resultVectorArray[j] += array[i] * matrix.getElement(i, j);
             }
         }
         return resultVector;
