@@ -17,9 +17,13 @@ public final class DerivativesApproximation {
     private Method method;
 
     public DerivativesApproximation(AbstractFunction function, Method method) {
+        this(function, method, method.computeEpsilon());
+    }
+
+    public DerivativesApproximation(AbstractFunction function, Method method, double epsilon) {
         this.function = function;
         this.method = method;
-        epsilon = method.computeEpsilon();
+        this.epsilon = epsilon;
     }
 
     public Vector approximateGradient(Vector point) {

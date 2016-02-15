@@ -14,9 +14,9 @@ public class PageRankAlgorithmTest {
     @Test
     public void testThreeUnlinkedPages() {
         Graph<PageRankAlgorithm.VertexContentType, Void> graph = new Graph<>();
-        Vertex<PageRankAlgorithm.VertexContentType, Void> pageA = new Vertex<>(new PageRankAlgorithm.VertexContentType(random.nextDouble()));
-        Vertex<PageRankAlgorithm.VertexContentType, Void> pageB = new Vertex<>(new PageRankAlgorithm.VertexContentType(random.nextDouble()));
-        Vertex<PageRankAlgorithm.VertexContentType, Void> pageC = new Vertex<>(new PageRankAlgorithm.VertexContentType(random.nextDouble()));
+        Vertex<PageRankAlgorithm.VertexContentType, Void> pageA = new Vertex<>(new PageRankAlgorithm.VertexContentType(0, random.nextDouble()));
+        Vertex<PageRankAlgorithm.VertexContentType, Void> pageB = new Vertex<>(new PageRankAlgorithm.VertexContentType(1, random.nextDouble()));
+        Vertex<PageRankAlgorithm.VertexContentType, Void> pageC = new Vertex<>(new PageRankAlgorithm.VertexContentType(2, random.nextDouble()));
         graph.addVertex(pageA);
         graph.addVertex(pageB);
         graph.addVertex(pageC);
@@ -34,9 +34,9 @@ public class PageRankAlgorithmTest {
     @Test
     public void testThreeFullyLinkedPages() {
         Graph<PageRankAlgorithm.VertexContentType, Void> graph = new Graph<>();
-        Vertex<PageRankAlgorithm.VertexContentType, Void> pageA = new Vertex<>(new PageRankAlgorithm.VertexContentType(random.nextDouble()));
-        Vertex<PageRankAlgorithm.VertexContentType, Void> pageB = new Vertex<>(new PageRankAlgorithm.VertexContentType(random.nextDouble()));
-        Vertex<PageRankAlgorithm.VertexContentType, Void> pageC = new Vertex<>(new PageRankAlgorithm.VertexContentType(random.nextDouble()));
+        Vertex<PageRankAlgorithm.VertexContentType, Void> pageA = new Vertex<>(new PageRankAlgorithm.VertexContentType(0, random.nextDouble()));
+        Vertex<PageRankAlgorithm.VertexContentType, Void> pageB = new Vertex<>(new PageRankAlgorithm.VertexContentType(1, random.nextDouble()));
+        Vertex<PageRankAlgorithm.VertexContentType, Void> pageC = new Vertex<>(new PageRankAlgorithm.VertexContentType(2, random.nextDouble()));
         graph.addVertex(pageA);
         graph.addVertex(pageB);
         graph.addVertex(pageC);
@@ -61,9 +61,9 @@ public class PageRankAlgorithmTest {
     @Test
     public void testThreePartiallyLinkedPages() {
         Graph<PageRankAlgorithm.VertexContentType, Void> graph = new Graph<>();
-        Vertex<PageRankAlgorithm.VertexContentType, Void> pageA = new Vertex<>(new PageRankAlgorithm.VertexContentType(random.nextDouble()));
-        Vertex<PageRankAlgorithm.VertexContentType, Void> pageB = new Vertex<>(new PageRankAlgorithm.VertexContentType(random.nextDouble()));
-        Vertex<PageRankAlgorithm.VertexContentType, Void> pageC = new Vertex<>(new PageRankAlgorithm.VertexContentType(random.nextDouble()));
+        Vertex<PageRankAlgorithm.VertexContentType, Void> pageA = new Vertex<>(new PageRankAlgorithm.VertexContentType(0, random.nextDouble()));
+        Vertex<PageRankAlgorithm.VertexContentType, Void> pageB = new Vertex<>(new PageRankAlgorithm.VertexContentType(1, random.nextDouble()));
+        Vertex<PageRankAlgorithm.VertexContentType, Void> pageC = new Vertex<>(new PageRankAlgorithm.VertexContentType(2, random.nextDouble()));
         graph.addVertex(pageA);
         graph.addVertex(pageB);
         graph.addVertex(pageC);

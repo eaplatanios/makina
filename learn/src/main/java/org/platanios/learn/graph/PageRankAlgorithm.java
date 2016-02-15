@@ -115,20 +115,28 @@ public class PageRankAlgorithm<E> {
             newRank += incomingEdge.getSourceVertex().getContent().rank / incomingEdge.getSourceVertex().getNumberOfOutgoingEdges();
         newRank *= dampingFactor;
         newRank += dampingTerm;
-        return new VertexContentType(newRank, checkForRankConvergence ? Math.abs(newRank - oldRank) : 0.0);
+        return new VertexContentType(vertex.getContent().id,
+                                     newRank,
+                                     checkForRankConvergence ? Math.abs(newRank - oldRank) : 0.0);
     }
 
     public static class VertexContentType {
+        private final int id;
         private final double rank;
         private final double lastAbsoluteChange;
 
-        public VertexContentType(double rank) {
-            this(rank, Double.MAX_VALUE);
+        public VertexContentType(int id, double rank) {
+            this(id, rank, Double.MAX_VALUE);
         }
 
-        public VertexContentType(double rank, double lastAbsoluteChange) {
+        public VertexContentType(int id, double rank, double lastAbsoluteChange) {
+            this.id = id;
             this.rank = rank;
             this.lastAbsoluteChange = lastAbsoluteChange;
+        }
+
+        public int getId() {
+            return id;
         }
 
         public double getRank() {

@@ -53,6 +53,10 @@ public class Vertex<V, E> {
         return outgoingEdges;
     }
 
+    public int getNumberOfIncomingEdges() {
+        return numberOfIncomingEdges;
+    }
+
     public int getNumberOfOutgoingEdges() {
         return numberOfOutgoingEdges;
     }
