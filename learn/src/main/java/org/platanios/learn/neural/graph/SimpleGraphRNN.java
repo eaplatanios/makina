@@ -1,11 +1,14 @@
 package org.platanios.learn.neural.graph;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.platanios.learn.graph.Edge;
 import org.platanios.learn.graph.Graph;
 import org.platanios.learn.graph.Vertex;
 import org.platanios.learn.math.matrix.*;
 import org.platanios.learn.neural.activation.ActivationFunction;
 import org.platanios.learn.neural.activation.SigmoidFunction;
+import org.platanios.learn.neural.network.*;
 import org.platanios.learn.optimization.QuasiNewtonSolver;
 import org.platanios.learn.optimization.function.AbstractFunction;
 import org.platanios.learn.optimization.function.DerivativesApproximation;
@@ -13,6 +16,7 @@ import org.platanios.learn.optimization.function.NonSmoothFunctionException;
 import org.platanios.learn.optimization.linesearch.BacktrackingLineSearch;
 import org.platanios.utilities.Arrays;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -20,6 +24,7 @@ import java.util.Map;
  */
 public class SimpleGraphRNN<E> {
     private final int featureVectorsSize;
+    private final int outputVectorSize;
     private final GraphRecursiveNeuralNetwork<E> graphRNN;
     private final FeatureVectorFunction<E> featureVectorFunction;
     private final InnerProductOutputFunction outputFunction;
@@ -29,15 +34,17 @@ public class SimpleGraphRNN<E> {
     private Vector featureVectorFunctionParameters;
 
     public SimpleGraphRNN(int featureVectorsSize,
+                          int outputVectorSize,
                           int maximumNumberOfSteps,
                           Graph<GraphRecursiveNeuralNetwork.VertexContentType, E> graph,
                           Map<Integer, Vector> trainingData) {
         this.featureVectorsSize = featureVectorsSize;
+        this.outputVectorSize = outputVectorSize;
         featureVectorFunction = new FeatureVectorFunction<>(featureVectorsSize);
-        outputFunction = new InnerProductOutputFunction();
+        outputFunction = new InnerProductOutputFunction(featureVectorsSize, outputVectorSize);
         graphRNN = new GraphRecursiveNeuralNetwork<>(
                 featureVectorsSize,
-                1,
+                outputVectorSize,
                 maximumNumberOfSteps,
                 graph,
                 trainingData,
@@ -46,7 +53,7 @@ public class SimpleGraphRNN<E> {
                 new L2NormLossFunction(),
 //                Vectors.dense(featureVectorFunction.getParametersVectorSize()),
                 featureVectorFunction.getInitialParametersVector(),
-                Vectors.dense(featureVectorsSize)
+                outputFunction.getInitialParametersVector()
         );
         objectiveFunction = new ObjectiveFunction();
     }
@@ -55,11 +62,28 @@ public class SimpleGraphRNN<E> {
         return graphRNN.getGraph();
     }
 
+    public boolean checkDerivative(double tolerance) {
+        try {
+            graphRNN.randomizeGraph();
+            DerivativesApproximation derivativesApproximation =
+                    new DerivativesApproximation(objectiveFunction, DerivativesApproximation.Method.CENTRAL_DIFFERENCE, 1e-4);
+            Vector point = DenseVector.generateRandomVector(outputFunction.getParametersVectorSize() + featureVectorFunction.getParametersVectorSize());
+            double[] actualResult = derivativesApproximation.approximateGradient(point).getDenseArray();
+            double[] expectedResult = objectiveFunction.getGradient(point).getDenseArray();
+            graphRNN.resetGraph();
+            return Arrays.equals(actualResult, expectedResult, tolerance);
+        } catch (NonSmoothFunctionException e) {
+            return false;
+        }
+    }
+
     public void trainNetwork() {
-        Vector initialPoint = Vectors.dense(featureVectorsSize + featureVectorFunction.getParametersVectorSize());
+        Vector initialPoint = Vectors.dense(outputFunction.getParametersVectorSize() + featureVectorFunction.getParametersVectorSize());
+        for (Vector.VectorElement element : outputFunction.getInitialParametersVector())
+            initialPoint.set(element.index(), element.value());
         for (Vector.VectorElement element : featureVectorFunction.getInitialParametersVector())
             initialPoint.set(element.index() + featureVectorsSize, element.value());
-        BacktrackingLineSearch lineSearch = new BacktrackingLineSearch(objectiveFunction, 0.9, 0.5);
+        BacktrackingLineSearch lineSearch = new BacktrackingLineSearch(objectiveFunction, 0.5, 0.5);
         lineSearch.setInitialStepSize(1.0);
         QuasiNewtonSolver solver =
                 new QuasiNewtonSolver.Builder(objectiveFunction, initialPoint)
@@ -87,8 +111,8 @@ public class SimpleGraphRNN<E> {
 //                        .loggingLevel(5)
 //                        .build();
         Vector solution = solver.solve();
-        outputFunctionParameters = solution.get(0, featureVectorsSize - 1);
-        featureVectorFunctionParameters = solution.get(featureVectorsSize, solution.size() - 1);
+        outputFunctionParameters = solution.get(0, outputFunction.getParametersVectorSize() - 1);
+        featureVectorFunctionParameters = solution.get(outputFunction.getParametersVectorSize(), solution.size() - 1);
         graphRNN.setOutputFunctionParameters(outputFunctionParameters);
         graphRNN.setFeatureVectorFunctionParameters(featureVectorFunctionParameters);
     }
@@ -101,25 +125,12 @@ public class SimpleGraphRNN<E> {
         graphRNN.resetGraph();
     }
 
-    public double getOutputForVertex(Vertex<GraphRecursiveNeuralNetwork.VertexContentType, E> vertex) {
-        return outputFunction.value(vertex.getContent().getFeatureVector(), outputFunctionParameters).get(0);
-    }
-
-    public boolean checkDerivative(double tolerance) {
-        try {
-            DerivativesApproximation derivativesApproximation =
-                    new DerivativesApproximation(objectiveFunction, DerivativesApproximation.Method.CENTRAL_DIFFERENCE);
-            Vector point = DenseVector.generateRandomVector(featureVectorsSize + featureVectorFunction.getParametersVectorSize());
-            double[] actualResult = derivativesApproximation.approximateGradient(point).getDenseArray();
-            double[] expectedResult = objectiveFunction.getGradient(point).getDenseArray();
-            return Arrays.equals(actualResult, expectedResult, tolerance);
-        } catch (NonSmoothFunctionException e) {
-            return false;
-        }
+    public Vector getOutputForVertex(Vertex<GraphRecursiveNeuralNetwork.VertexContentType, E> vertex) {
+        return outputFunction.value(vertex.getContent().getFeatureVector(), outputFunctionParameters);
     }
 
     private class ObjectiveFunction extends AbstractFunction {
-        private Vector oldPoint = Vectors.dense(featureVectorsSize + featureVectorFunction.getParametersVectorSize());
+        private Vector oldPoint = Vectors.dense(0);
 
         @Override
         protected double computeValue(Vector point) {
@@ -130,30 +141,59 @@ public class SimpleGraphRNN<E> {
         @Override
         protected Vector computeGradient(Vector point) {
             checkPoint(point);
-            Vector gradient = Vectors.dense(featureVectorsSize + featureVectorFunction.getParametersVectorSize());
-            gradient.set(0, featureVectorsSize - 1, graphRNN.getOutputFunctionParametersGradient());
-            gradient.set(featureVectorsSize, point.size() - 1, graphRNN.getFeatureVectorFunctionParametersGradient());
+            Vector gradient = Vectors.dense(outputFunction.getParametersVectorSize() + featureVectorFunction.getParametersVectorSize());
+            gradient.set(0, outputFunction.getParametersVectorSize() - 1, graphRNN.getOutputFunctionParametersGradient());
+            gradient.set(outputFunction.getParametersVectorSize(), point.size() - 1, graphRNN.getFeatureVectorFunctionParametersGradient());
             return gradient;
         }
 
         private void checkPoint(Vector point) {
             if (!Arrays.equals(oldPoint.getDenseArray(), point.getDenseArray(), 1e-5)) {
-                graphRNN.setOutputFunctionParameters(point.get(0, featureVectorsSize - 1));
-                graphRNN.setFeatureVectorFunctionParameters(point.get(featureVectorsSize, point.size() - 1));
+                graphRNN.setOutputFunctionParameters(point.get(0, outputFunction.getParametersVectorSize() - 1));
+                graphRNN.setFeatureVectorFunctionParameters(point.get(outputFunction.getParametersVectorSize(), point.size() - 1));
+                oldPoint = point;
             }
         }
     }
 
     public static class FeatureVectorFunction<E> extends GraphRecursiveNeuralNetwork.FeatureVectorFunction<GraphRecursiveNeuralNetwork.VertexContentType, E> {
-//        private final ActivationFunction activationFunction = new LeakyRectifiedLinearFunction.Builder().build();
+        //        private final ActivationFunction activationFunction = new LeakyRectifiedLinearFunction.Builder().build();
         private final ActivationFunction activationFunction = new SigmoidFunction();
+        private final Network network;
+        private final Variable phi;
+        private final Variable phiIn;
+        private final Variable phiOut;
+        private final Variable newPhi;
 
         private final int featureVectorsSize;
         private final int parametersVectorSize;
 
+        private State networkState;
+
         public FeatureVectorFunction(int featureVectorsSize) {
             this.featureVectorsSize = featureVectorsSize;
             parametersVectorSize = 3 * (featureVectorsSize * featureVectorsSize) + featureVectorsSize;
+            InputLayer phi = Layers.input(featureVectorsSize);
+            InputLayer phiIn = Layers.input(featureVectorsSize);
+            InputLayer phiOut = Layers.input(featureVectorsSize);
+            Layer phiHiddenLayer = Layers.fullyConnected(phi, phi.outputSize(), "W_phi", "b");
+            Layer phiInHiddenLayer = Layers.fullyConnected(phiIn, phiIn.outputSize(), "W_phi_in");
+            Layer phiOutHiddenLayer = Layers.fullyConnected(phiOut, phiOut.outputSize(), "W_phi_out");
+            Layer additionHiddenLayer = Layers.addition(phiHiddenLayer, phiInHiddenLayer, phiOutHiddenLayer);
+            Layer sigmoidLayer = Layers.sigmoidActivation(additionHiddenLayer);
+            Layer outputLayer = Layers.output(sigmoidLayer);
+            network = new Network.Builder(Lists.newArrayList(phi, phiIn, phiOut))
+                    .addLayer(phiHiddenLayer)
+                    .addLayer(phiInHiddenLayer)
+                    .addLayer(phiOutHiddenLayer)
+                    .addLayer(additionHiddenLayer)
+                    .addLayer(sigmoidLayer)
+                    .addLayer(outputLayer)
+                    .build();
+            this.phi = phi.inputVariable();
+            this.phiIn = phiIn.inputVariable();
+            this.phiOut = phiOut.inputVariable();
+            this.newPhi = sigmoidLayer.outputVariable();
         }
 
         public int getParametersVectorSize() {
@@ -176,28 +216,42 @@ public class SimpleGraphRNN<E> {
         public Vector value(Vector parameters, Vertex<GraphRecursiveNeuralNetwork.VertexContentType, E> vertex, int step) {
             Vector value = Vectors.dense(featureVectorsSize);
             int parameterVectorIndex = 0;
-            for (int i = 0; i < featureVectorsSize; i++)
-                for (int j = 0; j < featureVectorsSize; j++)
+            for (int j = 0; j < featureVectorsSize; j++)
+                for (int i = 0; i < featureVectorsSize; i++)
                     value.set(i, value.get(i) + parameters.get(parameterVectorIndex++) * vertex.getContent().featureVectors[step].get(j));
             Vector incomingFeatureVectorsSum = Vectors.dense(featureVectorsSize);
             for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> incomingEdge : vertex.getIncomingEdges()) {
                 GraphRecursiveNeuralNetwork.VertexContentType vertexContent = incomingEdge.getSourceVertex().getContent();
                 incomingFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
             }
-            for (int i = 0; i < featureVectorsSize; i++)
-                for (int j = 0; j < featureVectorsSize; j++)
+            for (int j = 0; j < featureVectorsSize; j++)
+                for (int i = 0; i < featureVectorsSize; i++)
                     value.set(i, value.get(i) + parameters.get(parameterVectorIndex++) * incomingFeatureVectorsSum.get(j));
             Vector outgoingFeatureVectorsSum = Vectors.dense(featureVectorsSize);
             for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> outgoingEdge : vertex.getOutgoingEdges()) {
                 GraphRecursiveNeuralNetwork.VertexContentType vertexContent = outgoingEdge.getDestinationVertex().getContent();
                 outgoingFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
             }
-            for (int i = 0; i < featureVectorsSize; i++)
-                for (int j = 0; j < featureVectorsSize; j++)
+            for (int j = 0; j < featureVectorsSize; j++)
+                for (int i = 0; i < featureVectorsSize; i++)
                     value.set(i, value.get(i) + parameters.get(parameterVectorIndex++) * outgoingFeatureVectorsSum.get(j));
             for (int i = 0; i < featureVectorsSize; i++)
                 value.set(i, value.get(i) + parameters.get(parameterVectorIndex++));
-            return activationFunction.getValue(value);
+//            return activationFunction.getValue(computeValue);
+            value = activationFunction.getValue(value);
+
+
+            networkState = new State(Sets.union(network.variables(), network.parameters()));
+            networkState.set(phi, vertex.getContent().featureVectors[step]);
+            networkState.set(phiIn, incomingFeatureVectorsSum);
+            networkState.set(phiOut, outgoingFeatureVectorsSum);
+            networkState.set("W_phi", parameters.get(0, featureVectorsSize * featureVectorsSize - 1));
+            networkState.set("W_phi_in", parameters.get(featureVectorsSize * featureVectorsSize, 2 * featureVectorsSize * featureVectorsSize - 1));
+            networkState.set("W_phi_out", parameters.get(2 * featureVectorsSize * featureVectorsSize, 3 * featureVectorsSize * featureVectorsSize - 1));
+            networkState.set("b", parameters.get(3 * featureVectorsSize * featureVectorsSize, 3 * featureVectorsSize * featureVectorsSize + featureVectorsSize - 1));
+            Vector networkValue = network.value(networkState);
+
+            return value;
         }
 
         @Override
@@ -205,8 +259,8 @@ public class SimpleGraphRNN<E> {
             Vector value = Vectors.dense(featureVectorsSize);
             Matrix gradient = new Matrix(featureVectorsSize, parameters.size());
             int parameterVectorIndex = 0;
-            for (int i = 0; i < featureVectorsSize; i++)
-                for (int j = 0; j < featureVectorsSize; j++) {
+            for (int j = 0; j < featureVectorsSize; j++)
+                for (int i = 0; i < featureVectorsSize; i++) {
                     value.set(i, value.get(i) + parameters.get(parameterVectorIndex) * vertex.getContent().featureVectors[step].get(j));
                     gradient.setElement(i, parameterVectorIndex++, vertex.getContent().featureVectors[step].get(j));
                 }
@@ -215,8 +269,8 @@ public class SimpleGraphRNN<E> {
                 GraphRecursiveNeuralNetwork.VertexContentType vertexContent = incomingEdge.getSourceVertex().getContent();
                 incomingFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
             }
-            for (int i = 0; i < featureVectorsSize; i++)
-                for (int j = 0; j < featureVectorsSize; j++) {
+            for (int j = 0; j < featureVectorsSize; j++)
+                for (int i = 0; i < featureVectorsSize; i++) {
                     value.set(i, value.get(i) + parameters.get(parameterVectorIndex) * incomingFeatureVectorsSum.get(j));
                     gradient.setElement(i, parameterVectorIndex++, incomingFeatureVectorsSum.get(j));
                 }
@@ -225,8 +279,8 @@ public class SimpleGraphRNN<E> {
                 GraphRecursiveNeuralNetwork.VertexContentType vertexContent = outgoingEdge.getDestinationVertex().getContent();
                 outgoingFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
             }
-            for (int i = 0; i < featureVectorsSize; i++)
-                for (int j = 0; j < featureVectorsSize; j++) {
+            for (int j = 0; j < featureVectorsSize; j++)
+                for (int i = 0; i < featureVectorsSize; i++) {
                     value.set(i, value.get(i) + parameters.get(parameterVectorIndex) * outgoingFeatureVectorsSum.get(j));
                     gradient.setElement(i, parameterVectorIndex++, outgoingFeatureVectorsSum.get(j));
                 }
@@ -234,7 +288,38 @@ public class SimpleGraphRNN<E> {
                 value.set(i, value.get(i) + parameters.get(parameterVectorIndex));
                 gradient.setElement(i, parameterVectorIndex++, 1);
             }
-            return activationFunction.getGradient(value).multiply(gradient);
+//            return activationFunction.getGradient(value).multiply(gradient);
+            gradient = activationFunction.getGradient(value).multiply(gradient);
+
+
+            networkState = new State(Sets.union(network.variables(), network.parameters()));
+            networkState.set(phi, vertex.getContent().featureVectors[step]);
+            networkState.set(phiIn, incomingFeatureVectorsSum);
+            networkState.set(phiOut, outgoingFeatureVectorsSum);
+            networkState.set("W_phi", parameters.get(0, featureVectorsSize * featureVectorsSize - 1));
+            networkState.set("W_phi_in", parameters.get(featureVectorsSize * featureVectorsSize, 2 * featureVectorsSize * featureVectorsSize - 1));
+            networkState.set("W_phi_out", parameters.get(2 * featureVectorsSize * featureVectorsSize, 3 * featureVectorsSize * featureVectorsSize - 1));
+            networkState.set("b", parameters.get(3 * featureVectorsSize * featureVectorsSize, 3 * featureVectorsSize * featureVectorsSize + featureVectorsSize - 1));
+            List<Matrix> networkGradients = network.gradient(networkState, Lists.newArrayList(
+                    Variables.get("W_phi"),
+                    Variables.get("W_phi_in"),
+                    Variables.get("W_phi_out"),
+                    Variables.get("b")
+            ));
+            Matrix networkGradient = Matrix.zeros(featureVectorsSize, parametersVectorSize);
+            networkGradient.setSubMatrix(0, featureVectorsSize - 1,
+                                         0, featureVectorsSize * featureVectorsSize - 1,
+                                         networkGradients.get(0));
+            networkGradient.setSubMatrix(0, featureVectorsSize - 1,
+                                         featureVectorsSize * featureVectorsSize, 2 * featureVectorsSize * featureVectorsSize - 1,
+                                         networkGradients.get(1));
+            networkGradient.setSubMatrix(0, featureVectorsSize - 1,
+                                         2 * featureVectorsSize * featureVectorsSize, 3 * featureVectorsSize * featureVectorsSize - 1,
+                                         networkGradients.get(2));
+            networkGradient.setSubMatrix(0, featureVectorsSize - 1,
+                                         3 * featureVectorsSize * featureVectorsSize, 3 * featureVectorsSize * featureVectorsSize + featureVectorsSize - 1,
+                                         networkGradients.get(3));
+            return gradient;
         }
 
         @Override
@@ -280,22 +365,56 @@ public class SimpleGraphRNN<E> {
     }
 
     public static class InnerProductOutputFunction extends GraphRecursiveNeuralNetwork.OutputFunction {
+        private final int featureVectorsSize;
+        private final int outputVectorSize;
+        private final int parametersVectorSize;
+
+        public InnerProductOutputFunction(int featureVectorsSize, int outputVectorSize) {
+            this.featureVectorsSize = featureVectorsSize;
+            this.outputVectorSize = outputVectorSize;
+            this.parametersVectorSize = featureVectorsSize * outputVectorSize;
+        }
+
+        public int getParametersVectorSize() {
+            return parametersVectorSize;
+        }
+
+        public Vector getInitialParametersVector() {
+            Vector initialParametersVector = Vectors.dense(parametersVectorSize);
+            int parameterVectorIndex = 0;
+            for (int i = 0; i < outputVectorSize; i++)
+                for (int j = 0; j < featureVectorsSize; j++)
+                    initialParametersVector.set(parameterVectorIndex++, 1 / featureVectorsSize);
+            return initialParametersVector;
+        }
+
         @Override
         public Vector value(Vector featureVector, Vector parameters) {
-            return Vectors.dense(featureVector.inner(parameters));
+            Vector value = Vectors.dense(outputVectorSize);
+            int parameterVectorIndex = 0;
+            for (int i = 0; i < outputVectorSize; i++)
+                for (int j = 0; j < featureVectorsSize; j++)
+                    value.set(i, value.get(i) + parameters.get(parameterVectorIndex++) * featureVector.get(j));
+            return value;
         }
 
         @Override
         public Matrix featureVectorGradient(Vector featureVector, Vector parameters) {
-            Matrix gradient = new Matrix(1, parameters.size());
-            gradient.setRow(0, parameters);
+            Matrix gradient = new Matrix(outputVectorSize, featureVectorsSize);
+            int parameterVectorIndex = 0;
+            for (int i = 0; i < outputVectorSize; i++)
+                for (int j = 0; j < featureVectorsSize; j++)
+                    gradient.setElement(i, j, parameters.get(parameterVectorIndex++));
             return gradient;
         }
 
         @Override
         public Matrix parametersGradient(Vector featureVector, Vector parameters) {
-            Matrix gradient = new Matrix(1, featureVector.size());
-            gradient.setRow(0, featureVector);
+            Matrix gradient = new Matrix(outputVectorSize, parametersVectorSize);
+            int parameterVectorIndex = 0;
+            for (int i = 0; i < outputVectorSize; i++)
+                for (int j = 0; j < featureVectorsSize; j++)
+                    gradient.setElement(i, parameterVectorIndex++, featureVector.get(j));
             return gradient;
         }
     }

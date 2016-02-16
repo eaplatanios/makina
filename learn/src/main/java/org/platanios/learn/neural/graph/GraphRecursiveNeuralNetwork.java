@@ -110,7 +110,20 @@ public class GraphRecursiveNeuralNetwork<E> {
 
     private VertexContentType resetVertexComputeFunction(Vertex<VertexContentType, E> vertex) {
         Vector[] featureVectors = new Vector[maximumNumberOfSteps];
-        featureVectors[0] = Vectors.dense(featureVectorsSize);  // TODO: Change the feature vectors initial value.
+        featureVectors[0] = Vectors.dense(featureVectorsSize, 0.2);  // TODO: Change the feature vectors initial computeValue.
+        return new VertexContentType(vertex.getContent().id, 0, featureVectors, null);
+    }
+
+    public void randomizeGraph() {
+        graph.computeVerticesUpdatedContent(this::randomizeVertexComputeFunction);
+        graph.updateVerticesContent();
+        needsForwardPass = true;
+        needsBackwardPass = true;
+    }
+
+    private VertexContentType randomizeVertexComputeFunction(Vertex<VertexContentType, E> vertex) {
+        Vector[] featureVectors = new Vector[maximumNumberOfSteps];
+        featureVectors[0] = Vectors.random(featureVectorsSize);  // TODO: Change the feature vectors initial computeValue.
         return new VertexContentType(vertex.getContent().id, 0, featureVectors, null);
     }
 
