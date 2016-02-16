@@ -21,7 +21,7 @@
 //    protected int numberOfFeatures;
 //    /** Indicates whether sparse vectors are being used or not. */
 //    protected boolean sparse;
-//    /** Indicates whether a separate bias term must be used along with the feature weights. Note that if a value of
+//    /** Indicates whether a separate bias term must be used along with the feature weights. Note that if a computeValue of
 //     * 1 has already been appended to all feature vectors, then there is no need for a bias term. */
 //    protected boolean useBiasTerm;
 //    /** The kernel function to use. */
@@ -48,7 +48,7 @@
 //        protected int numberOfFeatures;
 //        /** Indicates whether sparse vectors should be used or not. */
 //        private boolean sparse = false;
-//        /** Indicates whether a separate bias term must be used along with the feature weights. Note that if a value of
+//        /** Indicates whether a separate bias term must be used along with the feature weights. Note that if a computeValue of
 //         * 1 has already been appended to all feature vectors, then there is no need for a bias term. */
 //        protected boolean useBiasTerm = true;
 //        /** The kernel function to use. */
@@ -67,7 +67,7 @@
 //        /**
 //         * Sets the {@link #sparse} field that indicates whether sparse vectors should be used.
 //         *
-//         * @param   sparse  The value to which to set the {@link #sparse} field.
+//         * @param   sparse  The computeValue to which to set the {@link #sparse} field.
 //         * @return          This builder object itself. That is done so that we can use a nice and expressive code
 //         *                  format when we build objects using this builder class.
 //         */
@@ -78,10 +78,10 @@
 //
 //        /**
 //         * Sets the {@link #useBiasTerm} field that indicates whether a separate bias term must be used along with the
-//         * feature weights. Note that if a value of 1 has already been appended to all feature vectors, then there is no
+//         * feature weights. Note that if a computeValue of 1 has already been appended to all feature vectors, then there is no
 //         * need for a bias term.
 //         *
-//         * @param   useBiasTerm The value to which to set the {@link #useBiasTerm} field.
+//         * @param   useBiasTerm The computeValue to which to set the {@link #useBiasTerm} field.
 //         * @return              This builder object itself. That is done so that we can use a nice and expressive code
 //         *                      format when we build objects using this builder class.
 //         */
@@ -95,7 +95,7 @@
 //         * vector machine being built. The default kernel function is a linear kernel function with no shift (i.e., an
 //         * inner product).
 //         *
-//         * @param   kernelFunction  The value to which to set the {@link #kernelFunction} field.
+//         * @param   kernelFunction  The computeValue to which to set the {@link #kernelFunction} field.
 //         * @return                  This builder object itself. That is done so that we can use a nice and expressive
 //         *                          code format when we build objects using this builder class.
 //         */
@@ -104,13 +104,13 @@
 //            return self();
 //        }
 //
-//        public T setParameter(String name, Object value) {
+//        public T setParameter(String name, Object computeValue) {
 //            switch (name) {
 //                case "sparse":
-//                    sparse = (boolean) value;
+//                    sparse = (boolean) computeValue;
 //                    break;
 //                case "useBiasTerm":
-//                    useBiasTerm = (boolean) value;
+//                    useBiasTerm = (boolean) computeValue;
 //                    break;
 //                default:
 //                    break;

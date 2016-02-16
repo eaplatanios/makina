@@ -10,11 +10,11 @@ public class MathUtilities {
     }
 
     /**
-     * Computes the argmax of a given array. This method returns the index of the element with the maximum value within
+     * Computes the argmax of a given array. This method returns the index of the element with the maximum computeValue within
      * the given array.
      *
      * @param   array   The array to use.
-     * @return          The index of the element with the maximum value within the given array.
+     * @return          The index of the element with the maximum computeValue within the given array.
      */
     public static int computeArgMax(double[] array) {
         double maximumValue = Double.MIN_VALUE;

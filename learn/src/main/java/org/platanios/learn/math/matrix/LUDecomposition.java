@@ -24,9 +24,9 @@ public class LUDecomposition {
     /** One-dimensional array used for internal storage of the pivot vector. */
     private final int[] pivot;
 
-    /** An integer holding the pivot sign. Its value is {@code 1} for positive sign and {@code -1} for negative sign. */
+    /** An integer holding the pivot sign. Its computeValue is {@code 1} for positive sign and {@code -1} for negative sign. */
     private int pivotSign;
-    /** A boolean value indicating whether or not the matrix whose decomposition is being computed is non-singular. */
+    /** A boolean computeValue indicating whether or not the matrix whose decomposition is being computed is non-singular. */
     private boolean isNonSingular;
 
     /**
@@ -221,10 +221,10 @@ public class LUDecomposition {
     }
 
     /**
-     * Gets the boolean value indicating whether or not the matrix whose decomposition is being computed is
+     * Gets the boolean computeValue indicating whether or not the matrix whose decomposition is being computed is
      * non-singular.
      *
-     * @return  A boolean value indicating whether or not the matrix whose decomposition is being computed is
+     * @return  A boolean computeValue indicating whether or not the matrix whose decomposition is being computed is
      *          non-singular.
      */
     public boolean isNonSingular() {

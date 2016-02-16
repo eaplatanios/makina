@@ -26,7 +26,7 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Double> 
     protected int numberOfFeatures;
     /** Indicates whether sparse vectors are being used or not. */
     protected boolean sparse;
-    /** Indicates whether a separate bias term must be used along with the feature weights. Note that if a value of
+    /** Indicates whether a separate bias term must be used along with the feature weights. Note that if a computeValue of
      * 1 has already been appended to all feature vectors, then there is no need for a bias term. */
     protected boolean useBiasTerm;
 
@@ -51,7 +51,7 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Double> 
         protected int numberOfFeatures;
         /** Indicates whether sparse vectors should be used or not. */
         private boolean sparse = false;
-        /** Indicates whether a separate bias term must be used along with the feature weights. Note that if a value of
+        /** Indicates whether a separate bias term must be used along with the feature weights. Note that if a computeValue of
          * 1 has already been appended to all feature vectors, then there is no need for a bias term. */
         protected boolean useBiasTerm = true;
         /** The weights (i.e., parameters) used by this logistic regression model. Note that the size of this vector is
@@ -68,7 +68,7 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Double> 
         /**
          * Sets the {@link #sparse} field that indicates whether sparse vectors should be used.
          *
-         * @param   sparse  The value to which to set the {@link #sparse} field.
+         * @param   sparse  The computeValue to which to set the {@link #sparse} field.
          * @return          This builder object itself. That is done so that we can use a nice and expressive code
          *                  format when we build objects using this builder class.
          */
@@ -79,10 +79,10 @@ public class LogisticRegressionPrediction implements Classifier<Vector, Double> 
 
         /**
          * Sets the {@link #useBiasTerm} field that indicates whether a separate bias term must be used along with the
-         * feature weights. Note that if a value of 1 has already been appended to all feature vectors, then there is no
+         * feature weights. Note that if a computeValue of 1 has already been appended to all feature vectors, then there is no
          * need for a bias term.
          *
-         * @param   useBiasTerm The value to which to set the {@link #useBiasTerm} field.
+         * @param   useBiasTerm The computeValue to which to set the {@link #useBiasTerm} field.
          * @return              This builder object itself. That is done so that we can use a nice and expressive code
          *                      format when we build objects using this builder class.
          */

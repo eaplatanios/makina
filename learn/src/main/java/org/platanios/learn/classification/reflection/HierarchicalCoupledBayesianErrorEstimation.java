@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.commons.math3.special.Beta.logBeta;
+
 /**
  * @author Emmanouil Antonios Platanios
  */
@@ -57,7 +59,7 @@ public class HierarchicalCoupledBayesianErrorEstimation {
         numberOfFunctions = functionOutputs.get(0)[0].length;
         numberOfDomains = functionOutputs.size();
         numberOfDataSamples = new int[numberOfDomains];
-        maximumNumberOfClusters = numberOfDomains * numberOfFunctions;
+        maximumNumberOfClusters = (numberOfDomains + 1) * numberOfFunctions;
         functionOutputsArray = new int[numberOfFunctions][numberOfDomains][];
         for (int p = 0; p < numberOfDomains; p++) {
             numberOfDataSamples[p] = functionOutputs.get(p).length;
@@ -81,9 +83,11 @@ public class HierarchicalCoupledBayesianErrorEstimation {
                 labelsSamples[sampleIndex][p] = new int[numberOfDataSamples[p]];
         for (int p = 0; p < numberOfDomains; p++) {
             labelPriorsSamples[0][p] = 0.5;
+            int clusterIndex = 0;
             for (int j = 0; j < numberOfFunctions; j++) {
-                clusterAssignmentSamples[0][p][j] = 0;
-                hierarchicalDirichletProcess.add_items_table_assignment(p, j, 0, 0);
+                clusterAssignmentSamples[0][p][j] = clusterIndex;
+                hierarchicalDirichletProcess.add_items_table_assignment(p, j, clusterIndex, clusterIndex);
+                clusterIndex++;
             }
             for (int i = 0; i < numberOfDataSamples[p]; i++) {
                 int sum = 0;
@@ -104,6 +108,17 @@ public class HierarchicalCoupledBayesianErrorEstimation {
     }
 
     public void runGibbsSampler() {
+//        for (int sampleIndex = 0; sampleIndex < numberOfBurnInSamples; sampleIndex++) {
+//            sampleLabelsPriors(0);
+//            sampleClusterAssignmentsWithCollapsedErrorRates(0);
+//            sampleLabelsWithCollapsedErrorRates(0);
+//        }
+//        for (int sampleIndex = 0; sampleIndex < 100; sampleIndex++) {
+//            sampleLabelsPriors(0);
+//            sampleErrorRates(0);
+//            sampleClusterAssignments(0);
+//            sampleLabels(0);
+//        }
         for (int sampleIndex = 0; sampleIndex < numberOfBurnInSamples; sampleIndex++) {
             sampleLabelsPriors(0);
             sampleErrorRates(0);
@@ -190,6 +205,44 @@ public class HierarchicalCoupledBayesianErrorEstimation {
         }
     }
 
+    private void sampleLabelsWithCollapsedErrorRates(int sampleNumber) {
+        for (int p = 0; p < numberOfDomains; p++){
+            for (int i = 0; i < numberOfDataSamples[p]; i++) {
+                double p0 = 1 - labelPriorsSamples[sampleNumber][p]; // TODO: Compute this in log-space
+                double p1 = labelPriorsSamples[sampleNumber][p];
+                Map<Integer, AtomicInteger> clusterCounts = new HashMap<>();
+                for (int j = 0; j < numberOfFunctions; j++) {
+                    if (!clusterCounts.containsKey(clusterAssignmentSamples[sampleNumber][p][j]))
+                        clusterCounts.put(clusterAssignmentSamples[sampleNumber][p][j], new AtomicInteger(1));
+                    clusterCounts.get(clusterAssignmentSamples[sampleNumber][p][j]).incrementAndGet();
+                }
+                for (int clusterID : clusterCounts.keySet()) {
+                    int total = clusterCounts.get(clusterID).intValue();
+                    double a1 = errorRatesPriorAlpha + errorRatesCounts[clusterID][1];
+                    double a0 = errorRatesPriorBeta + errorRatesCounts[clusterID][0];
+                    double sum = 0;
+                    for (int j = 0; j < numberOfFunctions; j++)
+                        if (functionOutputsArray[j][p][i] != 1 && clusterAssignmentSamples[sampleNumber][p][j] == clusterID)
+                            sum++;
+                    for (int m = 0; m < sum; m++) {
+                        p0 *= a0 + m;
+                        p1 *= a1 + m;
+                    }
+                    for (int m = 0; m < total - sum; m++) {
+                        p0 *= a1 + m;
+                        p1 *= a0 + m;
+                    }
+                }
+                int newLabel = randomDataGenerator.nextBinomial(1, p1 / (p0 + p1));
+                if (labelsSamples[sampleNumber][p][i] != newLabel) {
+                    updateCountsBeforeSamplingLabel(sampleNumber, p, i);
+                    labelsSamples[sampleNumber][p][i] = newLabel;
+                    updateCountsAfterSamplingLabel(sampleNumber, p, i);
+                }
+            }
+        }
+    }
+
     private void updateCountsAfterSamplingLabel(int sampleNumber, int p, int i) {
         labelsPriorCounts[p][labelsSamples[sampleNumber][p][i]]++;
         int err;
@@ -229,6 +282,49 @@ public class HierarchicalCoupledBayesianErrorEstimation {
                 for (int k = 0; k < total_table_dish; k++) {
                     topic_id = hierarchicalDirichletProcess.pdf[k].topic;
                     cdf[k] += disagreementCounts[p][j] * Math.log(errorRatesSamples[sampleNumber][topic_id]) + (numberOfDataSamples[p] - disagreementCounts[p][j]) * Math.log(1 - errorRatesSamples[sampleNumber][topic_id]);
+                    if(max < cdf[k]) max = cdf[k];
+                }
+                cdf[0] -= max;
+                for (int k = 1; k < total_table_dish; k++) {
+                    cdf[k] -= max;
+                    cdf[k] = Math.log(Math.exp(cdf[k - 1]) + Math.exp(cdf[k]));
+                }
+                double uniform = Math.log(random.nextDouble()) + cdf[total_table_dish - 1];
+                int newClusterID = total_table_dish - 1;
+                clusterAssignmentSamples[sampleNumber][p][j] = hierarchicalDirichletProcess.pdf[newClusterID].topic;
+                for (int k = 0; k < total_table_dish - 1; k++) {
+                    if (cdf[k] > uniform) {
+                        newClusterID = k;
+                        clusterAssignmentSamples[sampleNumber][p][j] = hierarchicalDirichletProcess.pdf[newClusterID].topic;
+                        break;
+                    }
+                }
+                updateCountsAfterSamplingClusterAssignment(sampleNumber, p, j, hierarchicalDirichletProcess.pdf[newClusterID].topic, hierarchicalDirichletProcess.pdf[newClusterID].table);
+            }
+        }
+    }
+
+    private void sampleClusterAssignmentsWithCollapsedErrorRates(int sampleNumber) {
+        for (int p = 0; p < numberOfDomains; p++) {
+            for (int j = 0; j < numberOfFunctions; j++) {
+                updateCountsBeforeSamplingClusterAssignment(sampleNumber,p,j);
+                int total_table_dish = hierarchicalDirichletProcess.prob_table_assignment_for_item(p, j);
+                double cdf[] = new double[total_table_dish];
+                for (int k = 0; k < total_table_dish; k++) {
+                    cdf[k] = Math.log(hierarchicalDirichletProcess.pdf[k].prob);
+                }
+                int topic_id = 0;
+                double max = Double.NEGATIVE_INFINITY;
+                for (int k = 0; k < total_table_dish; k++) {
+                    topic_id = hierarchicalDirichletProcess.pdf[k].topic;
+                    cdf[k] += logBeta(errorRatesPriorAlpha + errorRatesCounts[k][1] + disagreementCounts[p][j],
+                                      errorRatesPriorBeta + errorRatesCounts[k][0] + numberOfDataSamples[p] - disagreementCounts[p][j]);
+                    cdf[k] -= logBeta(errorRatesPriorAlpha + errorRatesCounts[k][1],
+                                      errorRatesPriorBeta + errorRatesCounts[k][0] );
+//                    cdf[k] += disagreementCounts[p][j] *
+//                    		Math.log(errorRatesSamples[sampleNumber][topic_id])
+//                    		+ (numberOfDataSamples[p] - disagreementCounts[p][j])
+//                    		* Math.log(1 - errorRatesSamples[sampleNumber][topic_id]);
                     if(max < cdf[k]) max = cdf[k];
                 }
                 cdf[0] -= max;
@@ -295,49 +391,46 @@ public class HierarchicalCoupledBayesianErrorEstimation {
             // Top level HDP term
             for (int topicID : hierarchicalDirichletProcess.getTakenTopics().toArray())
                 logLikelihood += Math.log(hierarchicalDirichletProcess.getNumberOfTablesForTopic(topicID)) - Math.log(hierarchicalDirichletProcess.getNumberOfTables());
-            check(logLikelihood);
-            for(int p = 0; p < numberOfDomains; p++) {
+            for (int p = 0; p < numberOfDomains; p++) {
                 // Label prior term
                 logLikelihood += (labelsPriorAlpha - 1) * Math.log(labelPriorsSamples[sampleNumber][p])
                         + (labelsPriorBeta - 1) * Math.log(1 - labelPriorsSamples[sampleNumber][p]);
-                check(logLikelihood);
                 // Bottom level HDP term
                 Map<Integer, AtomicInteger> clusterCounts = new HashMap<>();
-                for (int j = 0; j < numberOfFunctions; j++){
-                    if(!clusterCounts.containsKey(clusterAssignmentSamples[sampleNumber][p][j]))
+                for (int j = 0; j < numberOfFunctions; j++) {
+                    if (!clusterCounts.containsKey(clusterAssignmentSamples[sampleNumber][p][j]))
                         clusterCounts.put(clusterAssignmentSamples[sampleNumber][p][j], new AtomicInteger(1));
-                    clusterCounts.get(clusterAssignmentSamples[sampleNumber][p][j]).incrementAndGet();
+                    else
+                        clusterCounts.get(clusterAssignmentSamples[sampleNumber][p][j]).incrementAndGet();
                 }
                 for (int j = 0; j < numberOfFunctions; j++)
                     logLikelihood += Math.log(clusterCounts.get(clusterAssignmentSamples[sampleNumber][p][j]).intValue()) - Math.log(numberOfFunctions);
-                check(logLikelihood);
                 // Labels term
-                for ( int i = 0; i < numberOfDataSamples[p]; i++)
+                for (int i = 0; i < numberOfDataSamples[p]; i++)
                     if (labelsSamples[sampleNumber][p][i] == 1)
                         logLikelihood += Math.log(labelPriorsSamples[sampleNumber][p]);
                     else
                         logLikelihood += Math.log(1 - labelPriorsSamples[sampleNumber][p]);
-                check(logLikelihood);
                 // Error rates term
-                for (int j = 0; j < numberOfFunctions; j++){
-                    for (int i = 0; i < numberOfDataSamples[p]; i++){
-                        int err = (functionOutputsArray[j][p][i] != labelsSamples[sampleNumber][p][i])? 1:0;
-                        check(errorRatesSamples[sampleNumber][clusterAssignmentSamples[sampleNumber][p][j]]);
-                        logLikelihood += (1-err) * Math.log(1 - errorRatesSamples[sampleNumber][clusterAssignmentSamples[sampleNumber][p][j]]);
-                        logLikelihood += (err) * Math.log(errorRatesSamples[sampleNumber][clusterAssignmentSamples[sampleNumber][p][j]]);
+                for (int j = 0; j < numberOfFunctions; j++) {
+                    for (int i = 0; i < numberOfDataSamples[p]; i++) {
+                        int err = (functionOutputsArray[j][p][i] != labelsSamples[sampleNumber][p][i]) ? 1 : 0;
+                        logLikelihood += (1 - err) * Math.log(1 - errorRatesSamples[sampleNumber][clusterAssignmentSamples[sampleNumber][p][j]]);
+                        logLikelihood += err * Math.log(errorRatesSamples[sampleNumber][clusterAssignmentSamples[sampleNumber][p][j]]);
                     }
                 }
-                check(logLikelihood);
+                // Function outputs term
+                for (int j = 0; j < numberOfFunctions; j++)
+                    for (int i = 0; i < numberOfDataSamples[p]; i++) {
+                        if (functionOutputsArray[j][p][i] != labelsSamples[sampleNumber][p][i])
+                            logLikelihood += Math.log(errorRatesSamples[sampleNumber][clusterAssignmentSamples[sampleNumber][p][j]]);
+                        else
+                            logLikelihood += Math.log(1 - errorRatesSamples[sampleNumber][clusterAssignmentSamples[sampleNumber][p][j]]);
+                    }
             }
         }
         logLikelihood /= numberOfSamples;
         return logLikelihood;
-    }
-
-    private boolean check(double value) {
-        if (Double.isNaN(value))
-            return false;
-        return true;
     }
 
     private void storeSample(int sampleIndex) {

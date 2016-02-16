@@ -4,16 +4,18 @@ import org.apache.commons.math3.random.RandomDataGenerator;
 
 import java.lang.reflect.Array;
 import java.util.List;
+import java.util.Random;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
 public class BayesianErrorEstimation {
+    private final Random random = new Random();
     private final RandomDataGenerator randomDataGenerator = new RandomDataGenerator();
     private final double labelsPriorAlpha = 1;
     private final double labelsPriorBeta = 1;
     private final double errorRatesPriorAlpha = 1;
-    private final double errorRatesPriorBeta = 10;
+    private final double errorRatesPriorBeta = 2;
 
     private final int numberOfBurnInSamples;
     private final int numberOfThinningSamples;
@@ -30,19 +32,32 @@ public class BayesianErrorEstimation {
     private final double[][] labelMeans;
     private final double[][] errorRateMeans;
 
+    private final boolean useMutualExclusion;
+
     public BayesianErrorEstimation(List<boolean[][]> functionOutputs,
                                    int numberOfBurnInSamples,
                                    int numberOfThinningSamples,
                                    int numberOfSamples) {
+        this(functionOutputs, numberOfBurnInSamples, numberOfThinningSamples, numberOfSamples, false);
+    }
+
+    public BayesianErrorEstimation(List<boolean[][]> functionOutputs,
+                                   int numberOfBurnInSamples,
+                                   int numberOfThinningSamples,
+                                   int numberOfSamples,
+                                   boolean useMutualExclusion) {
         this.numberOfBurnInSamples = numberOfBurnInSamples;
         this.numberOfThinningSamples = numberOfThinningSamples;
         this.numberOfSamples = numberOfSamples;
+        this.useMutualExclusion = useMutualExclusion;
         numberOfFunctions = functionOutputs.get(0)[0].length;
         numberOfDomains = functionOutputs.size();
         numberOfDataSamples = new int[numberOfDomains];
         functionOutputsArray = new int[numberOfFunctions][numberOfDomains][];
         for (int p = 0; p < numberOfDomains; p++) {
             numberOfDataSamples[p] = functionOutputs.get(p).length;
+            if (useMutualExclusion && p != 0 && numberOfDataSamples[p] != numberOfDataSamples[0])
+                throw new IllegalArgumentException("If the mutual exclusion constraint is used, the number of data samples must be the same for all domains.");
             for (int j = 0; j < numberOfFunctions; j++) {
                 functionOutputsArray[j][p] = new int[numberOfDataSamples[p]];
                 for (int i = 0; i < numberOfDataSamples[p]; i++)
@@ -90,15 +105,15 @@ public class BayesianErrorEstimation {
             labelMeans[p] = new double[numberOfDataSamples[p]];
         for (int sampleNumber = 0; sampleNumber < numberOfSamples; sampleNumber++) {
             for (int p = 0; p < numberOfDomains; p++) {
-                int numberOfPhiBelowChance = 0;
-                for (int j = 0; j < numberOfFunctions; j++)
-                    if (errorRatesSamples[sampleNumber][p][j] < 0.5)
-                        numberOfPhiBelowChance++;
-                if (numberOfPhiBelowChance < numberOfFunctions / 2.0) {
-                    labelPriorsSamples[sampleNumber][p] = 1 - labelPriorsSamples[sampleNumber][p];
-                    for (int j = 0; j < numberOfFunctions; j++)
-                        errorRatesSamples[sampleNumber][p][j] = 1 - errorRatesSamples[sampleNumber][p][j];
-                }
+//                int numberOfPhiBelowChance = 0;
+//                for (int j = 0; j < numberOfFunctions; j++)
+//                    if (errorRatesSamples[sampleNumber][p][j] < 0.5)
+//                        numberOfPhiBelowChance++;
+//                if (numberOfPhiBelowChance < numberOfFunctions / 2.0) {
+//                    labelPriorsSamples[sampleNumber][p] = 1 - labelPriorsSamples[sampleNumber][p];
+//                    for (int j = 0; j < numberOfFunctions; j++)
+//                        errorRatesSamples[sampleNumber][p][j] = 1 - errorRatesSamples[sampleNumber][p][j];
+//                }
                 labelPriorMeans[p] += labelPriorsSamples[sampleNumber][p];
                 for (int j = 0; j < numberOfFunctions; j++)
                     errorRateMeans[p][j] += errorRatesSamples[sampleNumber][p][j];
@@ -122,37 +137,87 @@ public class BayesianErrorEstimation {
             for (int i = 0; i < numberOfDataSamples[p]; i++)
                 labelsCount += labelsSamples[sampleNumber][p][i];
             labelPriorsSamples[sampleNumber][p] = randomDataGenerator.nextBeta(labelsPriorAlpha + labelsCount, labelsPriorBeta + numberOfDataSamples[p] - labelsCount);
-            int numberOfErrorRatesBelowChance = 0;
+//            int numberOfErrorRatesBelowChance = 0;
             for (int j = 0; j < numberOfFunctions; j++) {
                 int disagreementCount = 0;
                 for (int i = 0; i < numberOfDataSamples[p]; i++)
                     if (functionOutputsArray[j][p][i] != labelsSamples[sampleNumber][p][i])
                         disagreementCount++;
                 errorRatesSamples[sampleNumber][p][j] = randomDataGenerator.nextBeta(errorRatesPriorAlpha + disagreementCount, errorRatesPriorBeta + numberOfDataSamples[p] - disagreementCount);
-                if (errorRatesSamples[sampleNumber][p][j] < 0.5)
-                    numberOfErrorRatesBelowChance += 1;
+//                if (errorRatesSamples[sampleNumber][p][j] < 0.5)
+//                    numberOfErrorRatesBelowChance += 1;
             }
-            if (numberOfErrorRatesBelowChance < numberOfFunctions / 2.0)
-                for (int j = 0; j < numberOfFunctions; j++)
-                    errorRatesSamples[sampleNumber][p][j] = 1 - errorRatesSamples[sampleNumber][p][j];
+//            if (numberOfErrorRatesBelowChance < numberOfFunctions / 2.0)
+//                for (int j = 0; j < numberOfFunctions; j++)
+//                    errorRatesSamples[sampleNumber][p][j] = 1 - errorRatesSamples[sampleNumber][p][j];
         }
     }
 
     private void sampleLabels(int sampleNumber) {
-        for (int p = 0; p < numberOfDomains; p++) {
-            for (int i = 0; i < numberOfDataSamples[p]; i++) {
-                double p0 = 1 - labelPriorsSamples[sampleNumber][p];
-                double p1 = labelPriorsSamples[sampleNumber][p];
-                for (int j = 0; j < numberOfFunctions; j++) {
-                    if (functionOutputsArray[j][p][i] == 0) {
-                        p0 *= (1 - errorRatesSamples[sampleNumber][p][j]);
-                        p1 *=errorRatesSamples[sampleNumber][p][j];
-                    } else {
-                        p0 *= errorRatesSamples[sampleNumber][p][j];
-                        p1 *= (1 - errorRatesSamples[sampleNumber][p][j]);
+        if (!useMutualExclusion) {
+            for (int p = 0; p < numberOfDomains; p++) {
+                for (int i = 0; i < numberOfDataSamples[p]; i++) {
+                    double p0 = 1 - labelPriorsSamples[sampleNumber][p];
+                    double p1 = labelPriorsSamples[sampleNumber][p];
+                    for (int j = 0; j < numberOfFunctions; j++) {
+                        if (functionOutputsArray[j][p][i] == 0) {
+                            p0 *= (1 - errorRatesSamples[sampleNumber][p][j]);
+                            p1 *= errorRatesSamples[sampleNumber][p][j];
+                        } else {
+                            p0 *= errorRatesSamples[sampleNumber][p][j];
+                            p1 *= (1 - errorRatesSamples[sampleNumber][p][j]);
+                        }
                     }
+                    labelsSamples[sampleNumber][p][i] = randomDataGenerator.nextBinomial(1, p1 / (p0 + p1));
                 }
-                labelsSamples[sampleNumber][p][i] = randomDataGenerator.nextBinomial(1, p1 / (p0 + p1));
+            }
+        } else {
+            for (int i = 0; i < numberOfDataSamples[0]; i++) {
+                double[] probabilities = new double[numberOfDomains];
+                for (int p = 0; p < numberOfDomains; p++) {
+                    double p0 = 1 - labelPriorsSamples[sampleNumber][p];
+                    double p1 = labelPriorsSamples[sampleNumber][p];
+                    for (int j = 0; j < numberOfFunctions; j++) {
+                        if (functionOutputsArray[j][p][i] == 0) {
+                            p0 *= (1 - errorRatesSamples[sampleNumber][p][j]);
+                            p1 *= errorRatesSamples[sampleNumber][p][j];
+                        } else {
+                            p0 *= errorRatesSamples[sampleNumber][p][j];
+                            p1 *= (1 - errorRatesSamples[sampleNumber][p][j]);
+                        }
+                    }
+                    probabilities[p] = p1 / (p0 + p1);
+                }
+                double[] cdf = new double[numberOfDomains + 1];
+                double max = Double.NEGATIVE_INFINITY;
+                for (int p = 0; p < numberOfDomains; p++) {
+                    cdf[0] += Math.log(1 - probabilities[p]);
+                    cdf[p] += Math.log(probabilities[p]);
+                    for (int k = 0; k < numberOfDomains; k++)
+                        if (k != p)
+                            cdf[p] += Math.log(1 - probabilities[k]);
+                    if (max < cdf[p])
+                        max = cdf[p];
+                }
+                if (max < cdf[0])
+                    max = cdf[0];
+                cdf[0] -= max;
+                for (int p = 1; p < numberOfDomains + 1; p++) {
+                    cdf[p] -= max;
+                    cdf[p] = Math.log(Math.exp(cdf[p - 1]) + Math.exp(cdf[p]));
+                }
+                double uniform = Math.log(random.nextDouble()) + cdf[numberOfDomains - 1];
+                int sample = numberOfDomains - 1;
+                for (int p = 0; p < numberOfDomains - 1; p++)
+                    if (cdf[p] > uniform) {
+                        sample = p;
+                        break;
+                    }
+                for (int p = 0; p < numberOfDomains; p++)
+                    if (sample == p + 1)
+                        labelsSamples[sampleNumber][p][i] = 1;
+                    else
+                        labelsSamples[sampleNumber][p][i] = 0;
             }
         }
     }

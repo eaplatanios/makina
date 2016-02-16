@@ -151,10 +151,10 @@ public class MultiClassLogisticRegression {
         }
 
         /**
-         * Computes the value of the likelihood function for the multi-class logistic regression model.
+         * Computes the computeValue of the likelihood function for the multi-class logistic regression model.
          *
          * @param   weights The current weights vector.
-         * @return          The value of the logistic regression likelihood function.
+         * @return          The computeValue of the logistic regression likelihood function.
          */
         @Override
         public double computeValue(Vector weights) {

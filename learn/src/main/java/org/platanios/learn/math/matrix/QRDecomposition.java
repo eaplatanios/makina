@@ -22,7 +22,7 @@ public class QRDecomposition {
     /** The column dimension of the matrix whose decomposition is being computed. */
     private final int columnDimension;
 
-    /** A boolean value indicating whether or not the matrix whose decomposition is being computed is full rank. */
+    /** A boolean computeValue indicating whether or not the matrix whose decomposition is being computed is full rank. */
     private boolean isFullRank;
 
     /**
@@ -217,9 +217,9 @@ public class QRDecomposition {
     }
 
     /**
-     * Gets the boolean value indicating whether or not the matrix whose decomposition is being computed is full rank.
+     * Gets the boolean computeValue indicating whether or not the matrix whose decomposition is being computed is full rank.
      *
-     * @return  A boolean value indicating whether or not the matrix whose decomposition is being computed is full rank.
+     * @return  A boolean computeValue indicating whether or not the matrix whose decomposition is being computed is full rank.
      */
     public boolean isFullRank() {
         return isFullRank;

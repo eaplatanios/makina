@@ -47,7 +47,7 @@ class ErrorEstimationOptimizationKNITRO implements ErrorEstimationOptimization {
     /** Array with the variables with respect to which the optimization is performed. That is, the array with the error
      * rates. */
     private double[] point;
-    /** Array with the value of the objective function (it is defined as an array but it holds a single value). */
+    /** Array with the computeValue of the objective function (it is defined as an array but it holds a single computeValue). */
     private double[] objectiveValue;
     /** Array with the values of the constraints of the optimization problem (both inequality and equality
      * constraints). */

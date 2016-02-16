@@ -34,7 +34,7 @@ public class ErrorEstimationDomainsHDPNew {
     double error_rate[]; // indexed by topic_id
 
     double alphae = 1;
-    double betae = 1;
+    double betae = 10;
 
     int li_cnt[][];    // indexed by domain_id, possitive/negative prediction
     int sum_li[];       // indexed by domain_id

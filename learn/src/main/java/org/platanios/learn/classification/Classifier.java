@@ -38,7 +38,7 @@ public interface Classifier<T extends Vector, S> {
     }
 
     /**
-     * Predict the probabilities of the class labels being equal to 1 for a set of data instances. One probability value
+     * Predict the probabilities of the class labels being equal to 1 for a set of data instances. One probability computeValue
      * is provided for each data instance in the set.
      *
      * @param   dataSet The set of data instances for which the probabilities are computed in the form of an array.

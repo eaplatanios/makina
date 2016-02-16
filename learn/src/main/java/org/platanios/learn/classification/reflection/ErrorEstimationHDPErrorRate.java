@@ -17,7 +17,7 @@ public class ErrorEstimationHDPErrorRate {
     private final RandomDataGenerator randomDataGenerator = new RandomDataGenerator();
     private final double labelsPriorAlpha = 1;
     private final double labelsPriorBeta = 1;
-    private final double[][] confusionMatrixPrior = new double[][] { new double[] { 10, 1 }, new double[] { 1, 10 } };
+    private final double[][] confusionMatrixPrior = new double[][] { new double[] { 5, 0.5 }, new double[] { 0.5, 5 } };
 
     private final int numberOfBurnInSamples;
     private final int numberOfThinningSamples;
@@ -48,7 +48,8 @@ public class ErrorEstimationHDPErrorRate {
                                             int numberOfBurnInSamples,
                                             int numberOfThinningSamples,
                                             int numberOfSamples,
-                                            double alpha, double gamma) {
+                                            double alpha,
+                                       double gamma) {
         this.numberOfBurnInSamples = numberOfBurnInSamples;
         this.numberOfThinningSamples = numberOfThinningSamples;
         this.numberOfSamples = numberOfSamples;
@@ -294,19 +295,23 @@ public class ErrorEstimationHDPErrorRate {
             }
         }
         double logLikelihood = 0;
+        // Top level HDP term
+        for (int topicID : hierarchicalDirichletProcess.getTakenTopics().toArray())
+            logLikelihood += Math.log(hierarchicalDirichletProcess.getNumberOfTablesForTopic(topicID)) - Math.log(hierarchicalDirichletProcess.getNumberOfTables());
         for (int sampleNumber = 0; sampleNumber < numberOfSamples; sampleNumber++) {
             sampleLabels(sampleNumber);
             for (int p = 0; p < numberOfDomains; p++) {
                 // Label prior term
                 logLikelihood += (labelsPriorAlpha - 1) * Math.log(labelPriorsSamples[sampleNumber][p])
                         + (labelsPriorBeta - 1) * Math.log(1 - labelPriorsSamples[sampleNumber][p]);
-                // Cluster assignments term
+                // Bottom level HDP term
                 Map<Integer, AtomicInteger> clusterCounts = new HashMap<>();
-                for (int j = 0; j < numberOfFunctions; j++)
+                for (int j = 0; j < numberOfFunctions; j++) {
                     if (!clusterCounts.containsKey(clusterAssignmentSamples[sampleNumber][p][j]))
                         clusterCounts.put(clusterAssignmentSamples[sampleNumber][p][j], new AtomicInteger(1));
                     else
                         clusterCounts.get(clusterAssignmentSamples[sampleNumber][p][j]).incrementAndGet();
+                }
                 for (int j = 0; j < numberOfFunctions; j++)
                     logLikelihood += Math.log(clusterCounts.get(clusterAssignmentSamples[sampleNumber][p][j]).intValue()) - Math.log(numberOfFunctions);
                 // Labels term

@@ -258,7 +258,7 @@ class ErrorEstimationOptimizationIpOpt extends Ipopt implements ErrorEstimationO
      * @param   numberOfConstraints     The number of constraints in the optimization problem.
      * @param   constraintsLowerBounds  The array holding the constraints lower bounds values to modify.
      * @param   constraintsUpperBounds  The array holding the constraints upper bounds values to modify.
-     * @return                          A boolean value indicating whether the method execution was successful or not.
+     * @return                          A boolean computeValue indicating whether the method execution was successful or not.
      */
     @Override
     protected boolean get_bounds_info(int numberOfVariables,
@@ -292,18 +292,18 @@ class ErrorEstimationOptimizationIpOpt extends Ipopt implements ErrorEstimationO
      * argument to this method.
      *
      * @param   numberOfVariables           The number of variables in the optimization problem.
-     * @param   initializePoint             Boolean value indicating whether this method must provide values for the
+     * @param   initializePoint             Boolean computeValue indicating whether this method must provide values for the
      *                                      optimization starting point.
-     * @param   point                       The array holding the starting point value to modify.
-     * @param   initializeBoundsMultipliers Boolean value indicating whether this method must provide initial values for
+     * @param   point                       The array holding the starting point computeValue to modify.
+     * @param   initializeBoundsMultipliers Boolean computeValue indicating whether this method must provide initial values for
      *                                      the bounds multipliers.
      * @param   lowerBoundsMultipliers      The array holding the lower bounds multipliers values to modify.
      * @param   upperBoundsMultipliers      The array holding the upper bounds multipliers values to modify.
      * @param   numberOfConstraints         The number of constraints in the optimization problem.
-     * @param   initializeLambda            Boolean value indicating whether this method must provide initial values for
+     * @param   initializeLambda            Boolean computeValue indicating whether this method must provide initial values for
      *                                      the Lagrange multipliers.
      * @param   lambda                      The array holding the Lagrange multipliers values to modify.
-     * @return                              A boolean value indicating whether the method execution was successful or
+     * @return                              A boolean computeValue indicating whether the method execution was successful or
      *                                      not.
      */
     @Override
@@ -323,15 +323,15 @@ class ErrorEstimationOptimizationIpOpt extends Ipopt implements ErrorEstimationO
     }
 
     /**
-     * Computes the objective value at a particular point. The result is stored in an array passed as an argument to
+     * Computes the objective computeValue at a particular point. The result is stored in an array passed as an argument to
      * this method.
      *
      * @param   numberOfVariables   The number of variables in the optimization problem.
      * @param   point               The point in which to evaluate the objective function.
-     * @param   newPoint            Boolean value that is equal to false if any evaluation method was previously called
+     * @param   newPoint            Boolean computeValue that is equal to false if any evaluation method was previously called
      *                              with the same point, and true otherwise.
-     * @param   objectiveValue      The array holding objective value to modify.
-     * @return                      A boolean value indicating whether the method execution was successful or not.
+     * @param   objectiveValue      The array holding objective computeValue to modify.
+     * @return                      A boolean computeValue indicating whether the method execution was successful or not.
      */
     @Override
     protected boolean eval_f(int numberOfVariables,
@@ -348,10 +348,10 @@ class ErrorEstimationOptimizationIpOpt extends Ipopt implements ErrorEstimationO
      *
      * @param   numberOfVariables   The number of variables in the optimization problem.
      * @param   point               The point in which to evaluate the objective function.
-     * @param   newPoint            Boolean value that is equal to false if any evaluation method was previously called
+     * @param   newPoint            Boolean computeValue that is equal to false if any evaluation method was previously called
      *                              with the same point, and true otherwise.
      * @param   objectiveGradient   The array holding the objective function gradients values to modify.
-     * @return                      A boolean value indicating whether the method execution was successful or not.
+     * @return                      A boolean computeValue indicating whether the method execution was successful or not.
      */
     @Override
     protected boolean eval_grad_f(int numberOfVariables,
@@ -369,19 +369,19 @@ class ErrorEstimationOptimizationIpOpt extends Ipopt implements ErrorEstimationO
      *
      * @param   numberOfVariables           The number of variables in the optimization problem.
      * @param   point                       The point in which to evaluate the objective function.
-     * @param   newPoint                    Boolean value that is equal to false if any evaluation method was previously
+     * @param   newPoint                    Boolean computeValue that is equal to false if any evaluation method was previously
      *                                      called with the same point, and true otherwise.
      * @param   objectiveScalingFactor      Scaling factor multiplying the objective function within the Lagrange
      *                                      function.
      * @param   numberOfConstraints         The number of constraints in the optimization problem.
      * @param   lambda                      The values of the Lagrange multipliers.
-     * @param   newLambda                   Boolean value that is equal to false if any evaluation method was previously
+     * @param   newLambda                   Boolean computeValue that is equal to false if any evaluation method was previously
      *                                      called with the same Lagrange multipliers, and true otherwise.
      * @param   numberOfNonZerosInHessian   The number of nonzero elements in the Hessian matrix.
      * @param   rowIndexes                  The row indexes of the nonzero elements in the Hessian matrix.
      * @param   columnIndexes               The column indexes of the nonzero elements in the Hessian matrix.
      * @param   objectiveHessian            The array holding the Hessian matrix values (in sparse form) to modify.
-     * @return                              A boolean value indicating whether the method execution was successful or
+     * @return                              A boolean computeValue indicating whether the method execution was successful or
      *                                      not.
      */
     @Override
@@ -416,11 +416,11 @@ class ErrorEstimationOptimizationIpOpt extends Ipopt implements ErrorEstimationO
      *
      * @param   numberOfVariables   The number of variables in the optimization problem.
      * @param   point               The point in which to evaluate the objective function.
-     * @param   newPoint            Boolean value that is equal to false if any evaluation method was previously called
+     * @param   newPoint            Boolean computeValue that is equal to false if any evaluation method was previously called
      *                              with the same point, and true otherwise.
      * @param   numberOfConstraints The number of constraints in the optimization problem.
      * @param   constraints         The array holding the constraints values to modify.
-     * @return                      A boolean value indicating whether the method execution was successful or not.
+     * @return                      A boolean computeValue indicating whether the method execution was successful or not.
      */
     @Override
     protected boolean eval_g(int numberOfVariables,
@@ -460,7 +460,7 @@ class ErrorEstimationOptimizationIpOpt extends Ipopt implements ErrorEstimationO
      *
      * @param   numberOfVariables           The number of variables in the optimization problem.
      * @param   point                       The point in which to evaluate the objective function.
-     * @param   newPoint                    Boolean value that is equal to false if any evaluation method was previously
+     * @param   newPoint                    Boolean computeValue that is equal to false if any evaluation method was previously
      *                                      called with the same point, and true otherwise.
      * @param   numberOfConstraints         The number of constraints in the optimization problem.
      * @param   numberOfNonZerosInJacobian  The number of nonzero elements in the Jacobian matrix.
@@ -468,7 +468,7 @@ class ErrorEstimationOptimizationIpOpt extends Ipopt implements ErrorEstimationO
      * @param   columnIndexes               The column indexes of the nonzero elements in the Jacobian matrix.
      * @param   constraintsGradients        The array holding the constraints Jacobian matrix values (in sparse form) to
      *                                      modify.
-     * @return                              A boolean value indicating whether the method execution was successful or
+     * @return                              A boolean computeValue indicating whether the method execution was successful or
      *                                      not.
      */
     @Override

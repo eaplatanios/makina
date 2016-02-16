@@ -45,7 +45,7 @@ public class AgreementRatesPowerSetVector extends PowerSetVector {
      * @param   classifiersOutputs          The output labels of the functions for each data sample (the first dimension
      *                                      of the array corresponds to data samples and the second dimension
      *                                      corresponds to the functions).
-     * @param onlyEvenCardinalitySubsets    Boolean value indicating whether or not to only consider sets of even
+     * @param onlyEvenCardinalitySubsets    Boolean computeValue indicating whether or not to only consider sets of even
      *                                      cardinality, out of the whole power set.
      */
     public AgreementRatesPowerSetVector(int numberOfFunctions,

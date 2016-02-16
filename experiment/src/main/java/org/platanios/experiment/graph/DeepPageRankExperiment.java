@@ -90,7 +90,7 @@ public class DeepPageRankExperiment {
     }
 
     public EvaluationResults runRNNExperiment(int featureVectorsSize, int maximumNumberOfSteps) {
-        graphRNNAlgorithm = new SimpleGraphRNN<>(featureVectorsSize, maximumNumberOfSteps, rnnGraph, trainingData);
+        graphRNNAlgorithm = new SimpleGraphRNN<>(featureVectorsSize, 1, maximumNumberOfSteps, rnnGraph, trainingData);
         if (!graphRNNAlgorithm.checkDerivative(1e-5))
             logger.warn("The derivatives of the RNN objective function provided are not the same as those obtained " +
                                 "by the method of finite differences.");
@@ -100,14 +100,14 @@ public class DeepPageRankExperiment {
         logger.info("Finished training RNN for the " + dataSetName + " data set.");
         logger.info("Storing RNN results for the " + dataSetName + " data set.");
         for (Vertex<GraphRecursiveNeuralNetwork.VertexContentType, Void> vertex : rnnGraph.getVertices())
-            rnnScores.put(vertex.getContent().getId(), graphRNNAlgorithm.getOutputForVertex(vertex));
+            rnnScores.put(vertex.getContent().getId(), graphRNNAlgorithm.getOutputForVertex(vertex).get(0));
         logger.info("Finished storing RNN results for the " + dataSetName + " data set.");
-        EvaluationResults results = evaluateResults(maximumNumberOfSteps);
+        EvaluationResults results = evaluateResults();
         graphRNNAlgorithm.resetGraph();
         return results;
     }
 
-    private EvaluationResults evaluateResults(int maximumNumberOfSteps) {
+    private EvaluationResults evaluateResults() {
         double trainMSE = 0.0;
         double testMSE = 0.0;
         double overallMSE = 0.0;
@@ -162,6 +162,6 @@ public class DeepPageRankExperiment {
         DeepPageRankExperiment experiment = new DeepPageRankExperiment(dataSet);
         experiment.runPageRank();
         experiment.sampleRNNTrainingData(0.8);
-        experiment.runRNNExperiments(new int[] { 1, 10 }, new int[] { 2, 11, 21, 31, 41, 51 });
+        experiment.runRNNExperiments(new int[] { 3 }, new int[] { 2, 11, 21, 31, 41, 51 });
     }
 }

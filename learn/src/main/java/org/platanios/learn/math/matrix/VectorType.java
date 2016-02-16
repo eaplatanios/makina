@@ -65,7 +65,7 @@ public enum VectorType {
      * {@link IOException} might be thrown, or the constructed vector might be corrupted in some way.
      *
      * @param   inputStream The input stream to read the contents of this vector from.
-     * @param   includeType Boolean value indicating whether the type of the vector is to also be read from the input
+     * @param   includeType Boolean computeValue indicating whether the type of the vector is to also be read from the input
      *                      stream.
      * @return              The new vector.
      * @throws  IOException

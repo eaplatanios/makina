@@ -131,43 +131,43 @@
 //        }
 //
 //        @Override
-//        public T setParameter(String name, Object value) {
+//        public T setParameter(String name, Object computeValue) {
 //            switch (name) {
 //                case "maximumNumberOfIterations":
-//                    maximumNumberOfIterations = (int) value;
+//                    maximumNumberOfIterations = (int) computeValue;
 //                    break;
 //                case "maximumNumberOfFunctionEvaluations":
-//                    maximumNumberOfFunctionEvaluations = (int) value;
+//                    maximumNumberOfFunctionEvaluations = (int) computeValue;
 //                    break;
 //                case "pointChangeTolerance":
-//                    pointChangeTolerance = (double) value;
+//                    pointChangeTolerance = (double) computeValue;
 //                    break;
 //                case "objectiveChangeTolerance":
-//                    objectiveChangeTolerance = (double) value;
+//                    objectiveChangeTolerance = (double) computeValue;
 //                    break;
 //                case "gradientTolerance":
-//                    gradientTolerance = (double) value;
+//                    gradientTolerance = (double) computeValue;
 //                    break;
 //                case "checkForPointConvergence":
-//                    checkForPointConvergence = (boolean) value;
+//                    checkForPointConvergence = (boolean) computeValue;
 //                    break;
 //                case "checkForObjectiveConvergence":
-//                    checkForObjectiveConvergence = (boolean) value;
+//                    checkForObjectiveConvergence = (boolean) computeValue;
 //                    break;
 //                case "checkForGradientConvergence":
-//                    checkForGradientConvergence = (boolean) value;
+//                    checkForGradientConvergence = (boolean) computeValue;
 //                    break;
 //                case "method":
-//                    method = QuasiNewtonSolver.Method.valueOf((String) value);
+//                    method = QuasiNewtonSolver.Method.valueOf((String) computeValue);
 //                    break;
 //                case "m":
-//                    m = (int) value;
+//                    m = (int) computeValue;
 //                    break;
 //                case "symmetricRankOneSkippingParameter":
-//                    symmetricRankOneSkippingParameter = (double) value;
+//                    symmetricRankOneSkippingParameter = (double) computeValue;
 //                    break;
 //                default:
-//                    super.setParameter(name, value);
+//                    super.setParameter(name, computeValue);
 //            }
 //            return self();
 //        }

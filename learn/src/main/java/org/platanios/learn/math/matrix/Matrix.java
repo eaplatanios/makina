@@ -40,11 +40,11 @@ public class Matrix {
     }
 
     /**
-     * Constructs a matrix with the given dimensions and fills it with the given value.
+     * Constructs a matrix with the given dimensions and fills it with the given computeValue.
      *
      * @param   rowDimension        The row dimension of the matrix.
      * @param   columnDimension     The column dimension of the matrix.
-     * @param   value               The value with which to fill the matrix.
+     * @param   value               The computeValue with which to fill the matrix.
      */
     public Matrix(int rowDimension, int columnDimension, double value) {
         this.rowDimension = rowDimension;
@@ -72,7 +72,7 @@ public class Matrix {
      * Constructs a matrix from a two-dimensional array.
      *
      * @param   array       Two-dimensional array of doubles.
-     * @param   copyArray   Boolean value indicating whether to copy the provided array or use it as it is for the
+     * @param   copyArray   Boolean computeValue indicating whether to copy the provided array or use it as it is for the
      *                      internal two-dimensional array of this array.
      *
      * @throws  IllegalArgumentException    All rows of the input array must have the same length.
@@ -263,31 +263,31 @@ public class Matrix {
     }
 
     /**
-     * Gets the value of the matrix element at the provided position.
+     * Gets the computeValue of the matrix element at the provided position.
      *
      * @param   row     The row index of the element.
      * @param   column  The column index of the element.
-     * @return          The value of the element at the provided position.
+     * @return          The computeValue of the element at the provided position.
      */
     public double getElement(int row, int column) {
         return array[row][column]; // TODO: Check for the index values (i.e. out of bounds).
     }
 
     /**
-     * Sets the value of the matrix element at the provided position to the provided value.
+     * Sets the computeValue of the matrix element at the provided position to the provided computeValue.
      *
      * @param   row     The row index of the element.
      * @param   column  The column index of the element.
-     * @param   value   The value to which to set the element at the provided position.
+     * @param   value   The computeValue to which to set the element at the provided position.
      */
     public void setElement(int row, int column, double value) {
         array[row][column] = value;
     }
 
     /**
-     * Sets the value of all of the matrix elements to the provided value.
+     * Sets the computeValue of all of the matrix elements to the provided computeValue.
      *
-     * @param   value   The value to which to set the elements of this matrix.
+     * @param   value   The computeValue to which to set the elements of this matrix.
      */
     public void setAllElements(double value) {
         for (int i = 0; i < rowDimension; i++) {
@@ -301,7 +301,7 @@ public class Matrix {
      * Sets a row of this matrix.
      *
      * @param   rowIndex    The index of the row to set.
-     * @param   value       The value to which to set the corresponding row of this matrix.
+     * @param   value       The computeValue to which to set the corresponding row of this matrix.
      *
      * @throws  ArrayIndexOutOfBoundsException  The provided row index is out of bounds.
      */
@@ -319,7 +319,7 @@ public class Matrix {
      * Sets a column of this matrix.
      *
      * @param   columnIndex The index of the column to set.
-     * @param   value       The value to which to set the corresponding column of this matrix.
+     * @param   value       The computeValue to which to set the corresponding column of this matrix.
      *
      * @throws  ArrayIndexOutOfBoundsException  The provided column index is out of bounds.
      */
@@ -596,9 +596,9 @@ public class Matrix {
     }
 
     /**
-     * Gets the maximum value of all elements in this matrix.
+     * Gets the maximum computeValue of all elements in this matrix.
      *
-     * @return  The maximum value of all elements in this matrix.
+     * @return  The maximum computeValue of all elements in this matrix.
      */
     public double getMaximumValue() {
         double maxValue = array[0][0];
@@ -611,9 +611,9 @@ public class Matrix {
     }
 
     /**
-     * Gets the minimum value of all elements in this matrix.
+     * Gets the minimum computeValue of all elements in this matrix.
      *
-     * @return  The minimum value of all elements in this matrix.
+     * @return  The minimum computeValue of all elements in this matrix.
      */
     public double getMinimumValue() {
         double minValue = array[0][0];
@@ -662,7 +662,7 @@ public class Matrix {
      * @return  The inverse of this matrix.
      */
     public Matrix computeInverse() throws SingularMatrixException {
-        return solve(generateIdentityMatrix(rowDimension));
+        return solve(identity(rowDimension));
     }
 
     /**
@@ -713,7 +713,7 @@ public class Matrix {
     }
 
     /**
-     * Computes the \(L_2\) norm of this matrix. The \(L_2\) norm of a matrix is equal to its largest singular value.
+     * Computes the \(L_2\) norm of this matrix. The \(L_2\) norm of a matrix is equal to its largest singular computeValue.
      * For square matrices, the \(L_2\) norm is also known as the spectral norm.
      *
      * @return  The \(L_2\) norm of this matrix.
@@ -1169,9 +1169,9 @@ public class Matrix {
     }
 
     /**
-     * Computes the singular value decomposition of this matrix.
+     * Computes the singular computeValue decomposition of this matrix.
      *
-     * @return  The singular value decomposition of this matrix.
+     * @return  The singular computeValue decomposition of this matrix.
      */
     public SingularValueDecomposition computeSingularValueDecomposition() {
         return new SingularValueDecomposition(this);
@@ -1179,6 +1179,14 @@ public class Matrix {
     //endregion
 
     //region Special Matrix "Constructors"
+    public static Matrix zeros(int rowDimension, int columnDimension) {
+        return new Matrix(rowDimension, columnDimension);
+    }
+
+    public static Matrix ones(int rowDimension, int columnDimension) {
+        return new Matrix(rowDimension, columnDimension, 1);
+    }
+
     /**
      * Constructs and returns a square identity matrix with the provided dimension.
      *
@@ -1186,7 +1194,7 @@ public class Matrix {
      *                      are equal in this case because the identity matrix is square).
      * @return              An identity matrix with the given dimension.
      */
-    public static Matrix generateIdentityMatrix(int dimension) {
+    public static Matrix identity(int dimension) {
         Matrix identityMatrix = new Matrix(dimension, dimension);
         double[][] identityMatrixArray = identityMatrix.getArray();
         for (int i = 0; i < dimension; i++) {
@@ -1202,7 +1210,7 @@ public class Matrix {
      * @param   diagonal    One-dimensional array containing the diagonal matrix elements.
      * @return              A diagonal matrix with the provided diagonal elements on its diagonal.
      */
-    public static Matrix generateDiagonalMatrix(double[] diagonal) {
+    public static Matrix diagonal(double[] diagonal) {
         Matrix diagonalMatrix = new Matrix(diagonal.length, diagonal.length);
         double[][] diagonalMatrixArray = diagonalMatrix.getArray();
         for (int i = 0; i < diagonal.length; i++) {
@@ -1219,7 +1227,7 @@ public class Matrix {
      * @param   columnDimension     The column dimension of the random matrix.
      * @return                      A matrix that contains random values ranging from {@code 0.0} to {@code 1.0}.
      */
-    public static Matrix generateRandomMatrix(int rowDimension, int columnDimension) {
+    public static Matrix random(int rowDimension, int columnDimension) {
         Matrix randomMatrix = new Matrix(rowDimension, columnDimension);
         double[][] randomMatrixArray = randomMatrix.getArray();
         for (int i = 0; i < rowDimension; i++) {

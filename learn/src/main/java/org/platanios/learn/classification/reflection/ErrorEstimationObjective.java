@@ -35,7 +35,7 @@ public enum ErrorEstimationObjective {
             private final int[][] hessianIndexKeyMapping;
 
             /**
-             * Initializes all parameters needed for computing the objective function value, its derivatives with
+             * Initializes all parameters needed for computing the objective function computeValue, its derivatives with
              * respect to its input variables, and its Hessian with respect to the input variables.
              *
              * @param   errorRates              The error rates structure used for all calculations (this structure
@@ -176,11 +176,11 @@ public enum ErrorEstimationObjective {
      */
     protected interface Function {
         /**
-         * Computes the objective value at a particular point. The result is stored in the array passed as argument to
+         * Computes the objective computeValue at a particular point. The result is stored in the array passed as argument to
          * this method.
          *
          * @param   point           The point in which to evaluate the objective function.
-         * @param   objectiveValue  The array holding objective value to modify.
+         * @param   objectiveValue  The array holding objective computeValue to modify.
          */
         void computeValue(double[] point, double[] objectiveValue);
 

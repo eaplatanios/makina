@@ -29,7 +29,7 @@ public class SparseVector extends Vector {
     /** The size of the vector. */
     protected int size;
 
-    /** The cardinality of the vector (i.e., the number of nonzero elements of the vector). This value also limits the
+    /** The cardinality of the vector (i.e., the number of nonzero elements of the vector). This computeValue also limits the
      * effective length of {@link #indexes} and {@link #values} (i.e., only the first numberOfNonzeroEntries elements of
      * those two arrays are ever used -- the rest of the values are considered to be equal to zero). */
     protected int numberOfNonzeroEntries;
@@ -54,8 +54,8 @@ public class SparseVector extends Vector {
 
     /**
      * Constructs a sparse vector of the given size and fills it with the values stored in the provided map. The map
-     * must contain key-value pairs where the key corresponds to an element index and the value to the corresponding
-     * element's value. Note that the map does not need to be an sorted map; all the necessary sorting is performed
+     * must contain key-computeValue pairs where the key corresponds to an element index and the computeValue to the corresponding
+     * element's computeValue. Note that the map does not need to be an sorted map; all the necessary sorting is performed
      * within this constructor.
      *
      * @param   size            The size of the vector.
@@ -135,9 +135,9 @@ public class SparseVector extends Vector {
 
     /**
      * Constructs a sparse vector from a dense vector. This constructor does not simply transform the dense vector
-     * structure into a sparse vector structure, but it also throws away elements of the dense vector that have a value
-     * effectively 0 (i.e., absolute value \(<\epsilon\), where \(\epsilon\) is the square root of the smallest possible
-     * value that can be represented by a double precision floating point number).
+     * structure into a sparse vector structure, but it also throws away elements of the dense vector that have a computeValue
+     * effectively 0 (i.e., absolute computeValue \(<\epsilon\), where \(\epsilon\) is the square root of the smallest possible
+     * computeValue that can be represented by a double precision floating point number).
      *
      * @param   vector  The dense vector from which to construct this sparse vector.
      */
@@ -2130,8 +2130,8 @@ public class SparseVector extends Vector {
 
     /**
      * This method compacts this vector. Compacting in this case is the process of removing elements that are
-     * effectively equal to 0 (i.e., absolute value \(<\epsilon\), where \(\epsilon\) is the square root of the smallest
-     * possible value that can be represented by a double precision floating point number) from the two parallel arrays
+     * effectively equal to 0 (i.e., absolute computeValue \(<\epsilon\), where \(\epsilon\) is the square root of the smallest
+     * possible computeValue that can be represented by a double precision floating point number) from the two parallel arrays
      * used to store the sparse vector internally.
      *
      * @return  The current vector after the compacting operation is completed.
@@ -2279,7 +2279,7 @@ public class SparseVector extends Vector {
      * Deserializes the sparse vector stored in the provided input stream and returns it.
      *
      * @param   inputStream Input stream from which the dense vector will be "read".
-     * @param   includeType Boolean value indicating whether the type of the vector is to also be read from the input
+     * @param   includeType Boolean computeValue indicating whether the type of the vector is to also be read from the input
      *                      stream.
      * @return              The sparse vector obtained from the provided input stream.
      * @throws  IOException
@@ -2322,7 +2322,7 @@ public class SparseVector extends Vector {
         /** A pointer in memory used to represent the current position while serializing different fields of the object
          * that is being serialized. */
         long position;
-        /** The largest value that the {@link #position} pointer can take (i.e., this pointer represents the end of the
+        /** The largest computeValue that the {@link #position} pointer can take (i.e., this pointer represents the end of the
          * field that is currently being serialized, in memory). */
         long endPosition;
         /** The current state of the encoder, representing which field of the object is currently being serialized. */
@@ -2337,7 +2337,7 @@ public class SparseVector extends Vector {
         /** The {@link VectorType} ordinal number of the type of the vector being encoded
          * (i.e., {@link VectorType#SPARSE}). */
         final int type;
-        /** Boolean value indicating whether or not to also encode the type of the current vector
+        /** Boolean computeValue indicating whether or not to also encode the type of the current vector
          * (i.e., {@link VectorType#SPARSE}). */
         final boolean includeType;
 

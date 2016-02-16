@@ -92,7 +92,7 @@ public class ErrorEstimationData {
          * @param   highestOrder                            The highest cardinality of sets of functions to consider,
          *                                                  out of the whole power set, for the error rates and for the
          *                                                  agreement rates.
-         * @param   onlyEvenCardinalitySubsetsAgreements    Boolean value indicating whether or not to only consider
+         * @param   onlyEvenCardinalitySubsetsAgreements    Boolean computeValue indicating whether or not to only consider
          *                                                  sets of even cardinality, out of the whole power set, for
          *                                                  the agreement rates.
          */
@@ -121,7 +121,7 @@ public class ErrorEstimationData {
          * @param   highestOrder                            The highest cardinality of sets of functions to consider,
          *                                                  out of the whole power set, for the error rates and for the
          *                                                  agreement rates.
-         * @param   onlyEvenCardinalitySubsetsAgreements    Boolean value indicating whether or not to only consider
+         * @param   onlyEvenCardinalitySubsetsAgreements    Boolean computeValue indicating whether or not to only consider
          *                                                  sets of even cardinality, out of the whole power set, for
          *                                                  the agreement rates.
          */

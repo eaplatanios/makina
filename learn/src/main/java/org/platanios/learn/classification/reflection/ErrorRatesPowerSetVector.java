@@ -14,7 +14,7 @@ import java.util.List;
 public class ErrorRatesPowerSetVector extends PowerSetVector {
     /**
      * Constructs a power set indexed vector, holding the error rates, stored as a one-dimensional array and initializes
-     * the values of those error rates to be 0.25 for the individual function error rates and a computed value for the
+     * the values of those error rates to be 0.25 for the individual function error rates and a computed computeValue for the
      * joint error rates assuming that each function's error rate is independent of the rest (this independence
      * assumption is made only for the initialization of those error rates values and has nothing to do with the actual
      * error rates estimation problem).
@@ -32,14 +32,14 @@ public class ErrorRatesPowerSetVector extends PowerSetVector {
     /**
      * Constructs a power set indexed vector, holding the error rates, stored as a one-dimensional array and initializes
      * the values of those error rates to be {@code initialValue} for the individual function error rates and a computed
-     * value for the joint error rates assuming that each function's error rate is independent of the rest (this
+     * computeValue for the joint error rates assuming that each function's error rate is independent of the rest (this
      * independence assumption is made only for the initialization of those error rates values and has nothing to do
      * with the actual error rates estimation problem).
      *
      * @param   numberOfFunctions   The total number of functions considered.
      * @param   highestOrder        The highest cardinality of sets of functions to consider, out of the whole power
      *                              set.
-     * @param   initialValue        The initial value for the individual function error rates.
+     * @param   initialValue        The initial computeValue for the individual function error rates.
      */
     public ErrorRatesPowerSetVector(int numberOfFunctions,
                                     int highestOrder,
@@ -71,11 +71,11 @@ public class ErrorRatesPowerSetVector extends PowerSetVector {
 
     /**
      * Initializes the values of the function error rates to be {@code initialValue} for the individual function error
-     * rates and a computed value for the joint error rates assuming that each function's error rate is independent of
+     * rates and a computed computeValue for the joint error rates assuming that each function's error rate is independent of
      * the rest (this independence assumption is made only for the initialization of those error rates values and has
      * nothing to do with the actual error rates estimation problem).
      *
-     * @param   initialValue    The initial value for the individual function error rates.
+     * @param   initialValue    The initial computeValue for the individual function error rates.
      */
     private void initializeValues(double initialValue) {
         for (BiMap.Entry<List<Integer>, Integer> indexKeyPair : indexKeyMapping.entrySet()) {

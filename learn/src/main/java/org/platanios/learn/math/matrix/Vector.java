@@ -44,7 +44,7 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
     /** The offset, in bytes, between the base memory address of a double array and its first element. */
     protected static final long DOUBLE_ARRAY_OFFSET = UNSAFE.arrayBaseOffset(double[].class);
 
-    /** The threshold value for elements to be considered equal to zero when counting the number of non-zero elements of
+    /** The threshold computeValue for elements to be considered equal to zero when counting the number of non-zero elements of
      * this vector (i.e., in method {@link #cardinality()}) and when handling sparse vectors. */
     protected static final double epsilon = MathUtilities.computeMachineEpsilonDouble();
 
@@ -94,10 +94,10 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
     public abstract int cardinality();
 
     /**
-     * Gets the value of the vector element at the provided index.
+     * Gets the computeValue of the vector element at the provided index.
      *
      * @param   index   The index of the element.
-     * @return          The value of the element at the provided index.
+     * @return          The computeValue of the element at the provided index.
      *
      * @throws  java.lang.IllegalArgumentException  The provided index must be between 0 (inclusive) and the size of the
      *                                              vector (exclusive).
@@ -129,10 +129,10 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
     public abstract Vector get(int... indexes);
 
     /**
-     * Sets the value of the vector element at the provided index to the provided value.
+     * Sets the computeValue of the vector element at the provided index to the provided computeValue.
      *
      * @param   index   The index of the element.
-     * @param   value   The value to which to set the element at the provided index.
+     * @param   value   The computeValue to which to set the element at the provided index.
      *
      * @throws  java.lang.IllegalArgumentException  The provided index must be between 0 (inclusive) and the size of the
      *                                              vector (exclusive).
@@ -174,36 +174,36 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
     public abstract void set(Vector vector);
 
     /**
-     * Sets the value of all of the vector elements to the provided value.
+     * Sets the computeValue of all of the vector elements to the provided computeValue.
      *
-     * @param   value   The value to which to set the elements of this vector.
+     * @param   value   The computeValue to which to set the elements of this vector.
      */
     public abstract void setAll(double value);
 
     /**
-     * Gets the maximum value of all elements in this vector.
+     * Gets the maximum computeValue of all elements in this vector.
      *
-     * @return  The maximum value of all elements in this vector.
+     * @return  The maximum computeValue of all elements in this vector.
      */
     public abstract double max();
 
     /**
-     * Gets the element-wise maximum value between the elements of the current vector and the provided value.
+     * Gets the element-wise maximum computeValue between the elements of the current vector and the provided computeValue.
      *
      * @return  A new vector holding the result of the element-wise maximum operation.
      */
     public abstract Vector maxElementwise(double value);
 
     /**
-     * Sets the elements of the current vector to the element-wise maximum value between the elements of the current
-     * vector and the provided value.
+     * Sets the elements of the current vector to the element-wise maximum computeValue between the elements of the current
+     * vector and the provided computeValue.
      *
      * @return  The current vector holding the result of the element-wise maximum operation.
      */
     public abstract Vector maxElementwiseInPlace(double value);
 
     /**
-     * Gets the element-wise maximum value between the elements of the current vector and the elements of the provided
+     * Gets the element-wise maximum computeValue between the elements of the current vector and the elements of the provided
      * vector.
      *
      * @return  A new vector holding the result of the element-wise maximum operation.
@@ -211,7 +211,7 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
     public abstract Vector maxElementwise(Vector vector);
 
     /**
-     * Sets the elements of the current vector to the element-wise maximum value between the elements of the current
+     * Sets the elements of the current vector to the element-wise maximum computeValue between the elements of the current
      * vector and the elements of the provided vector.
      *
      * @return  The current vector holding the result of the element-wise maximum operation.
@@ -219,29 +219,29 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
     public abstract Vector maxElementwiseInPlace(Vector vector);
 
     /**
-     * Gets the minimum value of all elements in this vector.
+     * Gets the minimum computeValue of all elements in this vector.
      *
-     * @return  The minimum value of all elements in this vector.
+     * @return  The minimum computeValue of all elements in this vector.
      */
     public abstract double min();
 
     /**
-     * Gets the element-wise minimum value between the elements of the current vector and the provided value.
+     * Gets the element-wise minimum computeValue between the elements of the current vector and the provided computeValue.
      *
      * @return  A new vector holding the result of the element-wise minimum operation.
      */
     public abstract Vector minElementwise(double value);
 
     /**
-     * Sets the elements of the current vector to the element-wise minimum value between the elements of the current
-     * vector and the provided value.
+     * Sets the elements of the current vector to the element-wise minimum computeValue between the elements of the current
+     * vector and the provided computeValue.
      *
      * @return  The current vector holding the result of the element-wise minimum operation.
      */
     public abstract Vector minElementwiseInPlace(double value);
 
     /**
-     * Gets the element-wise minimum value between the elements of the current vector and the elements of the provided
+     * Gets the element-wise minimum computeValue between the elements of the current vector and the elements of the provided
      * vector.
      *
      * @return  A new vector holding the result of the element-wise minimum operation.
@@ -249,7 +249,7 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
     public abstract Vector minElementwise(Vector vector);
 
     /**
-     * Sets the elements of the current vector to the element-wise minimum value between the elements of the current
+     * Sets the elements of the current vector to the element-wise minimum computeValue between the elements of the current
      * vector and the elements of the provided vector.
      *
      * @return  The current vector holding the result of the element-wise minimum operation.
@@ -400,30 +400,30 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
 
     /**
      * Performs the saxpy operation, as it is named in LAPACK. Let us denote the current vector by \(\boldsymbol{y}\).
-     * Given a scalar \(\alpha\) and another vector \(\boldsymbol{x}\), this function returns the value of
+     * Given a scalar \(\alpha\) and another vector \(\boldsymbol{x}\), this function returns the computeValue of
      * \(\boldsymbol{y}+\alpha\boldsymbol{x}\).
      *
      * @param   scalar  The scalar \(\alpha\).
      * @param   vector  The vector \(\boldsymbol{x}\).
-     * @return          The value of \(\boldsymbol{y}+\alpha\boldsymbol{x}\).
+     * @return          The computeValue of \(\boldsymbol{y}+\alpha\boldsymbol{x}\).
      */
     public abstract Vector saxpy(double scalar, Vector vector);
 
     /**
      * Performs the saxpy operation, as it is named in LAPACK, in-place. Let us denote the current vector by
      * \(\boldsymbol{y}\). Given a scalar \(\alpha\) and another vector \(\boldsymbol{x}\), this function replaces
-     * this vector with the value of \(\boldsymbol{y}+\alpha\boldsymbol{x}\) and returns it.
+     * this vector with the computeValue of \(\boldsymbol{y}+\alpha\boldsymbol{x}\) and returns it.
      *
      * @param   scalar  The scalar \(\alpha\).
      * @param   vector  The vector \(\boldsymbol{x}\).
-     * @return          The value of \(\boldsymbol{y}+\alpha\boldsymbol{x}\).
+     * @return          The computeValue of \(\boldsymbol{y}+\alpha\boldsymbol{x}\).
      */
     public abstract Vector saxpyInPlace(double scalar, Vector vector);
 
     /**
      * Performs a modified saxpy operation, as it is named in LAPACK. Let us denote the current vector by
      * \(\boldsymbol{y}\). Given a scalar \(\alpha\) and another vector \(\boldsymbol{x}\) with size 1 less than the
-     * current vector, this function returns the value of \(\boldsymbol{y}+\alpha\boldsymbol{x}\), where for the last
+     * current vector, this function returns the computeValue of \(\boldsymbol{y}+\alpha\boldsymbol{x}\), where for the last
      * element of the current vector, /(\boldsymbol{y}/), we simply add \(\alpha\).
      *
      * @param   scalar  The scalar \(\alpha\).
@@ -435,7 +435,7 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
     /**
      * Performs a modified saxpy operation, as it is named in LAPACK. Let us denote the current vector by
      * \(\boldsymbol{y}\). Given a scalar \(\alpha\) and another vector \(\boldsymbol{x}\) with size 1 less than the
-     * current vector, this function replaces this vector with the value of \(\boldsymbol{y}+\alpha\boldsymbol{x}\),
+     * current vector, this function replaces this vector with the computeValue of \(\boldsymbol{y}+\alpha\boldsymbol{x}\),
      * where for the last element of the current vector, /(\boldsymbol{y}/), we simply add \(\alpha\).
      *
      * @param   scalar  The scalar \(\alpha\).
@@ -448,7 +448,7 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
      * Computes the inner product (also known as the dot product) between the current vector and another vector.
      *
      * @param   vector  The vector used to compute the inner product with the current vector.
-     * @return          The resulting inner product value.
+     * @return          The resulting inner product computeValue.
      */
     public final double dot(Vector vector) {
         return inner(vector);
@@ -460,7 +460,7 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
      *
      * @param   vector  The vector used to compute the inner product with the current vector without its last element.
      *                  Note that this vector must have size 1 less than the size of the current vector.
-     * @return          The resulting value.
+     * @return          The resulting computeValue.
      */
     public final double dotPlusConstant(Vector vector) {
         return innerPlusConstant(vector);
@@ -470,7 +470,7 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
      * Computes the inner product (also known as the dot product) between the current vector and another vector.
      *
      * @param   vector  The vector used to compute the inner product with the current vector.
-     * @return          The resulting inner product value.
+     * @return          The resulting inner product computeValue.
      */
     public abstract double inner(Vector vector);
 
@@ -480,7 +480,7 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
      *
      * @param   vector  The vector used to compute the inner product with the current vector without its last element.
      *                  Note that this vector must have size 1 less than the size of the current vector.
-     * @return          The resulting value.
+     * @return          The resulting computeValue.
      */
     public abstract double innerPlusConstant(Vector vector);
 
@@ -673,12 +673,12 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
 
     /**
      * Performs the gaxpy operation, as it is named in LAPACK. Let us denote the current vector by \(\boldsymbol{y}\).
-     * Given a matrix \(\A\) and another vector \(\boldsymbol{x}\), this function returns the value of
+     * Given a matrix \(\A\) and another vector \(\boldsymbol{x}\), this function returns the computeValue of
      * \(\boldsymbol{y}+A\boldsymbol{x}\).
      *
      * @param   matrix  The matrix \(\A\).
      * @param   vector  The vector \(\boldsymbol{x}\).
-     * @return          The value of \(\boldsymbol{y}+A\boldsymbol{x}\).
+     * @return          The computeValue of \(\boldsymbol{y}+A\boldsymbol{x}\).
      *
      * @throws  IllegalArgumentException    The row dimension of the matrix must agree with the size of the current
      *                                      vector and the column dimension of the matrix must agree with the size of
@@ -689,11 +689,11 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
     /**
      * Performs the gaxpy operation, as it is named in LAPACK, in-place. Let us denote the current vector by
      * \(\boldsymbol{y}\). Given a matrix \(A\) and another vector \(\boldsymbol{x}\), this function replaces this
-     * vector with the value of \(\boldsymbol{y}+A\boldsymbol{x}\) and returns it.
+     * vector with the computeValue of \(\boldsymbol{y}+A\boldsymbol{x}\) and returns it.
      *
      * @param   matrix  The matrix \(A\).
      * @param   vector  The vector \(\boldsymbol{x}\).
-     * @return          The value of \(\boldsymbol{y}+A\boldsymbol{x}\).
+     * @return          The computeValue of \(\boldsymbol{y}+A\boldsymbol{x}\).
      *
      * @throws  IllegalArgumentException    The row dimension of the matrix must agree with the size of the current
      *                                      vector and the column dimension of the matrix must agree with the size of
@@ -702,29 +702,29 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
     public abstract Vector gaxpyInPlace(Matrix matrix, Vector vector);
 
     /**
-     * Let us denote the current vector by \(\boldsymbol{y}\). Given a matrix \(\A\), this function returns the value of
+     * Let us denote the current vector by \(\boldsymbol{y}\). Given a matrix \(\A\), this function returns the computeValue of
      * \(\boldsymbol{y}^{\top}A\).
      *
      * @param   matrix  The matrix \(A\).
-     * @return          The value of \(\boldsymbol{y}^{\top}A\).
+     * @return          The computeValue of \(\boldsymbol{y}^{\top}A\).
      *
      * @throws  IllegalArgumentException    The row dimension of the matrix must agree with the size of the vector.
      */
     public abstract Vector transMult(Matrix matrix);
 
     /**
-     * Adds a value to the beginning of this vector, increasing its size by 1.
+     * Adds a computeValue to the beginning of this vector, increasing its size by 1.
      *
-     * @param   value   The value to prepend to this vector.
-     * @return          The current vector after prepending to it the provided value.
+     * @param   value   The computeValue to prepend to this vector.
+     * @return          The current vector after prepending to it the provided computeValue.
      */
     public abstract Vector prepend(double value);
 
     /**
-     * Adds a value to the end of this vector, increasing its size by 1.
+     * Adds a computeValue to the end of this vector, increasing its size by 1.
      *
-     * @param   value   The value to append to this vector.
-     * @return          The current vector after appending to it the provided value.
+     * @param   value   The computeValue to append to this vector.
+     * @return          The current vector after appending to it the provided computeValue.
      */
     public abstract Vector append(double value);
 
@@ -746,7 +746,7 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
      * Writes the contents of this vector to the provided output stream.
      *
      * @param   outputStream    The output stream to write the contents of this vector to.
-     * @param   includeType     Boolean value indicating whether the type of the vector is to also be written to the
+     * @param   includeType     Boolean computeValue indicating whether the type of the vector is to also be written to the
      *                          output stream.
      * @throws  IOException
      */
@@ -760,7 +760,7 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
      * for the vector read by some other process, if the vector was modified while that process was reading it by using
      * an encoder returned by this method).
      *
-     * @param   includeType     Boolean value indicating whether the type of the vector is to also be encoded.
+     * @param   includeType     Boolean computeValue indicating whether the type of the vector is to also be encoded.
      * @return                  The encoder for the current instance.
      */
     public abstract InputStream getEncoder(boolean includeType);
@@ -779,12 +779,12 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
     /**
      * Compares the current vector with another object for equality. Note that if the provided object is not a vector
      * object, then this method returns false. Otherwise, it checks for equality of the element values of the two
-     * vectors, with some tolerance that is equal to the square root of the smallest possible value that can be
-     * represented by a double precision floating point number. A tolerance value is used because double precision
+     * vectors, with some tolerance that is equal to the square root of the smallest possible computeValue that can be
+     * represented by a double precision floating point number. A tolerance computeValue is used because double precision
      * floating point number values are compared.
      *
      * Note that the vector objects being compared must also be of the same type (i.e., dense, sparse, etc.). In the
-     * case that they are not of the same type a value of false is returned by this method.
+     * case that they are not of the same type a computeValue of false is returned by this method.
      *
      * @param   object  The object with which to compare this vector.
      * @return          True if this vector is equal to the provided object and false if it is not.
@@ -800,20 +800,20 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
     public abstract String toString();
 
     /**
-     * Class representing a single vector element. This class contains the index of the element and the value of that
+     * Class representing a single vector element. This class contains the index of the element and the computeValue of that
      * element. This class is mainly used by vector iterators.
      */
 	public final class VectorElement {
         /** The index of the element in its vector. */
 		private final int index;
-        /** The value of the element. */
+        /** The computeValue of the element. */
 		private final double value;
 
         /**
-         * Construct a single vector element using the provided index and value.
+         * Construct a single vector element using the provided index and computeValue.
          *
          * @param   index   The index of the element in its vector.
-         * @param   value   The value of the element.
+         * @param   value   The computeValue of the element.
          */
 		public VectorElement(int index, double value) {
 			this.index = index;
@@ -830,9 +830,9 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
 		}
 
         /**
-         * Returns the value of the element.
+         * Returns the computeValue of the element.
          *
-         * @return  The value of the element.
+         * @return  The computeValue of the element.
          */
 		public double value() {
 			return this.value;

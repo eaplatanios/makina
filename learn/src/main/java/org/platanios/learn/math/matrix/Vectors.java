@@ -6,6 +6,7 @@ import org.platanios.learn.serialization.UnsafeSerializationUtilities;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * This class provides several static methods to build vectors of different types and initialize them in various ways.
@@ -13,6 +14,8 @@ import java.util.Map;
  * @author Emmanouil Antonios Platanios
  */
 public class Vectors {
+    private final static Random random = new Random();
+
     // Suppress default constructor for noninstantiability
     private Vectors() {
         throw new AssertionError();
@@ -45,6 +48,14 @@ public class Vectors {
         return vectorType.buildVector(inputStream, false);
     }
 
+    // TODO: Mention that this is always dense.
+    public static DenseVector random(int size) {
+        DenseVector vector = new DenseVector(size);
+        for (int i = 0; i < vector.size(); i++)
+            vector.set(i, random.nextDouble());
+        return vector;
+    }
+
     /**
      * Builds a dense vector of the given size and fills it with zeros.
      *
@@ -56,10 +67,10 @@ public class Vectors {
     }
 
     /**
-     * Builds a dense vector of the given size and fills it with the provided value.
+     * Builds a dense vector of the given size and fills it with the provided computeValue.
      *
      * @param   size    The size of the vector.
-     * @param   value   The value with which to fill the vector.
+     * @param   value   The computeValue with which to fill the vector.
      * @return          The new vector.
      */
     public static DenseVector dense(int size, double value) {
@@ -87,8 +98,8 @@ public class Vectors {
 
     /**
      * Constructs a sparse vector of the given size and fills it with the values stored in the provided map. The map
-     * must contain key-value pairs where the key corresponds to an element index and the value to the corresponding
-     * element's value. Note that the map does not need to be an sorted map; all the necessary sorting is performed
+     * must contain key-computeValue pairs where the key corresponds to an element index and the computeValue to the corresponding
+     * element's computeValue. Note that the map does not need to be an sorted map; all the necessary sorting is performed
      * within this constructor.
      *
      * @param   size            The size of the vector.
@@ -140,9 +151,9 @@ public class Vectors {
 
     /**
      * Constructs a sparse vector from a dense vector. This constructor does not simply transform the dense vector
-     * structure into a sparse vector structure, but it also throws away elements of the dense vector that have a value
-     * effectively 0 (i.e., absolute value \(<\epsilon\), where \(\epsilon\) is the square root of the smallest possible
-     * value that can be represented by a double precision floating point number).
+     * structure into a sparse vector structure, but it also throws away elements of the dense vector that have a computeValue
+     * effectively 0 (i.e., absolute computeValue \(<\epsilon\), where \(\epsilon\) is the square root of the smallest possible
+     * computeValue that can be represented by a double precision floating point number).
      *
      * @param   vector  The dense vector from which to construct this sparse vector.
      */

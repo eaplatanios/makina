@@ -13,7 +13,7 @@ public class CombinatoricsUtilities {
 
     /**
      * Computes the binomial coefficient indexed by {@code n} and {@code k}, also known as "{@code n} choose {@code k}".
-     * The value of that coefficient represent the total number of ways in which {@code k} items can be picked out of
+     * The computeValue of that coefficient represent the total number of ways in which {@code k} items can be picked out of
      * {@code n} possible items, irrespective of the order in which they are picked.
      *
      * @param   n   The total number of items
@@ -54,13 +54,13 @@ public class CombinatoricsUtilities {
 
     /**
      * Computes all possible ways of picking {@code k} items out of {@code n} items irrespective of the ordering of
-     * those items and without using items with value &lt; {@code startIndex}. The items are represented as all integers
+     * those items and without using items with computeValue &lt; {@code startIndex}. The items are represented as all integers
      * between 0 (inclusive) and n (exclusive). This method is used in the implementation of
      * {@link #getCombinations(int, int)}.
      *
      * @param   n           The total number of items
      * @param   k           The number of items to pick
-     * @param   startIndex  Integer specifying which items to use (items with value less than that integer are not used)
+     * @param   startIndex  Integer specifying which items to use (items with computeValue less than that integer are not used)
      * @return              An array containing one integer array for each possible combination of items, where each
      *                      integer in that array corresponds to an item
      */

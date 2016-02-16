@@ -59,6 +59,11 @@ public class LogicIntegrator {
         private boolean logProgress = false;
 
         public Builder(Map<Label, Set<Integer>> labelClassifiers,
+                       Map<DataInstance<Vector>, Map<Label, Map<Integer, Double>>> predictionsDataSet) {
+            this(labelClassifiers, null, predictionsDataSet);
+        }
+
+        public Builder(Map<Label, Set<Integer>> labelClassifiers,
                        Map<DataInstance<Vector>, Map<Label, Boolean>> fixedDataSet,
                        Map<DataInstance<Vector>, Map<Label, Map<Integer, Double>>> predictionsDataSet) {
             this.labels = labelClassifiers.keySet();
@@ -79,6 +84,11 @@ public class LogicIntegrator {
 
         public Builder addConstraint(SubsumptionConstraint constraint) {
             constraints.add(constraint);
+            return this;
+        }
+
+        public Builder addConstraints(Set<Constraint> constraints) {
+            this.constraints.addAll(constraints);
             return this;
         }
 
@@ -114,10 +124,11 @@ public class LogicIntegrator {
         final long[] currentInstanceKey = { 0 };
         final long[] currentLabelKey = { 0 };
         final long[] currentClassifierKey = { 0 };
-        builder.fixedDataSet.keySet().forEach(instance -> {
-            if (!instanceKeysMap.containsValue(instance))
-                instanceKeysMap.put(currentInstanceKey[0]++, instance);
-        });
+        if (builder.fixedDataSet != null)
+            builder.fixedDataSet.keySet().forEach(instance -> {
+                if (!instanceKeysMap.containsValue(instance))
+                    instanceKeysMap.put(currentInstanceKey[0]++, instance);
+            });
         dataSet.keySet().forEach(instance -> {
             if (!instanceKeysMap.containsValue(instance))
                 instanceKeysMap.put(currentInstanceKey[0]++, instance);
@@ -182,15 +193,15 @@ public class LogicIntegrator {
                                                                      headFormulas,
                                                                      power,
                                                                      weight));
-        // Subsumption Rule #1
+        // Subsumption Rule
         power = 1;
         weight = 1;
         bodyFormulas = new ArrayList<>();
         bodyFormulas.add(new Atom(subsumptionPredicate, Arrays.asList(label1Variable, label2Variable)));
-        bodyFormulas.add(new Atom(labelPredictionPredicate, Arrays.asList(instanceVariable,
-                                                                          classifierVariable,
-                                                                          label1Variable)));
-        bodyFormulas.add(new Negation(new Atom(labelPredicate, Arrays.asList(instanceVariable, label2Variable))));
+        bodyFormulas.add(new Negation(new Atom(labelPredictionPredicate, Arrays.asList(instanceVariable,
+                                                                                       classifierVariable,
+                                                                                       label1Variable))));
+        bodyFormulas.add(new Atom(labelPredicate, Arrays.asList(instanceVariable, label2Variable)));
         bodyFormulas.add(new Negation(new Atom(equalLabelsPredicate, Arrays.asList(label1Variable,
                                                                                    label2Variable))));
         headFormulas = new ArrayList<>();
@@ -199,23 +210,23 @@ public class LogicIntegrator {
                                                                      headFormulas,
                                                                      power,
                                                                      weight));
-        // Subsumption Rule #2
-        power = 1;
-        weight = 1;
-        bodyFormulas = new ArrayList<>();
-        bodyFormulas.add(new Atom(subsumptionPredicate, Arrays.asList(label1Variable, label2Variable)));
-        bodyFormulas.add(new Atom(labelPredictionPredicate, Arrays.asList(instanceVariable,
-                                                                          classifierVariable,
-                                                                          label2Variable)));
-        bodyFormulas.add(new Negation(new Atom(labelPredicate, Arrays.asList(instanceVariable, label1Variable))));
-        bodyFormulas.add(new Negation(new Atom(equalLabelsPredicate, Arrays.asList(label1Variable,
-                                                                                   label2Variable))));
-        headFormulas = new ArrayList<>();
-        headFormulas.add(new Atom(errorRatePredicate, Arrays.asList(classifierVariable, label2Variable)));
-        pslBuilder.addLogicRule(new ProbabilisticSoftLogic.LogicRule(bodyFormulas,
-                                                                     headFormulas,
-                                                                     power,
-                                                                     weight));
+//        // Subsumption Rule #2
+//        power = 1;
+//        weight = 1;
+//        bodyFormulas = new ArrayList<>();
+//        bodyFormulas.add(new Atom(subsumptionPredicate, Arrays.asList(label1Variable, label2Variable)));
+//        bodyFormulas.add(new Atom(labelPredictionPredicate, Arrays.asList(instanceVariable,
+//                                                                          classifierVariable,
+//                                                                          label2Variable)));
+//        bodyFormulas.add(new Negation(new Atom(labelPredicate, Arrays.asList(instanceVariable, label1Variable))));
+//        bodyFormulas.add(new Negation(new Atom(equalLabelsPredicate, Arrays.asList(label1Variable,
+//                                                                                   label2Variable))));
+//        headFormulas = new ArrayList<>();
+//        headFormulas.add(new Atom(errorRatePredicate, Arrays.asList(classifierVariable, label2Variable)));
+//        pslBuilder.addLogicRule(new ProbabilisticSoftLogic.LogicRule(bodyFormulas,
+//                                                                     headFormulas,
+//                                                                     power,
+//                                                                     weight));
         // Ensemble Classifier Rule
         power = 1;
         weight = 1;
@@ -271,14 +282,15 @@ public class LogicIntegrator {
 //                                                Arrays.asList(instanceKeysMap.inverse().get(dataInstance),
 //                                                              labelKeysMap.inverse().get(label)))
 //            });
-        for (Map.Entry<DataInstance<Vector>, Map<Label, Boolean>> dataSetEntry : builder.fixedDataSet.entrySet()) {
-            for (Map.Entry<Label, Boolean> dataInstanceEntry : dataSetEntry.getValue().entrySet()) {
-                List<Long> assignment = new ArrayList<>(2);
-                assignment.add(instanceKeysMap.inverse().get(dataSetEntry.getKey()));
-                assignment.add(labelKeysMap.inverse().get(dataInstanceEntry.getKey()));
-                logicManager.addOrReplaceGroundPredicate(labelPredicate, assignment, dataInstanceEntry.getValue() ? 1.0 : 0.0);
+        if (builder.fixedDataSet != null)
+            for (Map.Entry<DataInstance<Vector>, Map<Label, Boolean>> dataSetEntry : builder.fixedDataSet.entrySet()) {
+                for (Map.Entry<Label, Boolean> dataInstanceEntry : dataSetEntry.getValue().entrySet()) {
+                    List<Long> assignment = new ArrayList<>(2);
+                    assignment.add(instanceKeysMap.inverse().get(dataSetEntry.getKey()));
+                    assignment.add(labelKeysMap.inverse().get(dataInstanceEntry.getKey()));
+                    logicManager.addOrReplaceGroundPredicate(labelPredicate, assignment, dataInstanceEntry.getValue() ? 1.0 : 0.0);
+                }
             }
-        }
         for (Map.Entry<DataInstance<Vector>, Map<Label, Map<Integer, Double>>> dataSetEntry : dataSet.entrySet()) {
             for (Map.Entry<Label, Map<Integer, Double>> dataInstanceEntry : dataSetEntry.getValue().entrySet()) {
                 for (Map.Entry<Integer, Double> classifierEntry : dataInstanceEntry.getValue().entrySet()) {
@@ -336,7 +348,7 @@ public class LogicIntegrator {
         }
     }
 
-    public Output integratePredictions() {
+    public ClassifierOutputsIntegrationResults integratePredictions() {
         if (logProgress)
             logger.info("Starting inference...");
         List<GroundPredicate> inferredGroundPredicates = psl.solve();
@@ -359,25 +371,7 @@ public class LogicIntegrator {
                         errorRates.get(label).put(classifierId, inferredGroundPredicate.getValue());
                     }
                 });
-        return new Output(integratedDataSet, errorRates);
+        return new ClassifierOutputsIntegrationResults(integratedDataSet, errorRates);
     }
 
-    public static class Output {
-        private final Map<DataInstance<Vector>, Map<Label, Double>> integratedDataSet;
-        private final Map<Label, Map<Integer, Double>> errorRates;
-
-        public Output(Map<DataInstance<Vector>, Map<Label, Double>> integratedDataSet,
-                      Map<Label, Map<Integer, Double>> errorRates) {
-            this.integratedDataSet = integratedDataSet;
-            this.errorRates = errorRates;
-        }
-
-        public Map<DataInstance<Vector>, Map<Label, Double>> getIntegratedDataSet() {
-            return integratedDataSet;
-        }
-
-        public Map<Label, Map<Integer, Double>> getErrorRates() {
-            return errorRates;
-        }
-    }
 }

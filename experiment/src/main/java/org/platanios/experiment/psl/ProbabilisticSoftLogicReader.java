@@ -73,7 +73,7 @@ public class ProbabilisticSoftLogicReader {
             double value = 1;
             if (hasValues) {
                 if (lineFields.length != 3) {
-                    throw new DataFormatException("If any line has a value, all lines must have a value.  Bad format on line: " + (lineNumber + 1));
+                    throw new DataFormatException("If any line has a computeValue, all lines must have a computeValue.  Bad format on line: " + (lineNumber + 1));
                 }
                 value = Double.parseDouble(lineFields[2]);
             } else if (lineFields.length != 2) {

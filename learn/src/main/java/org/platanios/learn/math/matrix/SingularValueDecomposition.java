@@ -5,11 +5,11 @@ import org.platanios.learn.math.MathUtilities;
 import java.util.Arrays;
 
 /**
- * Implements the singular value decomposition (SVD) algorithm for matrix \(A\). Given \(A\in\mathbb{R}^{m\times n}\),
- * with \(m\geq n\), the singular value decomposition is an orthogonal matrix \(U\in\mathbb{R}^{m\times n}\), a diagonal
+ * Implements the singular computeValue decomposition (SVD) algorithm for matrix \(A\). Given \(A\in\mathbb{R}^{m\times n}\),
+ * with \(m\geq n\), the singular computeValue decomposition is an orthogonal matrix \(U\in\mathbb{R}^{m\times n}\), a diagonal
  * matrix \(S\in\mathbb{R}^{n\times n}\) and an orthogonal matrix \(V\in\mathbb{R}^{n\times n}\), such that
  * \(A=USV^T\). The diagonal of \(S\) contains the singular values of the matrix \(A\) and these values are ordered such
- * that: \(\sigma_0\geq\sigma_1\geq\hdots\geq\sigma_{n-1}\). The singular value decomposition always exists.
+ * that: \(\sigma_0\geq\sigma_1\geq\hdots\geq\sigma_{n-1}\). The singular computeValue decomposition always exists.
  * Furthermore, the condition number, the effective numerical rank and the pseudo-inverse of the matrix \(A\) can be
  * computed using this decomposition.
  *
@@ -35,10 +35,10 @@ public class SingularValueDecomposition {
     private final double singularValuesTolerance;
 
     /**
-     * Constructs an singular value decomposition object for the provided matrix. This implementation is derived from
+     * Constructs an singular computeValue decomposition object for the provided matrix. This implementation is derived from
      * the LINPACK code.
      *
-     * @param   matrix  The matrix whose singular value decomposition is being computed.
+     * @param   matrix  The matrix whose singular computeValue decomposition is being computed.
      */
     public SingularValueDecomposition(Matrix matrix) {
         final double[][] matrixArray;
@@ -259,7 +259,7 @@ public class SingularValueDecomposition {
             double f;
             // Perform the task indicated by caseNumber.
             switch (caseNumber) {
-                case 1: // Deflate negligible s[p] value.
+                case 1: // Deflate negligible s[p] computeValue.
                     f = e[p - 2];
                     e[p - 2] = 0;
                     for (int j = p - 2; j >= k; j--) {
@@ -278,7 +278,7 @@ public class SingularValueDecomposition {
                         }
                     }
                     break;
-                case 2: // Split at negligible s[k] value.
+                case 2: // Split at negligible s[k] computeValue.
                     f = e[k - 1];
                     e[k - 1] = 0;
                     for (int j = k; j < p; j++) {
@@ -414,7 +414,7 @@ public class SingularValueDecomposition {
     /**
      * Solves the linear system of equations \(A\boldsymbol{x}=\boldsymbol{b}\) for \(\boldsymbol{x}\) and returns the
      * result as a new vector. The solution is obtained using the pseudoinverse which is in turn computed using the
-     * singular value decomposition.
+     * singular computeValue decomposition.
      *
      * @param   vector  Vector \(\boldsymbol{b}\) in equation \(A\boldsymbol{x}=\boldsymbol{b}\).
      * @return          The solution of the system of equations.
@@ -438,7 +438,7 @@ public class SingularValueDecomposition {
 
     /**
      * Solves the linear system of equations \(AX=B\) for \(X\) and returns the result as a new matrix. The solution is
-     * obtained using the pseudoinverse which is in turn computed using the singular value decomposition.
+     * obtained using the pseudoinverse which is in turn computed using the singular computeValue decomposition.
      *
      * @param   matrix  Matrix \(B\) in equation \(AX=B\).
      * @return          The solution of the system of linear equations.
@@ -525,7 +525,7 @@ public class SingularValueDecomposition {
      * Computes the effective numerical rank of the matrix whose decomposition is being computed. The effective
      * numerical rank is the number of non-negligible singular values. The threshold used to identify non-negligible
      * terms is equal to \(\max{m,n}\text{lsb}(s_1)\) where \(\text{lsb}(s_1)\) is the least significant bit of the
-     * largest singular value.
+     * largest singular computeValue.
      *
      * @return  The effective numerical rank of the matrix whose decomposition is being computed.
      */

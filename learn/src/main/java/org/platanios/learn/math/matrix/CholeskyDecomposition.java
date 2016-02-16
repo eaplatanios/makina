@@ -15,9 +15,9 @@ public class CholeskyDecomposition {
      * requires a square matrix and so the row dimension and the column dimension of \(A\) are equal. */
     private final int dimension;
 
-    /** A boolean value indicating whether the matrix whose decomposition is computed is symmetric. */
+    /** A boolean computeValue indicating whether the matrix whose decomposition is computed is symmetric. */
     private boolean isSymmetric;
-    /** A boolean value indicating whether the matrix whose decomposition is computed is positive definite. */
+    /** A boolean computeValue indicating whether the matrix whose decomposition is computed is positive definite. */
     private boolean isPositiveDefinite;
 
     /**
@@ -148,10 +148,10 @@ public class CholeskyDecomposition {
     }
 
     /**
-     * Gets the boolean value indicating whether or not the matrix whose decomposition is being computed (that is,
+     * Gets the boolean computeValue indicating whether or not the matrix whose decomposition is being computed (that is,
      * \(A\)) is symmetric.
      *
-     * @return  A boolean value indicating whether or not the matrix whose decomposition is being computed (that is,
+     * @return  A boolean computeValue indicating whether or not the matrix whose decomposition is being computed (that is,
      * \(A\)) is symmetric.
      */
     public boolean isSymmetric() {
@@ -159,10 +159,10 @@ public class CholeskyDecomposition {
     }
 
     /**
-     * Gets the boolean value indicating whether or not the matrix whose decomposition is being computed (that is,
+     * Gets the boolean computeValue indicating whether or not the matrix whose decomposition is being computed (that is,
      * \(A\)) is positive definite.
      *
-     * @return  A boolean value indicating whether or not the matrix whose decomposition is being computed (that is,
+     * @return  A boolean computeValue indicating whether or not the matrix whose decomposition is being computed (that is,
      * \(A\)) is positive definite.
      */
     public boolean isPositiveDefinite() {
@@ -170,10 +170,10 @@ public class CholeskyDecomposition {
     }
 
     /**
-     * Gets the boolean value indicating whether or not the matrix whose decomposition is being computed (that is,
+     * Gets the boolean computeValue indicating whether or not the matrix whose decomposition is being computed (that is,
      * \(A\)) is symmetric and positive definite.
      *
-     * @return  A boolean value indicating whether or not the matrix whose decomposition is being computed (that is,
+     * @return  A boolean computeValue indicating whether or not the matrix whose decomposition is being computed (that is,
      * \(A\)) is symmetric and positive definite.
      */
     public boolean isSymmetricAndPositiveDefinite() {

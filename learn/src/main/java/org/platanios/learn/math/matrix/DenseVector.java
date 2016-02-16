@@ -41,10 +41,10 @@ public class DenseVector extends Vector {
     }
 
     /**
-     * Constructs a dense vector of the given size and fills it with the provided value.
+     * Constructs a dense vector of the given size and fills it with the provided computeValue.
      *
      * @param   size    The size of the vector.
-     * @param   value   The value with which to fill the vector.
+     * @param   value   The computeValue with which to fill the vector.
      */
     protected DenseVector(int size, double value) {
         this.size = size;
@@ -977,7 +977,7 @@ public class DenseVector extends Vector {
         /** A pointer in memory used to represent the current position while serializing different fields of the object
          * that is being serialized. */
         long position;
-        /** The largest value that the {@link #position} pointer can take (i.e., this pointer represents the end of the
+        /** The largest computeValue that the {@link #position} pointer can take (i.e., this pointer represents the end of the
          * field that is currently being serialized, in memory). */
         long endPosition;
         /** The current state of the encoder, representing which field of the object is currently being serialized. */
@@ -989,7 +989,7 @@ public class DenseVector extends Vector {
         /** The {@link VectorType} ordinal number of the type of the vector being encoded
          * (i.e., {@link VectorType#DENSE}). */
         final int type;
-        /** Boolean value indicating whether or not to also encode the type of the current vector
+        /** Boolean computeValue indicating whether or not to also encode the type of the current vector
          * (i.e., {@link VectorType#DENSE}). */
         final boolean includeType;
 

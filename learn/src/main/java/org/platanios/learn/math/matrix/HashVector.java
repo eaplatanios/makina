@@ -19,7 +19,7 @@ import java.util.function.Function;
  * stored in an internal hash map.
  *
  * TODO: Add toDenseVector() method (or appropriate constructors).
- * TODO: Make this implementation faster by iterating over key-value pairs instead of iterating over keys and then retrieving values.
+ * TODO: Make this implementation faster by iterating over key-computeValue pairs instead of iterating over keys and then retrieving values.
  * TODO: Add Builder class and remove constructors.
  * TODO: Serialization can become much faster and lower memory "heavy" by storing pairs of indexes and values sequentially, instead of all indexes and then all values.
  * TODO: Serialization is currently broken for this class.
@@ -806,7 +806,7 @@ public class HashVector extends Vector {
         /** A pointer in memory used to represent the current position while serializing different fields of the object
          * that is being serialized. */
         long position;
-        /** The largest value that the {@link #position} pointer can take (i.e., this pointer represents the end of the
+        /** The largest computeValue that the {@link #position} pointer can take (i.e., this pointer represents the end of the
          * field that is currently being serialized, in memory). */
         long endPosition;
         /** The current state of the encoder, representing which field of the object is currently being serialized. */
@@ -829,7 +829,7 @@ public class HashVector extends Vector {
         /** The {@link VectorType} ordinal number of the type of the vector being encoded
          * (i.e., {@link VectorType#HASH}). */
         final int type;
-        /** Boolean value indicating whether or not to also encode the type of the current vector
+        /** Boolean computeValue indicating whether or not to also encode the type of the current vector
          * (i.e., {@link VectorType#HASH}). */
         final boolean includeType;
 

@@ -11,6 +11,7 @@ import org.platanios.learn.classification.constraint.Constraint;
 import org.platanios.learn.classification.constraint.ConstraintSet;
 import org.platanios.learn.classification.constraint.MutualExclusionConstraint;
 import org.platanios.learn.classification.constraint.SubsumptionConstraint;
+import org.platanios.learn.classification.reflection.ClassifierOutputsIntegrationResults;
 import org.platanios.learn.classification.reflection.LogicIntegrator;
 import org.platanios.learn.data.DataInstance;
 import org.platanios.learn.data.DataSet;
@@ -213,7 +214,7 @@ public class ConstrainedLearningExperiment {
             labelClassifiers.put(label, new HashSet<>(Collections.singletonList(labelIndex++)));
         if (useLogicIntegrator) {
             buildLogicIntegrator();
-            LogicIntegrator.Output logicIntegratorOutput = logicIntegrator.integratePredictions();
+            ClassifierOutputsIntegrationResults logicIntegratorOutput = logicIntegrator.integratePredictions();
             predictedDataSet = logicIntegratorOutput.getIntegratedDataSet();
         }
         int totalNumberOfExamples = learning.getNumberOfUnlabeledInstances();
@@ -299,7 +300,7 @@ public class ConstrainedLearningExperiment {
                             buildLogicIntegrator();
                     }
                     if (useLogicIntegrator) {
-                        LogicIntegrator.Output logicIntegratorOutput = logicIntegrator.integratePredictions();
+                        ClassifierOutputsIntegrationResults logicIntegratorOutput = logicIntegrator.integratePredictions();
                         predictedDataSet = logicIntegratorOutput.getIntegratedDataSet();
                     }
                     break;
@@ -316,7 +317,7 @@ public class ConstrainedLearningExperiment {
                             buildLogicIntegrator();
                     }
                     if (useLogicIntegrator) {
-                        LogicIntegrator.Output logicIntegratorOutput = logicIntegrator.integratePredictions();
+                        ClassifierOutputsIntegrationResults logicIntegratorOutput = logicIntegrator.integratePredictions();
                         predictedDataSet = logicIntegratorOutput.getIntegratedDataSet();
                     }
                     break;
@@ -332,7 +333,7 @@ public class ConstrainedLearningExperiment {
                                 buildLogicIntegrator();
                         }
                         if (useLogicIntegrator) {
-                            LogicIntegrator.Output logicIntegratorOutput = logicIntegrator.integratePredictions();
+                            ClassifierOutputsIntegrationResults logicIntegratorOutput = logicIntegrator.integratePredictions();
                             predictedDataSet = logicIntegratorOutput.getIntegratedDataSet();
                         }
                     }

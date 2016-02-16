@@ -59,10 +59,10 @@ abstract class AbstractTrainableLogisticRegression
         }
 
         /**
-         * Sets the {@link #l1RegularizationWeight} field that contains the value of the /(L_1/) regularization weight
+         * Sets the {@link #l1RegularizationWeight} field that contains the computeValue of the /(L_1/) regularization weight
          * used. This variable is only used when {@link #useL1Regularization} is set to true.
          *
-         * @param   l1RegularizationWeight  The value to which to set the {@link #l1RegularizationWeight} field.
+         * @param   l1RegularizationWeight  The computeValue to which to set the {@link #l1RegularizationWeight} field.
          * @return                          This builder object itself. That is done so that we can use a nice and
          *                                  expressive code format when we build objects using this builder class.
          */
@@ -72,10 +72,10 @@ abstract class AbstractTrainableLogisticRegression
         }
 
         /**
-         * Sets the {@link #l2RegularizationWeight} field that contains the value of the /(L_2/) regularization weight
+         * Sets the {@link #l2RegularizationWeight} field that contains the computeValue of the /(L_2/) regularization weight
          * used. This variable is only used when {@link #useL2Regularization} is set to true.
          *
-         * @param   l2RegularizationWeight  The value to which to set the {@link #l2RegularizationWeight} field.
+         * @param   l2RegularizationWeight  The computeValue to which to set the {@link #l2RegularizationWeight} field.
          * @return                          This builder object itself. That is done so that we can use a nice and
          *                                  expressive code format when we build objects using this builder class.
          */
@@ -194,10 +194,10 @@ abstract class AbstractTrainableLogisticRegression
         }
 
         /**
-         * Computes the value of the likelihood function for the binary logistic regression model.
+         * Computes the computeValue of the likelihood function for the binary logistic regression model.
          *
          * @param   weights The current weights vector.
-         * @return          The value of the logistic regression likelihood function.
+         * @return          The computeValue of the logistic regression likelihood function.
          */
         @Override
         public double computeValue(Vector weights) {

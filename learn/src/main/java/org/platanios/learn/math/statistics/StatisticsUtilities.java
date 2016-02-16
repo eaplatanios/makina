@@ -73,7 +73,7 @@ public class StatisticsUtilities {
     /**
      * Sets the seed for the random number generator that is used by the static methods of this class.
      *
-     * @param   seed    The seed value to use.
+     * @param   seed    The seed computeValue to use.
      */
     public static void setSeed(long seed) {
         random = new Random(seed);

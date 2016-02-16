@@ -25,7 +25,7 @@ abstract class PowerSetVector {
     private final int lowestOrder;
     /** The highest cardinality of sets to consider, out of the whole power set. */
     private final int highestOrder;
-    /** Boolean value indicating whether or not to only consider sets of even cardinality, out of the whole power set.
+    /** Boolean computeValue indicating whether or not to only consider sets of even cardinality, out of the whole power set.
      * That is useful when considering the agreement rates constraints in the error rates estimation problem, where the
      * agreement rates of a subset of functions with odd cardinality can be written in terms of the agreement rates of
      * all subsets of functions of even cardinality less than the original subset cardinality. */
@@ -54,7 +54,7 @@ abstract class PowerSetVector {
      *                                      constructed.
      * @param   lowestOrder                 The smallest cardinality of sets to consider, out of the whole power set.
      * @param   highestOrder                The highest cardinality of sets to consider, out of the whole power set.
-     * @param   onlyEvenCardinalitySubsets  Boolean value indicating whether or not to only consider sets of even
+     * @param   onlyEvenCardinalitySubsets  Boolean computeValue indicating whether or not to only consider sets of even
      *                                      cardinality, out of the whole power set.
      */
     public PowerSetVector(int highestIndex, int lowestOrder, int highestOrder, boolean onlyEvenCardinalitySubsets) {
