@@ -3,6 +3,7 @@
 build/
 experiment/build/
 learn/build/
+utilities/build/
 *.iml
 *.class
 *.bin
