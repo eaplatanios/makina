@@ -10,11 +10,9 @@ import java.util.List;
  */
 public class NetworkLearner {
     private final Network network;
-    private final State state;
 
     public NetworkLearner(Network network) {
         this.network = network;
-        this.state = new State();
     }
 
     // TODO: Implement this.

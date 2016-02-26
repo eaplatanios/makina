@@ -1,19 +1,17 @@
-package org.platanios.learn.neural.network.activation;
-
-import org.platanios.learn.neural.network.Layer;
+package org.platanios.learn.neural.network;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class RectifiedLinearLayer extends ActivationLayer {
+class RectifiedLinearLayer extends ActivationLayer {
     private final double threshold;
 
-    RectifiedLinearLayer(Layer inputLayer) {
-        this(inputLayer, 0.0);
+    RectifiedLinearLayer(VariablesManager variablesManager, Layer inputLayer) {
+        this(variablesManager, inputLayer, 0.0);
     }
 
-    RectifiedLinearLayer(Layer inputLayer, double threshold) {
-        super(inputLayer);
+    RectifiedLinearLayer(VariablesManager variablesManager, Layer inputLayer, double threshold) {
+        super(variablesManager, inputLayer);
         this.threshold = threshold;
     }
 

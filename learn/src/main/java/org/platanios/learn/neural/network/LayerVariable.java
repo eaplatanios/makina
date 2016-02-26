@@ -5,7 +5,7 @@ import org.platanios.learn.math.matrix.Vector;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class LayerVariable extends Variable {
+class LayerVariable extends Variable {
     private final Layer layer;
 
     LayerVariable(int id, Layer layer) {
@@ -19,7 +19,7 @@ public class LayerVariable extends Variable {
     }
 
     @Override
-    public Vector value(State state) {
+    public Vector value(NetworkState state) {
         return layer.value(state);
     }
 }

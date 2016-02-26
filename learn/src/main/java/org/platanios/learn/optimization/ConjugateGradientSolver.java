@@ -2,7 +2,6 @@ package org.platanios.learn.optimization;
 
 import org.platanios.learn.math.matrix.*;
 import org.platanios.learn.optimization.function.LinearLeastSquaresFunction;
-import org.platanios.learn.optimization.function.NonSmoothFunctionException;
 import org.platanios.learn.optimization.function.QuadraticFunction;
 
 /**
@@ -223,7 +222,7 @@ public final class ConjugateGradientSolver extends AbstractIterativeSolver {
                         lowerDiagonalMatrix[i][j] = solver.A.getElement(i, j);
                     }
                 }
-                Matrix D = Matrix.generateDiagonalMatrix(diagonal);
+                Matrix D = Matrix.diagonal(diagonal);
                 Matrix DMinusL = D.subtract(
                         (new Matrix(lowerDiagonalMatrix)).multiply(builder.symmetricSuccessiveOverRelaxationOmega)
                 );

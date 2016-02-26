@@ -653,7 +653,7 @@ public final class ConsensusADMMSolver extends AbstractIterativeSolver {
         @Override
         protected Matrix computeHessian(Vector point) throws NonSmoothFunctionException {
             return subProblemObjectiveFunction.getHessian(point)
-                    .add(Matrix.generateIdentityMatrix(point.size()).multiply(penaltyParameter));
+                    .add(Matrix.identity(point.size()).multiply(penaltyParameter));
         }
     }
 

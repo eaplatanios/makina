@@ -43,7 +43,7 @@ public final class LinearEqualityConstraint extends AbstractEqualityConstraint {
                                                 A.getColumnDimension() - 1,
                                                 0,
                                                 A.getColumnDimension() - 1,
-                                                Matrix.generateIdentityMatrix(A.getColumnDimension()));
+                                                Matrix.identity(A.getColumnDimension()));
                 linearSystemMatrix.setSubMatrix(0,
                                                 A.getColumnDimension() - 1,
                                                 A.getColumnDimension(),

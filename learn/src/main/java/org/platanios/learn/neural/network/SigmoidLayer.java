@@ -1,13 +1,11 @@
-package org.platanios.learn.neural.network.activation;
-
-import org.platanios.learn.neural.network.Layer;
+package org.platanios.learn.neural.network;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class SigmoidLayer extends ActivationLayer {
-    SigmoidLayer(Layer inputLayer) {
-        super(inputLayer);
+class SigmoidLayer extends ActivationLayer {
+    SigmoidLayer(VariablesManager variablesManager, Layer inputLayer) {
+        super(variablesManager, inputLayer);
     }
 
     @Override

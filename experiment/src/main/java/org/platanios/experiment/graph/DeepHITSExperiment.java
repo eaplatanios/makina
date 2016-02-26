@@ -7,8 +7,9 @@ import org.platanios.learn.graph.HITSAlgorithm;
 import org.platanios.learn.graph.Vertex;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
+import org.platanios.learn.neural.graph.FeatureVectorFunctionType;
 import org.platanios.learn.neural.graph.GraphRecursiveNeuralNetwork;
-import org.platanios.learn.neural.graph.SimpleGraphRNN;
+import org.platanios.learn.neural.graph.VertexRankingRecursiveNeuralNetwork;
 
 import java.util.*;
 
@@ -27,7 +28,7 @@ public class DeepHITSExperiment {
     private final Graph<HITSAlgorithm.VertexContentType, Void> hitsGraph;
     private final Graph<GraphRecursiveNeuralNetwork.VertexContentType, Void> rnnGraph;
 
-    private SimpleGraphRNN<Void> graphRNNAlgorithm;
+    private VertexRankingRecursiveNeuralNetwork<Void> graphRNNAlgorithm;
 
     public DeepHITSExperiment(DataSets.DataSet dataSet) {
         dataSetName = dataSet.getName();
@@ -64,7 +65,6 @@ public class DeepHITSExperiment {
 
     public void sampleRNNTrainingData(double percentageOfTrainingData) {
         logger.info("Sampling RNN training data for the " + dataSetName + " data set.");
-        final Random random = new Random();
         final List<Map.Entry<Integer, Score>> entries = new ArrayList<>(hitsScores.entrySet());
         Collections.shuffle(entries);
         for (int sample = 0; sample < Math.floor(percentageOfTrainingData * hitsScores.size()); sample++)
@@ -89,7 +89,7 @@ public class DeepHITSExperiment {
     }
 
     public EvaluationResults runRNNExperiment(int featureVectorsSize, int maximumNumberOfSteps) {
-        graphRNNAlgorithm = new SimpleGraphRNN<>(featureVectorsSize, 2, maximumNumberOfSteps, rnnGraph, trainingData);
+        graphRNNAlgorithm = new VertexRankingRecursiveNeuralNetwork<>(featureVectorsSize, 2, maximumNumberOfSteps, rnnGraph, trainingData, FeatureVectorFunctionType.SIGMOID);
         if (!graphRNNAlgorithm.checkDerivative(1e-5))
             logger.warn("The derivatives of the RNN objective function provided are not the same as those obtained " +
                                 "by the method of finite differences.");

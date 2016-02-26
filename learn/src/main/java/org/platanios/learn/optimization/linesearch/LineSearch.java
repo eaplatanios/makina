@@ -13,6 +13,8 @@ public interface LineSearch {
     /**
      * Computes the step size value using the implemented algorithm.
      *
+     *
+     * @param   iterationNumber     The current iteration of the solver.
      * @param   point               The point at which we perform the line search.
      * @param   direction           The direction for which we perform the line search.
      * @param   previousPoint       The previous point selected by the optimization algorithm (used by some step size
@@ -24,7 +26,8 @@ public interface LineSearch {
      * @return                      A step size value that satisfies certain criteria that depend on the algorithm
      *                              choice.
      */
-     public double computeStepSize(Vector point,
+     public double computeStepSize(int iterationNumber,
+                                   Vector point,
                                    Vector direction,
                                    Vector previousPoint,
                                    Vector previousDirection,

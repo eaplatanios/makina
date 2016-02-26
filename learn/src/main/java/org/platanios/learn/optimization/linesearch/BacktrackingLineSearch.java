@@ -17,10 +17,13 @@ public final class BacktrackingLineSearch extends IterativeLineSearch {
     private final double contraptionFactor;
     /** The proportionality constant to use for the Armijo condition. */
     private final double c;
+    /** Tolerance for the step size value. That is, if during the search the step size value if smaller than this
+     * tolerance, it is returned. */
+    private final double tolerance;
 
     /**
      * Constructs a backtracking line search solver for the provided objective function instance and using the provided
-     * parameters.
+     * parameters. Note that in this case a default tolerance value of 1e-10 is used.
      *
      * @param   objective           The objective function instance.
      * @param   contraptionFactor   The contraption factor to use during the step size update on each failure to satisfy
@@ -29,6 +32,22 @@ public final class BacktrackingLineSearch extends IterativeLineSearch {
      *                              must lie between 0 and 1.
      */
     public BacktrackingLineSearch(AbstractFunction objective, double contraptionFactor, double c) {
+        this(objective, contraptionFactor, c, 1e-10);
+    }
+
+    /**
+     * Constructs a backtracking line search solver for the provided objective function instance and using the provided
+     * parameters and the provided tolerance for the step size value.
+     *
+     * @param   objective           The objective function instance.
+     * @param   contraptionFactor   The contraption factor to use during the step size update on each failure to satisfy
+     *                              the Armijo condition. The value provided must lie between 0 and 1.
+     * @param   c                   The proportionality constant to use for the Armijo condition. The value provided
+     *                              must lie between 0 and 1.
+     * @param   tolerance           Tolerance for the step size value. That is, if during the search the step size value
+     *                              is smaller than this tolerance, then it is immediately returned.
+     */
+    public BacktrackingLineSearch(AbstractFunction objective, double contraptionFactor, double c, double tolerance) {
         super(objective);
 
         Preconditions.checkArgument(contraptionFactor > 0 && contraptionFactor < 1);
@@ -36,6 +55,7 @@ public final class BacktrackingLineSearch extends IterativeLineSearch {
 
         this.contraptionFactor = contraptionFactor;
         this.c = c;
+        this.tolerance = tolerance;
     }
 
     /** {@inheritDoc} */
@@ -55,6 +75,8 @@ public final class BacktrackingLineSearch extends IterativeLineSearch {
                                                           objectiveValueAtCurrentPoint,
                                                           objectiveGradientAtCurrentPoint)) {
             currentStepSize *= contraptionFactor;
+            if (currentStepSize < tolerance)
+                return currentStepSize;
         }
 
         return currentStepSize;

@@ -6,18 +6,17 @@ import org.platanios.learn.math.matrix.Vector;
 /**
  * @author Emmanouil Antonios Platanios
  */
-class VectorVariable extends Variable {
-    VectorVariable(int id, int size) {
-        super(id, size);
-    }
+class ConstantVectorVariable extends VectorVariable {
+    private final Vector value;
 
-    VectorVariable(int id, String name, int size) {
-        super(id, name, size);
+    ConstantVectorVariable(int id, Vector value) {
+        super(id, value.size());
+        this.value = value;
     }
 
     @Override
     Vector value(NetworkState state) {
-        return state.get(this);
+        return value;
     }
 
     @Override
@@ -27,15 +26,16 @@ class VectorVariable extends Variable {
         if (other == null || getClass() != other.getClass())
             return false;
 
-        VectorVariable that = (VectorVariable) other;
+        ConstantVectorVariable that = (ConstantVectorVariable) other;
 
         return Objects.equal(id, that.id)
                 && Objects.equal(name, that.name)
-                && Objects.equal(size, that.size);
+                && Objects.equal(size, that.size)
+                && Objects.equal(value, that.value);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id, name, size);
+        return Objects.hashCode(id, name, size, value);
     }
 }

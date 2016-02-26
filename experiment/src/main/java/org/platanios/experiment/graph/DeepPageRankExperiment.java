@@ -7,8 +7,9 @@ import org.platanios.learn.graph.PageRankAlgorithm;
 import org.platanios.learn.graph.Vertex;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
+import org.platanios.learn.neural.graph.FeatureVectorFunctionType;
 import org.platanios.learn.neural.graph.GraphRecursiveNeuralNetwork;
-import org.platanios.learn.neural.graph.SimpleGraphRNN;
+import org.platanios.learn.neural.graph.VertexRankingRecursiveNeuralNetwork;
 
 import java.util.*;
 
@@ -26,8 +27,6 @@ public class DeepPageRankExperiment {
     private final String dataSetName;
     private final Graph<PageRankAlgorithm.VertexContentType, Void> prGraph;
     private final Graph<GraphRecursiveNeuralNetwork.VertexContentType, Void> rnnGraph;
-
-    private SimpleGraphRNN<Void> graphRNNAlgorithm;
 
     public DeepPageRankExperiment(DataSets.DataSet dataSet) {
         dataSetName = dataSet.getName();
@@ -65,7 +64,6 @@ public class DeepPageRankExperiment {
 
     public void sampleRNNTrainingData(double percentageOfTrainingData) {
         logger.info("Sampling RNN training data for the " + dataSetName + " data set.");
-        final Random random = new Random();
         final List<Map.Entry<Integer, Double>> entries = new ArrayList<>(prScores.entrySet());
         Collections.shuffle(entries);
         for (int sample = 0; sample < Math.floor(percentageOfTrainingData * prScores.size()); sample++)
@@ -90,7 +88,8 @@ public class DeepPageRankExperiment {
     }
 
     public EvaluationResults runRNNExperiment(int featureVectorsSize, int maximumNumberOfSteps) {
-        graphRNNAlgorithm = new SimpleGraphRNN<>(featureVectorsSize, 1, maximumNumberOfSteps, rnnGraph, trainingData);
+        VertexRankingRecursiveNeuralNetwork<Void> graphRNNAlgorithm =
+                new VertexRankingRecursiveNeuralNetwork<>(featureVectorsSize, 1, maximumNumberOfSteps, rnnGraph, trainingData, FeatureVectorFunctionType.SIGMOID);
         if (!graphRNNAlgorithm.checkDerivative(1e-5))
             logger.warn("The derivatives of the RNN objective function provided are not the same as those obtained " +
                                 "by the method of finite differences.");
@@ -162,6 +161,6 @@ public class DeepPageRankExperiment {
         DeepPageRankExperiment experiment = new DeepPageRankExperiment(dataSet);
         experiment.runPageRank();
         experiment.sampleRNNTrainingData(0.8);
-        experiment.runRNNExperiments(new int[] { 3 }, new int[] { 2, 11, 21, 31, 41, 51 });
+        experiment.runRNNExperiments(new int[] { 1, 10 }, new int[] { 1, 2, 5, 10, 20, 50 });
     }
 }

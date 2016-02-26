@@ -6,6 +6,12 @@ import org.platanios.learn.graph.Vertex;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
+import org.platanios.learn.optimization.QuasiNewtonSolver;
+import org.platanios.learn.optimization.function.AbstractFunction;
+import org.platanios.learn.optimization.function.DerivativesApproximation;
+import org.platanios.learn.optimization.function.NonSmoothFunctionException;
+import org.platanios.learn.optimization.linesearch.BacktrackingLineSearch;
+import org.platanios.utilities.ArrayUtilities;
 
 import java.util.Map;
 
@@ -13,20 +19,21 @@ import java.util.Map;
  * @author Emmanouil Antonios Platanios
  */
 public class GraphRecursiveNeuralNetwork<E> {
-    private final int featureVectorsSize;
-    private final int outputVectorSize;
-    private final int maximumNumberOfSteps;
-    private final Graph<VertexContentType, E> graph;
-    private final Map<Integer, Vector> trainingData;
-    private final FeatureVectorFunction<VertexContentType, E> featureVectorFunction;
-    private final OutputFunction outputFunction;
-    private final LossFunction lossFunction;
+    protected final int featureVectorsSize;
+    protected final int outputVectorSize;
+    protected final int maximumNumberOfSteps;
+    protected final Graph<VertexContentType, E> graph;
+    protected final Map<Integer, Vector> trainingData;
+    protected final ObjectiveFunction objectiveFunction;
+    protected final FeatureVectorFunction<VertexContentType, E> featureVectorFunction;
+    protected final OutputFunction outputFunction;
+    protected final LossFunction lossFunction;
 
     private boolean needsForwardPass = true;
     private boolean needsBackwardPass = true;
 
-    private Vector featureVectorFunctionParameters;
-    private Vector outputFunctionParameters;
+    protected Vector featureVectorFunctionParameters;
+    protected Vector outputFunctionParameters;
 
     private double lossFunctionValue;
     private Vector featureVectorFunctionParametersGradient;
@@ -39,9 +46,7 @@ public class GraphRecursiveNeuralNetwork<E> {
                                        Map<Integer, Vector> trainingData,
                                        FeatureVectorFunction<VertexContentType, E> featureVectorFunction,
                                        OutputFunction outputFunction,
-                                       LossFunction lossFunction,
-                                       Vector featureVectorFunctionParameters,
-                                       Vector outputFunctionParameters) {
+                                       LossFunction lossFunction) {
         this.featureVectorsSize = featureVectorsSize;
         this.outputVectorSize = outputVectorSize;
         this.maximumNumberOfSteps = maximumNumberOfSteps;
@@ -50,13 +55,18 @@ public class GraphRecursiveNeuralNetwork<E> {
         this.featureVectorFunction = featureVectorFunction;
         this.outputFunction = outputFunction;
         this.lossFunction = lossFunction;
-        this.featureVectorFunctionParameters = featureVectorFunctionParameters;
-        this.outputFunctionParameters = outputFunctionParameters;
+        this.featureVectorFunctionParameters = featureVectorFunction.getInitialParametersVector();
+        this.outputFunctionParameters = outputFunction.getInitialParametersVector();
+        objectiveFunction = new ObjectiveFunction();
         resetGraph();
     }
 
     public Graph<VertexContentType, E> getGraph() {
         return graph;
+    }
+
+    public Vector getOutputForVertex(Vertex<GraphRecursiveNeuralNetwork.VertexContentType, E> vertex) {
+        return outputFunction.value(vertex.getContent().getFeatureVector(), outputFunctionParameters);
     }
 
     public Vector getFeatureVectorFunctionParameters() {
@@ -79,7 +89,7 @@ public class GraphRecursiveNeuralNetwork<E> {
             resetGraph();
     }
 
-    public double getLossFunctionValue() {
+    public double lossFunctionValue() {
         if (needsForwardPass)
             performForwardPass();
         return lossFunctionValue;
@@ -109,8 +119,8 @@ public class GraphRecursiveNeuralNetwork<E> {
     }
 
     private VertexContentType resetVertexComputeFunction(Vertex<VertexContentType, E> vertex) {
-        Vector[] featureVectors = new Vector[maximumNumberOfSteps];
-        featureVectors[0] = Vectors.dense(featureVectorsSize, 0.2);  // TODO: Change the feature vectors initial computeValue.
+        Vector[] featureVectors = new Vector[maximumNumberOfSteps + 1];
+        featureVectors[0] = Vectors.dense(featureVectorsSize);  // TODO: Change the feature vectors initial computeValue.
         return new VertexContentType(vertex.getContent().id, 0, featureVectors, null);
     }
 
@@ -122,14 +132,14 @@ public class GraphRecursiveNeuralNetwork<E> {
     }
 
     private VertexContentType randomizeVertexComputeFunction(Vertex<VertexContentType, E> vertex) {
-        Vector[] featureVectors = new Vector[maximumNumberOfSteps];
+        Vector[] featureVectors = new Vector[maximumNumberOfSteps + 1];
         featureVectors[0] = Vectors.random(featureVectorsSize);  // TODO: Change the feature vectors initial computeValue.
         return new VertexContentType(vertex.getContent().id, 0, featureVectors, null);
     }
 
     public void performForwardPass() {
         lossFunctionValue = 0;
-        for (int step = 0; step < maximumNumberOfSteps - 1; step++) {
+        for (int step = 0; step < maximumNumberOfSteps; step++) {
             graph.computeVerticesUpdatedContent(this::forwardVertexComputeFunction);
             graph.updateVerticesContent();
         }
@@ -140,7 +150,7 @@ public class GraphRecursiveNeuralNetwork<E> {
         VertexContentType vertexContent = vertex.getContent();
         vertexContent.featureVectors[vertexContent.currentStep + 1] =
                 featureVectorFunction.value(featureVectorFunctionParameters, vertex, vertexContent.currentStep);
-        if (vertexContent.currentStep == maximumNumberOfSteps - 2) {
+        if (vertexContent.currentStep == maximumNumberOfSteps - 1) {
             Vector correctOutput = trainingData.getOrDefault(vertexContent.id, null);
             if (correctOutput != null)
                 synchronized (this) {
@@ -162,7 +172,7 @@ public class GraphRecursiveNeuralNetwork<E> {
     public void performBackwardPass() {
         outputFunctionParametersGradient = Vectors.dense(outputFunctionParameters.size());
         featureVectorFunctionParametersGradient = Vectors.dense(featureVectorFunctionParameters.size());
-        for (int step = maximumNumberOfSteps - 1; step > 0; step--) {
+        for (int step = maximumNumberOfSteps; step > 0; step--) {
             graph.computeVerticesUpdatedContent(this::backwardVertexComputeFunction);
             graph.updateVerticesContent();
         }
@@ -172,7 +182,7 @@ public class GraphRecursiveNeuralNetwork<E> {
     private VertexContentType backwardVertexComputeFunction(Vertex<VertexContentType, E> vertex) {
         VertexContentType vertexContent = vertex.getContent();
         Vector featureVectorGradient;
-        if (vertexContent.currentStep == maximumNumberOfSteps - 1) {
+        if (vertexContent.currentStep == maximumNumberOfSteps) {
             Vector lossFunctionGradient = Vectors.dense(outputVectorSize);
             Vector correctOutput = trainingData.getOrDefault(vertexContent.id, null);
             if (correctOutput != null)
@@ -192,27 +202,29 @@ public class GraphRecursiveNeuralNetwork<E> {
                                                          outputFunctionParameters)
             );
         } else {
-            featureVectorGradient =
+            featureVectorGradient = vertexContent.featureVectorGradient.transMult(
                     featureVectorFunction.featureVectorGradient(featureVectorFunctionParameters,
                                                                 vertex,
                                                                 vertex,
                                                                 vertexContent.currentStep)
-                            .multiply(vertexContent.featureVectorGradient);
+            );
             for (Edge<VertexContentType, E> incomingEdge : vertex.getIncomingEdges())
                 featureVectorGradient.addInPlace(
-                        featureVectorFunction.featureVectorGradient(featureVectorFunctionParameters,
-                                                                    incomingEdge.getSourceVertex(),
-                                                                    vertex,
-                                                                    vertexContent.currentStep)
-                                .multiply(incomingEdge.getSourceVertex().getContent().featureVectorGradient)
+                        incomingEdge.getSourceVertex().getContent().featureVectorGradient.transMult(
+                                featureVectorFunction.featureVectorGradient(featureVectorFunctionParameters,
+                                                                            incomingEdge.getSourceVertex(),
+                                                                            vertex,
+                                                                            vertexContent.currentStep)
+                        )
                 );
             for (Edge<VertexContentType, E> outgoingEdge : vertex.getOutgoingEdges())
                 featureVectorGradient.addInPlace(
-                        featureVectorFunction.featureVectorGradient(featureVectorFunctionParameters,
-                                                                    outgoingEdge.getDestinationVertex(),
-                                                                    vertex,
-                                                                    vertexContent.currentStep)
-                                .multiply(outgoingEdge.getDestinationVertex().getContent().featureVectorGradient)
+                        outgoingEdge.getDestinationVertex().getContent().featureVectorGradient.transMult(
+                                featureVectorFunction.featureVectorGradient(featureVectorFunctionParameters,
+                                                                            outgoingEdge.getDestinationVertex(),
+                                                                            vertex,
+                                                                            vertexContent.currentStep)
+                        )
                 );
         }
         synchronized (this) {
@@ -226,6 +238,68 @@ public class GraphRecursiveNeuralNetwork<E> {
                 vertexContent.featureVectors,
                 featureVectorGradient
         );
+    }
+
+    public boolean checkDerivative(double tolerance) {
+        try {
+            resetGraph();
+            DerivativesApproximation derivativesApproximation =
+                    new DerivativesApproximation(objectiveFunction, DerivativesApproximation.Method.CENTRAL_DIFFERENCE);
+            Vector point = Vectors.random(outputFunction.getParametersVectorSize() + featureVectorFunction.getParametersVectorSize());
+            double[] actualResult = derivativesApproximation.approximateGradient(point).getDenseArray();
+            double[] expectedResult = objectiveFunction.getGradient(point).getDenseArray();
+            resetGraph();
+            return ArrayUtilities.equals(actualResult, expectedResult, tolerance);
+        } catch (NonSmoothFunctionException e) {
+            return false;
+        }
+    }
+
+    public void trainNetwork() {
+        Vector initialPoint = Vectors.dense(outputFunction.getParametersVectorSize() + featureVectorFunction.getParametersVectorSize());
+        for (Vector.VectorElement element : outputFunction.getInitialParametersVector())
+            initialPoint.set(element.index(), element.value());
+        for (Vector.VectorElement element : featureVectorFunction.getInitialParametersVector())
+            initialPoint.set(element.index() + featureVectorsSize, element.value());
+        BacktrackingLineSearch lineSearch = new BacktrackingLineSearch(objectiveFunction, 0.5, 0.5);
+        lineSearch.setInitialStepSize(1.0);
+        QuasiNewtonSolver solver =
+                new QuasiNewtonSolver.Builder(objectiveFunction, initialPoint)
+                        .method(QuasiNewtonSolver.Method.BROYDEN_FLETCHER_GOLDFARB_SHANNO)
+//                        .method(QuasiNewtonSolver.Method.LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO)
+//                        .m(10)
+                        .lineSearch(lineSearch)
+//                        .gradientTolerance(1e-10)
+                        .checkForObjectiveConvergence(true)
+                        .objectiveChangeTolerance(1e-6)
+                        .maximumNumberOfIterations(1000)
+                        .maximumNumberOfFunctionEvaluations(1000)
+                        .loggingLevel(5)
+                        .build();
+//        NonlinearConjugateGradientSolver solver =
+//                new NonlinearConjugateGradientSolver.Builder(objectiveFunction, initialPoint)
+//                        .method(NonlinearConjugateGradientSolver.Method.FLETCHER_RIEVES_POLAK_RIBIERE)
+//                        .restartMethod(NonlinearConjugateGradientSolver.RestartMethod.GRADIENTS_ORTHOGONALITY_CHECK)
+//                        .loggingLevel(5)
+//                        .build();
+//        GradientDescentSolver solver =
+//                new GradientDescentSolver.Builder(objectiveFunction, initialPoint)
+//                        .lineSearch(new NoLineSearch(10, 0.75))
+//                        .gradientTolerance(1e-10)
+//                        .loggingLevel(5)
+//                        .build();
+//        RPropSolver solver =
+//                new RPropSolver.Builder(objectiveFunction, initialPoint)
+//                        .lineSearch(new NoLineSearch(10, 0.75))
+//                        .checkForPointConvergence(true)
+//                        .checkForObjectiveConvergence(true)
+//                        .loggingLevel(5)
+//                        .build();
+        Vector solution = solver.solve();
+        outputFunctionParameters = solution.get(0, outputFunction.getParametersVectorSize() - 1);
+        featureVectorFunctionParameters = solution.get(outputFunction.getParametersVectorSize(), solution.size() - 1);
+        setOutputFunctionParameters(outputFunctionParameters);
+        setFeatureVectorFunctionParameters(featureVectorFunctionParameters);
     }
 
     public static class VertexContentType {
@@ -253,7 +327,36 @@ public class GraphRecursiveNeuralNetwork<E> {
         }
     }
 
+    private class ObjectiveFunction extends AbstractFunction {
+        private Vector oldPoint = Vectors.dense(0);
+
+        @Override
+        protected double computeValue(Vector point) {
+            checkPoint(point);
+            return lossFunctionValue();
+        }
+
+        @Override
+        protected Vector computeGradient(Vector point) {
+            checkPoint(point);
+            Vector gradient = Vectors.dense(outputFunction.getParametersVectorSize() + featureVectorFunction.getParametersVectorSize());
+            gradient.set(0, outputFunction.getParametersVectorSize() - 1, getOutputFunctionParametersGradient());
+            gradient.set(outputFunction.getParametersVectorSize(), point.size() - 1, getFeatureVectorFunctionParametersGradient());
+            return gradient;
+        }
+
+        private void checkPoint(Vector point) {
+            if (!ArrayUtilities.equals(oldPoint.getDenseArray(), point.getDenseArray(), 1e-10)) {
+                setOutputFunctionParameters(point.get(0, outputFunction.getParametersVectorSize() - 1));
+                setFeatureVectorFunctionParameters(point.get(outputFunction.getParametersVectorSize(), point.size() - 1));
+                oldPoint = point;
+            }
+        }
+    }
+
     public abstract static class FeatureVectorFunction<VertexContentType, E> {
+        public abstract int getParametersVectorSize();
+        public abstract Vector getInitialParametersVector();
         public abstract Vector value(Vector parameters, Vertex<VertexContentType, E> vertex, int step);
         public abstract Matrix gradient(Vector parameters, Vertex<VertexContentType, E> vertex, int step);
         public abstract Matrix featureVectorGradient(Vector parameters,
@@ -263,6 +366,8 @@ public class GraphRecursiveNeuralNetwork<E> {
     }
 
     public abstract static class OutputFunction {
+        public abstract int getParametersVectorSize();
+        public abstract Vector getInitialParametersVector();
         public abstract Vector value(Vector featureVector, Vector parameters);
         public abstract Matrix featureVectorGradient(Vector featureVector, Vector parameters);
         public abstract Matrix parametersGradient(Vector featureVector, Vector parameters);

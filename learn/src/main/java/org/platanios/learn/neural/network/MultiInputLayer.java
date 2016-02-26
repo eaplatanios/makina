@@ -1,33 +1,38 @@
 package org.platanios.learn.neural.network;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 /**
  * @author Emmanouil Antonios Platanios
  */
-public abstract class MultiInputLayer extends Layer {
-    protected final List<Layer> inputLayers;
-    protected final List<Variable> inputVariables;
+abstract class MultiInputLayer extends Layer {
+    final Layer[] inputLayers;
+    final Variable[] inputVariables;
+    final Variable outputVariable;
 
-    protected MultiInputLayer(List<Layer> inputLayers, int outputSize) {
-        super(inputLayers.stream().mapToInt(Layer::outputSize).sum(), outputSize);
-        if (inputLayers.size() == 0)
+    MultiInputLayer(VariablesManager variablesManager, Layer[] inputLayers, int outputSize) {
+        super(variablesManager, outputSize);
+        if (inputLayers.length == 0)
             throw new IllegalArgumentException("There must exist at least one input layer for each network layer.");
         this.inputLayers = inputLayers;
-        this.inputVariables =
-                inputLayers.stream()
-                        .map(Layer::outputVariable)
-                        .collect(Collectors.toList());
+        inputVariables = new Variable[inputLayers.length];
+        for (int layerIndex = 0; layerIndex < inputLayers.length; layerIndex++) {
+            inputVariables[layerIndex] = inputLayers[layerIndex].outputVariable();
+            inputLayers[layerIndex].addOutputLayer(this);
+        }
+        outputVariable = variablesManager.layerVariable(this);
     }
 
     @Override
-    public List<Variable> inputVariables() {
+    Layer[] inputLayers() {
+        return inputLayers;
+    }
+
+    @Override
+    Variable[] inputVariables() {
         return inputVariables;
     }
 
     @Override
-    public List<Layer> inputLayers() {
-        return inputLayers;
+    Variable outputVariable() {
+        return outputVariable;
     }
 }

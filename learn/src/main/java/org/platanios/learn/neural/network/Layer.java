@@ -2,67 +2,100 @@ package org.platanios.learn.neural.network;
 
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import org.platanios.utilities.ArrayUtilities;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
-public abstract class Layer {
-    protected final int inputSize;
-    protected final int outputSize;
-    protected final Variable outputVariable;
+abstract class Layer {
+    final int outputSize;
 
-    protected Layer(int inputSize, int outputSize) {
-        this.inputSize = inputSize;
+    private Layer[] outputLayers = new Layer[0];
+    private int numberOfOutputLayers = 0;
+
+    private Matrix forwardGradient;
+    private int numberOfForwardGradientsReceived = 0;
+
+    Layer(VariablesManager variablesManager, int outputSize) {
         this.outputSize = outputSize;
-        this.outputVariable = Variables.layerVariable(this);
     }
 
-    public int inputSize() {
-        return inputSize;
+    abstract Layer[] inputLayers();
+    abstract Variable[] inputVariables();
+    abstract Variable outputVariable();
+
+    Layer[] outputLayers() {
+        return outputLayers;
     }
 
-    public int outputSize() {
+    int addOutputLayer(Layer layer) {
+        outputLayers = ArrayUtilities.append(outputLayers, layer);
+        return ++numberOfOutputLayers;
+    }
+
+    int outputSize() {
         return outputSize;
     }
 
-    public abstract List<Variable> inputVariables();
-    public abstract List<Layer> inputLayers();
-
-    public Variable outputVariable() {
-        return outputVariable;
+    void resetForwardGradient() {
+        forwardGradient = null;
+        numberOfForwardGradientsReceived = 0;
     }
 
-    public Set<Variable> parameters() {
-        return new HashSet<>();
+    Variable[] parameters() {
+        return new Variable[0];
     }
 
-    public Vector value(State state) {
+    Vector value(NetworkState state) {
         Vector value = computeValue(state);
-        state.set(outputVariable, value);
+        state.set(outputVariable(), value);
         return value;
     }
 
-    protected abstract Vector computeValue(State state);
+    abstract Vector computeValue(NetworkState state);
 
-    public Matrix gradient(State state, Variable variable) {
-        Matrix gradient = selfGradient(state, variable);
-        inputLayers().stream()
-                .filter(inputLayer -> !variable.equals(inputLayer.outputVariable()))
-                .forEach(inputLayer -> gradient.addEquals(selfGradient(state, inputLayer.outputVariable())
-                                                                  .multiply(inputLayer.gradient(state, variable))));
+    abstract Matrix localGradient(NetworkState state, Variable variable);
+
+    Matrix recursiveGradient(NetworkState state, Variable variable) {
+        Matrix gradient = localGradient(state, variable);
+        for (Layer layer : inputLayers())
+            if (!variable.equals(layer.outputVariable()))
+                gradient.addEquals(localGradient(state, layer.outputVariable())
+                                           .multiply(layer.recursiveGradient(state, variable)));
         return gradient;
     }
 
-    protected abstract Matrix selfGradient(State state, Variable variable);
+    Matrix[] recursiveGradient(NetworkState state, Variable... variables) {
+        Matrix[] gradient = new Matrix[variables.length];
+        for (int variableIndex = 0; variableIndex < variables.length; variableIndex++)
+            gradient[variableIndex] = recursiveGradient(state, variables[variableIndex]);
+        return gradient;
+    }
 
-    public List<Matrix> gradient(State state, List<Variable> variables) {
-        return variables.stream()
-                .map(variable -> gradient(state, variable))
-                .collect(Collectors.toList());
+    Matrix gradient(NetworkState state, Variable variable) {
+        if (numberOfForwardGradientsReceived == numberOfOutputLayers || numberOfOutputLayers == 0)
+            return forwardGradient.multiply(localGradient(state, variable));
+        return null;
+    }
+
+    Matrix[] gradient(NetworkState state, Variable... variables) {
+        if (numberOfForwardGradientsReceived == numberOfOutputLayers || numberOfOutputLayers == 0) {
+            Matrix[] gradient = new Matrix[variables.length];
+            for (int variableIndex = 0; variableIndex < variables.length; variableIndex++)
+                gradient[variableIndex] = forwardGradient.multiply(localGradient(state, variables[variableIndex]));
+            return gradient;
+        }
+        return null;
+    }
+
+    void backPropagateGradient(NetworkState state, Matrix forwardGradient) {
+        if (numberOfForwardGradientsReceived == 0 || numberOfOutputLayers == 0)
+            this.forwardGradient = forwardGradient;
+        else if (numberOfForwardGradientsReceived < numberOfOutputLayers)
+            this.forwardGradient.addEquals(forwardGradient);
+        numberOfForwardGradientsReceived++;
+        if (numberOfForwardGradientsReceived == numberOfOutputLayers || numberOfOutputLayers == 0)
+            for (Layer layer : inputLayers())
+                layer.backPropagateGradient(state, this.forwardGradient.multiply(localGradient(state, layer.outputVariable())));
     }
 }

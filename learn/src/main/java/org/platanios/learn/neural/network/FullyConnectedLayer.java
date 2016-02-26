@@ -1,64 +1,62 @@
 package org.platanios.learn.neural.network;
 
-import com.google.common.collect.Sets;
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
 
-import java.util.Set;
-
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class FullyConnectedLayer extends SingleInputLayer {
+class FullyConnectedLayer extends SingleInputLayer {
     private final int numberOfHiddenUnits;
     private final boolean includeBiasTerm;
     private final MatrixVariable weights;
     private final VectorVariable bias;
 
-    FullyConnectedLayer(Layer inputLayer, int numberOfHiddenUnits) {
-        this(inputLayer, numberOfHiddenUnits, true);
+    FullyConnectedLayer(VariablesManager variablesManager, Layer inputLayer, int numberOfHiddenUnits) {
+        this(variablesManager, inputLayer, numberOfHiddenUnits, true);
     }
 
-    FullyConnectedLayer(Layer inputLayer, int numberOfHiddenUnits, boolean includeBiasTerm) {
-        super(inputLayer, numberOfHiddenUnits);
+    FullyConnectedLayer(VariablesManager variablesManager, Layer inputLayer, int numberOfHiddenUnits, boolean includeBiasTerm) {
+        super(variablesManager, inputLayer, numberOfHiddenUnits);
         this.numberOfHiddenUnits = numberOfHiddenUnits;
         this.includeBiasTerm = includeBiasTerm;
-        this.weights = Variables.matrixVariable(numberOfHiddenUnits, inputSize);
+        this.weights = variablesManager.matrixVariable(numberOfHiddenUnits, inputVariable.size());
         if (includeBiasTerm)
-            this.bias = Variables.vectorVariable(numberOfHiddenUnits);
+            this.bias = variablesManager.vectorVariable(numberOfHiddenUnits);
         else
             this.bias = null;
     }
 
-    FullyConnectedLayer(Layer inputLayer, int numberOfHiddenUnits, String weightsVariableName) {
-        this(inputLayer, numberOfHiddenUnits, weightsVariableName, null);
+    FullyConnectedLayer(VariablesManager variablesManager, Layer inputLayer, int numberOfHiddenUnits, String weightsVariableName) {
+        this(variablesManager, inputLayer, numberOfHiddenUnits, weightsVariableName, null);
     }
 
-    FullyConnectedLayer(Layer inputLayer,
+    FullyConnectedLayer(VariablesManager variablesManager,
+                        Layer inputLayer,
                         int numberOfHiddenUnits,
                         String weightsVariableName,
                         String biasVariableName) {
-        super(inputLayer, numberOfHiddenUnits);
+        super(variablesManager, inputLayer, numberOfHiddenUnits);
         this.numberOfHiddenUnits = numberOfHiddenUnits;
         this.includeBiasTerm = biasVariableName != null;
-        this.weights = Variables.matrixVariable(weightsVariableName, numberOfHiddenUnits, inputSize);
+        this.weights = variablesManager.matrixVariable(weightsVariableName, numberOfHiddenUnits, inputVariable.size());
         if (includeBiasTerm)
-            this.bias = Variables.vectorVariable(biasVariableName, numberOfHiddenUnits);
+            this.bias = variablesManager.vectorVariable(biasVariableName, numberOfHiddenUnits);
         else
             this.bias = null;
     }
 
     @Override
-    public Set<Variable> parameters() {
+    Variable[] parameters() {
         if (includeBiasTerm)
-            return Sets.newHashSet(weights, bias);
+            return new Variable[] { weights, bias };
         else
-            return Sets.newHashSet(weights);
+            return new Variable[] { weights };
     }
 
     @Override
-    public Vector computeValue(State state) {
+    Vector computeValue(NetworkState state) {
         Vector inputValue = inputLayer.value(state);
         Vector outputValue = Vectors.build(numberOfHiddenUnits, inputValue.type());
         Vector weights = state.get(this.weights);
@@ -69,7 +67,7 @@ public class FullyConnectedLayer extends SingleInputLayer {
             double sum = 0.0;
             if (includeBiasTerm)
                 sum += bias.get(i);
-            for (int j = 0; j < inputSize; j++)
+            for (int j = 0; j < inputVariable.size(); j++)
                 sum += weights.get(i + j * numberOfHiddenUnits) * inputValue.get(j);
             outputValue.set(i, sum);
         }
@@ -77,12 +75,16 @@ public class FullyConnectedLayer extends SingleInputLayer {
     }
 
     @Override
-    protected Matrix selfGradient(State state, Variable variable) {
-        if (variable.equals(weights)) {
+    Matrix localGradient(NetworkState state, Variable variable) {
+        if (variable.equals(outputVariable)) {
+            return Matrix.identity(outputSize);
+        } else if (variable.equals(inputVariable)) {
+            return new Matrix(weights.value(state), outputSize);
+        } else if (variable.equals(weights)) {
             Vector inputValue = inputLayer.value(state);
             Matrix gradient = Matrix.zeros(numberOfHiddenUnits, weights.size);
             for (int i = 0; i < numberOfHiddenUnits; i++)
-                for (int j = 0; j < inputSize; j++)
+                for (int j = 0; j < inputVariable.size(); j++)
                     gradient.setElement(i, i + j * numberOfHiddenUnits, inputValue.get(j));
             return gradient;
         } else if (includeBiasTerm && variable.equals(bias)) {

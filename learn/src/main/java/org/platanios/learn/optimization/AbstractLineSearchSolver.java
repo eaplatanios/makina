@@ -102,7 +102,8 @@ abstract class AbstractLineSearchSolver extends AbstractIterativeSolver {
 
     public void updateStepSize() {
         try {
-            currentStepSize = lineSearch.computeStepSize(currentPoint,
+            currentStepSize = lineSearch.computeStepSize(currentIteration,
+                                                         currentPoint,
                                                          currentDirection,
                                                          previousPoint,
                                                          previousDirection,

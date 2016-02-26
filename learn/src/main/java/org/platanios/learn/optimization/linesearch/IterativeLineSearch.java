@@ -31,7 +31,8 @@ abstract class IterativeLineSearch implements LineSearch {
 
     /** {@inheritDoc} */
     @Override
-    public double computeStepSize(Vector point,
+    public double computeStepSize(int iterationNumber,
+                                  Vector point,
                                   Vector direction,
                                   Vector previousPoint,
                                   Vector previousDirection,

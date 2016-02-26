@@ -1,12 +1,8 @@
-package org.platanios.learn.neural.network.activation;
+package org.platanios.learn.neural.network;
 
 import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
-import org.platanios.learn.neural.network.Layer;
-import org.platanios.learn.neural.network.SingleInputLayer;
-import org.platanios.learn.neural.network.State;
-import org.platanios.learn.neural.network.Variable;
 
 /**
  * TODO: Maybe allow parameters of the different activation functions to be returned from the parameters() method of
@@ -14,18 +10,18 @@ import org.platanios.learn.neural.network.Variable;
  *
  * @author Emmanouil Antonios Platanios
  */
-public abstract class ActivationLayer extends SingleInputLayer {
-    ActivationLayer(Layer inputLayer) {
-        super(inputLayer, inputLayer.outputSize());
+abstract class ActivationLayer extends SingleInputLayer {
+    ActivationLayer(VariablesManager variablesManager, Layer inputLayer) {
+        super(variablesManager, inputLayer, inputLayer.outputSize());
     }
 
     @Override
-    public int outputSize() {
-        return inputSize;
+    int outputSize() {
+        return outputSize;
     }
 
     @Override
-    public Vector computeValue(State state) {
+    Vector computeValue(NetworkState state) {
         Vector inputValue = inputLayer.value(state);
         Vector outputValue = Vectors.build(outputSize(), state.vectorType());
         for (Vector.VectorElement element : inputValue)
@@ -34,15 +30,17 @@ public abstract class ActivationLayer extends SingleInputLayer {
     }
 
     @Override
-    protected Matrix selfGradient(State state, Variable variable) {
-        if (variable.equals(inputVariable)) {
-            Matrix gradient = new Matrix(outputSize(), inputSize);
+    Matrix localGradient(NetworkState state, Variable variable) {
+        if (variable.equals(outputVariable)) {
+            return Matrix.identity(outputSize);
+        } else if (variable.equals(inputVariable)) {
+            Matrix gradient = new Matrix(outputSize(), outputSize());
             Vector inputValue = inputLayer.value(state);
             for (Vector.VectorElement element : inputValue)
                 gradient.setElement(element.index(), element.index(), gradient(element.value()));
             return gradient;
         } else {
-            return Matrix.zeros(inputSize, variable.size());
+            return Matrix.zeros(outputSize(), variable.size());
         }
     }
 

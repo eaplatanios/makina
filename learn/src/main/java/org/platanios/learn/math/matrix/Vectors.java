@@ -49,6 +49,11 @@ public class Vectors {
     }
 
     // TODO: Mention that this is always dense.
+    public static DenseVector ones(int size) {
+        return new DenseVector(size, 1);
+    }
+
+    // TODO: Mention that this is always dense.
     public static DenseVector random(int size) {
         DenseVector vector = new DenseVector(size);
         for (int i = 0; i < vector.size(); i++)

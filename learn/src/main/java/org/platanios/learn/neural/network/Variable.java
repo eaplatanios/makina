@@ -6,7 +6,7 @@ import org.platanios.learn.math.matrix.Vector;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public abstract class Variable {
+abstract class Variable {
     protected final int id;
     protected final String name;
     protected final int size;
@@ -33,7 +33,7 @@ public abstract class Variable {
         return size;
     }
 
-    public abstract Vector value(State state);
+    abstract Vector value(NetworkState state);
 
     @Override
     public boolean equals(Object other) {
@@ -45,11 +45,12 @@ public abstract class Variable {
         Variable that = (Variable) other;
 
         return Objects.equal(id, that.id)
+                && Objects.equal(name, that.name)
                 && Objects.equal(size, that.size);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id, size);
+        return Objects.hashCode(id, name, size);
     }
 }
