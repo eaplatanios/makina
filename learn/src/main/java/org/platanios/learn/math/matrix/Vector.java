@@ -181,7 +181,7 @@ public abstract class Vector implements Iterable<Vector.VectorElement> {
     public abstract void setAll(double value);
 
     /**
-     * Gets the maximum computeValue of all elements in this vector.
+     * Gets the maximum computeValue of all elements in this vector. // TODO: Add argmax and argmin implementations as well as combined implementations.
      *
      * @return  The maximum computeValue of all elements in this vector.
      */

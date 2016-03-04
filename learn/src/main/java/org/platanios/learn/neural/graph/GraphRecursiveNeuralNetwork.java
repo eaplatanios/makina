@@ -114,6 +114,7 @@ public class GraphRecursiveNeuralNetwork<E> {
     public void resetGraph() {
         graph.computeVerticesUpdatedContent(this::resetVertexComputeFunction);
         graph.updateVerticesContent();
+        graph.computeVerticesUpdatedContent(this::neighborsSumVertexComputeFunction);
         needsForwardPass = true;
         needsBackwardPass = true;
     }
@@ -124,26 +125,43 @@ public class GraphRecursiveNeuralNetwork<E> {
         return new VertexContentType(vertex.getContent().id, 0, featureVectors, null);
     }
 
-    public void randomizeGraph() {
-        graph.computeVerticesUpdatedContent(this::randomizeVertexComputeFunction);
-        graph.updateVerticesContent();
-        needsForwardPass = true;
-        needsBackwardPass = true;
-    }
-
-    private VertexContentType randomizeVertexComputeFunction(Vertex<VertexContentType, E> vertex) {
-        Vector[] featureVectors = new Vector[maximumNumberOfSteps + 1];
-        featureVectors[0] = Vectors.random(featureVectorsSize);  // TODO: Change the feature vectors initial computeValue.
-        return new VertexContentType(vertex.getContent().id, 0, featureVectors, null);
-    }
+//    public void randomizeGraph() {
+//        graph.computeVerticesUpdatedContent(this::randomizeVertexComputeFunction);
+//        graph.updateVerticesContent();
+//        needsForwardPass = true;
+//        needsBackwardPass = true;
+//    }
+//
+//    private VertexContentType randomizeVertexComputeFunction(Vertex<VertexContentType, E> vertex) {
+//        Vector[] featureVectors = new Vector[maximumNumberOfSteps + 1];
+//        featureVectors[0] = Vectors.random(featureVectorsSize);  // TODO: Change the feature vectors initial computeValue.
+//        return new VertexContentType(vertex.getContent().id, 0, featureVectors, null);
+//    }
 
     public void performForwardPass() {
         lossFunctionValue = 0;
         for (int step = 0; step < maximumNumberOfSteps; step++) {
             graph.computeVerticesUpdatedContent(this::forwardVertexComputeFunction);
             graph.updateVerticesContent();
+            graph.computeVerticesUpdatedContent(this::neighborsSumVertexComputeFunction);
         }
         needsForwardPass = false;
+    }
+
+    private VertexContentType neighborsSumVertexComputeFunction(Vertex<VertexContentType, E> vertex) {
+        Vector incomingFeatureVectorsSum = Vectors.dense(featureVectorsSize);
+        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> incomingEdge : vertex.getIncomingEdges()) {
+            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = incomingEdge.getSourceVertex().getContent();
+            incomingFeatureVectorsSum.addInPlace(vertexContent.featureVectors[vertexContent.currentStep]);
+        }
+        Vector outgoingFeatureVectorsSum = Vectors.dense(featureVectorsSize);
+        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> outgoingEdge : vertex.getOutgoingEdges()) {
+            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = outgoingEdge.getDestinationVertex().getContent();
+            outgoingFeatureVectorsSum.addInPlace(vertexContent.featureVectors[vertexContent.currentStep]);
+        }
+        vertex.getContent().setIncomingFeatureVectorsSum(incomingFeatureVectorsSum, vertex.getContent().currentStep);
+        vertex.getContent().setOutgoingFeatureVectorsSum(outgoingFeatureVectorsSum, vertex.getContent().currentStep);
+        return null;
     }
 
     private VertexContentType forwardVertexComputeFunction(Vertex<VertexContentType, E> vertex) {
@@ -165,6 +183,8 @@ public class GraphRecursiveNeuralNetwork<E> {
                 vertexContent.id,
                 vertexContent.currentStep + 1,
                 vertexContent.featureVectors,
+                vertexContent.incomingFeatureVectorsSum,
+                vertexContent.outgoingFeatureVectorsSum,
                 null
         );
     }
@@ -236,6 +256,8 @@ public class GraphRecursiveNeuralNetwork<E> {
                 vertexContent.id,
                 vertexContent.currentStep - 1,
                 vertexContent.featureVectors,
+                vertexContent.incomingFeatureVectorsSum,
+                vertexContent.outgoingFeatureVectorsSum,
                 featureVectorGradient
         );
     }
@@ -268,12 +290,14 @@ public class GraphRecursiveNeuralNetwork<E> {
                         .method(QuasiNewtonSolver.Method.BROYDEN_FLETCHER_GOLDFARB_SHANNO)
 //                        .method(QuasiNewtonSolver.Method.LIMITED_MEMORY_BROYDEN_FLETCHER_GOLDFARB_SHANNO)
 //                        .m(10)
-                        .lineSearch(lineSearch)
+//                        .lineSearch(lineSearch)
 //                        .gradientTolerance(1e-10)
                         .checkForObjectiveConvergence(true)
                         .objectiveChangeTolerance(1e-6)
+                        .checkForGradientConvergence(true)
+                        .gradientTolerance(1e-6)
                         .maximumNumberOfIterations(1000)
-                        .maximumNumberOfFunctionEvaluations(1000)
+                        .maximumNumberOfFunctionEvaluations(10000)
                         .loggingLevel(5)
                         .build();
 //        NonlinearConjugateGradientSolver solver =
@@ -306,6 +330,8 @@ public class GraphRecursiveNeuralNetwork<E> {
         protected int id;
         protected int currentStep;                // k
         protected Vector[] featureVectors;        // φ(1),...,φ(k)
+        protected Vector[] incomingFeatureVectorsSum;
+        protected Vector[] outgoingFeatureVectorsSum;
         protected Vector featureVectorGradient;   // dL / dφ(k)
 
         public VertexContentType(int id,
@@ -315,7 +341,38 @@ public class GraphRecursiveNeuralNetwork<E> {
             this.id = id;
             this.currentStep = currentStep;
             this.featureVectors = featureVectors;
+            if (featureVectors != null) {
+                incomingFeatureVectorsSum = new Vector[featureVectors.length];
+                outgoingFeatureVectorsSum = new Vector[featureVectors.length];
+            } else {
+                incomingFeatureVectorsSum = null;
+                outgoingFeatureVectorsSum = null;
+            }
             this.featureVectorGradient = featureVectorGradient;
+        }
+
+        public VertexContentType(int id,
+                                 int currentStep,
+                                 Vector[] featureVectors,
+                                 Vector[] incomingFeatureVectorsSum,
+                                 Vector[] outgoingFeatureVectorsSum,
+                                 Vector featureVectorGradient) {
+            this.id = id;
+            this.currentStep = currentStep;
+            this.featureVectors = featureVectors;
+            this.incomingFeatureVectorsSum = incomingFeatureVectorsSum;
+            this.outgoingFeatureVectorsSum = outgoingFeatureVectorsSum;
+            this.featureVectorGradient = featureVectorGradient;
+        }
+
+        public VertexContentType setIncomingFeatureVectorsSum(Vector incomingFeatureVectorSum, int step) {
+            this.incomingFeatureVectorsSum[step] = incomingFeatureVectorSum;
+            return this;
+        }
+
+        public VertexContentType setOutgoingFeatureVectorsSum(Vector outgoingFeatureVectorSum, int step) {
+            this.outgoingFeatureVectorsSum[step] = outgoingFeatureVectorSum;
+            return this;
         }
 
         public int getId() {
@@ -324,6 +381,22 @@ public class GraphRecursiveNeuralNetwork<E> {
 
         public Vector getFeatureVector() {
             return featureVectors[currentStep];
+        }
+
+        public Vector[] getIncomingFeatureVectorsSum() {
+            return incomingFeatureVectorsSum;
+        }
+
+        public Vector[] getOutgoingFeatureVectorsSum() {
+            return outgoingFeatureVectorsSum;
+        }
+
+        public Vector getIncomingFeatureVectorsSum(int step) {
+            return incomingFeatureVectorsSum[step];
+        }
+
+        public Vector getOutgoingFeatureVectorsSum(int step) {
+            return outgoingFeatureVectorsSum[step];
         }
     }
 

@@ -12,6 +12,7 @@ import org.platanios.learn.math.statistics.StatisticsUtilities;
 import org.platanios.learn.neural.graph.FeatureVectorFunctionType;
 import org.platanios.learn.neural.graph.GraphRecursiveNeuralNetwork;
 import org.platanios.learn.neural.graph.VertexClassificationRecursiveNeuralNetwork;
+import org.platanios.utilities.ArrayUtilities;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -49,11 +50,15 @@ public class VertexClassificationExperiment {
         this.evaluationResultsFolderPath = evaluationResultsFolderPath;
     }
 
-    public void runRNNExperiments(int[] featureVectorsSizes, int[] maximumNumberOfStepsToTry, int numberOfFolds) {
+    public void runRNNExperiments(int[] featureVectorsSizes,
+                                  int[] maximumNumberOfStepsToTry,
+                                  int numberOfFolds,
+                                  int numberOfFoldsToKeep) {
+        int numberOfClasses = new HashSet<>(trueLabels.values()).size();
         EvaluationResults[][] results = new EvaluationResults[featureVectorsSizes.length][maximumNumberOfStepsToTry.length];
         for (int i = 0; i < featureVectorsSizes.length; i++)
             for (int j = 0; j < maximumNumberOfStepsToTry.length; j++) {
-                EvaluationResults[] currentSettingResults = new EvaluationResults[numberOfFolds];
+                EvaluationResults[] currentSettingResults = new EvaluationResults[numberOfFoldsToKeep];
                 final List<Map.Entry<Integer, Integer>> entries = new ArrayList<>(trueLabels.entrySet());
                 Collections.shuffle(entries);
                 int foldSize = Math.floorDiv(entries.size(), numberOfFolds);
@@ -63,11 +68,24 @@ public class VertexClassificationExperiment {
                         trainingData.put(entry.getKey(), Vectors.dense((double) entry.getValue()));
                     for (Map.Entry<Integer, Integer> entry : entries.subList((foldNumber + 1) * foldSize, entries.size()))
                         trainingData.put(entry.getKey(), Vectors.dense((double) entry.getValue()));
-                    currentSettingResults[foldNumber] = runRNNExperiment(featureVectorsSizes[i],
-                                                                         maximumNumberOfStepsToTry[j],
-                                                                         trainingData);
+                    if (numberOfClasses > 2) {
+                        currentSettingResults[foldNumber] = runMultiClassClassificationRNNExperiment(
+                                featureVectorsSizes[i],
+                                maximumNumberOfStepsToTry[j],
+                                trainingData,
+                                numberOfClasses
+                        );
+                    } else {
+                        currentSettingResults[foldNumber] = runBinaryClassificationRNNExperiment(
+                                featureVectorsSizes[i],
+                                maximumNumberOfStepsToTry[j],
+                                trainingData
+                        );
+                    }
+                    if (foldNumber + 1 == numberOfFoldsToKeep)
+                        break;
                 }
-                results[i][j] = EvaluationResults.averageResults(currentSettingResults);
+                results[i][j] = currentSettingResults[0].averageResults(currentSettingResults);
                 appendEvaluationResultsToFile(featureVectorsSizes[i],
                                               maximumNumberOfStepsToTry[j],
                                               results[i][j],
@@ -76,17 +94,27 @@ public class VertexClassificationExperiment {
         logger.info("Results for the " + dataSetName + " data set:");
         for (int i = 0; i < featureVectorsSizes.length; i++)
             for (int j = 0; j < maximumNumberOfStepsToTry.length; j++)
-                logger.info("\tF = %d, K = %d:\t { Train Acc.: %20s | Test Acc.: %20s | Overall Acc.: %20s }",
-                            featureVectorsSizes[i],
-                            maximumNumberOfStepsToTry[j],
-                            results[i][j].trainAccuracy,
-                            results[i][j].testAccuracy,
-                            results[i][j].overallAccuracy);
+                if (numberOfClasses > 2)
+                    logger.info("\tF = %d, K = %d:\t { Train Acc.: %20s | Test Acc.: %20s | Overall Acc.: %20s }",
+                                featureVectorsSizes[i],
+                                maximumNumberOfStepsToTry[j],
+                                ((BinaryClassificationEvaluationResults) results[i][j]).trainAUC,
+                                ((BinaryClassificationEvaluationResults) results[i][j]).testAUC,
+                                ((BinaryClassificationEvaluationResults) results[i][j]).overallAUC);
+//                else
+//                    logger.info("\tF = %d, K = %d:\t { Train Acc.: %20s | Test Acc.: %20s | Overall Acc.: %20s }",
+//                                featureVectorsSizes[i],
+//                                maximumNumberOfStepsToTry[j],
+//                                ((MultiClassClassificationEvaluationResults) results[i][j]).trainAUC,
+//                                ((MultiClassClassificationEvaluationResults) results[i][j]).testAUC,
+//                                ((MultiClassClassificationEvaluationResults) results[i][j]).overallAUC);
     }
 
-    public EvaluationResults runRNNExperiment(int featureVectorsSize, int maximumNumberOfSteps, Map<Integer, Vector> trainingData) {
+    public EvaluationResults runBinaryClassificationRNNExperiment(int featureVectorsSize,
+                                                                  int maximumNumberOfSteps,
+                                                                  Map<Integer, Vector> trainingData) {
         VertexClassificationRecursiveNeuralNetwork<Void> graphRNNAlgorithm =
-                new VertexClassificationRecursiveNeuralNetwork<>(featureVectorsSize, 1, maximumNumberOfSteps, graph, trainingData, featureVectorFunctionType);
+                new VertexClassificationRecursiveNeuralNetwork<>(featureVectorsSize, 1, maximumNumberOfSteps, true, graph, trainingData, featureVectorFunctionType);
         if (!graphRNNAlgorithm.checkDerivative(1e-5))
             logger.warn("The derivatives of the RNN objective function provided are not the same as those obtained " +
                                 "by the method of finite differences.");
@@ -115,14 +143,56 @@ public class VertexClassificationExperiment {
                     allPredictions.add(instance);
                 });
         logger.info("Finished storing RNN results for the " + dataSetName + " data set.");
-        EvaluationResults results = evaluateResults(trainPredictions, testPredictions, allPredictions);
+        EvaluationResults results = evaluateBinaryClassificationResults(trainPredictions, testPredictions, allPredictions);
         graphRNNAlgorithm.resetGraph();
         return results;
     }
 
-    private EvaluationResults evaluateResults(List<PredictedDataInstance<Vector, Integer>> trainPredictions,
-                                              List<PredictedDataInstance<Vector, Integer>> testPredictions,
-                                              List<PredictedDataInstance<Vector, Integer>> allPredictions) {
+    public EvaluationResults runMultiClassClassificationRNNExperiment(int featureVectorsSize,
+                                                                      int maximumNumberOfSteps,
+                                                                      Map<Integer, Vector> trainingData,
+                                                                      int numberOfClasses) {
+        VertexClassificationRecursiveNeuralNetwork<Void> graphRNNAlgorithm =
+                new VertexClassificationRecursiveNeuralNetwork<>(featureVectorsSize,
+                                                                 numberOfClasses,
+                                                                 maximumNumberOfSteps,
+                                                                 false,
+                                                                 graph,
+                                                                 trainingData,
+                                                                 featureVectorFunctionType);
+//        if (!graphRNNAlgorithm.checkDerivative(1e-5))
+//            logger.warn("The derivatives of the RNN objective function provided are not the same as those obtained " +
+//                                "by the method of finite differences.");
+        logger.info("Training RNN for the " + dataSetName + " data set.");
+        graphRNNAlgorithm.trainNetwork();
+        graphRNNAlgorithm.performForwardPass();
+        logger.info("Finished training RNN for the " + dataSetName + " data set.");
+        logger.info("Storing RNN results for the " + dataSetName + " data set.");
+        Map<Integer, Integer> predictions = new HashMap<>();
+        graph.getVertices()
+                .stream()
+                .filter(vertex -> trueLabels.containsKey(vertex.getContent().getId()))
+                .forEach(vertex -> {
+                    int maximumValueIndex = 0;
+                    double maximumValue = 0.0;
+                    for (Vector.VectorElement element : graphRNNAlgorithm.getOutputForVertex(vertex))
+                        if (element.value() > maximumValue) {
+                            maximumValueIndex = element.index();
+                            maximumValue = element.value();
+                        }
+                    predictions.put(vertex.getContent().getId(), maximumValueIndex);
+                });
+        logger.info("Finished storing RNN results for the " + dataSetName + " data set.");
+        EvaluationResults results = evaluateMultiClassClassificationResults(predictions, trainingData, numberOfClasses);
+        graphRNNAlgorithm.resetGraph();
+        return results;
+    }
+
+    private EvaluationResults evaluateBinaryClassificationResults(
+            List<PredictedDataInstance<Vector, Integer>> trainPredictions,
+            List<PredictedDataInstance<Vector, Integer>> testPredictions,
+            List<PredictedDataInstance<Vector, Integer>> allPredictions
+    ) {
         PrecisionRecall<Vector, Integer> precisionRecall = new PrecisionRecall<>(1000);
         precisionRecall.addResult("Train", trainPredictions, instance -> (instance.probability() >= 0.5 ? 1 : 0) == trueLabels.get(instance.source()));
         precisionRecall.addResult("Test", testPredictions, instance -> (instance.probability() >= 0.5 ? 1 : 0) == trueLabels.get(instance.source()));
@@ -130,74 +200,238 @@ public class VertexClassificationExperiment {
         double trainAccuracy = precisionRecall.getAreaUnderCurve("Train");
         double testAccuracy = precisionRecall.getAreaUnderCurve("Test");
         double overallAccuracy = precisionRecall.getAreaUnderCurve("All");
-        return new EvaluationResults(trainAccuracy, testAccuracy, overallAccuracy);
+        return new BinaryClassificationEvaluationResults(trainAccuracy, testAccuracy, overallAccuracy);
     }
 
-    public static class EvaluationResults {
-        private final double trainAccuracy;
-        private final double testAccuracy;
-        private final double overallAccuracy;
-        private final double trainAccuracyStandardDeviation;
-        private final double testAccuracyStandardDeviation;
-        private final double overallAccuracyStandardDeviation;
-
-        public EvaluationResults(double trainAccuracy, double testAccuracy, double overallAccuracy) {
-            this(trainAccuracy, testAccuracy, overallAccuracy, 0.0, 0.0, 0.0);
-        }
-
-        public EvaluationResults(double trainAccuracy,
-                                 double testAccuracy,
-                                 double overallAccuracy,
-                                 double trainAccuracyStandardDeviation,
-                                 double testAccuracyStandardDeviation,
-                                 double overallAccuracyStandardDeviation) {
-            this.trainAccuracy = trainAccuracy;
-            this.testAccuracy = testAccuracy;
-            this.overallAccuracy = overallAccuracy;
-            this.trainAccuracyStandardDeviation = trainAccuracyStandardDeviation;
-            this.testAccuracyStandardDeviation = testAccuracyStandardDeviation;
-            this.overallAccuracyStandardDeviation = overallAccuracyStandardDeviation;
-        }
-
-        public double getTrainAccuracy() {
-            return trainAccuracy;
-        }
-
-        public double getTestAccuracy() {
-            return testAccuracy;
-        }
-
-        public double getOverallAccuracy() {
-            return overallAccuracy;
-        }
-
-        public double getTrainAccuracyStandardDeviation() {
-            return trainAccuracyStandardDeviation;
-        }
-
-        public double getTestAccuracyStandardDeviation() {
-            return testAccuracyStandardDeviation;
-        }
-
-        public double getOverallAccuracyStandardDeviation() {
-            return overallAccuracyStandardDeviation;
-        }
-
-        public static EvaluationResults averageResults(EvaluationResults... results) {
-            double[] trainAccuracies = new double[results.length];
-            double[] testAccuracies = new double[results.length];
-            double[] overallAccuracies = new double[results.length];
-            for (int resultIndex = 0; resultIndex < results.length; resultIndex++) {
-                trainAccuracies[resultIndex] = results[resultIndex].getTrainAccuracy();
-                testAccuracies[resultIndex] = results[resultIndex].getTestAccuracy();
-                overallAccuracies[resultIndex] = results[resultIndex].getOverallAccuracy();
+    private EvaluationResults evaluateMultiClassClassificationResults(Map<Integer, Integer> predictions,
+                                                                      Map<Integer, Vector> trainingData,
+                                                                      int numberOfClasses) {
+        double[] true_positives_train = new double[numberOfClasses];
+        double[] false_positives_train = new double[numberOfClasses];
+        double[] false_negatives_train = new double[numberOfClasses];
+        double[] true_positives_test = new double[numberOfClasses];
+        double[] false_positives_test = new double[numberOfClasses];
+        double[] false_negatives_test = new double[numberOfClasses];
+        for (Map.Entry<Integer, Integer> prediction : predictions.entrySet()) {
+            int trueLabel = trueLabels.get(prediction.getKey());
+            if (trainingData.containsKey(prediction.getKey())) {
+                if (prediction.getValue() == trueLabel) {
+                    true_positives_train[trueLabel]++;
+                } else {
+                    false_positives_train[prediction.getValue()]++;
+                    false_negatives_train[trueLabel]++;
+                }
+            } else {
+                if (prediction.getValue() == trueLabel) {
+                    true_positives_test[trueLabel]++;
+                } else {
+                    false_positives_test[prediction.getValue()]++;
+                    false_negatives_test[trueLabel]++;
+                }
             }
-            return new EvaluationResults(StatisticsUtilities.mean(trainAccuracies),
-                                         StatisticsUtilities.mean(testAccuracies),
-                                         StatisticsUtilities.mean(overallAccuracies),
-                                         StatisticsUtilities.standardDeviation(trainAccuracies),
-                                         StatisticsUtilities.standardDeviation(testAccuracies),
-                                         StatisticsUtilities.standardDeviation(overallAccuracies));
+        }
+        double trainMicroPrecision = computePrecision(ArrayUtilities.sum(true_positives_train), ArrayUtilities.sum(false_positives_train));
+        double trainMicroRecall = computeRecall(ArrayUtilities.sum(true_positives_train), ArrayUtilities.sum(false_negatives_train));
+        double testMicroPrecision = computePrecision(ArrayUtilities.sum(true_positives_test), ArrayUtilities.sum(false_positives_test));
+        double testMicroRecall = computeRecall(ArrayUtilities.sum(true_positives_test), ArrayUtilities.sum(false_negatives_test));
+        double overallMicroPrecision = computePrecision(ArrayUtilities.sum(true_positives_train) + ArrayUtilities.sum(true_positives_test),
+                                                        ArrayUtilities.sum(false_positives_train) + ArrayUtilities.sum(false_positives_test));
+        double overallMicroRecall = computeRecall(ArrayUtilities.sum(true_positives_train) + ArrayUtilities.sum(true_positives_test),
+                                                  ArrayUtilities.sum(false_negatives_train) + ArrayUtilities.sum(false_negatives_test));
+        double trainMacroF1 = 0.0;
+        double testMacroF1 = 0.0;
+        double overallMacroF1 = 0.0;
+        for (int classIndex = 0; classIndex < numberOfClasses; classIndex++) {
+            double trainPrecision = computePrecision(true_positives_train[classIndex], false_positives_train[classIndex]);
+            double trainRecall = computeRecall(true_positives_train[classIndex], false_negatives_train[classIndex]);
+            trainMacroF1 += computeF1Score(trainPrecision, trainRecall);
+            double testPrecision = computePrecision(true_positives_test[classIndex], false_positives_test[classIndex]);
+            double testRecall = computeRecall(true_positives_test[classIndex], false_negatives_test[classIndex]);
+            testMacroF1 += computeF1Score(testPrecision, testRecall);
+            double overallPrecision = computePrecision(true_positives_train[classIndex] + true_positives_test[classIndex],
+                                                       false_positives_train[classIndex] + false_positives_test[classIndex]);
+            double overallRecall = computeRecall(true_positives_train[classIndex] + true_positives_test[classIndex],
+                                                 false_negatives_train[classIndex] + false_negatives_test[classIndex]);
+            overallMacroF1 += computeF1Score(overallPrecision, overallRecall);
+        }
+        trainMacroF1 /= numberOfClasses;
+        testMacroF1 /= numberOfClasses;
+        overallMacroF1 /= numberOfClasses;
+        return new MultiClassClassificationEvaluationResults(
+                computeF1Score(trainMicroPrecision, trainMicroRecall),
+                computeF1Score(testMicroPrecision, testMicroRecall),
+                computeF1Score(overallMicroPrecision, overallMicroRecall),
+                trainMacroF1,
+                testMacroF1,
+                overallMacroF1);
+    }
+
+    private static double computePrecision(double true_positives, double false_positives) {
+        if (true_positives > 0.0)
+            return true_positives / (true_positives + false_positives);
+        else if (false_positives > 0.0)
+            return 0.0;
+        else
+            return 1.0;
+    }
+
+    private static double computeRecall(double true_positives, double false_negatives) {
+        if (true_positives > 0.0)
+            return true_positives / (true_positives + false_negatives);
+        else if (false_negatives > 0.0)
+            return 0.0;
+        else
+            return 1.0;
+    }
+
+    private static double computeF1Score(double precision, double recall) {
+        return 2 * precision * recall / (precision + recall);
+    }
+
+    private interface EvaluationResults {
+        String toString();
+        EvaluationResults averageResults(EvaluationResults... results); // TODO: This is kind of a hack to save time. This method should have been static.
+    }
+
+    private static class BinaryClassificationEvaluationResults implements EvaluationResults {
+        private final double trainAUC;
+        private final double testAUC;
+        private final double overallAUC;
+        private final double trainAUCStandardDeviation;
+        private final double testAUCStandardDeviation;
+        private final double overallAUCStandardDeviation;
+
+        private BinaryClassificationEvaluationResults(double trainAUC,
+                                                      double testAUC,
+                                                      double overallAUC) {
+            this(trainAUC, testAUC, overallAUC, 0.0, 0.0, 0.0);
+        }
+
+        private BinaryClassificationEvaluationResults(double trainAUC,
+                                                      double testAUC,
+                                                      double overallAUC,
+                                                      double trainAUCStandardDeviation,
+                                                      double testAUCStandardDeviation,
+                                                      double overallAUCStandardDeviation) {
+            this.trainAUC = trainAUC;
+            this.testAUC = testAUC;
+            this.overallAUC = overallAUC;
+            this.trainAUCStandardDeviation = trainAUCStandardDeviation;
+            this.testAUCStandardDeviation = testAUCStandardDeviation;
+            this.overallAUCStandardDeviation = overallAUCStandardDeviation;
+        }
+
+        @Override
+        public String toString() {
+            return trainAUC + "|" + trainAUCStandardDeviation + "\t" +
+                    testAUC + "|" + testAUCStandardDeviation + "\t" +
+                    overallAUC + "|" + overallAUCStandardDeviation;
+        }
+
+        @Override
+        public EvaluationResults averageResults(EvaluationResults... results) {
+            double[] trainAUCs = new double[results.length];
+            double[] testAUCs = new double[results.length];
+            double[] overallAUCs = new double[results.length];
+            for (int resultIndex = 0; resultIndex < results.length; resultIndex++) {
+                trainAUCs[resultIndex] = ((BinaryClassificationEvaluationResults) results[resultIndex]).trainAUC;
+                testAUCs[resultIndex] = ((BinaryClassificationEvaluationResults) results[resultIndex]).testAUC;
+                overallAUCs[resultIndex] = ((BinaryClassificationEvaluationResults) results[resultIndex]).overallAUC;
+            }
+            return new BinaryClassificationEvaluationResults(StatisticsUtilities.mean(trainAUCs),
+                                                             StatisticsUtilities.mean(testAUCs),
+                                                             StatisticsUtilities.mean(overallAUCs),
+                                                             StatisticsUtilities.standardDeviation(trainAUCs),
+                                                             StatisticsUtilities.standardDeviation(testAUCs),
+                                                             StatisticsUtilities.standardDeviation(overallAUCs));
+        }
+    }
+
+    private static class MultiClassClassificationEvaluationResults implements EvaluationResults {
+        private final double trainMicroF1;
+        private final double testMicroF1;
+        private final double overallMicroF1;
+        private final double trainMicroF1StandardDeviation;
+        private final double testMicroF1StandardDeviation;
+        private final double overallMicroF1StandardDeviation;
+        private final double trainMacroF1;
+        private final double testMacroF1;
+        private final double overallMacroF1;
+        private final double trainMacroF1StandardDeviation;
+        private final double testMacroF1StandardDeviation;
+        private final double overallMacroF1StandardDeviation;
+
+        private MultiClassClassificationEvaluationResults(double trainMicroF1,
+                                                          double testMicroF1,
+                                                          double overallMicroF1,
+                                                          double trainMacroF1,
+                                                          double testMacroF1,
+                                                          double overallMacroF1) {
+            this(trainMicroF1, testMicroF1, overallMicroF1, 0.0, 0.0, 0.0,
+                 trainMacroF1, testMacroF1, overallMacroF1, 0.0, 0.0, 0.0);
+        }
+
+        private MultiClassClassificationEvaluationResults(double trainMicroF1,
+                                                          double testMicroF1,
+                                                          double overallMicroF1,
+                                                          double trainMicroF1StandardDeviation,
+                                                          double testMicroF1StandardDeviation,
+                                                          double overallMicroF1StandardDeviation,
+                                                          double trainMacroF1,
+                                                          double testMacroF1,
+                                                          double overallMacroF1,
+                                                          double trainMacroF1StandardDeviation,
+                                                          double testMacroF1StandardDeviation,
+                                                          double overallMacroF1StandardDeviation) {
+            this.trainMicroF1 = trainMicroF1;
+            this.testMicroF1 = testMicroF1;
+            this.overallMicroF1 = overallMicroF1;
+            this.trainMicroF1StandardDeviation = trainMicroF1StandardDeviation;
+            this.testMicroF1StandardDeviation = testMicroF1StandardDeviation;
+            this.overallMicroF1StandardDeviation = overallMicroF1StandardDeviation;
+            this.trainMacroF1 = trainMacroF1;
+            this.testMacroF1 = testMacroF1;
+            this.overallMacroF1 = overallMacroF1;
+            this.trainMacroF1StandardDeviation = trainMacroF1StandardDeviation;
+            this.testMacroF1StandardDeviation = testMacroF1StandardDeviation;
+            this.overallMacroF1StandardDeviation = overallMacroF1StandardDeviation;
+        }
+
+        @Override
+        public String toString() {
+            return trainMicroF1 + "|" + trainMicroF1StandardDeviation + ":" + trainMacroF1 + "|" + trainMacroF1StandardDeviation + "\t" +
+                    testMicroF1 + "|" + testMicroF1StandardDeviation + ":" + testMacroF1 + "|" + testMacroF1StandardDeviation + "\t" +
+                    overallMicroF1 + "|" + overallMicroF1StandardDeviation + ":" + overallMacroF1 + "|" + overallMacroF1StandardDeviation;
+        }
+
+        @Override
+        public EvaluationResults averageResults(EvaluationResults... results) {
+            double[] trainMicroF1 = new double[results.length];
+            double[] testMicroF1 = new double[results.length];
+            double[] overallMicroF1 = new double[results.length];
+            double[] trainMacroF1 = new double[results.length];
+            double[] testMacroF1 = new double[results.length];
+            double[] overallMacroF1 = new double[results.length];
+            for (int resultIndex = 0; resultIndex < results.length; resultIndex++) {
+                trainMicroF1[resultIndex] = ((MultiClassClassificationEvaluationResults) results[resultIndex]).trainMicroF1;
+                testMicroF1[resultIndex] = ((MultiClassClassificationEvaluationResults) results[resultIndex]).testMicroF1;
+                overallMicroF1[resultIndex] = ((MultiClassClassificationEvaluationResults) results[resultIndex]).overallMicroF1;
+                trainMacroF1[resultIndex] = ((MultiClassClassificationEvaluationResults) results[resultIndex]).trainMacroF1;
+                testMacroF1[resultIndex] = ((MultiClassClassificationEvaluationResults) results[resultIndex]).testMacroF1;
+                overallMacroF1[resultIndex] = ((MultiClassClassificationEvaluationResults) results[resultIndex]).overallMacroF1;
+            }
+            return new MultiClassClassificationEvaluationResults(StatisticsUtilities.mean(trainMicroF1),
+                                                                 StatisticsUtilities.mean(testMicroF1),
+                                                                 StatisticsUtilities.mean(overallMicroF1),
+                                                                 StatisticsUtilities.standardDeviation(trainMicroF1),
+                                                                 StatisticsUtilities.standardDeviation(testMicroF1),
+                                                                 StatisticsUtilities.standardDeviation(overallMicroF1),
+                                                                 StatisticsUtilities.mean(trainMacroF1),
+                                                                 StatisticsUtilities.mean(testMacroF1),
+                                                                 StatisticsUtilities.mean(overallMacroF1),
+                                                                 StatisticsUtilities.standardDeviation(trainMacroF1),
+                                                                 StatisticsUtilities.standardDeviation(testMacroF1),
+                                                                 StatisticsUtilities.standardDeviation(overallMacroF1));
         }
     }
 
@@ -206,10 +440,7 @@ public class VertexClassificationExperiment {
                                                EvaluationResults results,
                                                String folderPath) {
         try {
-            String resultsLine = featureVectorsSize + "\t" + maximumNumberOfSteps + "\t" +
-                    results.getTrainAccuracy() + "|" + results.getTrainAccuracyStandardDeviation() + "\t" +
-                    results.getTestAccuracy() + "|" + results.getTestAccuracyStandardDeviation() + "\t" +
-                    results.getOverallAccuracy() + "|" + results.getOverallAccuracyStandardDeviation() + "\n";
+            String resultsLine = featureVectorsSize + "\t" + maximumNumberOfSteps + "\t" + results.toString() + "\n";
             Files.write(Paths.get(folderPath + "/results_" + normalizeDataSetName(dataSetName) + "_" + featureVectorFunctionType.name().toLowerCase() + ".txt"),
                         resultsLine.getBytes(),
                         StandardOpenOption.CREATE,
@@ -224,9 +455,9 @@ public class VertexClassificationExperiment {
     }
 
     public static void main(String[] args) {
-        DataSets.LabeledDataSet dataSet = DataSets.loadLabeledDataSet(args[4]);
-        VertexClassificationExperiment experiment = new VertexClassificationExperiment(dataSet, FeatureVectorFunctionType.valueOf(args[0]), args[5]);
-        experiment.runRNNExperiments(intArrayFromString(args[1]), intArrayFromString(args[2]), Integer.parseInt(args[3]));
+        DataSets.LabeledDataSet dataSet = DataSets.loadLabeledDataSet(args[5], args[6].equals("1"));
+        VertexClassificationExperiment experiment = new VertexClassificationExperiment(dataSet, FeatureVectorFunctionType.valueOf(args[0]), args[7]);
+        experiment.runRNNExperiments(intArrayFromString(args[1]), intArrayFromString(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4]));
     }
 
     private static int[] intArrayFromString(String string) {

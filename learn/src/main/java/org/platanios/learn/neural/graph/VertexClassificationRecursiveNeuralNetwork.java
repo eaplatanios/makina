@@ -5,8 +5,10 @@ import org.platanios.learn.math.matrix.Matrix;
 import org.platanios.learn.math.matrix.Vector;
 import org.platanios.learn.math.matrix.Vectors;
 import org.platanios.learn.neural.activation.SigmoidFunction;
+import org.platanios.learn.neural.activation.SoftmaxFunction;
 
 import java.util.Map;
+import java.util.Random;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -16,6 +18,7 @@ public class VertexClassificationRecursiveNeuralNetwork<E> extends GraphRecursiv
     public VertexClassificationRecursiveNeuralNetwork(int featureVectorsSize,
                                                       int outputVectorSize,
                                                       int maximumNumberOfSteps,
+                                                      boolean binaryClassification,
                                                       Graph<VertexContentType, E> graph,
                                                       Map<Integer, Vector> trainingData,
                                                       FeatureVectorFunctionType featureVectorFunctionType) {
@@ -25,16 +28,18 @@ public class VertexClassificationRecursiveNeuralNetwork<E> extends GraphRecursiv
               graph,
               trainingData,
               featureVectorFunctionType.getFunction(featureVectorsSize, graph.getVertices()),
-              new SigmoidOutputFunction(featureVectorsSize, outputVectorSize),
-              new CrossEntropyLossFunction());
+              new ClassificationOutputFunction(featureVectorsSize, outputVectorSize),
+              new CrossEntropyLossFunction(binaryClassification));
     }
 
-    private static class SigmoidOutputFunction extends OutputFunction {
+    private static class ClassificationOutputFunction extends OutputFunction {
+        private final Random random = new Random();
+
         private final int featureVectorsSize;
         private final int outputVectorSize;
         private final int parametersVectorSize;
 
-        private SigmoidOutputFunction(int featureVectorsSize, int outputVectorSize) {
+        private ClassificationOutputFunction(int featureVectorsSize, int outputVectorSize) {
             this.featureVectorsSize = featureVectorsSize;
             this.outputVectorSize = outputVectorSize;
             this.parametersVectorSize = (featureVectorsSize + 1) * outputVectorSize;
@@ -51,7 +56,8 @@ public class VertexClassificationRecursiveNeuralNetwork<E> extends GraphRecursiv
             int parameterVectorIndex = 0;
             for (int i = 0; i < outputVectorSize; i++)
                 for (int j = 0; j < featureVectorsSize; j++)
-                    initialParametersVector.set(parameterVectorIndex++, 1.0 / featureVectorsSize);
+                    initialParametersVector.set(parameterVectorIndex++,
+                                                (random.nextDouble() - 0.5) * 2 * 1.0 / Math.sqrt(outputVectorSize));
             return initialParametersVector;
         }
 
@@ -64,7 +70,10 @@ public class VertexClassificationRecursiveNeuralNetwork<E> extends GraphRecursiv
                     value.set(i, value.get(i) + parameters.get(parameterVectorIndex++) * featureVector.get(j));
             for (int i = 0; i < outputVectorSize; i++)
                 value.set(i, value.get(i) + parameters.get(parameterVectorIndex++));
-            return SigmoidFunction.value(value);
+            if (outputVectorSize == 1)
+                return SigmoidFunction.value(value);
+            else
+                return SoftmaxFunction.value(value);
         }
 
         @Override
@@ -79,7 +88,10 @@ public class VertexClassificationRecursiveNeuralNetwork<E> extends GraphRecursiv
                 }
             for (int i = 0; i < outputVectorSize; i++)
                 value.set(i, value.get(i) + parameters.get(parameterVectorIndex++));
-            return SigmoidFunction.gradient(value).multiply(gradient);
+            if (outputVectorSize == 1)
+                return SigmoidFunction.gradient(value).multiply(gradient);
+            else
+                return SoftmaxFunction.gradient(value).multiply(gradient);
         }
 
         @Override
@@ -96,33 +108,57 @@ public class VertexClassificationRecursiveNeuralNetwork<E> extends GraphRecursiv
                 value.set(i, value.get(i) + parameters.get(parameterVectorIndex));
                 gradient.setElement(i, parameterVectorIndex++, 1);
             }
-            return SigmoidFunction.gradient(value).multiply(gradient);
+            if (outputVectorSize == 1)
+                return SigmoidFunction.gradient(value).multiply(gradient);
+            else
+                return SoftmaxFunction.gradient(value).multiply(gradient);
         }
     }
 
     private static class CrossEntropyLossFunction extends LossFunction {
+        private final boolean binaryClassification;
+
+        private CrossEntropyLossFunction(boolean binaryClassification) {
+            this.binaryClassification = binaryClassification;
+        }
+
         @Override
         public double value(Vector networkOutput, Vector correctOutput) {
             double value = 0;
-            for (Vector.VectorElement element : correctOutput)
-                if (element.value() >= 0.5)
-                    value -= Math.log(networkOutput.get(element.index()));
+            if (binaryClassification) {
+                for (Vector.VectorElement element : correctOutput)
+                    if (element.value() >= 0.5)
+                        value -= Math.log(networkOutput.get(element.index()));
+                    else
+                        value -= Math.log(1 - networkOutput.get(element.index()));
+            } else {
+                if (networkOutput.get((int) correctOutput.get(0)) > 0)
+                    value -= Math.log(networkOutput.get((int) correctOutput.get(0)));
                 else
-                    value -= Math.log(1 - networkOutput.get(element.index()));
+                    value += Double.MAX_VALUE;
+            }
             return value;
         }
 
         @Override
         public Vector gradient(Vector networkOutput, Vector correctOutput) {
             Vector gradient = Vectors.build(networkOutput.size(), networkOutput.type());
-            for (Vector.VectorElement element : correctOutput) {
-                double output = networkOutput.get(element.index());
-                if (element.value() >= 0.5 && output == 0.0) // TODO: Fix this.
-                    gradient.set(element.index(), -Double.MAX_VALUE);
-                else if (element.value() < 0.5 && output == 1.0)
-                    gradient.set(element.index(), Double.MAX_VALUE);
-                else if (output > 0.0 && output < 1.0)
-                    gradient.set(element.index(), (output - element.value()) / (output * (1 - output)));
+            if (binaryClassification) {
+                for (Vector.VectorElement element : correctOutput) {
+                    double output = networkOutput.get(element.index());
+                    if (element.value() >= 0.5 && output == 0.0) // TODO: Fix this.
+                        gradient.set(element.index(), -Double.MAX_VALUE);
+                    else if (element.value() < 0.5 && output == 1.0)
+                        gradient.set(element.index(), Double.MAX_VALUE);
+                    else if (output > 0.0 && output < 1.0)
+                        gradient.set(element.index(), (output - element.value()) / (output * (1 - output)));
+                }
+            } else {
+                double output = networkOutput.get((int) correctOutput.get(0));
+                if (output == 0.0)
+                    gradient.set((int) correctOutput.get(0), -Double.MAX_VALUE);
+                else if (output > 0.0 && output <= 1.0)
+                    gradient.set((int) correctOutput.get(0), -1.0 / output);
             }
             return gradient;
         }

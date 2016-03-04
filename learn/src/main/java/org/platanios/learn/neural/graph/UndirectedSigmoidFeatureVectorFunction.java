@@ -59,14 +59,16 @@ public class UndirectedSigmoidFeatureVectorFunction<E>
     @Override
     public Vector value(Vector parameters, Vertex<GraphRecursiveNeuralNetwork.VertexContentType, E> vertex, int step) {
         Vector neighborFeatureVectorsSum = Vectors.dense(featureVectorsSize);
-        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> incomingEdge : vertex.getIncomingEdges()) {
-            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = incomingEdge.getSourceVertex().getContent();
-            neighborFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
-        }
-        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> outgoingEdge : vertex.getOutgoingEdges()) {
-            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = outgoingEdge.getDestinationVertex().getContent();
-            neighborFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
-        }
+        neighborFeatureVectorsSum.addInPlace(vertex.getContent().getIncomingFeatureVectorsSum(step));
+        neighborFeatureVectorsSum.addInPlace(vertex.getContent().getOutgoingFeatureVectorsSum(step));
+//        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> incomingEdge : vertex.getIncomingEdges()) {
+//            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = incomingEdge.getSourceVertex().getContent();
+//            neighborFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
+//        }
+//        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> outgoingEdge : vertex.getOutgoingEdges()) {
+//            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = outgoingEdge.getDestinationVertex().getContent();
+//            neighborFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
+//        }
         Network network = networks.get(vertex.getContent().getId());
         network.set("phi", vertex.getContent().featureVectors[step]);
         network.set("phi_neighbors", neighborFeatureVectorsSum);
@@ -79,14 +81,16 @@ public class UndirectedSigmoidFeatureVectorFunction<E>
     @Override
     public Matrix gradient(Vector parameters, Vertex<GraphRecursiveNeuralNetwork.VertexContentType, E> vertex, int step) {
         Vector neighborFeatureVectorsSum = Vectors.dense(featureVectorsSize);
-        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> incomingEdge : vertex.getIncomingEdges()) {
-            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = incomingEdge.getSourceVertex().getContent();
-            neighborFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
-        }
-        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> outgoingEdge : vertex.getOutgoingEdges()) {
-            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = outgoingEdge.getDestinationVertex().getContent();
-            neighborFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
-        }
+        neighborFeatureVectorsSum.addInPlace(vertex.getContent().getIncomingFeatureVectorsSum(step));
+        neighborFeatureVectorsSum.addInPlace(vertex.getContent().getOutgoingFeatureVectorsSum(step));
+//        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> incomingEdge : vertex.getIncomingEdges()) {
+//            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = incomingEdge.getSourceVertex().getContent();
+//            neighborFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
+//        }
+//        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> outgoingEdge : vertex.getOutgoingEdges()) {
+//            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = outgoingEdge.getDestinationVertex().getContent();
+//            neighborFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
+//        }
         Network network = networks.get(vertex.getContent().getId());
         network.set("phi", vertex.getContent().featureVectors[step]);
         network.set("phi_neighbors", neighborFeatureVectorsSum);
@@ -113,14 +117,16 @@ public class UndirectedSigmoidFeatureVectorFunction<E>
                                         Vertex<GraphRecursiveNeuralNetwork.VertexContentType, E> differentiatingVertex,
                                         int step) {
         Vector neighborFeatureVectorsSum = Vectors.dense(featureVectorsSize);
-        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> incomingEdge : vertex.getIncomingEdges()) {
-            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = incomingEdge.getSourceVertex().getContent();
-            neighborFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
-        }
-        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> outgoingEdge : vertex.getOutgoingEdges()) {
-            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = outgoingEdge.getDestinationVertex().getContent();
-            neighborFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
-        }
+        neighborFeatureVectorsSum.addInPlace(vertex.getContent().getIncomingFeatureVectorsSum(step));
+        neighborFeatureVectorsSum.addInPlace(vertex.getContent().getOutgoingFeatureVectorsSum(step));
+//        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> incomingEdge : vertex.getIncomingEdges()) {
+//            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = incomingEdge.getSourceVertex().getContent();
+//            neighborFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
+//        }
+//        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> outgoingEdge : vertex.getOutgoingEdges()) {
+//            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = outgoingEdge.getDestinationVertex().getContent();
+//            neighborFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
+//        }
         Network network = networks.get(differentiatingVertex.getContent().getId());
         network.set("phi", vertex.getContent().featureVectors[step]);
         network.set("phi_neighbors", neighborFeatureVectorsSum);

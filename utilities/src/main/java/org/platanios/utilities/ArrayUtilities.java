@@ -6,6 +6,13 @@ import java.util.Arrays;
  * @author Emmanouil Antonios Platanios
  */
 public class ArrayUtilities {
+    public static double sum(double[] array) {
+        double sum = 0.0;
+        for (double element : array)
+            sum += element;
+        return sum;
+    }
+
     public static <T> T[] append(T[] array, T element) {
         final int length = array.length;
         array = Arrays.copyOf(array, length + 1);

@@ -60,20 +60,20 @@ public class SigmoidFeatureVectorFunction<E>
 
     @Override
     public Vector value(Vector parameters, Vertex<GraphRecursiveNeuralNetwork.VertexContentType, E> vertex, int step) {
-        Vector incomingFeatureVectorsSum = Vectors.dense(featureVectorsSize);
-        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> incomingEdge : vertex.getIncomingEdges()) {
-            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = incomingEdge.getSourceVertex().getContent();
-            incomingFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
-        }
-        Vector outgoingFeatureVectorsSum = Vectors.dense(featureVectorsSize);
-        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> outgoingEdge : vertex.getOutgoingEdges()) {
-            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = outgoingEdge.getDestinationVertex().getContent();
-            outgoingFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
-        }
+//        Vector incomingFeatureVectorsSum = Vectors.dense(featureVectorsSize);
+//        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> incomingEdge : vertex.getIncomingEdges()) {
+//            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = incomingEdge.getSourceVertex().getContent();
+//            incomingFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
+//        }
+//        Vector outgoingFeatureVectorsSum = Vectors.dense(featureVectorsSize);
+//        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> outgoingEdge : vertex.getOutgoingEdges()) {
+//            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = outgoingEdge.getDestinationVertex().getContent();
+//            outgoingFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
+//        }
         Network network = networks.get(vertex.getContent().getId());
         network.set("phi", vertex.getContent().featureVectors[step]);
-        network.set("phi_in", incomingFeatureVectorsSum);
-        network.set("phi_out", outgoingFeatureVectorsSum);
+        network.set("phi_in", vertex.getContent().getIncomingFeatureVectorsSum(step));
+        network.set("phi_out", vertex.getContent().getOutgoingFeatureVectorsSum(step));
         network.set("W_phi", parameters.get(0, featureVectorsSize * featureVectorsSize - 1));
         network.set("W_phi_in", parameters.get(featureVectorsSize * featureVectorsSize, 2 * featureVectorsSize * featureVectorsSize - 1));
         network.set("W_phi_out", parameters.get(2 * featureVectorsSize * featureVectorsSize, 3 * featureVectorsSize * featureVectorsSize - 1));
@@ -83,20 +83,20 @@ public class SigmoidFeatureVectorFunction<E>
 
     @Override
     public Matrix gradient(Vector parameters, Vertex<GraphRecursiveNeuralNetwork.VertexContentType, E> vertex, int step) {
-        Vector incomingFeatureVectorsSum = Vectors.dense(featureVectorsSize);
-        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> incomingEdge : vertex.getIncomingEdges()) {
-            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = incomingEdge.getSourceVertex().getContent();
-            incomingFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
-        }
-        Vector outgoingFeatureVectorsSum = Vectors.dense(featureVectorsSize);
-        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> outgoingEdge : vertex.getOutgoingEdges()) {
-            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = outgoingEdge.getDestinationVertex().getContent();
-            outgoingFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
-        }
+//        Vector incomingFeatureVectorsSum = Vectors.dense(featureVectorsSize);
+//        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> incomingEdge : vertex.getIncomingEdges()) {
+//            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = incomingEdge.getSourceVertex().getContent();
+//            incomingFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
+//        }
+//        Vector outgoingFeatureVectorsSum = Vectors.dense(featureVectorsSize);
+//        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> outgoingEdge : vertex.getOutgoingEdges()) {
+//            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = outgoingEdge.getDestinationVertex().getContent();
+//            outgoingFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
+//        }
         Network network = networks.get(vertex.getContent().getId());
         network.set("phi", vertex.getContent().featureVectors[step]);
-        network.set("phi_in", incomingFeatureVectorsSum);
-        network.set("phi_out", outgoingFeatureVectorsSum);
+        network.set("phi_in", vertex.getContent().getIncomingFeatureVectorsSum(step));
+        network.set("phi_out", vertex.getContent().getOutgoingFeatureVectorsSum(step));
         network.set("W_phi", parameters.get(0, featureVectorsSize * featureVectorsSize - 1));
         network.set("W_phi_in", parameters.get(featureVectorsSize * featureVectorsSize, 2 * featureVectorsSize * featureVectorsSize - 1));
         network.set("W_phi_out", parameters.get(2 * featureVectorsSize * featureVectorsSize, 3 * featureVectorsSize * featureVectorsSize - 1));
@@ -123,20 +123,20 @@ public class SigmoidFeatureVectorFunction<E>
                                         Vertex<GraphRecursiveNeuralNetwork.VertexContentType, E> vertex,
                                         Vertex<GraphRecursiveNeuralNetwork.VertexContentType, E> differentiatingVertex,
                                         int step) {
-        Vector incomingFeatureVectorsSum = Vectors.dense(featureVectorsSize);
-        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> incomingEdge : vertex.getIncomingEdges()) {
-            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = incomingEdge.getSourceVertex().getContent();
-            incomingFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
-        }
-        Vector outgoingFeatureVectorsSum = Vectors.dense(featureVectorsSize);
-        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> outgoingEdge : vertex.getOutgoingEdges()) {
-            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = outgoingEdge.getDestinationVertex().getContent();
-            outgoingFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
-        }
+//        Vector incomingFeatureVectorsSum = Vectors.dense(featureVectorsSize);
+//        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> incomingEdge : vertex.getIncomingEdges()) {
+//            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = incomingEdge.getSourceVertex().getContent();
+//            incomingFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
+//        }
+//        Vector outgoingFeatureVectorsSum = Vectors.dense(featureVectorsSize);
+//        for (Edge<GraphRecursiveNeuralNetwork.VertexContentType, E> outgoingEdge : vertex.getOutgoingEdges()) {
+//            GraphRecursiveNeuralNetwork.VertexContentType vertexContent = outgoingEdge.getDestinationVertex().getContent();
+//            outgoingFeatureVectorsSum.addInPlace(vertexContent.featureVectors[step]);
+//        }
         Network network = networks.get(differentiatingVertex.getContent().getId());
         network.set("phi", vertex.getContent().featureVectors[step]);
-        network.set("phi_in", incomingFeatureVectorsSum);
-        network.set("phi_out", outgoingFeatureVectorsSum);
+        network.set("phi_in", vertex.getContent().getIncomingFeatureVectorsSum(step));
+        network.set("phi_out", vertex.getContent().getOutgoingFeatureVectorsSum(step));
         network.set("W_phi", parameters.get(0, featureVectorsSize * featureVectorsSize - 1));
         network.set("W_phi_in", parameters.get(featureVectorsSize * featureVectorsSize, 2 * featureVectorsSize * featureVectorsSize - 1));
         network.set("W_phi_out", parameters.get(2 * featureVectorsSize * featureVectorsSize, 3 * featureVectorsSize * featureVectorsSize - 1));

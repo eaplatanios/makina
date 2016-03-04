@@ -39,7 +39,7 @@ public class DeepHITSExperiment {
         for (int vertexIndex : dataSet.getVertexIndices()) {
             hitsVertexIndexesMap.put(vertexIndex, new Vertex<>(new HITSAlgorithm.VertexContentType(vertexIndex, 1.0, 1.0)));
             Vertex<GraphRecursiveNeuralNetwork.VertexContentType, Void> rnnGraphVertex =
-                    new Vertex<>(new GraphRecursiveNeuralNetwork.VertexContentType(vertexIndex, 0, null, null));
+                    new Vertex<>(new GraphRecursiveNeuralNetwork.VertexContentType(vertexIndex, 0, null, null, null, null));
             rnnVertexIndexesMap.put(vertexIndex, rnnGraphVertex);
         }
         for (DataSets.Edge edge : dataSet.getEdges()) {
@@ -161,18 +161,18 @@ public class DeepHITSExperiment {
     }
 
     public static void main(String[] args) {
-//        DataSets.DataSet dataSet = DataSets.loadPokecDataSet("/Users/Anthony/Downloads/Pokec Graph Data Set/soc-pokec-relationships.txt");
+//        DataSets.DataSet dataSet = DataSets.loadUnlabeledDataSet("/Users/Anthony/Downloads/Pokec Graph Data Set/soc-pokec-relationships.txt");
 //        DataSets.DataSet dataSet = DataSets.loadTwitterSocialCirclesDataSet("/Users/Anthony/Downloads/Twitter Social Circles Data Set/twitter_combined.txt");
-//        DataSets.DataSet dataSet = DataSets.loadPokecDataSet("/Users/Anthony/Downloads/soc-Epinions1.txt");
+//        DataSets.DataSet dataSet = DataSets.loadUnlabeledDataSet("/Users/Anthony/Downloads/soc-Epinions1.txt");
 //        DataSets.DataSet dataSet = DataSets.loadTwitterSocialCirclesDataSet("/Users/Anthony/Downloads/facebook_combined.txt");
-        DataSets.DataSet dataSet;
-        if (args[1].equals("0"))
-            dataSet = DataSets.loadPokecDataSet(args[0]);
-        else
-            dataSet = DataSets.loadTwitterSocialCirclesDataSet(args[0]);
-        DeepHITSExperiment experiment = new DeepHITSExperiment(dataSet);
-        experiment.runHITS();
-        experiment.sampleRNNTrainingData(0.8);
-        experiment.runRNNExperiments(new int[] { 1, 10 }, new int[] { 2, 11, 21, 31, 41, 51 });
+//        DataSets.DataSet dataSet;
+//        if (args[1].equals("0"))
+//            dataSet = DataSets.loadUnlabeledDataSet(args[0]);
+//        else
+//            dataSet = DataSets.loadTwitterSocialCirclesDataSet(args[0]);
+//        DeepHITSExperiment experiment = new DeepHITSExperiment(dataSet);
+//        experiment.runHITS();
+//        experiment.sampleRNNTrainingData(0.8);
+//        experiment.runRNNExperiments(new int[] { 1, 10 }, new int[] { 2, 11, 21, 31, 41, 51 });
     }
 }
