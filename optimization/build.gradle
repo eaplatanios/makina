@@ -1,0 +1,25 @@
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'org.platanios.optimization',
+                   'Implementation-Version': version
+    }
+}
+
+dependencies {
+    compile project(':math')
+    compile 'org.apache.commons:commons-lang3:3.3.2'
+}
+
+task allJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'org.platanios.optimization',
+                   'Implementation-Version': version
+    }
+    baseName = project.name + '-all'
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    with jar
+}

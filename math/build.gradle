@@ -1,0 +1,26 @@
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'org.platanios.math',
+                   'Implementation-Version': version
+    }
+}
+
+dependencies {
+    compile project(':utilities')
+    compile 'com.google.guava:guava:18.0'
+    compile 'colt:colt:1.2.0'
+}
+
+task allJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'org.platanios.math',
+                   'Implementation-Version': version
+    }
+    baseName = project.name + '-all'
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    with jar
+}

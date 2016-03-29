@@ -2,12 +2,11 @@ package org.platanios.learn.classification;
 
 import org.platanios.learn.data.DataSet;
 import org.platanios.learn.data.LabeledDataInstance;
-import org.platanios.learn.math.matrix.SparseVector;
-import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.matrix.Vectors;
-import org.platanios.learn.optimization.function.AbstractFunction;
-import org.platanios.learn.optimization.function.AbstractStochasticFunctionUsingDataSet;
-import org.platanios.learn.serialization.UnsafeSerializationUtilities;
+import org.platanios.math.matrix.SparseVector;
+import org.platanios.math.matrix.Vector;
+import org.platanios.math.matrix.Vectors;
+import org.platanios.optimization.function.AbstractFunction;
+import org.platanios.utilities.UnsafeSerializationUtilities;
 
 import java.io.IOException;
 import java.io.OutputStream;

@@ -6,7 +6,7 @@ import org.platanios.learn.data.DataSet;
 import org.platanios.learn.data.DataSetInMemory;
 import org.platanios.learn.data.LabeledDataInstance;
 import org.platanios.learn.data.PredictedDataInstance;
-import org.platanios.learn.math.matrix.Vector;
+import org.platanios.math.matrix.Vector;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;

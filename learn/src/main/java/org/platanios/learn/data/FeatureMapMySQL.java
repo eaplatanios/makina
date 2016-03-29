@@ -1,7 +1,7 @@
 package org.platanios.learn.data;
 
-import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.matrix.Vectors;
+import org.platanios.math.matrix.Vector;
+import org.platanios.math.matrix.Vectors;
 
 import java.io.IOException;
 import java.io.InputStream;

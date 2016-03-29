@@ -1,5 +1,6 @@
 package org.platanios.utilities;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 
 /**
@@ -18,6 +19,19 @@ public class ArrayUtilities {
         array = Arrays.copyOf(array, length + 1);
         array[length] = element;
         return array;
+    }
+
+    public static void copy(Object sourceArray, Object destinationArray) {
+        if (sourceArray.getClass().isArray() && destinationArray.getClass().isArray()) {
+            for (int i = 0; i < Array.getLength(sourceArray); i++) {
+                if (Array.get(sourceArray, i) != null && Array.get(sourceArray, i).getClass().isArray())
+                    copy(Array.get(sourceArray, i), Array.get(destinationArray, i));
+                else
+                    Array.set(destinationArray, i, Array.get(sourceArray, i));
+            }
+        } else {
+            throw new IllegalArgumentException("The provided arguments are not arrays.");
+        }
     }
 
     public static <T> boolean contains(final T[] array, final T value) {

@@ -1,6 +1,6 @@
 package org.platanios.learn.data;
 
-import org.platanios.learn.math.statistics.StatisticsUtilities;
+import org.platanios.math.StatisticsUtilities;
 
 import java.util.*;
 

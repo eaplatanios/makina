@@ -1,6 +1,6 @@
 package org.platanios.learn.data;
 
-import org.platanios.learn.math.matrix.Vector;
+import org.platanios.math.matrix.Vector;
 
 import java.util.List;
 

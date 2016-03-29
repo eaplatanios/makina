@@ -14,17 +14,17 @@ import org.platanios.learn.logic.formula.Predicate;
 import org.platanios.learn.logic.grounding.GroundPredicate;
 import org.platanios.learn.logic.grounding.GroundingMethod;
 import org.platanios.learn.logic.grounding.InMemoryLazyGrounding;
-import org.platanios.learn.math.matrix.*;
-import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.optimization.ConsensusADMMSolver;
-import org.platanios.learn.optimization.NewtonSolver;
-import org.platanios.learn.optimization.constraint.AbstractConstraint;
-import org.platanios.learn.optimization.constraint.LinearEqualityConstraint;
-import org.platanios.learn.optimization.function.AbstractFunction;
-import org.platanios.learn.optimization.function.LinearFunction;
-import org.platanios.learn.optimization.function.MaxFunction;
-import org.platanios.learn.optimization.function.SumFunction;
-import org.platanios.learn.optimization.linesearch.NoLineSearch;
+import org.platanios.math.matrix.*;
+import org.platanios.math.matrix.Vector;
+import org.platanios.optimization.ConsensusADMMSolver;
+import org.platanios.optimization.NewtonSolver;
+import org.platanios.optimization.constraint.AbstractConstraint;
+import org.platanios.optimization.constraint.LinearEqualityConstraint;
+import org.platanios.optimization.function.AbstractFunction;
+import org.platanios.optimization.function.LinearFunction;
+import org.platanios.optimization.function.MaxFunction;
+import org.platanios.optimization.function.SumFunction;
+import org.platanios.optimization.linesearch.NoLineSearch;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -126,13 +126,10 @@ public final class ProbabilisticSoftLogic {
 //        // BUG BUGBUGBUG: we should handle not adding redundant rules since we handle that on rules
 //        public Builder addConstraint(AbstractConstraint constraint, int... externalVariableIndexes) {
 //            List<Integer> internalVariableIndexes = new ArrayList<>();
-//            for (int externalVariableIndex : externalVariableIndexes) {
-//                int internalVariableIndex = externalToInternalIdsMap.getOrDefault(externalVariableIndex, -1);
-//                if (internalVariableIndex < 0) {
-//                    internalVariableIndex = nextInternalId++;
-//                    externalToInternalIdsMap.put(externalVariableIndex, internalVariableIndex);
-//                }
-//                internalVariableIndexes.add(internalVariableIndex);
+//            for (long externalVariableIndex : externalVariableIndexes) {
+//                if (!externalToInternalIdsMap.containsKey(externalVariableIndex))
+//                    externalToInternalIdsMap.put(externalVariableIndex, nextInternalId.getAndIncrement());
+//                internalVariableIndexes.add(externalToInternalIdsMap.get(externalVariableIndex));
 //            }
 //            constraints.add(new Constraint(constraint, Ints.toArray(internalVariableIndexes)));
 //            return this;
@@ -240,7 +237,7 @@ public final class ProbabilisticSoftLogic {
                         new CholeskyDecomposition(coefficients
                                                           .outer(coefficients)
                                                           .multiply(2 * objectiveTerm.weight)
-                                                          .add(Matrix.generateIdentityMatrix(coefficients.size())))
+                                                          .add(Matrix.identity(coefficients.size())))
                 );
         }
     }
@@ -294,13 +291,16 @@ public final class ProbabilisticSoftLogic {
                                 (subProblem) -> solveProbabilisticSoftLogicSubProblem(subProblem,
                                                                                       subProblemCholeskyFactors)
                         )
-                        .penaltyParameterSettingMethod(ConsensusADMMSolver.PenaltyParameterSettingMethod.CONSTANT)
-                        .penaltyParameter(1)
+//                        .penaltyParameterSettingMethod(ConsensusADMMSolver.PenaltyParameterSettingMethod.CONSTANT)
+//                        .penaltyParameter(1)
+                        .maximumNumberOfIterations(5000)
                         .checkForPointConvergence(false)
                         .checkForObjectiveConvergence(false)
                         .checkForGradientConvergence(false)
                         .logObjectiveValue(false)
                         .logGradientNorm(false)
+//                        .absoluteTolerance(1e-6)
+//                        .relativeTolerance(1e-6)
                         .loggingLevel(0)
                         .build();
         Vector result = solver.solve();

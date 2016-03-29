@@ -1,8 +1,8 @@
 package org.platanios.learn.neural.network;
 
-import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.matrix.VectorType;
-import org.platanios.learn.math.matrix.Vectors;
+import org.platanios.math.matrix.Vector;
+import org.platanios.math.matrix.VectorType;
+import org.platanios.math.matrix.Vectors;
 
 import java.util.HashMap;
 import java.util.Map;

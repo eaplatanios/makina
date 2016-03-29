@@ -1,8 +1,8 @@
 package org.platanios.learn.neural.network;
 
-import org.platanios.learn.math.matrix.Matrix;
-import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.matrix.Vectors;
+import org.platanios.math.matrix.Matrix;
+import org.platanios.math.matrix.Vector;
+import org.platanios.math.matrix.Vectors;
 
 /**
  * TODO: Maybe allow parameters of the different activation functions to be returned from the parameters() method of

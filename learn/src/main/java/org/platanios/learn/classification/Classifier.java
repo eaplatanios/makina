@@ -3,7 +3,7 @@ package org.platanios.learn.classification;
 import org.platanios.learn.data.DataSet;
 import org.platanios.learn.data.LabeledDataInstance;
 import org.platanios.learn.data.PredictedDataInstance;
-import org.platanios.learn.math.matrix.Vector;
+import org.platanios.math.matrix.Vector;
 
 import java.io.IOException;
 import java.io.OutputStream;

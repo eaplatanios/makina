@@ -8,86 +8,92 @@ import org.platanios.learn.classification.Label;
 import org.platanios.learn.classification.constraint.Constraint;
 import org.platanios.learn.classification.constraint.MutualExclusionConstraint;
 import org.platanios.learn.classification.constraint.SubsumptionConstraint;
-import org.platanios.learn.data.DataInstance;
-import org.platanios.learn.math.matrix.Vector;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class TuffyLogicIntegrator {
+public class TuffyLogicIntegrator extends Integrator {
     private static final Logger logger = LogManager.getLogger("Classification / Tuffy Logic Integrator");
 
     private final Set<Label> labels;
-    private final Map<Label, Set<Integer>> labelClassifiers;
-    private final Map<DataInstance<Vector>, Map<Label, Map<Integer, Double>>> dataSet;
+    private final Set<Integer> classifiers;
     private final Set<Constraint> constraints;
-    private final boolean estimateErrorRates;
     private final boolean logProgress;
     private final String workingDirectory;
-    private final BiMap<Long, DataInstance<Vector>> instanceKeysMap;
+    private final BiMap<Long, Integer> instanceKeysMap;
     private final BiMap<Long, Label> labelKeysMap;
     private final BiMap<Long, Integer> classifierKeysMap;
 
-    public static class Builder {
-        private final Set<Label> labels;
-        private final Map<Label, Set<Integer>> labelClassifiers;
-        private final Map<DataInstance<Vector>, Map<Label, Boolean>> fixedDataSet;
-        private final Map<DataInstance<Vector>, Map<Label, Map<Integer, Double>>> predictionsDataSet;
+    private boolean needsInference = true;
+
+    protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
+            extends Integrator.AbstractBuilder<T> {
+        private final Set<Label> labels = new HashSet<>();
+        private final Set<Integer> classifiers = new HashSet<>();
+
+        private final Integrator.Data<Integrator.Data.ObservedInstance> observedData;
 
         private Set<Constraint> constraints = new HashSet<>();
-        private boolean estimateErrorRates = false;
         private boolean logProgress = false;
         private String workingDirectory = "/temp";
 
-        public Builder(Map<Label, Set<Integer>> labelClassifiers,
-                       Map<DataInstance<Vector>, Map<Label, Map<Integer, Double>>> predictionsDataSet) {
-            this(labelClassifiers, null, predictionsDataSet);
+        public AbstractBuilder(Integrator.Data<Integrator.Data.PredictedInstance> predictedData) {
+            this(predictedData, null);
         }
 
-        public Builder(Map<Label, Set<Integer>> labelClassifiers,
-                       Map<DataInstance<Vector>, Map<Label, Boolean>> fixedDataSet,
-                       Map<DataInstance<Vector>, Map<Label, Map<Integer, Double>>> predictionsDataSet) {
-            this.labels = labelClassifiers.keySet();
-            this.labelClassifiers = labelClassifiers;
-            this.fixedDataSet = fixedDataSet;
-            this.predictionsDataSet = predictionsDataSet;
+        public AbstractBuilder(Integrator.Data<Integrator.Data.PredictedInstance> predictedData,
+                               Integrator.Data<Integrator.Data.ObservedInstance> observedData) {
+            super(predictedData);
+            if (observedData != null)
+                extractLabelsSet(observedData);
+            extractLabelsSet(predictedData);
+            extractClassifiersSet(predictedData);
+            this.observedData = observedData;
         }
 
-        public Builder addConstraint(MutualExclusionConstraint constraint) {
+        private void extractLabelsSet(Integrator.Data<?> data) {
+            data.stream().map(Integrator.Data.Instance::label).forEach(labels::add);
+        }
+
+        private void extractClassifiersSet(Integrator.Data<Integrator.Data.PredictedInstance> predictedData) {
+            predictedData.stream()
+                    .map(Integrator.Data.PredictedInstance::classifierId)
+                    .forEach(classifiers::add);
+        }
+
+        public T addConstraint(MutualExclusionConstraint constraint) {
             constraints.add(constraint);
-            return this;
+            return self();
         }
 
-        public Builder addConstraint(SubsumptionConstraint constraint) {
+        public T addConstraint(SubsumptionConstraint constraint) {
             constraints.add(constraint);
-            return this;
+            return self();
         }
 
-        public Builder addConstraints(Set<Constraint> constraints) {
+        public T addConstraints(Set<Constraint> constraints) {
             this.constraints.addAll(constraints);
-            return this;
+            return self();
         }
 
-        public Builder estimateErrorRates(boolean estimateErrorRates) {
-            this.estimateErrorRates = estimateErrorRates;
-            return this;
-        }
-
-        public Builder logProgress(boolean logProgress) {
+        public T logProgress(boolean logProgress) {
             this.logProgress = logProgress;
-            return this;
+            return self();
         }
 
-        public Builder workingDirectory(String workingDirectory) {
+        public T workingDirectory(String workingDirectory) {
             this.workingDirectory = workingDirectory;
-            return this;
+            return self();
         }
 
         public TuffyLogicIntegrator build() {
@@ -95,46 +101,65 @@ public class TuffyLogicIntegrator {
         }
     }
 
-    private TuffyLogicIntegrator(Builder builder) {
+    public static class Builder extends AbstractBuilder<Builder> {
+        public Builder(Integrator.Data<Integrator.Data.PredictedInstance> predictedData) {
+            super(predictedData);
+        }
+
+        public Builder(Integrator.Data<Integrator.Data.PredictedInstance> predictedData,
+                       Integrator.Data<Integrator.Data.ObservedInstance> observedData) {
+            super(predictedData, observedData);
+        }
+
+        @Override
+        protected Builder self() {
+            return this;
+        }
+    }
+
+    private TuffyLogicIntegrator(AbstractBuilder<?> builder) {
+        super(builder);
         labels = builder.labels;
-        labelClassifiers = builder.labelClassifiers;
-        dataSet = builder.predictionsDataSet;
+        classifiers = builder.classifiers;
         constraints = builder.constraints;
-        estimateErrorRates = builder.estimateErrorRates;
         logProgress = builder.logProgress;
         workingDirectory = builder.workingDirectory;
-        instanceKeysMap = HashBiMap.create(dataSet.size());
+        instanceKeysMap = HashBiMap.create(data.size());
         labelKeysMap = HashBiMap.create(labels.size());
-        classifierKeysMap = HashBiMap.create(
-                (int) labelClassifiers.values().stream().flatMap(Collection::stream).count()
-        );
-        final long[] currentInstanceKey = { 0 };
-        final long[] currentLabelKey = { 0 };
-        final long[] currentClassifierKey = { 0 };
-        if (builder.fixedDataSet != null)
-            builder.fixedDataSet.keySet().forEach(instance -> {
+        classifierKeysMap = HashBiMap.create((int) classifiers.stream().count());
+        final long[] currentInstanceKey = {0};
+        final long[] currentLabelKey = {0};
+        final long[] currentClassifierKey = {0};
+        if (builder.observedData != null)
+            builder.observedData.stream().map(Integrator.Data.Instance::instanceId).forEach(instance -> {
                 if (!instanceKeysMap.containsValue(instance))
                     instanceKeysMap.put(currentInstanceKey[0]++, instance);
             });
-        dataSet.keySet().forEach(instance -> {
+        data.stream().map(Integrator.Data.Instance::instanceId).forEach(instance -> {
             if (!instanceKeysMap.containsValue(instance))
                 instanceKeysMap.put(currentInstanceKey[0]++, instance);
         });
-        labels.forEach(label -> {
-            if (!labelKeysMap.containsValue(label))
-                labelKeysMap.put(currentLabelKey[0]++, label);
-            labelClassifiers.get(label)
-                    .stream()
-                    .filter(classifierId -> !classifierKeysMap.containsValue(classifierId))
-                    .forEach(classifierId -> classifierKeysMap.put(currentClassifierKey[0]++, classifierId));
-        });
+        labels.forEach(label -> labelKeysMap.put(currentLabelKey[0]++, label));
+        classifiers.forEach(classifier -> classifierKeysMap.put(currentClassifierKey[0]++, classifier));
         try {
             Files.copy(TuffyLogicIntegrator.class.getResourceAsStream("./logic_integrator.mln"),
                        Paths.get(workingDirectory + "/logic_integrator.mln"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
             Files.copy(TuffyLogicIntegrator.class.getResourceAsStream("./tuffy.jar"),
                        Paths.get(workingDirectory + "/tuffy.jar"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
             Files.copy(TuffyLogicIntegrator.class.getResourceAsStream("./tuffy.conf"),
                        Paths.get(workingDirectory + "/tuffy.conf"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
             File evidenceFile = new File(workingDirectory + "/evidence.db");
             evidenceFile.getParentFile().mkdirs();
             FileWriter evidenceFileWriter = new FileWriter(evidenceFile);
@@ -157,17 +182,15 @@ public class TuffyLogicIntegrator {
                     evidenceFileWriter.write("SubsumingLabels(" + labelKeysMap.inverse().get(parentLabel) + ", " + labelKeysMap.inverse().get(childLabel) + ")\n");
                 }
             }
-            if (builder.fixedDataSet != null)
-                for (Map.Entry<DataInstance<Vector>, Map<Label, Boolean>> dataSetEntry : builder.fixedDataSet.entrySet())
-                    for (Map.Entry<Label, Boolean> dataInstanceEntry : dataSetEntry.getValue().entrySet())
-                        evidenceFileWriter.write("Label(" + instanceKeysMap.inverse().get(dataSetEntry.getKey()) + ", "
-                                                         + labelKeysMap.inverse().get(dataInstanceEntry.getKey()) + ")\n");
-            for (Map.Entry<DataInstance<Vector>, Map<Label, Map<Integer, Double>>> dataSetEntry : dataSet.entrySet())
-                for (Map.Entry<Label, Map<Integer, Double>> dataInstanceEntry : dataSetEntry.getValue().entrySet())
-                    for (Map.Entry<Integer, Double> classifierEntry : dataInstanceEntry.getValue().entrySet())
-                        evidenceFileWriter.write("LabelPrediction(" + instanceKeysMap.inverse().get(dataSetEntry.getKey()) + ", "
-                                                         + classifierKeysMap.inverse().get(classifierEntry.getKey()) + ", "
-                                                         + labelKeysMap.inverse().get(dataInstanceEntry.getKey()) + ")\n");
+            if (builder.observedData != null)
+                for (Integrator.Data.ObservedInstance instance : builder.observedData)
+                    evidenceFileWriter.write("Label(" + instanceKeysMap.inverse().get(instance.instanceId()) + ", "
+                                                     + labelKeysMap.inverse().get(instance.label()) + ")\n");
+            for (Integrator.Data.PredictedInstance instance : data)
+                evidenceFileWriter.write(instance.value() + "\tLabelPrediction("
+                                                 + instanceKeysMap.inverse().get(instance.instanceId()) + ", "
+                                                 + classifierKeysMap.inverse().get(instance.classifierId()) + ", "
+                                                 + labelKeysMap.inverse().get(instance.label()) + ")\n");
             evidenceFileWriter.close();
             File queryFile = new File(workingDirectory + "/query.db");
             queryFile.getParentFile().mkdirs();
@@ -175,30 +198,41 @@ public class TuffyLogicIntegrator {
             for (long classifierKey : classifierKeysMap.keySet())
                 for (long labelKey : labelKeysMap.keySet())
                     queryFileWriter.write("ErrorRate(" + classifierKey + ", " + labelKey + ")\n");
-//            for (long instanceKey : instanceKeysMap.keySet())
-//                for (long labelKey : labelKeysMap.keySet())
-//                    queryFileWriter.write("Label(" + instanceKey + ", " + labelKey + ")\n");
+            for (long instanceKey : instanceKeysMap.keySet())
+                for (long labelKey : labelKeysMap.keySet())
+                    queryFileWriter.write("Label(" + instanceKey + ", " + labelKey + ")\n");
             queryFileWriter.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public ClassifierOutputsIntegrationResults integratePredictions() {
+    @Override
+    public ErrorRates errorRates() {
+        performInference();
+        return errorRates;
+    }
+
+    @Override
+    public Integrator.Data<Data.PredictedInstance> integratedData() {
+        performInference();
+        return integratedData;
+    }
+
+    private void performInference() {
+        if (!needsInference)
+            return;
         if (logProgress)
             logger.info("Starting inference...");
-        Map<DataInstance<Vector>, Map<Label, Double>> integratedDataSet = new HashMap<>();
-        Map<Label, Map<Integer, Double>> errorRates = new HashMap<>();
-        for (DataInstance<Vector> instance : dataSet.keySet())
-            integratedDataSet.put(instance, new HashMap<>());
-        for (Label label : labels)
-            errorRates.put(label, new HashMap<>());
+        List<Integrator.Data.PredictedInstance> integratedInstances = new ArrayList<>();
+        List<ErrorRates.Instance> errorRatesInstances = new ArrayList<>();
         try {
             logger.info("Started running Tuffy.");
             ProcessBuilder pb = new ProcessBuilder("java",
                                                    "-Xmx12G",
                                                    "-jar", workingDirectory + "/tuffy.jar",
                                                    "-conf", workingDirectory + "/tuffy.conf",
+//                                                   "-learnwt",
                                                    "-i", workingDirectory + "/logic_integrator.mln",
                                                    "-e", workingDirectory + "/evidence.db",
                                                    "-queryFile", workingDirectory + "/query.db",
@@ -211,20 +245,27 @@ public class TuffyLogicIntegrator {
             logger.info("Finished running Tuffy.");
             Files.newBufferedReader(Paths.get(workingDirectory + "/results.db")).lines().forEach(line -> {
                 String[] lineParts = line.split("\t");
-                String[] argumentParts = lineParts[1].split("\"");
-                if (lineParts[1].startsWith("ErrorRate")) {
-                    int classifierId = classifierKeysMap.get(Long.parseLong(argumentParts[1]));
-                    Label label = labelKeysMap.get(Long.parseLong(argumentParts[3]));
-                    errorRates.get(label).put(classifierId, Double.parseDouble(lineParts[0]));
-                } else if (lineParts[1].startsWith("Label")) {
-                    DataInstance<Vector> instance = instanceKeysMap.get(Long.parseLong(argumentParts[1]));
-                    Label label = labelKeysMap.get(Long.parseLong(argumentParts[3]));
-                    integratedDataSet.get(instance).put(label, Double.parseDouble(lineParts[0]));
+                if (lineParts[1].startsWith("Label")) {
+                    String[] argumentParts = lineParts[1].substring(6, lineParts[1].length() - 1).split(", ");
+                    Integer instanceID = instanceKeysMap.get(Long.parseLong(argumentParts[0]));
+                    Label label = labelKeysMap.get(Long.parseLong(argumentParts[1]));
+                    integratedInstances.add(new Integrator.Data.PredictedInstance(
+                            instanceID, label, -1, Double.parseDouble(lineParts[0]))
+                    );
+                } else if (lineParts[1].startsWith("ErrorRate")) {
+                    String[] argumentParts = lineParts[1].substring(10, lineParts[1].length() - 1).split(", ");
+                    int classifierId = classifierKeysMap.get(Long.parseLong(argumentParts[0]));
+                    Label label = labelKeysMap.get(Long.parseLong(argumentParts[1]));
+                    errorRatesInstances.add(new ErrorRates.Instance(
+                            label, classifierId, Double.parseDouble(lineParts[0]))
+                    );
                 }
             });
         } catch (IOException|InterruptedException e) {
             e.printStackTrace();
         }
-        return new ClassifierOutputsIntegrationResults(integratedDataSet, errorRates);
+        integratedData = new Integrator.Data<>(integratedInstances);
+        errorRates = new ErrorRates(errorRatesInstances);
+        needsInference = false;
     }
 }

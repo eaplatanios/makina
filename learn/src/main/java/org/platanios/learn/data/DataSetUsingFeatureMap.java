@@ -1,7 +1,7 @@
 package org.platanios.learn.data;
 
-import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.statistics.StatisticsUtilities;
+import org.platanios.math.matrix.Vector;
+import org.platanios.math.StatisticsUtilities;
 
 import java.util.*;
 import java.util.stream.Collectors;

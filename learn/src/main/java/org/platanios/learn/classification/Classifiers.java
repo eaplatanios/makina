@@ -1,6 +1,6 @@
 package org.platanios.learn.classification;
 
-import org.platanios.learn.serialization.UnsafeSerializationUtilities;
+import org.platanios.utilities.UnsafeSerializationUtilities;
 
 import java.io.IOException;
 import java.io.InputStream;

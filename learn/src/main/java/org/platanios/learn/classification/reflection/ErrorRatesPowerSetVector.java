@@ -3,7 +3,9 @@ package org.platanios.learn.classification.reflection;
 import com.google.common.collect.BiMap;
 import com.google.common.primitives.Ints;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A structure that holds the individual error rates of a set of functions, as well as the joint error rates of all
@@ -56,17 +58,14 @@ public class ErrorRatesPowerSetVector extends PowerSetVector {
      * @param   numberOfFunctions   The total number of functions considered.
      * @param   highestOrder        The highest cardinality of sets of functions to consider, out of the whole power
      *                              set.
-     * @param   trueLabels          The true label for each data sample.
-     * @param   classifiersOutputs  The output labels of the functions for each data sample (the first dimension of the
-     *                              array corresponds to data samples and the second dimension corresponds to the
-     *                              functions).
      */
     public ErrorRatesPowerSetVector(int numberOfFunctions,
                                     int highestOrder,
-                                    boolean[] trueLabels,
-                                    boolean[][] classifiersOutputs) {
+                                    Integrator.Data<Integrator.Data.PredictedInstance> predictedData,
+                                    Integrator.Data<Integrator.Data.ObservedInstance> observedData,
+                                    BiMap<Integer, Integer> functionIdsMap) {
         this(numberOfFunctions, highestOrder);
-        computeValues(trueLabels, classifiersOutputs);
+        computeValues(predictedData, observedData, functionIdsMap);
     }
 
     /**
@@ -94,24 +93,35 @@ public class ErrorRatesPowerSetVector extends PowerSetVector {
     /**
      * Computes the sample error rates from the available labeled data samples and the outputs of the functions for each
      * data sample and sets the values of the function error rates to those computed values.
-     *
-     * @param   trueLabels          The true label for each data sample.
-     * @param   classifiersOutputs  The output labels of the functions for each data sample (the first dimension of the
-     *                              array corresponds to data samples and the second dimension corresponds to the
-     *                              functions).
      */
-    private void computeValues(boolean[] trueLabels, boolean[][] classifiersOutputs) {
-        for (int i = 0; i < trueLabels.length; i++) {
+    private void computeValues(Integrator.Data<Integrator.Data.PredictedInstance> predictedData,
+                               Integrator.Data<Integrator.Data.ObservedInstance> observedData,
+                               BiMap<Integer, Integer> functionIdsMap) {
+        Map<Integer, Map<Integer, Boolean>> dataMap = new HashMap<>();
+        predictedData.stream().forEach(
+                instance -> dataMap.computeIfAbsent(instance.instanceId(), key -> new HashMap<>())
+                        .put(functionIdsMap.get(instance.classifierId()), instance.value() >= 0.5)
+        );
+        Map<Integer, Boolean> observedDataMap = new HashMap<>();
+        observedData.stream().forEach(instance -> observedDataMap.put(instance.instanceId(), instance.value()));
+        int[] counts = new int[array.length];
+        for (Map.Entry<Integer, Map<Integer, Boolean>> dataMapEntry : dataMap.entrySet()) {
+            if (!observedDataMap.containsKey(dataMapEntry.getKey()))
+                continue;
+            Map<Integer, Boolean> dataMapInstance = dataMapEntry.getValue();
             for (BiMap.Entry<List<Integer>, Integer> entry : indexKeyMapping.entrySet()) {
                 boolean equal = true;
                 List<Integer> indexes = entry.getKey();
+                if (!dataMapInstance.keySet().containsAll(indexes))
+                    continue;
+                counts[entry.getValue()]++;
                 for (int index : indexes.subList(1, indexes.size()))
-                    equal = equal && (classifiersOutputs[i][indexes.get(0)] == classifiersOutputs[i][index]);
-                if (equal && (classifiersOutputs[i][indexes.get(0)] != trueLabels[i]))
-                    array[entry.getValue()] += 1;
+                    equal = equal && (dataMapInstance.get(indexes.get(0)) == dataMapInstance.get(index));
+                if (equal && dataMapInstance.get(indexes.get(0)) != observedDataMap.get(dataMapEntry.getKey()))
+                    array[entry.getValue()]++;
             }
         }
-        for (int i = 0; i < array.length; i++)
-            array[i] /= classifiersOutputs.length;
+        for (int i = 0; i < length; i++)
+            array[i] /= counts[i];
     }
 }

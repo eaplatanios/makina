@@ -2,9 +2,9 @@ package org.platanios.learn.neural.graph;
 
 import org.platanios.learn.graph.Edge;
 import org.platanios.learn.graph.Vertex;
-import org.platanios.learn.math.matrix.Matrix;
-import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.matrix.Vectors;
+import org.platanios.math.matrix.Matrix;
+import org.platanios.math.matrix.Vector;
+import org.platanios.math.matrix.Vectors;
 import org.platanios.learn.neural.network.Network;
 import org.platanios.learn.neural.network.NetworkBuilder;
 

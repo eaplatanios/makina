@@ -6,7 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.platanios.learn.classification.Label;
 import org.platanios.learn.data.DataInstance;
-import org.platanios.learn.math.matrix.Vector;
+import org.platanios.math.matrix.Vector;
 
 import java.util.*;
 import java.util.function.Function;
@@ -219,7 +219,7 @@ public class Learning {
             return ComparisonChain.start()
                     .compare(informationGainHeuristicValue, other.informationGainHeuristicValue)
                     .compare(instance.name(), other.instance.name())
-                    .compare(label.getName(), other.label.getName())
+                    .compare(label.name(), other.label.name())
                     .result();
         }
 

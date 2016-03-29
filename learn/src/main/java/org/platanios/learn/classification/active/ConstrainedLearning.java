@@ -7,7 +7,7 @@ import org.platanios.learn.classification.constraint.Constraint;
 import org.platanios.learn.classification.constraint.ConstraintSet;
 import org.platanios.learn.classification.constraint.MutualExclusionConstraint;
 import org.platanios.learn.data.DataInstance;
-import org.platanios.learn.math.matrix.Vector;
+import org.platanios.math.matrix.Vector;
 
 import java.util.Arrays;
 import java.util.HashSet;

@@ -2,7 +2,9 @@ package org.platanios.learn.classification.reflection;
 
 import com.google.common.collect.BiMap;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A structure that holds the agreement rates of all possible subsets of a set of functions of cardinality greater than
@@ -22,15 +24,13 @@ public class AgreementRatesPowerSetVector extends PowerSetVector {
      * @param   numberOfFunctions   The total number of functions considered.
      * @param   highestOrder        The highest cardinality of sets of functions to consider, out of the whole power
      *                              set.
-     * @param   classifiersOutputs  The output labels of the functions for each data sample (the first dimension of the
-     *                              array corresponds to data samples and the second dimension corresponds to the
-     *                              functions).
      */
     public AgreementRatesPowerSetVector(int numberOfFunctions,
                                         int highestOrder,
-                                        boolean[][] classifiersOutputs) {
+                                        Integrator.Data<Integrator.Data.PredictedInstance> predictedData,
+                                        BiMap<Integer, Integer> functionIdsMap) {
         super(numberOfFunctions, 2, highestOrder, true);
-        computeValues(classifiersOutputs);
+        computeValues(predictedData, functionIdsMap);
     }
 
     /**
@@ -42,40 +42,43 @@ public class AgreementRatesPowerSetVector extends PowerSetVector {
      * @param   numberOfFunctions           The total number of functions considered.
      * @param   highestOrder                The highest cardinality of sets of functions to consider, out of the whole
      *                                      power set.
-     * @param   classifiersOutputs          The output labels of the functions for each data sample (the first dimension
-     *                                      of the array corresponds to data samples and the second dimension
-     *                                      corresponds to the functions).
      * @param onlyEvenCardinalitySubsets    Boolean computeValue indicating whether or not to only consider sets of even
      *                                      cardinality, out of the whole power set.
      */
     public AgreementRatesPowerSetVector(int numberOfFunctions,
                                         int highestOrder,
-                                        boolean[][] classifiersOutputs,
-                                        boolean onlyEvenCardinalitySubsets) {
+                                        Integrator.Data<Integrator.Data.PredictedInstance> predictedData,
+                                        boolean onlyEvenCardinalitySubsets,
+                                        BiMap<Integer, Integer> functionIdsMap) {
         super(numberOfFunctions, 2, highestOrder, onlyEvenCardinalitySubsets);
-        computeValues(classifiersOutputs);
+        computeValues(predictedData, functionIdsMap);
     }
 
     /**
      * Computes the sample agreement rates from the observed outputs of the functions for a set of data samples and sets
      * the values of the function agreement rates to those computed values.
-     *
-     * @param   classifiersOutputs  The output labels of the functions for each data sample (the first dimension of the
-     *                              array corresponds to data samples and the second dimension corresponds to the
-     *                              functions).
      */
-    private void computeValues(boolean[][] classifiersOutputs) {
-        for (boolean[] classifiersOutput : classifiersOutputs) {
+    private void computeValues(Integrator.Data<Integrator.Data.PredictedInstance> predictedData,
+                               BiMap<Integer, Integer> functionIdsMap) {
+        Map<Integer, Map<Integer, Boolean>> dataMap = new HashMap<>();
+        predictedData.stream().forEach(
+                instance -> dataMap.computeIfAbsent(instance.instanceId(), key -> new HashMap<>())
+                        .put(functionIdsMap.get(instance.classifierId()), instance.value() >= 0.5)
+        );
+        int[] counts = new int[array.length];
+        for (Map<Integer, Boolean> dataMapInstance : dataMap.values())
             for (BiMap.Entry<List<Integer>, Integer> entry : indexKeyMapping.entrySet()) {
                 boolean equal = true;
                 List<Integer> indexes = entry.getKey();
+                if (!dataMapInstance.keySet().containsAll(indexes))
+                    continue;
+                counts[entry.getValue()]++;
                 for (int index : indexes.subList(1, indexes.size()))
-                    equal = equal && (classifiersOutput[indexes.get(0)] == classifiersOutput[index]);
+                    equal = equal && (dataMapInstance.get(indexes.get(0)) == dataMapInstance.get(index));
                 if (equal)
-                    array[entry.getValue()] += 1;
+                    array[entry.getValue()]++;
             }
-        }
         for (int i = 0; i < length; i++)
-            array[i] /= classifiersOutputs.length;
+            array[i] /= counts[i];
     }
 }

@@ -4,10 +4,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.platanios.learn.classification.LogisticRegressionAdaGrad;
 import org.platanios.learn.classification.TrainableClassifier;
-import org.platanios.learn.classification.reflection.Integrator;
+import org.platanios.learn.classification.reflection.CoTrainingIntegrator;
 import org.platanios.learn.data.*;
-import org.platanios.learn.math.matrix.SparseVector;
-import org.platanios.learn.math.matrix.Vector;
+import org.platanios.math.matrix.SparseVector;
+import org.platanios.math.matrix.Vector;
 
 import java.io.*;
 import java.text.DecimalFormat;
@@ -130,27 +130,27 @@ public class IntegratorExperiment {
 
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
-        Integrator.CoTrainingMethod coTrainingMethod;
+        CoTrainingIntegrator.CoTrainingMethod coTrainingMethod;
         String workingDirectory;
         switch (args[0]) {
             case "0":
-                coTrainingMethod = Integrator.CoTrainingMethod.CO_TRAINING;
+                coTrainingMethod = CoTrainingIntegrator.CoTrainingMethod.CO_TRAINING;
                 workingDirectory = integratorWorkingDirectory + "Co-Training/";
                 break;
             case "1":
-                coTrainingMethod = Integrator.CoTrainingMethod.ROBUST_CO_TRAINING;
+                coTrainingMethod = CoTrainingIntegrator.CoTrainingMethod.ROBUST_CO_TRAINING;
                 workingDirectory = integratorWorkingDirectory + "Robust Co-Training/";
                 break;
             case "2":
-                coTrainingMethod = Integrator.CoTrainingMethod.ROBUST_CO_TRAINING_BEE;
+                coTrainingMethod = CoTrainingIntegrator.CoTrainingMethod.ROBUST_CO_TRAINING_BEE;
                 workingDirectory = integratorWorkingDirectory + "Robust Co-Training GM/";
                 break;
             case "3":
-                coTrainingMethod = Integrator.CoTrainingMethod.TRUE_ERRORS_ROBUST_CO_TRAINING;
+                coTrainingMethod = CoTrainingIntegrator.CoTrainingMethod.TRUE_ERRORS_ROBUST_CO_TRAINING;
                 workingDirectory = integratorWorkingDirectory + "True Errors Co-Training/";
                 break;
             default:
-                coTrainingMethod = Integrator.CoTrainingMethod.CO_TRAINING;
+                coTrainingMethod = CoTrainingIntegrator.CoTrainingMethod.CO_TRAINING;
                 workingDirectory = integratorWorkingDirectory + "Co-Training/";
         }
         logger.info("Starting the integrator with co-training method: " + coTrainingMethod.name());
@@ -162,14 +162,14 @@ public class IntegratorExperiment {
         double[][] recall = new double[numberOfIterations][numberOfViews];
         double[][] f1Score = new double[numberOfIterations][numberOfViews];
         double[][] estimatedErrorRates = new double[numberOfIterations][numberOfViews];
-        Integrator.Builder<Vector, Double> integratorBuilder =
-                new Integrator.Builder<Vector, Double>(workingDirectory)
+        CoTrainingIntegrator.Builder<Vector, Double> integratorBuilder =
+                new CoTrainingIntegrator.Builder<Vector, Double>(workingDirectory)
                         .labeledDataSet(labeledDataSet)
                         .unlabeledDataSet(unlabeledDataSet)
                         .completedIterationEventHandlers((completedIterationEvent, sequence, endOfBatch) -> {
-                            int iterationNumber = ((Integrator.CompletedIterationEvent) completedIterationEvent).getIterationNumber();
-                            List<TrainableClassifier<Vector, Double>> classifiers = ((Integrator.CompletedIterationEvent) completedIterationEvent).getClassifiers();
-                            estimatedErrorRates[iterationNumber - 1] = ((Integrator.CompletedIterationEvent) completedIterationEvent).getErrorRates();
+                            int iterationNumber = ((CoTrainingIntegrator.CompletedIterationEvent) completedIterationEvent).getIterationNumber();
+                            List<TrainableClassifier<Vector, Double>> classifiers = ((CoTrainingIntegrator.CompletedIterationEvent) completedIterationEvent).getClassifiers();
+                            estimatedErrorRates[iterationNumber - 1] = ((CoTrainingIntegrator.CompletedIterationEvent) completedIterationEvent).getErrorRates();
                             for (int view = 0; view < numberOfViews; view++) {
                                 DataSet<PredictedDataInstance<Vector, Double>> predictedEvaluationDataSet =
                                         classifiers.get(view).predict((DataSet<PredictedDataInstance<Vector, Double>>) evaluationDataSet.getSingleViewDataSet(view));
@@ -217,7 +217,7 @@ public class IntegratorExperiment {
                                                  f1Score);
                         })
                         .coTrainingMethod(coTrainingMethod)
-                        .dataSelectionMethod(Integrator.DataSelectionMethod.FIXED_PROPORTION)
+                        .dataSelectionMethod(CoTrainingIntegrator.DataSelectionMethod.FIXED_PROPORTION)
                         .dataSelectionParameter(0.01)
                         .numberOfThreads(numberOfViews)
                         .saveModelsOnEveryIteration(true)
@@ -244,7 +244,7 @@ public class IntegratorExperiment {
                             .build();
             integratorBuilder.addClassifier(classifier);
         }
-        Integrator<Vector, Double> integrator = integratorBuilder.build();
+        CoTrainingIntegrator<Vector, Double> integrator = integratorBuilder.build();
         for (int iteration = integrator.getIterationNumber(); iteration < numberOfIterations; iteration++)
             integrator.performSingleIteration();
     }

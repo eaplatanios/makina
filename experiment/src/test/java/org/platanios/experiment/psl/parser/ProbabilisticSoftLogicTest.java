@@ -92,7 +92,7 @@ public class ProbabilisticSoftLogicTest {
 //        double[] observedWeights = new double[(int) logicManager.getNumberOfGroundPredicates()];
 //        List<GroundPredicate> groundPredicates = logicManager.getGroundPredicates();
 //        for (int index = 0; index < logicManager.getNumberOfGroundPredicates(); index++) {
-//            observedIndexes[index] = (int) groundPredicates.get(index).getName();
+//            observedIndexes[index] = (int) groundPredicates.get(index).name();
 //            observedWeights[index] = (double) groundPredicates.get(index).getValue();
 //        }
 

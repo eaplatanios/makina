@@ -3,7 +3,7 @@ package org.platanios.learn.classification.reflection;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.primitives.Ints;
-import org.platanios.learn.math.combinatorics.CombinatoricsUtilities;
+import org.platanios.math.CombinatoricsUtilities;
 
 import java.util.List;
 
@@ -16,15 +16,15 @@ import java.util.List;
 abstract class PowerSetVector {
     /** The total number of elements (that is equivalent to the length of the one-dimensional array storing all those
      * elements). */
-    public final int length;
+    protected final int length;
     /** A mapping between the power set indexing of those elements and their one-dimensional array indexing. */
-    public final BiMap<List<Integer>, Integer> indexKeyMapping;
+    protected final BiMap<List<Integer>, Integer> indexKeyMapping;
     /** The number of elements of the whole set, out of which the power set is constructed. */
-    private final int highestIndex;
+    protected final int highestIndex;
     /** The smallest cardinality of sets to consider, out of the whole power set. */
-    private final int lowestOrder;
+    protected final int lowestOrder;
     /** The highest cardinality of sets to consider, out of the whole power set. */
-    private final int highestOrder;
+    protected final int highestOrder;
     /** Boolean computeValue indicating whether or not to only consider sets of even cardinality, out of the whole power set.
      * That is useful when considering the agreement rates constraints in the error rates estimation problem, where the
      * agreement rates of a subset of functions with odd cardinality can be written in terms of the agreement rates of
@@ -32,7 +32,7 @@ abstract class PowerSetVector {
     private final boolean onlyEvenCardinalitySubsets;
 
     /** The array that contains the stored elements. */
-    public double[] array;  // TODO: Change that to using a generic type and move the whole class to a different package
+    protected double[] array;  // TODO: Change that to using a generic type and move the whole class to a different package
 
     /**
      * Constructs a power set indexed vector stored as a one-dimensional array. By default, all possible index sets,
@@ -69,6 +69,30 @@ abstract class PowerSetVector {
         this.length = length;
         array = new double[this.length];
         indexKeyMapping = createIndexKeyMapping();
+    }
+
+    public int length() {
+        return length;
+    }
+
+    public BiMap<List<Integer>, Integer> indexKeyMapping() {
+        return indexKeyMapping;
+    }
+
+    public int highestIndex() {
+        return highestIndex;
+    }
+
+    public int lowestOrder() {
+        return lowestOrder;
+    }
+
+    public int highestOrder() {
+        return highestOrder;
+    }
+
+    public double[] array() {
+        return array;
     }
 
     /**

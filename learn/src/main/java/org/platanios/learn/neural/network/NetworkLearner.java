@@ -1,6 +1,6 @@
 package org.platanios.learn.neural.network;
 
-import org.platanios.learn.math.matrix.Vector;
+import org.platanios.math.matrix.Vector;
 
 import java.util.ArrayList;
 import java.util.List;

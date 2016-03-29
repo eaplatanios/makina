@@ -3,8 +3,10 @@ package org.platanios.learn.classification.constraint;
 import org.platanios.learn.classification.Label;
 import org.platanios.learn.classification.active.ConstrainedLearning;
 import org.platanios.learn.data.DataInstance;
-import org.platanios.learn.math.matrix.Vector;
+import org.platanios.math.matrix.Vector;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,6 +18,10 @@ public class MutualExclusionConstraint implements Constraint {
 
     public MutualExclusionConstraint(Set<Label> labels) {
         this.labels = labels;
+    }
+
+    public MutualExclusionConstraint(Label... labels) {
+        this.labels = new HashSet<>(Arrays.asList(labels));
     }
 
     public Set<Label> getLabels() {

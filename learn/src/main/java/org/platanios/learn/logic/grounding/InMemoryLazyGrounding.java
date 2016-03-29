@@ -276,36 +276,36 @@ public class InMemoryLazyGrounding {
             else
                 disjunctionComponentsSoFar.add(currentPredicateTruthValue);
             currentPredicateTruthValue = logicManager.logic().disjunction(disjunctionComponentsSoFar);
-            if (!logicManager.logic().isSatisfied(currentPredicateTruthValue)) {
-                for (Long variableIdentifier : groundedVariables.keySet())
-                    newGroundedVariables.get(variableIdentifier).add(groundedVariables.get(variableIdentifier).get(groundingIndex));
-                GroundPredicate groundPredicate;
-                Predicate predicate = formula.getPredicate();
-                newVariableGrounding = new ArrayList<>();
-                for (Variable variable : formula.getOrderedVariables())
-                    newVariableGrounding.add(variableAssignments.get(variable.getId()));
-                boolean unobservedVariable = formulaUnobservedVariableIndicators.get(groundingIndex);
-                if (logicManager.checkIfGroundPredicateExists(predicate,
-                                                              newVariableGrounding)) {
-                    groundPredicate = logicManager.getGroundPredicate(
-                            predicate,
-                            newVariableGrounding
-                    );
-                } else {
-                    groundPredicate = logicManager.addGroundPredicate(
-                            predicate,
-                            newVariableGrounding
-                    );
-                }
-                List<GroundPredicate> temporaryList = new ArrayList<>(groundedFormula.get(groundingIndex));
-                temporaryList.add(groundPredicate);
-                newGroundedFormula.add(temporaryList);
-                newGroundedFormulaTruthValues.add(currentPredicateTruthValue);
-                newFormulaUnobservedVariableIndicators.add(unobservedVariable | groundPredicate.getValue() == null);
-                if (!activatedGroundedPredicates.containsKey(groundPredicate.getPredicate()))
-                    activatedGroundedPredicates.put(groundPredicate.getPredicate(), new HashSet<>());
-                activatedGroundedPredicates.get(groundPredicate.getPredicate()).add(groundPredicate);
+            if (logicManager.logic().isSatisfied(currentPredicateTruthValue))
+                continue;
+            for (Long variableIdentifier : groundedVariables.keySet())
+                newGroundedVariables.get(variableIdentifier).add(groundedVariables.get(variableIdentifier).get(groundingIndex));
+            GroundPredicate groundPredicate;
+            Predicate predicate = formula.getPredicate();
+            newVariableGrounding = new ArrayList<>();
+            for (Variable variable : formula.getOrderedVariables())
+                newVariableGrounding.add(variableAssignments.get(variable.getId()));
+            boolean unobservedVariable = formulaUnobservedVariableIndicators.get(groundingIndex);
+            if (logicManager.checkIfGroundPredicateExists(predicate,
+                                                          newVariableGrounding)) {
+                groundPredicate = logicManager.getGroundPredicate(
+                        predicate,
+                        newVariableGrounding
+                );
+            } else {
+                groundPredicate = logicManager.addGroundPredicate(
+                        predicate,
+                        newVariableGrounding
+                );
             }
+            List<GroundPredicate> temporaryList = new ArrayList<>(groundedFormula.get(groundingIndex));
+            temporaryList.add(groundPredicate);
+            newGroundedFormula.add(temporaryList);
+            newGroundedFormulaTruthValues.add(currentPredicateTruthValue);
+            newFormulaUnobservedVariableIndicators.add(unobservedVariable | groundPredicate.getValue() == null);
+            if (!activatedGroundedPredicates.containsKey(groundPredicate.getPredicate()))
+                activatedGroundedPredicates.put(groundPredicate.getPredicate(), new HashSet<>());
+            activatedGroundedPredicates.get(groundPredicate.getPredicate()).add(groundPredicate);
         }
         groundedVariables = newGroundedVariables;
         groundedFormula = newGroundedFormula;

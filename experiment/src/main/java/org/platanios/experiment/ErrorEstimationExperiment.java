@@ -3,7 +3,7 @@ package org.platanios.experiment;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Sets;
 import org.platanios.learn.classification.reflection.*;
-import org.platanios.learn.math.statistics.StatisticsUtilities;
+import org.platanios.math.StatisticsUtilities;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -312,20 +312,31 @@ public class ErrorEstimationExperiment {
 //                }
                 break;
             case AR_2:
-                for (int p = 0; p < functionOutputs.size(); p++) {
-                    int numberOfFunctions = functionOutputs.get(p)[0].length;
-                    ErrorEstimationData errorEstimationData = new ErrorEstimationData.Builder(
-                            Arrays.asList(functionOutputs.get(p)),
-                            2,
-                            true).build();
-                    ErrorEstimation errorEstimation = new ErrorEstimation.Builder(errorEstimationData)
-                            .optimizationSolverType(ErrorEstimationInternalSolver.IP_OPT)
-                            .build();
-                    double[] allErrorRates = errorEstimation.solve().getErrorRates().array;
-                    errorRates[p] = new double[numberOfFunctions];
-                    System.arraycopy(allErrorRates, 0, errorRates[p], 0, numberOfFunctions);
+//                for (int p = 0; p < functionOutputs.size(); p++) {
+//                    int numberOfFunctions = functionOutputs.get(p)[0].length;
+//                    AgreementErrorEstimation.SufficientData errorEstimationData = new AgreementErrorEstimation.SufficientData.Builder(
+//                            Arrays.asList(functionOutputs.get(p)),
+//                            2,
+//                            true).build();
+//                    AgreementErrorEstimation errorEstimation = new AgreementErrorEstimation.Builder(errorEstimationData)
+//                            .optimizationSolverType(AgreementErrorEstimationInternalSolver.IP_OPT)
+//                            .build();
+//                    double[] allErrorRates = errorEstimation.solve().getErrorRates().array;
+//                    errorRates[p] = new double[numberOfFunctions];
+//                    System.arraycopy(allErrorRates, 0, errorRates[p], 0, numberOfFunctions);
+////                    // Combine the labels using a weighted majority vote
+////                    labels[p] = new boolean[functionOutputs.get(p).length];
+////                    for (int i = 0; i < functionOutputs.get(p).length; i++) {
+////                        double labelsSum = 0;
+////                        double errorRatesSum = 0;
+////                        for (int j = 0; j < functionOutputs.get(p)[i].length; j++) {
+////                            labelsSum += (1 - errorRates[p][j]) * (functionOutputs.get(p)[i][j] ? 1 : 0);
+////                            errorRatesSum += (1 - errorRates[p][j]);
+////                        }
+////                        labels[p][i] = labelsSum / errorRatesSum >= 0.5;
+////                    }
 //                    // Combine the labels using a weighted majority vote
-//                    labels[p] = new boolean[functionOutputs.get(p).length];
+//                    labels[p] = new double[functionOutputs.get(p).length];
 //                    for (int i = 0; i < functionOutputs.get(p).length; i++) {
 //                        double labelsSum = 0;
 //                        double errorRatesSum = 0;
@@ -333,36 +344,36 @@ public class ErrorEstimationExperiment {
 //                            labelsSum += (1 - errorRates[p][j]) * (functionOutputs.get(p)[i][j] ? 1 : 0);
 //                            errorRatesSum += (1 - errorRates[p][j]);
 //                        }
-//                        labels[p][i] = labelsSum / errorRatesSum >= 0.5;
+//                        labels[p][i] = labelsSum / errorRatesSum >= 0.5 ? 1 : 0;
 //                    }
-                    // Combine the labels using a weighted majority vote
-                    labels[p] = new double[functionOutputs.get(p).length];
-                    for (int i = 0; i < functionOutputs.get(p).length; i++) {
-                        double labelsSum = 0;
-                        double errorRatesSum = 0;
-                        for (int j = 0; j < functionOutputs.get(p)[i].length; j++) {
-                            labelsSum += (1 - errorRates[p][j]) * (functionOutputs.get(p)[i][j] ? 1 : 0);
-                            errorRatesSum += (1 - errorRates[p][j]);
-                        }
-                        labels[p][i] = labelsSum / errorRatesSum >= 0.5 ? 1 : 0;
-                    }
-                }
+//                }
                 break;
             case AR_N:
-                for (int p = 0; p < functionOutputs.size(); p++) {
-                    int numberOfFunctions = functionOutputs.get(p)[0].length;
-                    ErrorEstimationData errorEstimationData = new ErrorEstimationData.Builder(
-                            Arrays.asList(functionOutputs.get(p)),
-                            functionOutputs.get(0)[0].length,
-                            true).build();
-                    ErrorEstimation errorEstimation = new ErrorEstimation.Builder(errorEstimationData)
-                            .optimizationSolverType(ErrorEstimationInternalSolver.IP_OPT)
-                            .build();
-                    double[] allErrorRates = errorEstimation.solve().getErrorRates().array;
-                    errorRates[p] = new double[numberOfFunctions];
-                    System.arraycopy(allErrorRates, 0, errorRates[p], 0, numberOfFunctions);
+//                for (int p = 0; p < functionOutputs.size(); p++) {
+//                    int numberOfFunctions = functionOutputs.get(p)[0].length;
+//                    AgreementErrorEstimation.SufficientData errorEstimationData = new AgreementErrorEstimation.SufficientData.Builder(
+//                            Arrays.asList(functionOutputs.get(p)),
+//                            functionOutputs.get(0)[0].length,
+//                            true).build();
+//                    AgreementErrorEstimation errorEstimation = new AgreementErrorEstimation.Builder(errorEstimationData)
+//                            .optimizationSolverType(AgreementErrorEstimationInternalSolver.IP_OPT)
+//                            .build();
+//                    double[] allErrorRates = errorEstimation.solve().getErrorRates().array;
+//                    errorRates[p] = new double[numberOfFunctions];
+//                    System.arraycopy(allErrorRates, 0, errorRates[p], 0, numberOfFunctions);
+////                    // Combine the labels using a weighted majority vote
+////                    labels[p] = new boolean[functionOutputs.get(p).length];
+////                    for (int i = 0; i < functionOutputs.get(p).length; i++) {
+////                        double labelsSum = 0;
+////                        double errorRatesSum = 0;
+////                        for (int j = 0; j < functionOutputs.get(p)[i].length; j++) {
+////                            labelsSum += (1 - errorRates[p][j]) * (functionOutputs.get(p)[i][j] ? 1 : 0);
+////                            errorRatesSum += (1 - errorRates[p][j]);
+////                        }
+////                        labels[p][i] = labelsSum / errorRatesSum >= 0.5;
+////                    }
 //                    // Combine the labels using a weighted majority vote
-//                    labels[p] = new boolean[functionOutputs.get(p).length];
+//                    labels[p] = new double[functionOutputs.get(p).length];
 //                    for (int i = 0; i < functionOutputs.get(p).length; i++) {
 //                        double labelsSum = 0;
 //                        double errorRatesSum = 0;
@@ -370,46 +381,35 @@ public class ErrorEstimationExperiment {
 //                            labelsSum += (1 - errorRates[p][j]) * (functionOutputs.get(p)[i][j] ? 1 : 0);
 //                            errorRatesSum += (1 - errorRates[p][j]);
 //                        }
-//                        labels[p][i] = labelsSum / errorRatesSum >= 0.5;
+//                        labels[p][i] = labelsSum / errorRatesSum >= 0.5 ? 1 : 0;
 //                    }
-                    // Combine the labels using a weighted majority vote
-                    labels[p] = new double[functionOutputs.get(p).length];
-                    for (int i = 0; i < functionOutputs.get(p).length; i++) {
-                        double labelsSum = 0;
-                        double errorRatesSum = 0;
-                        for (int j = 0; j < functionOutputs.get(p)[i].length; j++) {
-                            labelsSum += (1 - errorRates[p][j]) * (functionOutputs.get(p)[i][j] ? 1 : 0);
-                            errorRatesSum += (1 - errorRates[p][j]);
-                        }
-                        labels[p][i] = labelsSum / errorRatesSum >= 0.5 ? 1 : 0;
-                    }
-                }
+//                }
                 break;
             case BEE:
-                BayesianErrorEstimation eesgm = new BayesianErrorEstimation(functionOutputs, 4000, 10, 200);
-                eesgm.runGibbsSampler();
-                errorRates = eesgm.getErrorRatesMeans();
-                labels = eesgm.getLabelMeans();
-//                double[][] labelMeansEesgm = eesgm.getLabelMeans();
-//                for (int p = 0; p < functionOutputs.size(); p++) {
-//                    labels[p] = new boolean[functionOutputs.get(p).length];
-//                    for (int i = 0; i < functionOutputs.get(p).length; i++) {
-//                        labels[p][i] = labelMeansEesgm[p][i] >= 0.5;
-//                    }
-//                }
-                break;
+//                BayesianIntegrator eesgm = new BayesianIntegrator(functionOutputs, 4000, 10, 200);
+//                eesgm.runGibbsSampler();
+//                errorRates = eesgm.getErrorRatesMeans();
+//                labels = eesgm.getLabelMeans();
+////                double[][] labelMeansEesgm = eesgm.getLabelMeans();
+////                for (int p = 0; p < functionOutputs.size(); p++) {
+////                    labels[p] = new boolean[functionOutputs.get(p).length];
+////                    for (int i = 0; i < functionOutputs.get(p).length; i++) {
+////                        labels[p][i] = labelMeansEesgm[p][i] >= 0.5;
+////                    }
+////                }
+//                break;
             case BEE_ME:
-                BayesianErrorEstimation eesgm_me = new BayesianErrorEstimation(functionOutputs, 4000, 10, 200, true);
-                eesgm_me.runGibbsSampler();
-                errorRates = eesgm_me.getErrorRatesMeans();
-                labels = eesgm_me.getLabelMeans();
-//                double[][] labelMeansEesgm_me = eesgm_me.getLabelMeans();
-//                for (int p = 0; p < functionOutputs.size(); p++) {
-//                    labels[p] = new boolean[functionOutputs.get(p).length];
-//                    for (int i = 0; i < functionOutputs.get(p).length; i++) {
-//                        labels[p][i] = labelMeansEesgm_me[p][i] >= 0.5;
-//                    }
-//                }
+//                BayesianIntegrator eesgm_me = new BayesianIntegrator(functionOutputs, 4000, 10, 200, true);
+//                eesgm_me.runGibbsSampler();
+//                errorRates = eesgm_me.getErrorRatesMeans();
+//                labels = eesgm_me.getLabelMeans();
+////                double[][] labelMeansEesgm_me = eesgm_me.getLabelMeans();
+////                for (int p = 0; p < functionOutputs.size(); p++) {
+////                    labels[p] = new boolean[functionOutputs.get(p).length];
+////                    for (int i = 0; i < functionOutputs.get(p).length; i++) {
+////                        labels[p][i] = labelMeansEesgm_me[p][i] >= 0.5;
+////                    }
+////                }
                 break;
             case BEEc:
                 BayesianErrorEstimationConfusion beec = new BayesianErrorEstimationConfusion(functionOutputs, 4000, 10, 200);
@@ -425,18 +425,18 @@ public class ErrorEstimationExperiment {
 //                }
                 break;
             case CBEE:
-                CoupledBayesianErrorEstimation eedfdpgm = new CoupledBayesianErrorEstimation(functionOutputs, 5000, 10, alpha);
-                eedfdpgm.performGibbsSampling();
-                errorRates = eedfdpgm.getErrorRatesMeans();
-                logLikelihood = eedfdpgm.logLikelihood(evaluationFunctionOutputs);
-                labels = eedfdpgm.getLabelMeans();
-//                double[][] labelMeansEedfdpgm = eedfdpgm.getLabelMeans();
-//                for (int p = 0; p < functionOutputs.size(); p++) {
-//                    labels[p] = new boolean[functionOutputs.get(p).length];
-//                    for (int i = 0; i < functionOutputs.get(p).length; i++) {
-//                        labels[p][i] = labelMeansEedfdpgm[p][i] >= 0.5;
-//                    }
-//                }
+//                CoupledBayesianIntegrator eedfdpgm = new CoupledBayesianIntegrator(functionOutputs, 5000, 10, alpha);
+//                eedfdpgm.performInference();
+//                errorRates = eedfdpgm.getErrorRatesMeans();
+//                logLikelihood = eedfdpgm.logLikelihood(evaluationFunctionOutputs);
+//                labels = eedfdpgm.getLabelMeans();
+////                double[][] labelMeansEedfdpgm = eedfdpgm.getLabelMeans();
+////                for (int p = 0; p < functionOutputs.size(); p++) {
+////                    labels[p] = new boolean[functionOutputs.get(p).length];
+////                    for (int i = 0; i < functionOutputs.get(p).length; i++) {
+////                        labels[p][i] = labelMeansEedfdpgm[p][i] >= 0.5;
+////                    }
+////                }
                 break;
             case CBEEc:
                 CoupledBayesianErrorEstimationConfusion cbeec = new CoupledBayesianErrorEstimationConfusion(functionOutputs, 5000, 10, alpha);
@@ -469,7 +469,7 @@ public class ErrorEstimationExperiment {
 //                }
 //                logLikelihood = eedfhdp.get_log_likelihood(evaluationFunctionOutputs, alpha, gamma, 1000, li_cnt);
 //                HierarchicalCoupledBayesianErrorEstimation hcee = new HierarchicalCoupledBayesianErrorEstimation(functionOutputs, 20000, 10, 500, alpha, gamma);
-                ErrorEstimationHDPErrorRate hcee = new ErrorEstimationHDPErrorRate(functionOutputs, 20000, 10, 500, alpha, gamma);
+                HierarchicalCoupledErrorEstimation hcee = new HierarchicalCoupledErrorEstimation(functionOutputs, 20000, 10, 500, alpha, gamma);
                 hcee.runGibbsSampler();
                 errorRates = hcee.getErrorRatesMeans();
                 logLikelihood = hcee.logLikelihood(evaluationFunctionOutputs);

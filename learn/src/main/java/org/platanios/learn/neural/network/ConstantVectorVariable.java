@@ -1,7 +1,7 @@
 package org.platanios.learn.neural.network;
 
 import com.google.common.base.Objects;
-import org.platanios.learn.math.matrix.Vector;
+import org.platanios.math.matrix.Vector;
 
 /**
  * @author Emmanouil Antonios Platanios

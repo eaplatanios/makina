@@ -2,9 +2,9 @@ package org.platanios.learn.data;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.matrix.Vectors;
-import org.platanios.learn.serialization.UnsafeSerializationUtilities;
+import org.platanios.math.matrix.Vector;
+import org.platanios.math.matrix.Vectors;
+import org.platanios.utilities.UnsafeSerializationUtilities;
 
 import java.io.InputStream;
 import java.io.OutputStream;

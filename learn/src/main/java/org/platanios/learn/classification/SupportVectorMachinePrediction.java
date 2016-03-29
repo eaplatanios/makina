@@ -3,10 +3,10 @@
 //import org.platanios.learn.data.PredictedDataInstance;
 //import org.platanios.learn.kernel.KernelFunction;
 //import org.platanios.learn.kernel.LinearKernelFunction;
-//import org.platanios.learn.math.matrix.Vector;
-//import org.platanios.learn.math.matrix.VectorType;
-//import org.platanios.learn.math.matrix.Vectors;
-//import org.platanios.learn.serialization.UnsafeSerializationUtilities;
+//import org.platanios.math.matrix.Vector;
+//import org.platanios.math.matrix.VectorType;
+//import org.platanios.math.matrix.Vectors;
+//import org.platanios.utilities.UnsafeSerializationUtilities;
 //
 //import java.io.IOException;
 //import java.io.InputStream;

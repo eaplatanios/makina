@@ -1,10 +1,10 @@
 package org.platanios.learn.classification;
 
-import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.matrix.Vectors;
-import org.platanios.learn.optimization.StochasticGradientDescentSolver;
-import org.platanios.learn.optimization.StochasticSolverStepSize;
-import org.platanios.learn.serialization.UnsafeSerializationUtilities;
+import org.platanios.math.matrix.Vector;
+import org.platanios.math.matrix.Vectors;
+import org.platanios.optimization.StochasticGradientDescentSolver;
+import org.platanios.optimization.StochasticSolverStepSize;
+import org.platanios.utilities.UnsafeSerializationUtilities;
 
 import java.io.IOException;
 import java.io.InputStream;

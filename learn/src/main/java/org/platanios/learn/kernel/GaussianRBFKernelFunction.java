@@ -1,7 +1,7 @@
 package org.platanios.learn.kernel;
 
-import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.matrix.VectorNorm;
+import org.platanios.math.matrix.Vector;
+import org.platanios.math.matrix.VectorNorm;
 
 /**
  * @author Emmanouil Antonios Platanios

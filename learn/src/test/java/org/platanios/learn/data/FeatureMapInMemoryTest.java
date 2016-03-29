@@ -2,7 +2,7 @@ package org.platanios.learn.data;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.platanios.learn.math.matrix.DenseVector;
+import org.platanios.math.matrix.DenseVector;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,12 +1,12 @@
 package org.platanios.learn.classification;
 
-import org.platanios.learn.math.matrix.*;
-import org.platanios.learn.optimization.QuasiNewtonSolver;
-import org.platanios.learn.optimization.Solver;
-import org.platanios.learn.optimization.StochasticGradientDescentSolver;
-import org.platanios.learn.optimization.StochasticSolverStepSize;
-import org.platanios.learn.optimization.function.AbstractFunction;
-import org.platanios.learn.optimization.function.AbstractStochasticFunctionUsingList;
+import org.platanios.math.matrix.*;
+import org.platanios.optimization.QuasiNewtonSolver;
+import org.platanios.optimization.Solver;
+import org.platanios.optimization.StochasticGradientDescentSolver;
+import org.platanios.optimization.StochasticSolverStepSize;
+import org.platanios.optimization.function.AbstractFunction;
+import org.platanios.optimization.function.AbstractStochasticFunctionUsingList;
 
 import java.util.Arrays;
 import java.util.List;

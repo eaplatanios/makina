@@ -1,7 +1,7 @@
 package org.platanios.experiment.psl;
 
-import org.platanios.learn.math.statistics.StatisticsUtilities;
-import org.platanios.learn.optimization.ConsensusADMMSolver;
+import org.platanios.math.StatisticsUtilities;
+import org.platanios.optimization.ConsensusADMMSolver;
 
 import java.util.*;
 

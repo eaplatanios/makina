@@ -5,9 +5,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.platanios.learn.data.FeatureMap;
 import org.platanios.learn.data.FeatureMapMySQL;
-import org.platanios.learn.math.matrix.SparseVector;
-import org.platanios.learn.math.matrix.VectorType;
-import org.platanios.learn.math.matrix.Vectors;
+import org.platanios.math.matrix.SparseVector;
+import org.platanios.math.matrix.VectorType;
+import org.platanios.math.matrix.Vectors;
 
 import java.io.*;
 import java.nio.charset.Charset;

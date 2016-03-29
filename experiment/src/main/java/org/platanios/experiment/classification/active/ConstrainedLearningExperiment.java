@@ -1,5 +1,7 @@
 package org.platanios.experiment.classification.active;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.platanios.experiment.Utilities;
@@ -11,7 +13,7 @@ import org.platanios.learn.classification.constraint.Constraint;
 import org.platanios.learn.classification.constraint.ConstraintSet;
 import org.platanios.learn.classification.constraint.MutualExclusionConstraint;
 import org.platanios.learn.classification.constraint.SubsumptionConstraint;
-import org.platanios.learn.classification.reflection.ClassifierOutputsIntegrationResults;
+import org.platanios.learn.classification.reflection.Integrator;
 import org.platanios.learn.classification.reflection.LogicIntegrator;
 import org.platanios.learn.data.DataInstance;
 import org.platanios.learn.data.DataSet;
@@ -19,9 +21,9 @@ import org.platanios.learn.data.DataSetInMemory;
 import org.platanios.learn.data.PredictedDataInstance;
 import org.platanios.learn.evaluation.BinaryPredictionAccuracy;
 import org.platanios.learn.evaluation.PrecisionRecall;
-import org.platanios.learn.math.matrix.DenseVector;
-import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.matrix.Vectors;
+import org.platanios.math.matrix.DenseVector;
+import org.platanios.math.matrix.Vector;
+import org.platanios.math.matrix.Vectors;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -52,12 +54,11 @@ public class ConstrainedLearningExperiment {
         matlabPlotColorsMap.put(new ConstraintPropagationScoringFunction(SurpriseFunction.ONE_MINUS_PROBABILITY, true), "[0.4660, 0.6740, 0.1880, 0.8]");
     }
 
+    private final BiMap<DataInstance<Vector>, Integer> dataInstances = HashBiMap.create();
     private final Map<Label, TrainableClassifier<Vector, Double>> classifiers = new ConcurrentHashMap<>();
     private final Map<Label, DataSet<PredictedDataInstance<Vector, Double>>> classifiersTrainingDataSet = new HashMap<>();
-    private Map<Label, DataSet<PredictedDataInstance<Vector, Double>>> classifiersTestingDataSet = new ConcurrentHashMap<>();
-    private final Map<DataInstance<Vector>, Map<Label, Boolean>> fixedLogicIntegratorDataSet = new HashMap<>();
-    private final Map<DataInstance<Vector>, Map<Label, Map<Integer, Double>>> predictedLogicIntegratorDataSet = new HashMap<>();
-    private final Map<Label, Set<Integer>> labelClassifiers = new HashMap<>();
+    private final Map<Label, DataSet<PredictedDataInstance<Vector, Double>>> classifiersTestingDataSet = new ConcurrentHashMap<>();
+    private final Map<Label, Integer> labelClassifiers = new HashMap<>();
 
     private final int numberOfExamplesToPickPerIteration;
     private final int maximumNumberOfIterations;
@@ -117,7 +118,8 @@ public class ConstrainedLearningExperiment {
                 classifierBuilder.sparse(true);
             classifiers.put(label, classifierBuilder.build());
         }
-        for (Map.Entry<DataInstance<Vector>, Map<Label, Boolean>> instanceEntry : trainingDataSet.entrySet())
+        for (Map.Entry<DataInstance<Vector>, Map<Label, Boolean>> instanceEntry : trainingDataSet.entrySet()) {
+            dataInstances.putIfAbsent(instanceEntry.getKey(), dataInstances.size());
             for (Map.Entry<Label, Boolean> instanceLabelEntry : instanceEntry.getValue().entrySet()) {
                 PredictedDataInstance<Vector, Double> predictedInstance =
                         new PredictedDataInstance<>(instanceEntry.getKey().name(),
@@ -127,7 +129,9 @@ public class ConstrainedLearningExperiment {
                                                     1.0);
                 classifiersTrainingDataSet.get(instanceLabelEntry.getKey()).add(predictedInstance);
             }
-        for (Map.Entry<DataInstance<Vector>, Map<Label, Boolean>> instanceEntry : testingDataSet.entrySet())
+        }
+        for (Map.Entry<DataInstance<Vector>, Map<Label, Boolean>> instanceEntry : testingDataSet.entrySet()) {
+            dataInstances.putIfAbsent(instanceEntry.getKey(), dataInstances.size());
             for (Map.Entry<Label, Boolean> instanceLabelEntry : instanceEntry.getValue().entrySet()) {
                 PredictedDataInstance<Vector, Double> predictedInstance =
                         new PredictedDataInstance<>(instanceEntry.getKey().name(),
@@ -137,6 +141,7 @@ public class ConstrainedLearningExperiment {
                                                     1.0);
                 classifiersTestingDataSet.get(instanceLabelEntry.getKey()).add(predictedInstance);
             }
+        }
     }
 
     private <T> Map<DataInstance<Vector>, Map<Label, T>> copyDataSetMap(Map<DataInstance<Vector>, Map<Label, T>> map) {
@@ -211,11 +216,10 @@ public class ConstrainedLearningExperiment {
                                             instanceEntry.getKey());
         int labelIndex = 0;
         for (Label label : labels)
-            labelClassifiers.put(label, new HashSet<>(Collections.singletonList(labelIndex++)));
+            labelClassifiers.put(label, labelIndex++);
         if (useLogicIntegrator) {
             buildLogicIntegrator();
-            ClassifierOutputsIntegrationResults logicIntegratorOutput = logicIntegrator.integratePredictions();
-            predictedDataSet = logicIntegratorOutput.getIntegratedDataSet();
+            updatePredictedData(logicIntegrator.integratedData());
         }
         int totalNumberOfExamples = learning.getNumberOfUnlabeledInstances();
         logger.info("Total number of examples: " + totalNumberOfExamples);
@@ -238,32 +242,32 @@ public class ConstrainedLearningExperiment {
                                 + importedDataSet.testingDataSetStatistics.get(label).numberOfPositiveExamples;
                 weightsSum[0] += weight;
                 if (resultTypes.contains(ResultType.AVERAGE_AUC_FULL_DATA_SET)) {
-                    fullPrecisionRecall.addResult(label.getName(),
+                    fullPrecisionRecall.addResult(label.name(),
                                                   classifierDataSet.get(label),
                                                   dataInstance -> this.testingDataSet.get(new DataInstance<>(dataInstance.name(),
                                                                                                              dataInstance.features())).get(label));
-                    fullAverageAUC[0] += weight * fullPrecisionRecall.getAreaUnderCurve(label.getName());
+                    fullAverageAUC[0] += weight * fullPrecisionRecall.getAreaUnderCurve(label.name());
                 }
                 if (resultTypes.contains(ResultType.AVERAGE_AUC_TESTING_DATA_SET)) {
-                    testingPrecisionRecall.addResult(label.getName(),
+                    testingPrecisionRecall.addResult(label.name(),
                                                      testingDataSet.get(label),
                                                      dataInstance -> this.testingDataSet.get(new DataInstance<>(dataInstance.name(),
                                                                                                                 dataInstance.features())).get(label));
-                    testingAverageAUC[0] += weight * testingPrecisionRecall.getAreaUnderCurve(label.getName());
+                    testingAverageAUC[0] += weight * testingPrecisionRecall.getAreaUnderCurve(label.name());
                 }
                 if (resultTypes.contains(ResultType.PREDICTION_ACCURACY_FULL_DATA_SET)) {
-                    fullPredictionAccuracy.addResult(label.getName(),
+                    fullPredictionAccuracy.addResult(label.name(),
                                                      classifierDataSet.get(label),
                                                      dataInstance -> this.testingDataSet.get(new DataInstance<>(dataInstance.name(),
                                                                                                                 dataInstance.features())).get(label));
-                    fullAveragePredictionAccuracy[0] += weight * fullPredictionAccuracy.getPredictionAccuracy(label.getName());
+                    fullAveragePredictionAccuracy[0] += weight * fullPredictionAccuracy.getPredictionAccuracy(label.name());
                 }
                 if (resultTypes.contains(ResultType.PREDICTION_ACCURACY_TESTING_DATA_SET)) {
-                    testingPredictionAccuracy.addResult(label.getName(),
+                    testingPredictionAccuracy.addResult(label.name(),
                                                         testingDataSet.get(label),
                                                         dataInstance -> this.testingDataSet.get(new DataInstance<>(dataInstance.name(),
                                                                                                                    dataInstance.features())).get(label));
-                    testingAveragePredictionAccuracy[0] += weight * testingPredictionAccuracy.getPredictionAccuracy(label.getName());
+                    testingAveragePredictionAccuracy[0] += weight * testingPredictionAccuracy.getPredictionAccuracy(label.name());
                 }
             });
             if (resultTypes.contains(ResultType.AVERAGE_AUC_FULL_DATA_SET))
@@ -300,8 +304,7 @@ public class ConstrainedLearningExperiment {
                             buildLogicIntegrator();
                     }
                     if (useLogicIntegrator) {
-                        ClassifierOutputsIntegrationResults logicIntegratorOutput = logicIntegrator.integratePredictions();
-                        predictedDataSet = logicIntegratorOutput.getIntegratedDataSet();
+                        updatePredictedData(logicIntegrator.integratedData());
                     }
                     break;
                 case PSEUDO_SEQUENTIAL:
@@ -317,8 +320,7 @@ public class ConstrainedLearningExperiment {
                             buildLogicIntegrator();
                     }
                     if (useLogicIntegrator) {
-                        ClassifierOutputsIntegrationResults logicIntegratorOutput = logicIntegrator.integratePredictions();
-                        predictedDataSet = logicIntegratorOutput.getIntegratedDataSet();
+                        updatePredictedData(logicIntegrator.integratedData());
                     }
                     break;
                 case PSEUDO_SEQUENTIAL_INTEGRATOR:
@@ -333,8 +335,7 @@ public class ConstrainedLearningExperiment {
                                 buildLogicIntegrator();
                         }
                         if (useLogicIntegrator) {
-                            ClassifierOutputsIntegrationResults logicIntegratorOutput = logicIntegrator.integratePredictions();
-                            predictedDataSet = logicIntegratorOutput.getIntegratedDataSet();
+                            updatePredictedData(logicIntegrator.integratedData());
                         }
                     }
                     break;
@@ -372,35 +373,41 @@ public class ConstrainedLearningExperiment {
     }
 
     private void buildLogicIntegrator() {
-        for (Map.Entry<DataInstance<Vector>, Map<Label, Boolean>> dataSetEntry : trainingDataSet.entrySet()) {
-            DataInstance<Vector> instance = dataSetEntry.getKey();
-            if (!fixedLogicIntegratorDataSet.containsKey(instance))
-                fixedLogicIntegratorDataSet.put(instance, new HashMap<>());
-            for (Map.Entry<Label, Boolean> labelEntry : dataSetEntry.getValue().entrySet()) {
-                Label label = labelEntry.getKey();
-                fixedLogicIntegratorDataSet.get(instance).put(label, labelEntry.getValue());
-            }
-        }
-        for (Map.Entry<DataInstance<Vector>, Map<Label, Double>> dataSetEntry : predictedDataSet.entrySet()) {
-            DataInstance<Vector> instance = dataSetEntry.getKey();
-            if (!predictedLogicIntegratorDataSet.containsKey(instance))
-                predictedLogicIntegratorDataSet.put(instance, new HashMap<>());
-            for (Map.Entry<Label, Double> labelEntry : dataSetEntry.getValue().entrySet()) {
-                Label label = labelEntry.getKey();
-                predictedLogicIntegratorDataSet.get(instance).put(label, new HashMap<>());
-                predictedLogicIntegratorDataSet.get(instance).get(label).put(labelClassifiers.get(label).iterator().next(),
-                                                                             labelEntry.getValue());
-            }
-        }
-        LogicIntegrator.Builder logicIntegratorBuilder = new LogicIntegrator.Builder(labelClassifiers,
-                                                                                     fixedLogicIntegratorDataSet,
-                                                                                     predictedLogicIntegratorDataSet);
+        List<Integrator.Data.ObservedInstance> observedInstances = new ArrayList<>();
+        for (Map.Entry<DataInstance<Vector>, Map<Label, Boolean>> dataSetEntry : trainingDataSet.entrySet())
+            observedInstances.addAll(dataSetEntry.getValue().entrySet().stream()
+                                             .map(labelEntry -> new Integrator.Data.ObservedInstance(
+                                                     dataInstances.get(dataSetEntry.getKey()),
+                                                     labelEntry.getKey(),
+                                                     labelEntry.getValue())
+                                             ).collect(Collectors.toList()));
+        List<Integrator.Data.PredictedInstance> predictedInstances = new ArrayList<>();
+        for (Map.Entry<DataInstance<Vector>, Map<Label, Double>> dataSetEntry : predictedDataSet.entrySet())
+            predictedInstances.addAll(dataSetEntry.getValue().entrySet().stream()
+                                              .map(labelEntry -> new Integrator.Data.PredictedInstance(
+                                                      dataInstances.get(dataSetEntry.getKey()),
+                                                      labelEntry.getKey(),
+                                                      labelClassifiers.get(labelEntry.getKey()),
+                                                      labelEntry.getValue())
+                                              ).collect(Collectors.toList()));
+        LogicIntegrator.Builder logicIntegratorBuilder =
+                new LogicIntegrator.Builder(new Integrator.Data<>(predictedInstances),
+                                            new Integrator.Data<>(observedInstances));
         for (Constraint constraint : constraints.getConstraints())
             if (constraint instanceof MutualExclusionConstraint)
                 logicIntegratorBuilder.addConstraint((MutualExclusionConstraint) constraint);
             else if (constraint instanceof SubsumptionConstraint)
                 logicIntegratorBuilder.addConstraint((SubsumptionConstraint) constraint);
         logicIntegrator = logicIntegratorBuilder.build();
+    }
+
+    private void updatePredictedData(Integrator.Data<Integrator.Data.PredictedInstance> integratedData) {
+        predictedDataSet = new HashMap<>();
+        for (Integrator.Data.PredictedInstance instance : integratedData) {
+            DataInstance<Vector> dataInstance = dataInstances.inverse().get(instance.instanceId());
+            predictedDataSet.computeIfAbsent(dataInstance, key -> new HashMap<>());
+            predictedDataSet.get(dataInstance).put(instance.label(), instance.value());
+        }
     }
 
     private int labelInstance(Learning learning,
@@ -434,9 +441,13 @@ public class ConstrainedLearningExperiment {
                                 break;
                             }
                     }
-                    DataInstance<Vector> dataInstance = new DataInstance<>(predictedInstance.name(), predictedInstance.features());
                     if (useLogicIntegrator)
-                        logicIntegrator.fixDataInstanceLabel(dataInstance, instanceLabelEntry.getKey(), instanceLabelEntry.getValue());
+                        logicIntegrator.fixDataInstanceLabel(
+                                dataInstances.get(new DataInstance<>(predictedInstance.name(),
+                                                                     predictedInstance.features())),
+                                instanceLabelEntry.getKey(),
+                                instanceLabelEntry.getValue()
+                        );
                     break;
                 }
         }
@@ -913,10 +924,10 @@ public class ConstrainedLearningExperiment {
                 FileWriter writer = new FileWriter(filePath);
                 writer.write("Training Data Set:\n");
                 for (Label label : labels)
-                    writer.write("\t" + label.getName() + ": {" + trainingDataSetStatistics.get(label).toString() + " }\n");
+                    writer.write("\t" + label.name() + ": {" + trainingDataSetStatistics.get(label).toString() + " }\n");
                 writer.write("Testing Data Set:\n");
                 for (Label label : labels)
-                    writer.write("\t" + label.getName() + ": {" + testingDataSetStatistics.get(label).toString() + " }\n");
+                    writer.write("\t" + label.name() + ": {" + testingDataSetStatistics.get(label).toString() + " }\n");
                 writer.close();
             } catch (IOException e) {
                 logger.error("An exception was thrown while trying to export a set of data set statistics.", e);
@@ -1009,7 +1020,7 @@ public class ConstrainedLearningExperiment {
                 uniqueNames.add(name);
                 String labelName = labeledInstanceEntry.getValue();
                 Label label = new Label(labelName);
-                Set<String> negativeLabels = labels.stream().map(Label::getName).collect(Collectors.toSet());
+                Set<String> negativeLabels = labels.stream().map(Label::name).collect(Collectors.toSet());
                 negativeLabels.remove(labelName);
                 if (!trainingDataSet.containsKey(dataInstance))
                     trainingDataSet.put(dataInstance, new HashMap<>());
@@ -1040,7 +1051,7 @@ public class ConstrainedLearningExperiment {
                     if (!evaluationUniqueNames.contains(name)) {
                         evaluationUniqueNames.add(name);
                         String labelName = lineParts[lineParts.length - 1];
-                        Set<String> negativeLabels = labels.stream().map(Label::getName).collect(Collectors.toSet());
+                        Set<String> negativeLabels = labels.stream().map(Label::name).collect(Collectors.toSet());
                         negativeLabels.remove(labelName);
                         if (!evaluationDataSet.containsKey(dataInstance))
                             evaluationDataSet.put(dataInstance, new HashMap<>());
@@ -1120,7 +1131,7 @@ public class ConstrainedLearningExperiment {
                 uniqueNames.add(name);
                 String labelName = labeledInstanceEntry.getValue();
                 Label label = new Label(labelName);
-                Set<String> negativeLabels = labels.stream().map(Label::getName).collect(Collectors.toSet());
+                Set<String> negativeLabels = labels.stream().map(Label::name).collect(Collectors.toSet());
                 negativeLabels.remove(labelName);
                 if (!trainingDataSet.containsKey(dataInstance))
                     trainingDataSet.put(dataInstance, new HashMap<>());
@@ -1155,7 +1166,7 @@ public class ConstrainedLearningExperiment {
                     if (!evaluationUniqueNames.contains(name)) {
                         evaluationUniqueNames.add(name);
                         String labelName = lineParts[0];
-                        Set<String> negativeLabels = labels.stream().map(Label::getName).collect(Collectors.toSet());
+                        Set<String> negativeLabels = labels.stream().map(Label::name).collect(Collectors.toSet());
                         negativeLabels.remove(labelName);
                         if (!evaluationDataSet.containsKey(dataInstance))
                             evaluationDataSet.put(dataInstance, new HashMap<>());
@@ -1225,7 +1236,7 @@ public class ConstrainedLearningExperiment {
             String nounPhraseType = nounPhraseParts[0];
             String nounPhrase = nounPhraseParts[1];
             Set<String> positiveLabels = labeledNounPhraseEntry.getValue();
-            Set<String> negativeLabels = labels.stream().map(Label::getName).collect(Collectors.toSet());
+            Set<String> negativeLabels = labels.stream().map(Label::name).collect(Collectors.toSet());
             negativeLabels.removeAll(positiveLabels);
             Vector features;
             if (!featureMap.containsKey(nounPhrase)) {
@@ -1484,7 +1495,7 @@ public class ConstrainedLearningExperiment {
 ////        workingDirectory = "/home/eplatani/active_learning/data/Experiment NELL 11 Class - LogicIteration";
 //        String cplFeatureMapDirectory = "/Volumes/Macintosh HD/Users/Anthony/Development/Data Sets/NELL/Server/all-pairs/all-pairs-OC-2011-02-02-smallcontexts50-gz";
 ////        String cplFeatureMapDirectory = "/nell/data/all-pairs-dir/all-pairs-OC-2011-02-02-smallcontexts50-gz";
-//        dataSet = importNELLDataSet(cplFeatureMapDirectory, workingDirectory, negativeToPositiveTrainingExamplesRatio, 0, 0);
+//        dataSet = importNELLData(cplFeatureMapDirectory, workingDirectory, negativeToPositiveTrainingExamplesRatio, 0, 0);
 
 //        // IRIS Data Set Experiment
 //        logger.info("Running IRIS experiment...");

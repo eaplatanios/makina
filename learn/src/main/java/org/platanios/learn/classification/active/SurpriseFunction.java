@@ -1,6 +1,6 @@
 package org.platanios.learn.classification.active;
 
-import org.platanios.learn.math.MathUtilities;
+import org.platanios.math.MathUtilities;
 
 /**
  * @author Emmanouil Antonios Platanios
@@ -10,7 +10,7 @@ public enum SurpriseFunction {
         @Override
         public double surprise(double probability) {
             if (probability == 0)
-                return -Math.log(probability + epsilon);
+                return -Math.log(epsilon);
             return -Math.log(probability);
         }
     },

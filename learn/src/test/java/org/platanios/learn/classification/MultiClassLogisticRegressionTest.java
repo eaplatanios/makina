@@ -2,9 +2,9 @@ package org.platanios.learn.classification;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.platanios.learn.math.MathUtilities;
-import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.matrix.Vectors;
+import org.platanios.math.MathUtilities;
+import org.platanios.math.matrix.Vector;
+import org.platanios.math.matrix.Vectors;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

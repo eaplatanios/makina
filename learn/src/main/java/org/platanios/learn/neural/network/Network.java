@@ -1,9 +1,9 @@
 package org.platanios.learn.neural.network;
 
-import org.platanios.learn.math.matrix.Matrix;
-import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.matrix.Vectors;
-import org.platanios.learn.optimization.function.AbstractFunction;
+import org.platanios.math.matrix.Matrix;
+import org.platanios.math.matrix.Vector;
+import org.platanios.math.matrix.Vectors;
+import org.platanios.optimization.function.AbstractFunction;
 
 /**
  * @author Emmanouil Antonios Platanios

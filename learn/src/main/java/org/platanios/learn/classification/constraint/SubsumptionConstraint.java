@@ -3,7 +3,7 @@ package org.platanios.learn.classification.constraint;
 import org.platanios.learn.classification.Label;
 import org.platanios.learn.classification.active.ConstrainedLearning;
 import org.platanios.learn.data.DataInstance;
-import org.platanios.learn.math.matrix.Vector;
+import org.platanios.math.matrix.Vector;
 
 import java.util.Map;
 

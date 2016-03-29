@@ -1,10 +1,10 @@
 package org.platanios.learn.neural.graph;
 
 import org.platanios.learn.graph.Graph;
-import org.platanios.learn.math.matrix.Matrix;
-import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.matrix.VectorNorm;
-import org.platanios.learn.math.matrix.Vectors;
+import org.platanios.math.matrix.Matrix;
+import org.platanios.math.matrix.Vector;
+import org.platanios.math.matrix.VectorNorm;
+import org.platanios.math.matrix.Vectors;
 import org.platanios.learn.neural.activation.SigmoidFunction;
 import org.platanios.learn.neural.network.Network;
 import org.platanios.learn.neural.network.NetworkBuilder;

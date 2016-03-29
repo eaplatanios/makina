@@ -3,10 +3,10 @@ package org.platanios.learn.classification;
 import org.platanios.learn.data.DataSet;
 import org.platanios.learn.data.DataSetInMemory;
 import org.platanios.learn.data.PredictedDataInstance;
-import org.platanios.learn.math.matrix.SparseVector;
-import org.platanios.learn.math.matrix.Vector;
-import org.platanios.learn.math.matrix.VectorType;
-import org.platanios.learn.math.matrix.Vectors;
+import org.platanios.math.matrix.SparseVector;
+import org.platanios.math.matrix.Vector;
+import org.platanios.math.matrix.VectorType;
+import org.platanios.math.matrix.Vectors;
 
 import java.io.IOException;
 import java.nio.charset.Charset;

@@ -4,7 +4,7 @@
 //import org.platanios.learn.classification.Utilities;
 //import org.platanios.learn.data.DataSet;
 //import org.platanios.learn.data.PredictedDataInstance;
-//import org.platanios.learn.math.matrix.Vector;
+//import org.platanios.math.matrix.Vector;
 //
 ///**
 // * @author Emmanouil Antonios Platanios
