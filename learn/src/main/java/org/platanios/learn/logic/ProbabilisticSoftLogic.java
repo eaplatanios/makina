@@ -303,7 +303,7 @@ public final class ProbabilisticSoftLogic {
 //                        .relativeTolerance(1e-6)
                         .loggingLevel(0)
                         .build();
-        Vector result = solver.solve();
+        Vector result = objectiveFunction.getNumberOfVariables() > 0 ? solver.solve() : Vectors.dense(0);
         this.solverBuilder = solverBuilder.initialPoint(solver.currentPoint);
         List<GroundPredicate> groundPredicates = new ArrayList<>();
         for (int internalId = 0; internalId < result.size(); internalId++) {

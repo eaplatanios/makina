@@ -1497,13 +1497,13 @@ public class ConstrainedLearningExperiment {
 ////        String cplFeatureMapDirectory = "/nell/data/all-pairs-dir/all-pairs-OC-2011-02-02-smallcontexts50-gz";
 //        dataSet = importNELLData(cplFeatureMapDirectory, workingDirectory, negativeToPositiveTrainingExamplesRatio, 0, 0);
 
-//        // IRIS Data Set Experiment
-//        logger.info("Running IRIS experiment...");
-//        numberOfExperimentRepetitions = 10;
-//        numberOfExamplesToPickPerIteration = 1;
-//        maximumNumberOfIterations = 1000;
-//        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment IRIS - LogicIteration";
-//        dataSet = importISOLETDataSet(workingDirectory, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
+        // IRIS Data Set Experiment
+        logger.info("Running IRIS experiment...");
+        numberOfExperimentRepetitions = 10;
+        numberOfExamplesToPickPerIteration = 1;
+        maximumNumberOfIterations = 1000;
+        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment IRIS - LogicIteration";
+        dataSet = importISOLETDataSet(workingDirectory, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
 
 //        // DNA Data Set Experiment
 //        logger.info("Running DNA experiment...");
@@ -1513,13 +1513,13 @@ public class ConstrainedLearningExperiment {
 //        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment DNA - LogicIteration";
 //        dataSet = importLIBSVMDataSet(workingDirectory, true, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
 
-        // LETTER Data Set Experiment
-        logger.info("Running LETTER experiment...");
-        numberOfExperimentRepetitions = 10;
-        numberOfExamplesToPickPerIteration = 1000;
-        maximumNumberOfIterations = 100000;
-        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment LETTER - LogicIteration";
-        dataSet = importLIBSVMDataSet(workingDirectory, false, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
+//        // LETTER Data Set Experiment
+//        logger.info("Running LETTER experiment...");
+//        numberOfExperimentRepetitions = 10;
+//        numberOfExamplesToPickPerIteration = 1000;
+//        maximumNumberOfIterations = 100000;
+//        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment LETTER - LogicIteration";
+//        dataSet = importLIBSVMDataSet(workingDirectory, false, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
 
 //        // PENDIGITS Data Set Experiment
 //        logger.info("Running PENDIGITS experiment...");

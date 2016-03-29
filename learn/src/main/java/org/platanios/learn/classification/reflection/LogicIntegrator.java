@@ -379,7 +379,10 @@ public final class LogicIntegrator extends Integrator {
                             assignment = new ArrayList<>(2);
                             assignment.add(instanceKeysMap.inverse().get(instance.instanceId()));
                             assignment.add(labelKeysMap.inverse().get(label));
-                            mutualExclusionRulePredicatesCopy.add(logicManager.addGroundPredicate(labelPredicate, assignment, null));
+                            if (logicManager.checkIfGroundPredicateExists(labelPredicate, assignment))
+                                mutualExclusionRulePredicatesCopy.add(logicManager.getGroundPredicate(labelPredicate, assignment));
+                            else
+                                mutualExclusionRulePredicatesCopy.add(logicManager.addGroundPredicate(labelPredicate, assignment, null));
                             assignment = new ArrayList<>(2);
                             assignment.add(labelKeysMap.inverse().get(instance.label()));
                             assignment.add(labelKeysMap.inverse().get(label));
@@ -394,7 +397,10 @@ public final class LogicIntegrator extends Integrator {
                         assignment = new ArrayList<>(2);
                         assignment.add(instanceKeysMap.inverse().get(instance.instanceId()));
                         assignment.add(labelKeysMap.inverse().get(childLabel));
-                        subsumptionRulePredicatesCopy.add(logicManager.addGroundPredicate(labelPredicate, assignment, null));
+                        if (logicManager.checkIfGroundPredicateExists(labelPredicate, assignment))
+                            subsumptionRulePredicatesCopy.add(logicManager.getGroundPredicate(labelPredicate, assignment));
+                        else
+                            subsumptionRulePredicatesCopy.add(logicManager.addGroundPredicate(labelPredicate, assignment, null));
                         assignment = new ArrayList<>(2);
                         assignment.add(labelKeysMap.inverse().get(instance.label()));
                         assignment.add(labelKeysMap.inverse().get(childLabel));

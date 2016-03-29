@@ -320,22 +320,6 @@ public class ErrorEstimationExperiment {
                     results.madErrorWeightedVariance,
                     results.madLabelWeightedMean,
                     results.madLabelWeightedVariance);
-//                    RESULTS_DECIMAL_FORMAT.format(results.madErrorRankMean),
-//                    RESULTS_DECIMAL_FORMAT.format(results.madErrorRankVariance),
-//                    RESULTS_DECIMAL_FORMAT.format(results.mseErrorMean),
-//                    RESULTS_DECIMAL_FORMAT.format(results.mseErrorVariance),
-//                    RESULTS_DECIMAL_FORMAT.format(results.madErrorMean),
-//                    RESULTS_DECIMAL_FORMAT.format(results.madErrorVariance),
-//                    RESULTS_DECIMAL_FORMAT.format(results.madLabelMean),
-//                    RESULTS_DECIMAL_FORMAT.format(results.madLabelVariance),
-//                    RESULTS_DECIMAL_FORMAT.format(results.madErrorRankWeightedMean),
-//                    RESULTS_DECIMAL_FORMAT.format(results.madErrorRankWeightedVariance),
-//                    RESULTS_DECIMAL_FORMAT.format(results.mseErrorWeightedMean),
-//                    RESULTS_DECIMAL_FORMAT.format(results.mseErrorWeightedVariance),
-//                    RESULTS_DECIMAL_FORMAT.format(results.madErrorWeightedMean),
-//                    RESULTS_DECIMAL_FORMAT.format(results.madErrorWeightedVariance),
-//                    RESULTS_DECIMAL_FORMAT.format(results.madLabelWeightedMean),
-//                    RESULTS_DECIMAL_FORMAT.format(results.madLabelWeightedVariance));
     }
 
     private static class Results {
