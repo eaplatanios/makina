@@ -44,18 +44,25 @@ public class ReceiverOperatingCharacteristic<T extends Vector, S> extends CurveE
                 (truePositivesNumber + epsilon) / (truePositivesNumber + falseNegativesNumber + epsilon)
         ));
         double areaUnderCurve = 0;
-        if (numberOfCurvePoints < 0) { // TODO: This is not totally correct -- think of what happens when two predictions have the same probability.
-            for (PredictedDataInstance<T, S> prediction : predictions) {
-                if (groundTruth.apply(prediction)) {
-                    truePositivesNumber++;
-                    falseNegativesNumber--;
-                } else {
-                    falsePositivesNumber++;
-                    trueNegativesNumber--;
-                }
+        if (numberOfCurvePoints < 0) {
+            for (int predictionIndex = 0; predictionIndex < predictions.size(); predictionIndex++) {
+                do {
+                    if (groundTruth.apply(predictions.get(predictionIndex))) {
+                        truePositivesNumber++;
+                        falseNegativesNumber--;
+                    } else {
+                        falsePositivesNumber++;
+                        trueNegativesNumber--;
+                    }
+                    predictionIndex++;
+                    if (predictionIndex == predictions.size())
+                        break;
+                } while (predictions.get(predictionIndex - 1).equals(predictions.get(predictionIndex)));
+                if (predictionIndex < predictions.size())
+                    predictionIndex--;
                 points.add(new CurvePoint(
-                        (falsePositivesNumber + epsilon) / (falsePositivesNumber + trueNegativesNumber + epsilon),
-                        (truePositivesNumber + epsilon) / (truePositivesNumber + falseNegativesNumber + epsilon)
+                        computeFalsePositiveRate(trueNegativesNumber, falsePositivesNumber),
+                        computeTruePositiveRate(truePositivesNumber, falseNegativesNumber)
                 ));
                 int k = points.size() - 1;
                 areaUnderCurve += 0.5
@@ -81,8 +88,8 @@ public class ReceiverOperatingCharacteristic<T extends Vector, S> extends CurveE
                         break;
                 }
                 points.add(new CurvePoint(
-                        (falsePositivesNumber + epsilon) / (falsePositivesNumber + trueNegativesNumber + epsilon),
-                        (truePositivesNumber + epsilon) / (truePositivesNumber + falseNegativesNumber + epsilon)
+                        computeFalsePositiveRate(trueNegativesNumber, falsePositivesNumber),
+                        computeTruePositiveRate(truePositivesNumber, falseNegativesNumber)
                 ));
                 int k = points.size() - 1;
                 areaUnderCurve += 0.5
@@ -94,6 +101,20 @@ public class ReceiverOperatingCharacteristic<T extends Vector, S> extends CurveE
         }
         curves.put(name, new Curve(name, points));
         areaUnderCurves.put(name, areaUnderCurve);
+    }
+
+    private static double computeFalsePositiveRate(int trueNegativesNumber, int falsePositivesNumber) {
+        if (falsePositivesNumber + trueNegativesNumber > 0)
+            return (double) falsePositivesNumber / (falsePositivesNumber + trueNegativesNumber);
+        else
+            return 1.0;
+    }
+
+    private static double computeTruePositiveRate(int truePositivesNumber, int falseNegativesNumber) {
+        if (truePositivesNumber + falseNegativesNumber > 0)
+            return (double) truePositivesNumber / (truePositivesNumber + falseNegativesNumber);
+        else
+            return 1.0;
     }
 
     @Override
@@ -109,5 +130,46 @@ public class ReceiverOperatingCharacteristic<T extends Vector, S> extends CurveE
     @Override
     protected String getVerticalAxisName() {
         return "True Positive Rate";
+    }
+
+    public static double areaUnderTheCurve(List<Boolean> observedLabels, List<Double> predictions) {
+        double areaUnderCurve = 0.0;
+        int truePositivesNumber = 0;
+        int trueNegativesNumber = 0;
+        int falsePositivesNumber = 0;
+        int falseNegativesNumber = 0;
+        double previousFalsePositiveRate = 0.0;
+        double previousTruePositiveRate = 1.0;
+        double currentFalsePositiveRate;
+        double currentTruePositiveRate;
+        for (int predictionIndex = 0; predictionIndex < predictions.size(); predictionIndex++)
+            if (observedLabels.get(predictionIndex))
+                falseNegativesNumber++;
+            else
+                trueNegativesNumber++;
+        for (int predictionIndex = 0; predictionIndex < predictions.size(); predictionIndex++) {
+            do {
+                if (observedLabels.get(predictionIndex)) {
+                    truePositivesNumber++;
+                    falseNegativesNumber--;
+                } else {
+                    falsePositivesNumber++;
+                    trueNegativesNumber--;
+                }
+                predictionIndex++;
+                if (predictionIndex == predictions.size())
+                    break;
+            } while (predictions.get(predictionIndex - 1).equals(predictions.get(predictionIndex)));
+            if (predictionIndex < predictions.size())
+                predictionIndex--;
+            currentFalsePositiveRate = computeFalsePositiveRate(trueNegativesNumber, falsePositivesNumber);
+            currentTruePositiveRate = computeTruePositiveRate(truePositivesNumber, falseNegativesNumber);
+            areaUnderCurve += 0.5
+                    * (currentFalsePositiveRate - previousFalsePositiveRate)
+                    * (currentTruePositiveRate + previousTruePositiveRate);
+            previousFalsePositiveRate = currentFalsePositiveRate;
+            previousTruePositiveRate = currentTruePositiveRate;
+        }
+        return areaUnderCurve;
     }
 }
