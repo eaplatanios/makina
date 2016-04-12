@@ -72,16 +72,16 @@ public abstract class Integrator {
         }
 
         public static abstract class Instance {
-            private final int instanceId;
+            private final int id;
             private final Label label;
 
-            public Instance(int instanceId, Label label) {
-                this.instanceId = instanceId;
+            public Instance(int id, Label label) {
+                this.id = id;
                 this.label = label;
             }
 
-            public int instanceId() {
-                return instanceId;
+            public int id() {
+                return id;
             }
 
             public Label label() {
@@ -92,8 +92,8 @@ public abstract class Integrator {
         public static class ObservedInstance extends Instance {
             private final boolean value;
 
-            public ObservedInstance(int instanceID, Label label, boolean value) {
-                super(instanceID, label);
+            public ObservedInstance(int id, Label label, boolean value) {
+                super(id, label);
                 this.value = value;
             }
 
@@ -103,17 +103,23 @@ public abstract class Integrator {
         }
 
         public static class PredictedInstance extends Instance {
-            private final int classifierId;
+            private final int functionId;
             private final double value;
 
-            public PredictedInstance(int instanceID, Label label, int classifierId, double value) {
-                super(instanceID, label);
-                this.classifierId = classifierId;
+            public PredictedInstance(int id, Label label, double value) {
+                super(id, label);
+                this.functionId = -1;
                 this.value = value;
             }
 
-            public int classifierId() {
-                return classifierId;
+            public PredictedInstance(int id, Label label, int functionId, double value) {
+                super(id, label);
+                this.functionId = functionId;
+                this.value = value;
+            }
+
+            public int functionId() {
+                return functionId;
             }
 
             public double value() {
@@ -150,12 +156,12 @@ public abstract class Integrator {
 
         public static class Instance {
             private final Label label;
-            private final int classifierID;
+            private final int functionId;
             private final double errorRate;
 
-            public Instance(Label label, int classifierID, double errorRate) {
+            public Instance(Label label, int functionId, double errorRate) {
                 this.label = label;
-                this.classifierID = classifierID;
+                this.functionId = functionId;
                 this.errorRate = errorRate;
             }
 
@@ -163,8 +169,8 @@ public abstract class Integrator {
                 return label;
             }
 
-            public int classifierID() {
-                return classifierID;
+            public int functionId() {
+                return functionId;
             }
 
             public double errorRate() {

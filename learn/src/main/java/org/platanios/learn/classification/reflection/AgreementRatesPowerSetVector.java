@@ -12,7 +12,7 @@ import java.util.Map;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class AgreementRatesPowerSetVector extends PowerSetVector {
+final class AgreementRatesPowerSetVector extends PowerSetVector {
     /**
      * Constructs a power set indexed vector, holding the agreement rates, stored as a one-dimensional array and
      * initializes the values of those agreement rates to the sample agreement rates computed from the observed outputs
@@ -62,8 +62,8 @@ public class AgreementRatesPowerSetVector extends PowerSetVector {
                                BiMap<Integer, Integer> functionIdsMap) {
         Map<Integer, Map<Integer, Boolean>> dataMap = new HashMap<>();
         predictedData.stream().forEach(
-                instance -> dataMap.computeIfAbsent(instance.instanceId(), key -> new HashMap<>())
-                        .put(functionIdsMap.get(instance.classifierId()), instance.value() >= 0.5)
+                instance -> dataMap.computeIfAbsent(instance.id(), key -> new HashMap<>())
+                        .put(functionIdsMap.get(instance.functionId()), instance.value() >= 0.5)
         );
         int[] counts = new int[array.length];
         for (Map<Integer, Boolean> dataMapInstance : dataMap.values())

@@ -14,7 +14,7 @@ import java.util.Random;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class HierarchicalCoupledBayesianIntegrator extends Integrator {
+public final class HierarchicalCoupledBayesianIntegrator extends Integrator {
     private final Random random = new Random();
     private final RandomDataGenerator randomDataGenerator = new RandomDataGenerator();
     private final BiMap<Label, Integer> labelKeysMap = HashBiMap.create();
@@ -142,7 +142,7 @@ public class HierarchicalCoupledBayesianIntegrator extends Integrator {
         numberOfBurnInSamples = builder.numberOfBurnInSamples;
         numberOfThinningSamples = builder.numberOfThinningSamples;
         numberOfSamples = builder.numberOfSamples;
-        numberOfFunctions = (int) data.stream().map(Integrator.Data.PredictedInstance::classifierId).distinct().count();
+        numberOfFunctions = (int) data.stream().map(Integrator.Data.PredictedInstance::functionId).distinct().count();
         numberOfDomains = (int) data.stream().map(Integrator.Data.PredictedInstance::label).distinct().count();
         maximumNumberOfClusters = numberOfDomains * numberOfFunctions + numberOfFunctions;
         hdp = new FastHDPPrior(numberOfDomains, numberOfFunctions, builder.alpha, builder.gamma);
@@ -162,12 +162,12 @@ public class HierarchicalCoupledBayesianIntegrator extends Integrator {
             domainInstances[p] = new int[numberOfSamples];
             domainFunctions[p] = new int[numberOfSamples];
             domainValues[p] = new double[numberOfSamples];
-            numberOfInstances[p] = (int) data.stream().filter(instance -> instance.label().equals(labelKeysMap.inverse().get(domain))).map(Data.PredictedInstance::instanceId).distinct().count();
+            numberOfInstances[p] = (int) data.stream().filter(instance -> instance.label().equals(labelKeysMap.inverse().get(domain))).map(Data.PredictedInstance::id).distinct().count();
             int[] numberOfClassifiersPerInstance = new int[numberOfInstances[p]];
             int[] sampleIndex = {0};
             data.stream().filter(instance -> instance.label().equals(labelKeysMap.inverse().get(domain))).forEach(instance -> {
-                int i = instanceKeysMap.get(domain).computeIfAbsent(instance.instanceId(), key -> instanceKeysMap.get(domain).size());
-                int j = classifierKeysMap.computeIfAbsent(instance.classifierId(), key -> classifierKeysMap.size());
+                int i = instanceKeysMap.get(domain).computeIfAbsent(instance.id(), key -> instanceKeysMap.get(domain).size());
+                int j = classifierKeysMap.computeIfAbsent(instance.functionId(), key -> classifierKeysMap.size());
                 double value = instance.value() >= 0.5 ? 1.0 : 0.0;
                 domainInstances[domain][sampleIndex[0]] = i;
                 domainFunctions[domain][sampleIndex[0]] = j;
@@ -182,7 +182,7 @@ public class HierarchicalCoupledBayesianIntegrator extends Integrator {
                 int count =
                         (int) data.stream()
                                 .filter(instance -> instance.label().equals(labelKeysMap.inverse().get(domain))
-                                        && instance.classifierId() == classifierKeysMap.inverse().get(functionIndex))
+                                        && instance.functionId() == classifierKeysMap.inverse().get(functionIndex))
                                 .count();
                 predictionsByFunctionInstances[p][j] = new int[count];
                 predictionsByFunctionValues[p][j] = new double[count];
@@ -196,8 +196,8 @@ public class HierarchicalCoupledBayesianIntegrator extends Integrator {
                 predictionsByInstanceValues[p][i] = new double[numberOfClassifiersPerInstance[i]];
             }
             data.stream().filter(instance -> instance.label().equals(labelKeysMap.inverse().get(domain))).forEach(instance -> {
-                int i = instanceKeysMap.get(domain).get(instance.instanceId());
-                int j = classifierKeysMap.get(instance.classifierId());
+                int i = instanceKeysMap.get(domain).get(instance.id());
+                int j = classifierKeysMap.get(instance.functionId());
                 double value = instance.value() >= 0.5 ? 1.0 : 0.0;
                 predictionsByFunctionInstances[domain][j][byFunctionSampleIndex[j][0]] = i;
                 predictionsByFunctionValues[domain][j][byFunctionSampleIndex[j][0]] = value;
@@ -293,7 +293,6 @@ public class HierarchicalCoupledBayesianIntegrator extends Integrator {
                 labelMeans[p][i] /= numberOfSamples;
                 integratedDataInstances.add(new Data.PredictedInstance(instanceKeysMap.get(p).inverse().get(i),
                                                                        labelKeysMap.inverse().get(p),
-                                                                       -1,
                                                                        labelMeans[p][i]));
             }
         }

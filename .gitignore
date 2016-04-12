@@ -1,9 +1,6 @@
 .gradle/
 .idea/
-build/
-experiment/build/
-learn/build/
-utilities/build/
+**/build/
 *.iml
 *.class
 *.bin

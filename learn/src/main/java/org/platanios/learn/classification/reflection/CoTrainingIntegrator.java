@@ -347,7 +347,7 @@ public class CoTrainingIntegrator<T extends Vector, S> {
                                 .build();
                 integrator.errorRates = new double[integrator.errorRates.length];
                 errorEstimation.errorRates().stream()
-                        .forEach(errorRate -> integrator.errorRates[errorRate.classifierID()] = errorRate.errorRate());
+                        .forEach(errorRate -> integrator.errorRates[errorRate.functionId()] = errorRate.errorRate());
                 for (int i = 0; i < predictionResults.size(); i++) {
                     DataSet<PredictedDataInstance<T, S>> dataSet = predictionResults.get(i).get();
                     for (int j = 0; j < dataSet.size(); j++) {
@@ -389,7 +389,7 @@ public class CoTrainingIntegrator<T extends Vector, S> {
                 Integrator errorEstimation = new BayesianIntegrator.Builder(new Integrator.Data<>(predictedInstances)).build();
                 integrator.errorRates = new double[integrator.errorRates.length];
                 errorEstimation.errorRates().stream()
-                        .forEach(errorRate -> integrator.errorRates[errorRate.classifierID()] = errorRate.errorRate());
+                        .forEach(errorRate -> integrator.errorRates[errorRate.functionId()] = errorRate.errorRate());
                 for (int i = 0; i < predictionResults.size(); i++) {
                     DataSet<PredictedDataInstance<T, S>> dataSet = predictionResults.get(i).get();
                     for (int j = 0; j < dataSet.size(); j++) {

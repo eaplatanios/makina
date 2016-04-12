@@ -404,7 +404,7 @@ public class ConstrainedLearningExperiment {
     private void updatePredictedData(Integrator.Data<Integrator.Data.PredictedInstance> integratedData) {
         predictedDataSet = new HashMap<>();
         for (Integrator.Data.PredictedInstance instance : integratedData) {
-            DataInstance<Vector> dataInstance = dataInstances.inverse().get(instance.instanceId());
+            DataInstance<Vector> dataInstance = dataInstances.inverse().get(instance.id());
             predictedDataSet.computeIfAbsent(dataInstance, key -> new HashMap<>());
             predictedDataSet.get(dataInstance).put(instance.label(), instance.value());
         }

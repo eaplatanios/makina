@@ -67,7 +67,7 @@ public class TuffyLogicIntegrator extends Integrator {
 
         private void extractClassifiersSet(Integrator.Data<Integrator.Data.PredictedInstance> predictedData) {
             predictedData.stream()
-                    .map(Integrator.Data.PredictedInstance::classifierId)
+                    .map(Integrator.Data.PredictedInstance::functionId)
                     .forEach(classifiers::add);
         }
 
@@ -131,11 +131,11 @@ public class TuffyLogicIntegrator extends Integrator {
         final long[] currentLabelKey = {0};
         final long[] currentClassifierKey = {0};
         if (builder.observedData != null)
-            builder.observedData.stream().map(Integrator.Data.Instance::instanceId).forEach(instance -> {
+            builder.observedData.stream().map(Integrator.Data.Instance::id).forEach(instance -> {
                 if (!instanceKeysMap.containsValue(instance))
                     instanceKeysMap.put(currentInstanceKey[0]++, instance);
             });
-        data.stream().map(Integrator.Data.Instance::instanceId).forEach(instance -> {
+        data.stream().map(Integrator.Data.Instance::id).forEach(instance -> {
             if (!instanceKeysMap.containsValue(instance))
                 instanceKeysMap.put(currentInstanceKey[0]++, instance);
         });
@@ -184,12 +184,12 @@ public class TuffyLogicIntegrator extends Integrator {
             }
             if (builder.observedData != null)
                 for (Integrator.Data.ObservedInstance instance : builder.observedData)
-                    evidenceFileWriter.write("Label(" + instanceKeysMap.inverse().get(instance.instanceId()) + ", "
+                    evidenceFileWriter.write("Label(" + instanceKeysMap.inverse().get(instance.id()) + ", "
                                                      + labelKeysMap.inverse().get(instance.label()) + ")\n");
             for (Integrator.Data.PredictedInstance instance : data)
                 evidenceFileWriter.write(instance.value() + "\tLabelPrediction("
-                                                 + instanceKeysMap.inverse().get(instance.instanceId()) + ", "
-                                                 + classifierKeysMap.inverse().get(instance.classifierId()) + ", "
+                                                 + instanceKeysMap.inverse().get(instance.id()) + ", "
+                                                 + classifierKeysMap.inverse().get(instance.functionId()) + ", "
                                                  + labelKeysMap.inverse().get(instance.label()) + ")\n");
             evidenceFileWriter.close();
             File queryFile = new File(workingDirectory + "/query.db");

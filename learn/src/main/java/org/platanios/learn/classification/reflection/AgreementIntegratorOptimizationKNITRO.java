@@ -19,7 +19,7 @@ import java.util.*;
  *
  * @author Emmanouil Antonios Platanios
  */
-class AgreementIntegratorOptimizationKNITRO implements AgreementIntegratorOptimization {
+final class AgreementIntegratorOptimizationKNITRO implements AgreementIntegratorOptimization {
     /** Logger object used by this class. */
     private static final Logger logger = LogManager.getLogger("Error Rates Estimation / KNITRO Optimization");
 

@@ -78,7 +78,7 @@ public final class LogicIntegrator extends Integrator {
 
         private void extractClassifiersSet(Integrator.Data<Integrator.Data.PredictedInstance> predictedData) {
             predictedData.stream()
-                    .map(Integrator.Data.PredictedInstance::classifierId)
+                    .map(Integrator.Data.PredictedInstance::functionId)
                     .forEach(classifiers::add);
         }
 
@@ -149,11 +149,11 @@ public final class LogicIntegrator extends Integrator {
         final long[] currentLabelKey = {0};
         final long[] currentClassifierKey = {0};
         if (builder.observedData != null)
-            builder.observedData.stream().map(Integrator.Data.Instance::instanceId).forEach(instance -> {
+            builder.observedData.stream().map(Integrator.Data.Instance::id).forEach(instance -> {
                 if (!instanceKeysMap.containsValue(instance))
                     instanceKeysMap.put(currentInstanceKey[0]++, instance);
             });
-        data.stream().map(Integrator.Data.Instance::instanceId).forEach(instance -> {
+        data.stream().map(Integrator.Data.Instance::id).forEach(instance -> {
             if (!instanceKeysMap.containsValue(instance))
                 instanceKeysMap.put(currentInstanceKey[0]++, instance);
         });
@@ -318,7 +318,7 @@ public final class LogicIntegrator extends Integrator {
             for (Integrator.Data.ObservedInstance instance : builder.observedData)
                 logicManager.addOrReplaceGroundPredicate(labelPredicate,
                                                          Arrays.asList(
-                                                                 instanceKeysMap.inverse().get(instance.instanceId()),
+                                                                 instanceKeysMap.inverse().get(instance.id()),
                                                                  labelKeysMap.inverse().get(instance.label())
                                                          ),
                                                          instance.value() ? 1.0 : 0.0);
@@ -328,8 +328,8 @@ public final class LogicIntegrator extends Integrator {
         }
         for (Integrator.Data.PredictedInstance instance : data) {
 //            List<Long> assignment = new ArrayList<>(3);
-//            assignment.add(instanceKeysMap.inverse().get(instance.instanceId()));
-//            assignment.add(classifierKeysMap.inverse().get(instance.classifierId()));
+//            assignment.add(instanceKeysMap.inverse().get(instance.id()));
+//            assignment.add(classifierKeysMap.inverse().get(instance.functionId()));
 //            assignment.add(labelKeysMap.inverse().get(instance.label()));
 //            if (logicManager.checkIfGroundPredicateExists(labelPredictionPredicate, assignment))
 //                continue;
@@ -339,8 +339,8 @@ public final class LogicIntegrator extends Integrator {
             List<GroundPredicate> ensembleRulePredicates = new ArrayList<>(3);
             List<GroundPredicate> majorityVotePriorRulePredicates = new ArrayList<>(2);
             List<Long> assignment = new ArrayList<>(3);
-            assignment.add(instanceKeysMap.inverse().get(instance.instanceId()));
-            assignment.add(classifierKeysMap.inverse().get(instance.classifierId()));
+            assignment.add(instanceKeysMap.inverse().get(instance.id()));
+            assignment.add(classifierKeysMap.inverse().get(instance.functionId()));
             assignment.add(labelKeysMap.inverse().get(instance.label()));
             if (logicManager.checkIfGroundPredicateExists(labelPredictionPredicate, assignment))
                 continue;
@@ -352,14 +352,14 @@ public final class LogicIntegrator extends Integrator {
             ensembleRulePredicates.add(predictionPredicate);
             majorityVotePriorRulePredicates.add(predictionPredicate);
             assignment = new ArrayList<>(2);
-            assignment.add(classifierKeysMap.inverse().get(instance.classifierId()));
+            assignment.add(classifierKeysMap.inverse().get(instance.functionId()));
             assignment.add(labelKeysMap.inverse().get(instance.label()));
             GroundPredicate errorPredicate = logicManager.addGroundPredicate(errorRatePredicate, assignment, null);
             mutualExclusionRulePredicates.add(errorPredicate);
             subsumptionRulePredicates.add(errorPredicate);
             ensembleRulePredicates.add(errorPredicate);
             assignment = new ArrayList<>(2);
-            assignment.add(instanceKeysMap.inverse().get(instance.instanceId()));
+            assignment.add(instanceKeysMap.inverse().get(instance.id()));
             assignment.add(labelKeysMap.inverse().get(instance.label()));
             GroundPredicate integratedLabelPredicate = logicManager.addGroundPredicate(labelPredicate, assignment, null);
             ensembleRulePredicates.add(integratedLabelPredicate);
@@ -368,8 +368,8 @@ public final class LogicIntegrator extends Integrator {
             pslBuilder.addRule(ensembleRulePredicates, new boolean[] { true, true, true }, 2, 1);
             pslBuilder.addRule(ensembleRulePredicates, new boolean[] { false, false, true }, 2, 1);
             pslBuilder.addRule(ensembleRulePredicates, new boolean[] { false, true, false }, 2, 1);
-            pslBuilder.addRule(majorityVotePriorRulePredicates, new boolean[] { true, false }, 2, 1);
-            pslBuilder.addRule(majorityVotePriorRulePredicates, new boolean[] { false, true }, 2, 1);
+            pslBuilder.addRule(majorityVotePriorRulePredicates, new boolean[] { true, false }, 1, 1);
+            pslBuilder.addRule(majorityVotePriorRulePredicates, new boolean[] { false, true }, 1, 1);
             for (Constraint constraint : constraints) {
                 if (constraint instanceof MutualExclusionConstraint) {
                     List<Label> labelsList = new ArrayList<>(((MutualExclusionConstraint) constraint).getLabels());
@@ -377,7 +377,7 @@ public final class LogicIntegrator extends Integrator {
                         for (Label label : labelsList.stream().filter(l -> !l.equals(instance.label())).collect(Collectors.toList())) {
                             List<GroundPredicate> mutualExclusionRulePredicatesCopy = new ArrayList<>(mutualExclusionRulePredicates);
                             assignment = new ArrayList<>(2);
-                            assignment.add(instanceKeysMap.inverse().get(instance.instanceId()));
+                            assignment.add(instanceKeysMap.inverse().get(instance.id()));
                             assignment.add(labelKeysMap.inverse().get(label));
                             if (logicManager.checkIfGroundPredicateExists(labelPredicate, assignment))
                                 mutualExclusionRulePredicatesCopy.add(logicManager.getGroundPredicate(labelPredicate, assignment));
@@ -395,7 +395,7 @@ public final class LogicIntegrator extends Integrator {
                         Label childLabel = ((SubsumptionConstraint) constraint).getChildLabel();
                         List<GroundPredicate> subsumptionRulePredicatesCopy = new ArrayList<>(subsumptionRulePredicates);
                         assignment = new ArrayList<>(2);
-                        assignment.add(instanceKeysMap.inverse().get(instance.instanceId()));
+                        assignment.add(instanceKeysMap.inverse().get(instance.id()));
                         assignment.add(labelKeysMap.inverse().get(childLabel));
                         if (logicManager.checkIfGroundPredicateExists(labelPredicate, assignment))
                             subsumptionRulePredicatesCopy.add(logicManager.getGroundPredicate(labelPredicate, assignment));
@@ -420,11 +420,11 @@ public final class LogicIntegrator extends Integrator {
         assignment.add(labelKeysMap.inverse().get(label));
         psl.fixDataInstanceLabel(logicManager.addOrReplaceGroundPredicate(labelPredicate, assignment, value ? 1.0 : 0.0));
         data.stream()
-                .filter(instance -> instance.instanceId() == instanceID && instance.label() == label)
+                .filter(instance -> instance.id() == instanceID && instance.label() == label)
                 .forEach(instance -> {
                     List<Long> instanceAssignment = new ArrayList<>(3);
                     instanceAssignment.add(instanceKeysMap.inverse().get(instanceID));
-                    instanceAssignment.add(classifierKeysMap.inverse().get(instance.classifierId()));
+                    instanceAssignment.add(classifierKeysMap.inverse().get(instance.functionId()));
                     instanceAssignment.add(labelKeysMap.inverse().get(label));
                     logicManager.removeGroundPredicate(labelPredictionPredicate, instanceAssignment);
                 });
@@ -479,16 +479,16 @@ public final class LogicIntegrator extends Integrator {
             for (Label label : labels)
                 data.stream()
                         .filter(i -> i.label().equals(label))
-                        .map(Data.PredictedInstance::classifierId)
+                        .map(Data.PredictedInstance::functionId)
                         .distinct()
                         .forEach(classifierID -> {
                             int[] numberOfErrorSamples = new int[] { 0 };
                             int[] numberOfSamples = new int[] { 0 };
                             data.stream()
-                                    .filter(i -> i.label().equals(label) && i.classifierId() == classifierID)
+                                    .filter(i -> i.label().equals(label) && i.functionId() == classifierID)
                                     .forEach(instance -> {
-                                        if ((instance.value() >= 0.5 && !integratedPredictions.get(label).get(instance.instanceId()))
-                                                || (instance.value() < 0.5 && integratedPredictions.get(label).get(instance.instanceId())))
+                                        if ((instance.value() >= 0.5 && !integratedPredictions.get(label).get(instance.id()))
+                                                || (instance.value() < 0.5 && integratedPredictions.get(label).get(instance.id())))
                                             numberOfErrorSamples[0]++;
                                         numberOfSamples[0]++;
                                     });

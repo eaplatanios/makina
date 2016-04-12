@@ -74,12 +74,12 @@ public final class MajorityVoteIntegrator extends Integrator {
             data.stream()
                     .filter(i -> i.label().equals(label))
                     .forEach(instance -> {
-                        if (!predictions.containsKey(instance.instanceId()))
-                            predictions.put(instance.instanceId(), new int[2]);
+                        if (!predictions.containsKey(instance.id()))
+                            predictions.put(instance.id(), new int[2]);
                         if (instance.value() >= 0.5)
-                            predictions.get(instance.instanceId())[0]++;
+                            predictions.get(instance.id())[0]++;
                         else
-                            predictions.get(instance.instanceId())[1]++;
+                            predictions.get(instance.id())[1]++;
                     });
             for (Map.Entry<Integer, int[]> prediction : predictions.entrySet())
                 if (prediction.getValue()[0] >= prediction.getValue()[1]) {
@@ -91,16 +91,16 @@ public final class MajorityVoteIntegrator extends Integrator {
                 }
             data.stream()
                     .filter(i -> i.label().equals(label))
-                    .map(Data.PredictedInstance::classifierId)
+                    .map(Data.PredictedInstance::functionId)
                     .distinct()
                     .forEach(classifierID -> {
                         int[] numberOfErrorSamples = new int[] { 0 };
                         int[] numberOfSamples = new int[] { 0 };
                         data.stream()
-                                .filter(i -> i.label().equals(label) && i.classifierId() == classifierID)
+                                .filter(i -> i.label().equals(label) && i.functionId() == classifierID)
                                 .forEach(instance -> {
-                                    if ((instance.value() >= 0.5 && !integratedPredictions.get(label).get(instance.instanceId()))
-                                            || (instance.value() < 0.5 && integratedPredictions.get(label).get(instance.instanceId())))
+                                    if ((instance.value() >= 0.5 && !integratedPredictions.get(label).get(instance.id()))
+                                            || (instance.value() < 0.5 && integratedPredictions.get(label).get(instance.id())))
                                         numberOfErrorSamples[0]++;
                                     numberOfSamples[0]++;
                                 });

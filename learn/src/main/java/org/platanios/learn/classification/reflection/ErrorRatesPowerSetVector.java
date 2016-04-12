@@ -13,7 +13,7 @@ import java.util.Map;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class ErrorRatesPowerSetVector extends PowerSetVector {
+final class ErrorRatesPowerSetVector extends PowerSetVector {
     /**
      * Constructs a power set indexed vector, holding the error rates, stored as a one-dimensional array and initializes
      * the values of those error rates to be 0.25 for the individual function error rates and a computed computeValue for the
@@ -99,11 +99,11 @@ public class ErrorRatesPowerSetVector extends PowerSetVector {
                                BiMap<Integer, Integer> functionIdsMap) {
         Map<Integer, Map<Integer, Boolean>> dataMap = new HashMap<>();
         predictedData.stream().forEach(
-                instance -> dataMap.computeIfAbsent(instance.instanceId(), key -> new HashMap<>())
-                        .put(functionIdsMap.get(instance.classifierId()), instance.value() >= 0.5)
+                instance -> dataMap.computeIfAbsent(instance.id(), key -> new HashMap<>())
+                        .put(functionIdsMap.get(instance.functionId()), instance.value() >= 0.5)
         );
         Map<Integer, Boolean> observedDataMap = new HashMap<>();
-        observedData.stream().forEach(instance -> observedDataMap.put(instance.instanceId(), instance.value()));
+        observedData.stream().forEach(instance -> observedDataMap.put(instance.id(), instance.value()));
         int[] counts = new int[array.length];
         for (Map.Entry<Integer, Map<Integer, Boolean>> dataMapEntry : dataMap.entrySet()) {
             if (!observedDataMap.containsKey(dataMapEntry.getKey()))

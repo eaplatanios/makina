@@ -108,16 +108,16 @@ public class PrecisionRecall<T extends Vector, S> extends CurveEvaluation<T, S> 
         areaUnderCurves.put(name, areaUnderCurve);
     }
 
-    private static double computePrecision(int truePositivesNumber, int falseNegativesNumber) {
+    private static double computePrecision(double truePositivesNumber, double falseNegativesNumber) {
         if (truePositivesNumber + falseNegativesNumber > 0)
-            return (double) truePositivesNumber / (truePositivesNumber + falseNegativesNumber);
+            return truePositivesNumber / (truePositivesNumber + falseNegativesNumber);
         else
             return 1.0;
     }
 
-    private static double computeRecall(int truePositivesNumber, int falsePositivesNumber) {
+    private static double computeRecall(double truePositivesNumber, double falsePositivesNumber) {
         if (truePositivesNumber + falsePositivesNumber > 0)
-            return (double) truePositivesNumber / (truePositivesNumber + falsePositivesNumber);
+            return truePositivesNumber / (truePositivesNumber + falsePositivesNumber);
         else
             return 1.0;
     }
@@ -138,31 +138,43 @@ public class PrecisionRecall<T extends Vector, S> extends CurveEvaluation<T, S> 
     }
 
     public static double areaUnderTheCurve(List<Boolean> observedLabels, List<Double> predictions) {
+        List<Double> scores = new ArrayList<>();
+        for (int predictionIndex = 0; predictionIndex < predictions.size(); predictionIndex++) {
+            int tiePredictionsCount = 0;
+            int tiePositivePredictionsCount = 0;
+            do {
+                tiePredictionsCount++;
+                if (observedLabels.get(predictionIndex))
+                    tiePositivePredictionsCount++;
+                predictionIndex++;
+                if (predictionIndex == predictions.size())
+                    break;
+            } while (predictions.get(predictionIndex - 1).equals(predictions.get(predictionIndex)));
+            int previousScoresSize = scores.size();
+            for (int scoreIndex = 0; scoreIndex < predictionIndex - previousScoresSize; scoreIndex++)
+                scores.add((double) tiePositivePredictionsCount / tiePredictionsCount);
+            if (predictionIndex < predictions.size())
+                predictionIndex--;
+        }
         double areaUnderCurve = 0.0;
-        int truePositivesNumber = 0;
-        int falsePositivesNumber = 0;
-        int falseNegativesNumber = 0;
+        double truePositivesNumber = 0;
+        double falsePositivesNumber = 0;
+        double falseNegativesNumber = 0;
         double previousPrecision = 0.0;
         double previousRecall = 1.0;
         double currentPrecision;
         double currentRecall;
         for (int predictionIndex = 0; predictionIndex < predictions.size(); predictionIndex++)
             if (observedLabels.get(predictionIndex))
-                falseNegativesNumber++;
+                falseNegativesNumber += scores.get(predictionIndex);
         for (int predictionIndex = 0; predictionIndex < predictions.size(); predictionIndex++) {
-            do {
-                if (observedLabels.get(predictionIndex)) {
-                    falseNegativesNumber--;
-                    truePositivesNumber++;
-                } else {
-                    falsePositivesNumber++;
-                }
-                predictionIndex++;
-                if (predictionIndex == predictions.size())
-                    break;
-            } while (predictions.get(predictionIndex - 1).equals(predictions.get(predictionIndex)));
-            if (predictionIndex < predictions.size())
-                predictionIndex--;
+            double score = scores.get(predictionIndex);
+            if (observedLabels.get(predictionIndex)) {
+                falseNegativesNumber -= score;
+                truePositivesNumber += score;
+            } else {
+                falsePositivesNumber += score;
+            }
             currentPrecision = computePrecision(truePositivesNumber, falseNegativesNumber);
             currentRecall = computeRecall(truePositivesNumber, falsePositivesNumber);
             areaUnderCurve += 0.5 * (currentPrecision - previousPrecision) * (currentRecall + previousRecall);

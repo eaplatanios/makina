@@ -17,7 +17,7 @@ import java.util.*;
  *
  * @author Emmanouil Antonios Platanios
  */
-class AgreementIntegratorOptimizationIpOpt extends Ipopt implements AgreementIntegratorOptimization {
+final class AgreementIntegratorOptimizationIpOpt extends Ipopt implements AgreementIntegratorOptimization {
     /** Logger object used by this class. */
     private static final Logger logger = LogManager.getLogger("Error Rates Estimation / IpOpt Optimization");
 

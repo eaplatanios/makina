@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  *
  * @author Emmanouil Antonios Platanios
  */
-public class AgreementIntegrator extends Integrator {
+public final class AgreementIntegrator extends Integrator {
     private static final Logger logger = LogManager.getLogger("Classification / Agreement Integrator");
 
     private final BiMap<Integer, Integer> functionIdsMap = HashBiMap.create();
@@ -102,7 +102,7 @@ public class AgreementIntegrator extends Integrator {
     private AgreementIntegrator(AbstractBuilder<?> builder) {
         super(builder);
         data.stream()
-                .map(Data.PredictedInstance::classifierId)
+                .map(Data.PredictedInstance::functionId)
                 .distinct()
                 .forEach(id -> functionIdsMap.put(id, functionIdsMap.size()));
         highestOrder = builder.highestOrder == -1 ? functionIdsMap.size() : builder.highestOrder;
@@ -190,22 +190,21 @@ public class AgreementIntegrator extends Integrator {
             Map<Integer, Double> errorRatesMap = new HashMap<>();
             errorRates.stream()
                     .filter(instance -> instance.label().equals(label))
-                    .forEach(instance -> errorRatesMap.put(instance.classifierID(), instance.errorRate()));
+                    .forEach(instance -> errorRatesMap.put(instance.functionId(), instance.errorRate()));
             Map<Integer, double[]> predictions = new HashMap<>();
             data.stream()
                     .filter(i -> i.label().equals(label))
                     .forEach(instance -> {
-                        if (!predictions.containsKey(instance.instanceId()))
-                            predictions.put(instance.instanceId(), new double[2]);
-                        predictions.get(instance.instanceId())[0] += instance.value() * (1 - errorRatesMap.get(instance.classifierId()));
-                        predictions.get(instance.instanceId())[1] += (1 - instance.value()) * (1 - errorRatesMap.get(instance.classifierId()));
+                        if (!predictions.containsKey(instance.id()))
+                            predictions.put(instance.id(), new double[2]);
+                        predictions.get(instance.id())[0] += instance.value() * (1 - errorRatesMap.get(instance.functionId()));
+                        predictions.get(instance.id())[1] += (1 - instance.value()) * (1 - errorRatesMap.get(instance.functionId()));
                     });
             integratedDataInstances.addAll(
                     predictions.entrySet().stream()
                             .map(prediction -> new Data.PredictedInstance(
                                     prediction.getKey(),
                                     label,
-                                    -1,
                                     prediction.getValue()[0] / (prediction.getValue()[0] + prediction.getValue()[1])
                             ))
                             .collect(Collectors.toList()));

@@ -17,7 +17,7 @@ import static org.apache.commons.math3.special.Beta.logBeta;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class CoupledBayesianIntegrator extends Integrator {
+public final class CoupledBayesianIntegrator extends Integrator {
     private final Random random = new Random();
     private final RandomDataGenerator randomDataGenerator = new RandomDataGenerator();
     private final BiMap<Label, Integer> labelKeysMap = HashBiMap.create();
@@ -133,7 +133,7 @@ public class CoupledBayesianIntegrator extends Integrator {
         numberOfBurnInSamples = builder.numberOfBurnInSamples;
         numberOfThinningSamples = builder.numberOfThinningSamples;
         numberOfSamples = builder.numberOfSamples;
-        numberOfFunctions = (int) data.stream().map(Data.PredictedInstance::classifierId).distinct().count();
+        numberOfFunctions = (int) data.stream().map(Data.PredictedInstance::functionId).distinct().count();
         numberOfDomains = (int) data.stream().map(Data.PredictedInstance::label).distinct().count();
         dpPrior = new DirichletProcess(builder.alpha, numberOfDomains);
         instanceKeysMap = new ArrayList<>();
@@ -148,11 +148,11 @@ public class CoupledBayesianIntegrator extends Integrator {
             domainInstances[p] = new int[numberOfSamples];
             domainFunctions[p] = new int[numberOfSamples];
             domainValues[p] = new double[numberOfSamples];
-            numberOfInstances[p] = (int) data.stream().filter(instance -> instance.label().equals(labelKeysMap.inverse().get(domain))).map(Data.PredictedInstance::instanceId).distinct().count();
+            numberOfInstances[p] = (int) data.stream().filter(instance -> instance.label().equals(labelKeysMap.inverse().get(domain))).map(Data.PredictedInstance::id).distinct().count();
             int[] sampleIndex = {0};
             data.stream().filter(instance -> instance.label().equals(labelKeysMap.inverse().get(domain))).forEach(instance -> {
-                int i = instanceKeysMap.get(domain).computeIfAbsent(instance.instanceId(), key -> instanceKeysMap.get(domain).size());
-                int j = classifierKeysMap.computeIfAbsent(instance.classifierId(), key -> classifierKeysMap.size());
+                int i = instanceKeysMap.get(domain).computeIfAbsent(instance.id(), key -> instanceKeysMap.get(domain).size());
+                int j = classifierKeysMap.computeIfAbsent(instance.functionId(), key -> classifierKeysMap.size());
                 double value = instance.value() >= 0.5 ? 1.0 : 0.0;
                 domainInstances[domain][sampleIndex[0]] = i;
                 domainFunctions[domain][sampleIndex[0]] = j;
@@ -251,7 +251,6 @@ public class CoupledBayesianIntegrator extends Integrator {
                 labelMeans[p][i] /= numberOfSamples;
                 integratedDataInstances.add(new Data.PredictedInstance(instanceKeysMap.get(p).inverse().get(i),
                                                                        labelKeysMap.inverse().get(p),
-                                                                       -1,
                                                                        labelMeans[p][i]));
             }
         }

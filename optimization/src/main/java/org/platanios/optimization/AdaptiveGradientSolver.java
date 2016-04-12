@@ -5,6 +5,8 @@ import org.platanios.math.matrix.Vectors;
 import org.platanios.optimization.function.AbstractStochasticFunction;
 
 /**
+ * TODO: Add step size parameter.
+ *
  * @author Emmanouil Antonios Platanios
  */
 public final class AdaptiveGradientSolver extends AbstractStochasticIterativeSolver {
