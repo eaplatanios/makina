@@ -1,6 +1,6 @@
 jar {
     manifest {
-        attributes 'Implementation-Title': 'org.platanios.optimization',
+        attributes 'Implementation-Title': 'makina.optimization',
                    'Implementation-Version': version
     }
 }
@@ -8,11 +8,14 @@ jar {
 dependencies {
     compile project(':math')
     compile 'org.apache.commons:commons-lang3:3.3.2'
+    compile 'org.scalanlp:breeze_2.11:0.11.2'
+    compile 'org.scalanlp:breeze-natives_2.11:0.12'
+    testCompile 'org.scalatest:scalatest_2.11:2.2.6'
 }
 
 task allJar(type: Jar) {
     manifest {
-        attributes 'Implementation-Title': 'org.platanios.optimization',
+        attributes 'Implementation-Title': 'makina.optimization',
                    'Implementation-Version': version
     }
     baseName = project.name + '-all'

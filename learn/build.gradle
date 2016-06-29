@@ -1,6 +1,6 @@
 jar {
     manifest {
-        attributes 'Implementation-Title': 'org.platanios.learn',
+        attributes 'Implementation-Title': 'makina.learn',
                    'Implementation-Version': version
     }
 }
@@ -18,12 +18,15 @@ dependencies {
 //    compile 'org.hibernate:hibernate-core:4.3.9.Final'
     compile 'mysql:mysql-connector-java:5.1.35'
     compile 'org.mariadb.jdbc:mariadb-java-client:1.1.7'
+    compile 'org.scalanlp:breeze_2.11:0.11.2'
+    compile 'org.scalanlp:breeze-natives_2.11:0.12'
+    compile 'org.scalatest:scalatest_2.11:2.2.6'
     compile fileTree(dir: 'lib', include: '*.jar')
 }
 
 task allJar(type: Jar) {
     manifest {
-        attributes 'Implementation-Title': 'org.platanios.learn',
+        attributes 'Implementation-Title': 'makina.learn',
                    'Implementation-Version': version
     }
     baseName = project.name + '-all'

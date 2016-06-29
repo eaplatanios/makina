@@ -1,6 +1,6 @@
 jar {
     manifest {
-        attributes 'Implementation-Title': 'org.platanios.math',
+        attributes 'Implementation-Title': 'makina.math',
                    'Implementation-Version': version
     }
 }
@@ -13,7 +13,7 @@ dependencies {
 
 task allJar(type: Jar) {
     manifest {
-        attributes 'Implementation-Title': 'org.platanios.math',
+        attributes 'Implementation-Title': 'makina.math',
                    'Implementation-Version': version
     }
     baseName = project.name + '-all'
