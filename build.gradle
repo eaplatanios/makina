@@ -48,12 +48,13 @@ subprojects {
 
     apply plugin: 'application'
 
-    mainClassName = System.getProperty('mainClass')
-    applicationDefaultJvmArgs = ['-Xmx6G']
-
     run {
-        if ( project.hasProperty('appArgs') ) {
-            args Eval.me(appArgs)
-        }
+        applicationDefaultJvmArgs = ['-Xmx6G']
+        mainClassName = System.getProperty('class')
+        if (mainClassName == null)
+            mainClassName = ""
+        def arguments = System.getProperty('args')
+        if (arguments != null)
+            args arguments.split(' ')
     }
 }
