@@ -17,8 +17,8 @@ All the code related to the "Estimating Accuracy from Unlabeled Data" papers is 
 All of these classes implement the same abstract class, `Integrator`. In order to construct an `Integrator` object you
 need to use the corresponding `Builder` class (it is an inner class in all the integrator implementation classes -- for
 more information on the software structure, look into the
-[builder design pattern](https://en.wikipedia.org/wiki/Builder_pattern){:target="_blank"}). The following line of code
-creates an instance of the `BayesianIntegrator`:
+<a href="https://en.wikipedia.org/wiki/Builder_pattern" target="_blank">builder design pattern</a>). The following line
+of code creates an instance of the `BayesianIntegrator`:
 
 ```java
 Integrator integrator = new BayesianIntegrator.Builder(predictedData)
