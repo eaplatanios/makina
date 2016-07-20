@@ -1,6 +1,6 @@
 # Makina Library
 
-[![Build Status](https://travis-ci.com/eaplatanios/makina.svg?token=VBPxqvcGXTuwbjkVyN68&branch=master)](https://travis-ci.com/eaplatanios/makina)
+[![Build Status](https://travis-ci.org/eaplatanios/makina.svg?branch=master)](https://travis-ci.org/eaplatanios/makina)
 [![Codecov](https://img.shields.io/codecov/c/token/zQjCSZzyUk/github/eaplatanios/org.platanios.svg)](https://codecov.io/github/eaplatanios/org.platanios?branch=master)
 
 ## Estimating Accuracy from Unlabeled Data
