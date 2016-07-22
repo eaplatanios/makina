@@ -56,6 +56,10 @@ public final class BayesianIntegrator extends Integrator {
             super(data);
         }
 
+        private AbstractBuilder(String predictedDataFilename) {
+            super(predictedDataFilename);
+        }
+
         public T labelsPriorAlpha(double labelsPriorAlpha) {
             this.labelsPriorAlpha = labelsPriorAlpha;
             return self();
@@ -99,6 +103,10 @@ public final class BayesianIntegrator extends Integrator {
     public static class Builder extends AbstractBuilder<Builder> {
         public Builder(Data<Data.PredictedInstance> data) {
             super(data);
+        }
+
+        public Builder(String predictedDataFilename) {
+            super(predictedDataFilename);
         }
 
         @Override
@@ -177,13 +185,17 @@ public final class BayesianIntegrator extends Integrator {
     }
 
     @Override
-    public ErrorRates errorRates() {
+    public ErrorRates errorRates(boolean forceComputation) {
+        if (forceComputation)
+            needsInference = true;
         performInference();
         return errorRates;
     }
 
     @Override
-    public Integrator.Data<Data.PredictedInstance> integratedData() {
+    public Integrator.Data<Data.PredictedInstance> integratedData(boolean forceComputation) {
+        if (forceComputation)
+            needsInference = true;
         performInference();
         return integratedData;
     }

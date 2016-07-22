@@ -64,8 +64,12 @@ public final class HierarchicalCoupledBayesianIntegrator extends Integrator {
         private int numberOfThinningSamples = 10;
         private int numberOfSamples = 200;
 
-        public AbstractBuilder(Integrator.Data<Integrator.Data.PredictedInstance> data) {
+        public AbstractBuilder(Data<Data.PredictedInstance> data) {
             super(data);
+        }
+
+        private AbstractBuilder(String predictedDataFilename) {
+            super(predictedDataFilename);
         }
 
         public T labelsPriorAlpha(double labelsPriorAlpha) {
@@ -119,8 +123,12 @@ public final class HierarchicalCoupledBayesianIntegrator extends Integrator {
     }
 
     public static class Builder extends AbstractBuilder<Builder> {
-        public Builder(Integrator.Data<Integrator.Data.PredictedInstance> data) {
+        public Builder(Data<Data.PredictedInstance> data) {
             super(data);
+        }
+
+        public Builder(String predictedDataFilename) {
+            super(predictedDataFilename);
         }
 
         @Override
@@ -132,7 +140,7 @@ public final class HierarchicalCoupledBayesianIntegrator extends Integrator {
     private HierarchicalCoupledBayesianIntegrator(AbstractBuilder<?> builder) {
         super(builder);
         data.stream()
-                .map(Integrator.Data.PredictedInstance::label)
+                .map(Data.PredictedInstance::label)
                 .distinct()
                 .forEach(label -> labelKeysMap.computeIfAbsent(label, key -> labelKeysMap.size()));
         labelsPriorAlpha = builder.labelsPriorAlpha;
@@ -142,8 +150,8 @@ public final class HierarchicalCoupledBayesianIntegrator extends Integrator {
         numberOfBurnInSamples = builder.numberOfBurnInSamples;
         numberOfThinningSamples = builder.numberOfThinningSamples;
         numberOfSamples = builder.numberOfSamples;
-        numberOfFunctions = (int) data.stream().map(Integrator.Data.PredictedInstance::functionId).distinct().count();
-        numberOfDomains = (int) data.stream().map(Integrator.Data.PredictedInstance::label).distinct().count();
+        numberOfFunctions = (int) data.stream().map(Data.PredictedInstance::functionId).distinct().count();
+        numberOfDomains = (int) data.stream().map(Data.PredictedInstance::label).distinct().count();
         maximumNumberOfClusters = numberOfDomains * numberOfFunctions + numberOfFunctions;
         hdp = new FastHDPPrior(numberOfDomains, numberOfFunctions, builder.alpha, builder.gamma);
         instanceKeysMap = new ArrayList<>();
@@ -239,13 +247,17 @@ public final class HierarchicalCoupledBayesianIntegrator extends Integrator {
     }
 
     @Override
-    public ErrorRates errorRates() {
+    public ErrorRates errorRates(boolean forceComputation) {
+        if (forceComputation)
+            needsInference = true;
         performInference();
         return errorRates;
     }
 
     @Override
-    public Integrator.Data<Data.PredictedInstance> integratedData() {
+    public Data<Data.PredictedInstance> integratedData(boolean forceComputation) {
+        if (forceComputation)
+            needsInference = true;
         performInference();
         return integratedData;
     }
@@ -278,7 +290,7 @@ public final class HierarchicalCoupledBayesianIntegrator extends Integrator {
                     labelMeans[p][i] += labelsSamples[sampleNumber][p][i];
             }
         }
-        List<Integrator.Data.PredictedInstance> integratedDataInstances = new ArrayList<>();
+        List<Data.PredictedInstance> integratedDataInstances = new ArrayList<>();
         List<ErrorRates.Instance> errorRatesInstances = new ArrayList<>();
         // Compute values for the means and the variances
         for (int p = 0; p < numberOfDomains; p++) {

@@ -25,6 +25,10 @@ public final class MajorityVoteIntegrator extends Integrator {
             extractLabelsSet();
         }
 
+        private AbstractBuilder(String predictedDataFilename) {
+            super(predictedDataFilename);
+        }
+
         private void extractLabelsSet() {
             data.stream().map(Data.Instance::label).forEach(labels::add);
         }
@@ -39,6 +43,10 @@ public final class MajorityVoteIntegrator extends Integrator {
             super(data);
         }
 
+        public Builder(String predictedDataFilename) {
+            super(predictedDataFilename);
+        }
+
         @Override
         protected Builder self() {
             return this;
@@ -51,13 +59,17 @@ public final class MajorityVoteIntegrator extends Integrator {
     }
 
     @Override
-    public ErrorRates errorRates() {
+    public ErrorRates errorRates(boolean forceComputation) {
+        if (forceComputation)
+            needsComputeIntegratedDataAndErrorRates = true;
         computeIntegratedDataAndErrorRates();
         return errorRates;
     }
 
     @Override
-    public Data<Data.PredictedInstance> integratedData() {
+    public Data<Data.PredictedInstance> integratedData(boolean forceComputation) {
+        if (forceComputation)
+            needsComputeIntegratedDataAndErrorRates = true;
         computeIntegratedDataAndErrorRates();
         return integratedData;
     }

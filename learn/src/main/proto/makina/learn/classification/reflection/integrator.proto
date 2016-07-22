@@ -1,0 +1,34 @@
+package makina.learn.classification.reflection;
+
+option java_outer_classname = "IntegratorProtos";
+
+message ObservedInstance {
+    required int32 id = 1;
+    required string label = 2;
+    required bool value = 3;
+}
+
+message ObservedInstances {
+    repeated ObservedInstance observedInstance = 1;
+}
+
+message PredictedInstance {
+    required int32 id = 1;
+    required string label = 2;
+    required int32 functionId = 3;
+    required double value = 4;
+}
+
+message PredictedInstances {
+    repeated PredictedInstance predictedInstance = 1;
+}
+
+message ErrorRate {
+    required string label = 1;
+    required int32 functionId = 2;
+    required double value = 3;
+}
+
+message ErrorRates {
+    repeated ErrorRate errorRate = 1;
+}

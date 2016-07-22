@@ -35,20 +35,31 @@ public final class AgreementIntegrator extends Integrator {
 
     protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
             extends Integrator.AbstractBuilder<T> {
-        private Integrator.Data<Integrator.Data.ObservedInstance> observedData = null;
+        private Data<Data.ObservedInstance> observedData = null;
         private int highestOrder = -1;
         private boolean onlyEvenCardinalitySubsetsAgreements = true;
         private AgreementIntegratorObjective objectiveFunctionType = AgreementIntegratorObjective.DEPENDENCY;
         private AgreementIntegratorInternalSolver internalSolver = AgreementIntegratorInternalSolver.IP_OPT;
 
-        private AbstractBuilder(Integrator.Data<Integrator.Data.PredictedInstance> predictedData) {
+        private AbstractBuilder(Data<Data.PredictedInstance> predictedData) {
             super(predictedData);
         }
 
-        private AbstractBuilder(Integrator.Data<Integrator.Data.PredictedInstance> predictedData,
-                                Integrator.Data<Integrator.Data.ObservedInstance> observedData) {
+        private AbstractBuilder(Data<Data.PredictedInstance> predictedData, Data<Data.ObservedInstance> observedData) {
             super(predictedData);
             this.observedData = observedData;
+        }
+
+        private AbstractBuilder(String predictedDataFilename) {
+            super(predictedDataFilename);
+        }
+
+        private AbstractBuilder(String predictedDataFilename, String observedDataFilename) {
+            super(predictedDataFilename);
+            List<Data.ObservedInstance> observedInstances = new ArrayList<>();
+            if(!loadObservedInstances(observedDataFilename, observedInstances))
+                throw new RuntimeException("The observed integrator data could not be loaded from the provided file.");
+            observedData = new Data<>(observedInstances);
         }
 
         public T highestOrder(int highestOrder) {
@@ -77,13 +88,20 @@ public final class AgreementIntegrator extends Integrator {
     }
 
     public static class Builder extends AbstractBuilder<Builder> {
-        public Builder(Integrator.Data<Integrator.Data.PredictedInstance> predictedData) {
+        public Builder(Data<Data.PredictedInstance> predictedData) {
             super(predictedData);
         }
 
-        public Builder(Integrator.Data<Integrator.Data.PredictedInstance> predictedData,
-                       Integrator.Data<Integrator.Data.ObservedInstance> observedData) {
+        public Builder(Data<Data.PredictedInstance> predictedData, Data<Data.ObservedInstance> observedData) {
             super(predictedData, observedData);
+        }
+
+        public Builder(String predictedDataFilename) {
+            super(predictedDataFilename);
+        }
+
+        public Builder(String predictedDataFilename, String observedDataFilename) {
+            super(predictedDataFilename, observedDataFilename);
         }
 
         @Override
@@ -106,7 +124,7 @@ public final class AgreementIntegrator extends Integrator {
                 .distinct()
                 .forEach(id -> functionIdsMap.put(id, functionIdsMap.size()));
         highestOrder = builder.highestOrder == -1 ? functionIdsMap.size() : builder.highestOrder;
-        data.stream().map(Integrator.Data.Instance::label).distinct().forEach(label -> {
+        data.stream().map(Data.Instance::label).distinct().forEach(label -> {
             AgreementRatesPowerSetVector agreementRatesVector = new AgreementRatesPowerSetVector(
                     functionIdsMap.size(),
                     highestOrder,
@@ -155,7 +173,9 @@ public final class AgreementIntegrator extends Integrator {
     }
 
     @Override
-    public ErrorRates errorRates() {
+    public ErrorRates errorRates(boolean forceComputation) {
+        if (forceComputation)
+            needsComputeErrorRates = true;
         computeErrorRates();
         return errorRates;
     }
@@ -177,7 +197,9 @@ public final class AgreementIntegrator extends Integrator {
     }
 
     @Override
-    public Data<Data.PredictedInstance> integratedData() {
+    public Data<Data.PredictedInstance> integratedData(boolean forceComputation) {
+        if (forceComputation)
+            needsComputeIntegratedData = true;
         computeIntegratedData();
         return integratedData;
     }

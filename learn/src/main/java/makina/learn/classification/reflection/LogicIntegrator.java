@@ -51,19 +51,18 @@ public final class LogicIntegrator extends Integrator {
         private final Set<Label> labels = new HashSet<>();
         private final Set<Integer> classifiers = new HashSet<>();
 
-        private final Integrator.Data<Integrator.Data.ObservedInstance> observedData;
+        private final Data<Data.ObservedInstance> observedData;
 
         private LogicManager logicManager = new InMemoryLogicManager(new LukasiewiczLogic());
         private Set<Constraint> constraints = new HashSet<>();
         private boolean sampleErrorRatesEstimates = false;
         private boolean logProgress = false;
 
-        public AbstractBuilder(Integrator.Data<Integrator.Data.PredictedInstance> predictedData) {
+        public AbstractBuilder(Data<Data.PredictedInstance> predictedData) {
             this(predictedData, null);
         }
 
-        public AbstractBuilder(Integrator.Data<Integrator.Data.PredictedInstance> predictedData,
-                               Integrator.Data<Integrator.Data.ObservedInstance> observedData) {
+        public AbstractBuilder(Data<Data.PredictedInstance> predictedData, Data<Data.ObservedInstance> observedData) {
             super(predictedData);
             if (observedData != null)
                 extractLabelsSet(observedData);
@@ -72,13 +71,31 @@ public final class LogicIntegrator extends Integrator {
             this.observedData = observedData;
         }
 
-        private void extractLabelsSet(Integrator.Data<?> data) {
-            data.stream().map(Integrator.Data.Instance::label).forEach(labels::add);
+        private AbstractBuilder(String predictedDataFilename) {
+            super(predictedDataFilename);
+            extractLabelsSet(data);
+            extractClassifiersSet(data);
+            observedData = null;
         }
 
-        private void extractClassifiersSet(Integrator.Data<Integrator.Data.PredictedInstance> predictedData) {
+        private AbstractBuilder(String predictedDataFilename, String observedDataFilename) {
+            super(predictedDataFilename);
+            List<Data.ObservedInstance> observedInstances = new ArrayList<>();
+            if(!loadObservedInstances(observedDataFilename, observedInstances))
+                throw new RuntimeException("The observed integrator data could not be loaded from the provided file.");
+            observedData = new Data<>(observedInstances);
+            extractLabelsSet(observedData);
+            extractLabelsSet(data);
+            extractClassifiersSet(data);
+        }
+
+        private void extractLabelsSet(Data<?> data) {
+            data.stream().map(Data.Instance::label).forEach(labels::add);
+        }
+
+        private void extractClassifiersSet(Data<Data.PredictedInstance> predictedData) {
             predictedData.stream()
-                    .map(Integrator.Data.PredictedInstance::functionId)
+                    .map(Data.PredictedInstance::functionId)
                     .forEach(classifiers::add);
         }
 
@@ -118,13 +135,20 @@ public final class LogicIntegrator extends Integrator {
     }
 
     public static class Builder extends AbstractBuilder<Builder> {
-        public Builder(Integrator.Data<Integrator.Data.PredictedInstance> predictedData) {
+        public Builder(Data<Data.PredictedInstance> predictedData) {
             super(predictedData);
         }
 
-        public Builder(Integrator.Data<Integrator.Data.PredictedInstance> predictedData,
-                       Integrator.Data<Integrator.Data.ObservedInstance> observedData) {
+        public Builder(Data<Data.PredictedInstance> predictedData, Data<Data.ObservedInstance> observedData) {
             super(predictedData, observedData);
+        }
+
+        public Builder(String predictedDataFilename) {
+            super(predictedDataFilename);
+        }
+
+        public Builder(String predictedDataFilename, String observedDataFilename) {
+            super(predictedDataFilename, observedDataFilename);
         }
 
         @Override
@@ -149,11 +173,11 @@ public final class LogicIntegrator extends Integrator {
         final long[] currentLabelKey = {0};
         final long[] currentClassifierKey = {0};
         if (builder.observedData != null)
-            builder.observedData.stream().map(Integrator.Data.Instance::id).forEach(instance -> {
+            builder.observedData.stream().map(Data.Instance::id).forEach(instance -> {
                 if (!instanceKeysMap.containsValue(instance))
                     instanceKeysMap.put(currentInstanceKey[0]++, instance);
             });
-        data.stream().map(Integrator.Data.Instance::id).forEach(instance -> {
+        data.stream().map(Data.Instance::id).forEach(instance -> {
             if (!instanceKeysMap.containsValue(instance))
                 instanceKeysMap.put(currentInstanceKey[0]++, instance);
         });
@@ -315,7 +339,7 @@ public final class LogicIntegrator extends Integrator {
             }
         }
         if (builder.observedData != null)
-            for (Integrator.Data.ObservedInstance instance : builder.observedData)
+            for (Data.ObservedInstance instance : builder.observedData)
                 logicManager.addOrReplaceGroundPredicate(labelPredicate,
                                                          Arrays.asList(
                                                                  instanceKeysMap.inverse().get(instance.id()),
@@ -326,7 +350,7 @@ public final class LogicIntegrator extends Integrator {
             logger.info("Number of positive instances: " + data.stream().filter(i -> i.value() >= 0.5).count());
             logger.info("Number of negative instances: " + data.stream().filter(i -> i.value() < 0.5).count());
         }
-        for (Integrator.Data.PredictedInstance instance : data) {
+        for (Data.PredictedInstance instance : data) {
 //            List<Long> assignment = new ArrayList<>(3);
 //            assignment.add(instanceKeysMap.inverse().get(instance.id()));
 //            assignment.add(classifierKeysMap.inverse().get(instance.functionId()));
@@ -432,13 +456,17 @@ public final class LogicIntegrator extends Integrator {
     }
 
     @Override
-    public ErrorRates errorRates() {
+    public ErrorRates errorRates(boolean forceComputation) {
+        if (forceComputation)
+            needsInference = true;
         performInference();
         return errorRates;
     }
 
     @Override
-    public Integrator.Data<Data.PredictedInstance> integratedData() {
+    public Data<Data.PredictedInstance> integratedData(boolean forceComputation) {
+        if (forceComputation)
+            needsInference = true;
         performInference();
         return integratedData;
     }
@@ -449,7 +477,7 @@ public final class LogicIntegrator extends Integrator {
         if (logProgress)
             logger.info("Starting inference...");
         List<GroundPredicate> inferredGroundPredicates = psl.solve();
-        List<Integrator.Data.PredictedInstance> integratedInstances = new ArrayList<>();
+        List<Data.PredictedInstance> integratedInstances = new ArrayList<>();
         List<ErrorRates.Instance> errorRatesInstances = new ArrayList<>();
         Map<Label, Map<Integer, Boolean>> integratedPredictions = new HashMap<>();
         if (sampleErrorRatesEstimates)
@@ -461,7 +489,7 @@ public final class LogicIntegrator extends Integrator {
                     if (inferredGroundPredicate.getPredicate().equals(labelPredicate)) {
                         Integer instanceID = instanceKeysMap.get(inferredGroundPredicate.getArguments().get(0));
                         Label label = labelKeysMap.get(inferredGroundPredicate.getArguments().get(1));
-                        integratedInstances.add(new Integrator.Data.PredictedInstance(
+                        integratedInstances.add(new Data.PredictedInstance(
                                 instanceID, label, -1, inferredGroundPredicate.getValue())
                         );
                         if (sampleErrorRatesEstimates)
@@ -494,7 +522,7 @@ public final class LogicIntegrator extends Integrator {
                                     });
                             errorRatesInstances.add(new ErrorRates.Instance(label, classifierID, numberOfErrorSamples[0] / (double) numberOfSamples[0]));
                         });
-        integratedData = new Integrator.Data<>(integratedInstances);
+        integratedData = new Data<>(integratedInstances);
         errorRates = new ErrorRates(errorRatesInstances);
         needsInference = false;
     }
