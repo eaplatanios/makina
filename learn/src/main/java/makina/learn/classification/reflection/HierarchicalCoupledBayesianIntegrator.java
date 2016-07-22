@@ -32,7 +32,7 @@ public final class HierarchicalCoupledBayesianIntegrator extends Integrator {
     private final double labelsPriorBeta;
     private final double errorRatesPriorAlpha;
     private final double errorRatesPriorBeta;
-    private final FastHDPPrior hdp;
+    private final HierarchicalDirichletProcess hdp;
     private final int numberOfBurnInSamples;
     private final int numberOfThinningSamples;
     private final int numberOfSamples;
@@ -153,7 +153,7 @@ public final class HierarchicalCoupledBayesianIntegrator extends Integrator {
         numberOfFunctions = (int) data.stream().map(Data.PredictedInstance::functionId).distinct().count();
         numberOfDomains = (int) data.stream().map(Data.PredictedInstance::label).distinct().count();
         maximumNumberOfClusters = numberOfDomains * numberOfFunctions + numberOfFunctions;
-        hdp = new FastHDPPrior(numberOfDomains, numberOfFunctions, builder.alpha, builder.gamma);
+        hdp = new HierarchicalDirichletProcess(numberOfDomains, numberOfFunctions, builder.alpha, builder.gamma);
         instanceKeysMap = new ArrayList<>();
         numberOfInstances = new int[numberOfDomains];
         domainInstances = new int[numberOfDomains][];
@@ -353,8 +353,8 @@ public final class HierarchicalCoupledBayesianIntegrator extends Integrator {
                 double cdf[] = new double[currentNumberOfClusters];
                 double max = Double.NEGATIVE_INFINITY;
                 for (int k = 0; k < currentNumberOfClusters; k++) {
-                    int clusterID = hdp.pdf[k].topic;
-                    cdf[k] = Math.log(hdp.pdf[k].prob);
+                    int clusterID = hdp.clusterTopics[k];
+                    cdf[k] = Math.log(hdp.clusterUnnormalizedProbabilities[k]);
                     cdf[k] += errorRatesCounts[clusterAssignmentSamples[sampleNumber][p][j]][0] * Math.log(errorRatesSamples[sampleNumber][clusterID]);
                     cdf[k] += errorRatesCounts[clusterAssignmentSamples[sampleNumber][p][j]][1] * Math.log(1 - errorRatesSamples[sampleNumber][clusterID]);
                     if (max < cdf[k])
@@ -366,13 +366,13 @@ public final class HierarchicalCoupledBayesianIntegrator extends Integrator {
                     cdf[k] = Math.log(Math.exp(cdf[k - 1]) + Math.exp(cdf[k]));
                 }
                 double uniform = Math.log(random.nextDouble()) + cdf[currentNumberOfClusters - 1];
-                int newClusterID = hdp.pdf[currentNumberOfClusters - 1].topic;
-                int newTableID = hdp.pdf[currentNumberOfClusters - 1].table;
+                int newClusterID = hdp.clusterTopics[currentNumberOfClusters - 1];
+                int newTableID = hdp.clusterTables[currentNumberOfClusters - 1];
                 clusterAssignmentSamples[sampleNumber][p][j] = newClusterID;
                 for (int k = 0; k < currentNumberOfClusters - 1; k++) {
                     if (cdf[k] > uniform) {
-                    	newClusterID = hdp.pdf[k].topic;
-                    	newTableID = hdp.pdf[k].table;
+                    	newClusterID = hdp.clusterTopics[k];
+                    	newTableID = hdp.clusterTables[k];
                         clusterAssignmentSamples[sampleNumber][p][j] = newClusterID;
                         break;
                     }

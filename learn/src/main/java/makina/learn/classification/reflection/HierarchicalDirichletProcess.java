@@ -13,7 +13,7 @@ import gnu.trove.iterator.TIntIterator;
 import gnu.trove.set.hash.TIntHashSet;
 
 
-public class FastHDPPrior {
+public class HierarchicalDirichletProcess {
 
     int table_seated[][]; // Contains the table id of each item. indexed by group_id , item_location
 
@@ -39,10 +39,11 @@ public class FastHDPPrior {
     double alpha; // higher level hyper-parameter
     double gamma; // lower level hyper_parameter
 
-    public DS_HDP pdf[]; // to store clustersDistribution to be sent for sampling.
+    public final int[] clusterTables;
+    public final int[] clusterTopics;
+    public final double[] clusterUnnormalizedProbabilities;
 
-
-    public FastHDPPrior(int N, int M, double alpha, double gamma) {
+    public HierarchicalDirichletProcess(int N, int M, double alpha, double gamma) {
         int max_topic = N * M;
         table_seated = new int[N][M];
         count_seated_table = new int[N][M];
@@ -68,11 +69,10 @@ public class FastHDPPrior {
         }
         this.alpha = alpha;
         this.gamma = gamma;
-        pdf = new DS_HDP[max_topic + M];
-        for (int i = 0; i < pdf.length; i++) {
-            pdf[i] = new DS_HDP();
-        }
 
+        clusterTables = new int[max_topic + M];
+        clusterTopics = new int[max_topic + M];
+        clusterUnnormalizedProbabilities = new double[max_topic + M];
     }
 
     /**
@@ -147,8 +147,8 @@ public class FastHDPPrior {
     public int prob_table_assignment_for_item(int group_id, int item_location) {
 
         int total_positions = taken_tables[group_id].size() + taken_topics.size() + 1;
-        if (total_positions > pdf.length) {
-            total_positions = pdf.length;
+        if (total_positions > clusterUnnormalizedProbabilities.length) {
+            total_positions = clusterUnnormalizedProbabilities.length;
         }
 
         TIntIterator it = taken_tables[group_id].iterator();
@@ -159,9 +159,9 @@ public class FastHDPPrior {
         while (it.hasNext()) {
             table_id = it.next();
             topic_id = tables_topic_id[group_id][table_id];
-            pdf[position].prob = count_seated_table[group_id][table_id];
-            pdf[position].topic = topic_id;
-            pdf[position].table = table_id;
+            clusterUnnormalizedProbabilities[position] = count_seated_table[group_id][table_id];
+            clusterTopics[position] = topic_id;
+            clusterTables[position] = table_id;
 
             position++;
         }
@@ -173,9 +173,9 @@ public class FastHDPPrior {
         it = taken_topics.iterator();
         while (it.hasNext() || Double.isNaN(Math.log(gamma))) {
             topic_id = it.next();
-            pdf[position].prob = gamma * (numberOfTablesPerTopic[topic_id] / (alpha + numberOfTables));
-            pdf[position].table = table_id;
-            pdf[position].topic = topic_id;
+            clusterUnnormalizedProbabilities[position] = gamma * (numberOfTablesPerTopic[topic_id] / (alpha + numberOfTables));
+            clusterTables[position] = table_id;
+            clusterTopics[position] = topic_id;
             position++;
         }
         it = available_topcis.iterator();
@@ -183,9 +183,9 @@ public class FastHDPPrior {
             return position;
         }
         topic_id = it.next();
-        pdf[position].prob = gamma * (alpha / (alpha + numberOfTables));
-        pdf[position].table = table_id;
-        pdf[position].topic = topic_id;
+        clusterUnnormalizedProbabilities[position] = gamma * (alpha / (alpha + numberOfTables));
+        clusterTables[position] = table_id;
+        clusterTopics[position] = topic_id;
         position++;
         return position;
     }
@@ -227,16 +227,16 @@ public class FastHDPPrior {
 
         while (it.hasNext()) {
             topic_id = it.next();
-            pdf[position].prob = numberOfTablesPerTopic[topic_id];
-            pdf[position].topic = topic_id;
+            clusterUnnormalizedProbabilities[position] = numberOfTablesPerTopic[topic_id];
+            clusterTopics[position] = topic_id;
             position++;
         }
         if (available_topcis.size() == 0 || Double.isNaN(Math.log(alpha))) {
             return position;
         }
-        pdf[position].prob = alpha;
+        clusterUnnormalizedProbabilities[position] = alpha;
         it = available_topcis.iterator();
-        pdf[position].topic = it.next();
+        clusterTopics[position] = it.next();
         position++;
 
         return position;
