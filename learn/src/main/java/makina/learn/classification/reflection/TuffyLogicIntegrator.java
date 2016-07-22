@@ -22,7 +22,7 @@ import java.util.Set;
 /**
  * @author Emmanouil Antonios Platanios
  */
-public class TuffyLogicIntegrator extends Integrator {
+public final class TuffyLogicIntegrator extends Integrator {
     private static final Logger logger = LogManager.getLogger("Classification / Tuffy Logic Integrator");
 
     private final Set<Label> labels;
