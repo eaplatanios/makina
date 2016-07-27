@@ -117,6 +117,36 @@ public final class HierarchicalCoupledBayesianIntegrator extends Integrator {
             return self();
         }
 
+        public T options(String options) {
+            if (options == null || options.length() == 0)
+                return self();
+            if (options.length() < 9)
+                throw new IllegalArgumentException("Invalid number of arguments provided.");
+            String[] optionsStringParts = options.split(":");
+            if (!optionsStringParts[0].equals("-"))
+                this.numberOfBurnInSamples = Integer.parseInt(optionsStringParts[0]);
+            if (!optionsStringParts[1].equals("-"))
+                this.numberOfThinningSamples = Integer.parseInt(optionsStringParts[1]);
+            if (!optionsStringParts[2].equals("-"))
+                this.numberOfSamples = Integer.parseInt(optionsStringParts[2]);
+            if (!optionsStringParts[3].equals("-"))
+                this.alpha = Double.parseDouble(optionsStringParts[3]);
+            if (!optionsStringParts[4].equals("-"))
+                this.gamma = Double.parseDouble(optionsStringParts[4]);
+            if (!optionsStringParts[5].equals("-"))
+                this.labelsPriorAlpha = Double.parseDouble(optionsStringParts[5]);
+            if (!optionsStringParts[6].equals("-"))
+                this.labelsPriorBeta = Double.parseDouble(optionsStringParts[6]);
+            if (!optionsStringParts[7].equals("-"))
+                this.errorRatesPriorAlpha = Double.parseDouble(optionsStringParts[7]);
+            if (!optionsStringParts[8].equals("-"))
+                this.errorRatesPriorBeta = Double.parseDouble(optionsStringParts[8]);
+            if (numberOfSamples <= numberOfBurnInSamples)
+                throw new IllegalArgumentException("The total number of samples is required to be larger than the " +
+                                                           "number of burn-in samples.");
+            return self();
+        }
+
         public HierarchicalCoupledBayesianIntegrator build() {
             return new HierarchicalCoupledBayesianIntegrator(this);
         }

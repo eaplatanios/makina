@@ -82,6 +82,19 @@ public final class AgreementIntegrator extends Integrator {
             return self();
         }
 
+        public T options(String options) {
+            if (options == null || options.length() == 0)
+                return self();
+            if (options.length() < 2)
+                throw new IllegalArgumentException("Invalid number of arguments provided.");
+            String[] optionsStringParts = options.split(":");
+            if (!optionsStringParts[0].equals("-"))
+                this.highestOrder = Integer.parseInt(optionsStringParts[0]);
+            if (!optionsStringParts[1].equals("-"))
+                this.onlyEvenCardinalitySubsetsAgreements = optionsStringParts[1].equals("1");
+            return self();
+        }
+
         public AgreementIntegrator build() {
             return new AgreementIntegrator(this);
         }
@@ -212,7 +225,7 @@ public final class AgreementIntegrator extends Integrator {
             Map<Integer, Double> errorRatesMap = new HashMap<>();
             errorRates.stream()
                     .filter(instance -> instance.label().equals(label))
-                    .forEach(instance -> errorRatesMap.put(instance.functionId(), instance.errorRate()));
+                    .forEach(instance -> errorRatesMap.put(instance.functionId(), instance.value()));
             Map<Integer, double[]> predictions = new HashMap<>();
             data.stream()
                     .filter(i -> i.label().equals(label))

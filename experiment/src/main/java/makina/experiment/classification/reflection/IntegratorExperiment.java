@@ -204,17 +204,17 @@ public class IntegratorExperiment {
                 errorRatesMap.put(instance.label(), new HashMap<>());
                 sampleErrorRatesMap.put(instance.label(), new HashMap<>());
             }
-            errorRatesMap.get(instance.label()).put(instance.functionId(), instance.errorRate());
+            errorRatesMap.get(instance.label()).put(instance.functionId(), instance.value());
             Optional<Integrator.ErrorRates.Instance> sampleErrorRateResultInstance =
                     sampleErrorRates.stream()
                             .filter(i -> i.label().equals(instance.label()) && i.functionId() == instance.functionId())
                             .findFirst();
             double sampleErrorRate = 0.0;
             if (sampleErrorRateResultInstance.isPresent())
-                sampleErrorRate = sampleErrorRateResultInstance.get().errorRate();
+                sampleErrorRate = sampleErrorRateResultInstance.get().value();
             sampleErrorRatesMap.get(instance.label()).put(instance.functionId(), sampleErrorRate);
-            double seError = (instance.errorRate() - sampleErrorRate) * (instance.errorRate() - sampleErrorRate);
-            double adError = Math.abs(instance.errorRate() - sampleErrorRate);
+            double seError = (instance.value() - sampleErrorRate) * (instance.value() - sampleErrorRate);
+            double adError = Math.abs(instance.value() - sampleErrorRate);
             mseError += seError;
             madError += adError;
             mseErrorWeighted += seError / numberOfInstances.get(instance.label());
