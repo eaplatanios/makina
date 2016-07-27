@@ -115,9 +115,6 @@ public final class BayesianIntegrator extends Integrator {
                 this.errorRatesPriorAlpha = Double.parseDouble(optionsStringParts[5]);
             if (!optionsStringParts[6].equals("-"))
                 this.errorRatesPriorBeta = Double.parseDouble(optionsStringParts[6]);
-            if (numberOfSamples <= numberOfBurnInSamples)
-                throw new IllegalArgumentException("The total number of samples is required to be larger than the " +
-                                                           "number of burn-in samples.");
             return self();
         }
 

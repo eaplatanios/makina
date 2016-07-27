@@ -141,9 +141,6 @@ public final class HierarchicalCoupledBayesianIntegrator extends Integrator {
                 this.errorRatesPriorAlpha = Double.parseDouble(optionsStringParts[7]);
             if (!optionsStringParts[8].equals("-"))
                 this.errorRatesPriorBeta = Double.parseDouble(optionsStringParts[8]);
-            if (numberOfSamples <= numberOfBurnInSamples)
-                throw new IllegalArgumentException("The total number of samples is required to be larger than the " +
-                                                           "number of burn-in samples.");
             return self();
         }
 

@@ -599,20 +599,79 @@ public abstract class Integrator {
 
     public static void main(String[] args) {
         Options commandLineOptions = new Options();
-        commandLineOptions.addOption(Option.builder("d").longOpt("dataFile").desc("").hasArg().required().build());
-        commandLineOptions.addOption(Option.builder("m").longOpt("method").desc("").hasArg().build());
-        commandLineOptions.addOption(Option.builder("o").longOpt("options").desc("").hasArg().build());
-        commandLineOptions.addOption(Option.builder("e").longOpt("errorRatesFile").desc("").hasArg().build());
-        commandLineOptions.addOption(Option.builder("i").longOpt("integratedDataFile").desc("").hasArg().build());
-        commandLineOptions.addOption(Option.builder("h").longOpt("help").build());
+        commandLineOptions.addOption(Option.builder("d").longOpt("dataFile")
+                                             .desc("Data file location. Supported file extensions are \"protobin\" " +
+                                                           "and \"csv\".")
+                                             .hasArg().required().build());
+        commandLineOptions.addOption(Option.builder("m").longOpt("method")
+                                             .desc("Method to use (defaults to BI). Currently supported methods " +
+                                                           "include: (i) \"MVI\", the majority vote integrator, (ii) " +
+                                                           "\"AI\", the agreement based integrator, (iii) \"BI\", " +
+                                                           "the Bayesian integrator, (iv) \"CBI\", the coupled " +
+                                                           "Bayesian integrator, (v) \"HCBI\", the hierarchical " +
+                                                           "coupled Bayesian integrator, and (vi) \"LI\", the logic " +
+                                                           "based integrator.")
+                                             .hasArg().build());
+        commandLineOptions.addOption(Option.builder("o").longOpt("options")
+                                             .desc("Additional options to use for the chosen method. Each method " +
+                                                           "supports a different set of options, all included in a " +
+                                                           "single string and separated using the \":\" character. " +
+                                                           "Options may not be set by using the \"-\" character in " +
+                                                           "place of a value. Boolean values can be set using \"1\" " +
+                                                           "for \"true\" and \"0\" for \"false\". The specific " +
+                                                           "options allowed for each method are listed here (the " +
+                                                           "default value for each parameter is shown in " +
+                                                           "parentheses): (i) \"MVI\": no options, (ii) \"AI\": " +
+                                                           "[highest order of agreement rates to use (all)]:[boolean " +
+                                                           "value indicating to only use even-sized subsets of " +
+                                                           "functions for agreement rates (1)], (iii) \"BI\": " +
+                                                           "[number of burn-in samples (4000)]:" +
+                                                           "[number of thinning samples (10)]:" +
+                                                           "[number of samples (200)]:" +
+                                                           "[labels prior alpha parameter (1.0)]:" +
+                                                           "[labels prior beta parameter (1.0)]:" +
+                                                           "[error rates prior alpha parameter (1.0)]:" +
+                                                           "[error rates prior beta parameter (2.0)], (iv) \"CBI\": " +
+                                                           "[number of burn-in samples (4000)]:" +
+                                                           "[number of thinning samples (10)]:" +
+                                                           "[number of samples (200)]:" +
+                                                           "[Dirichlet Process alpha parameter (1.0)]:" +
+                                                           "[labels prior alpha parameter (1.0)]:" +
+                                                           "[labels prior beta parameter (1.0)]:" +
+                                                           "[error rates prior alpha parameter (1.0)]:" +
+                                                           "[error rates prior beta parameter (2.0)], (v) \"HCBI\": " +
+                                                           "[number of burn-in samples (4000)]:" +
+                                                           "[number of thinning samples (10)]:" +
+                                                           "[number of samples (200)]:" +
+                                                           "[hierarchical Dirichlet Process alpha parameter (1.0)]:" +
+                                                           "[hierarchical [Dirichlet Process gamma parameter (1.0)]:" +
+                                                           "[labels prior alpha parameter (1.0)]:" +
+                                                           "[labels prior beta parameter (1.0)]:" +
+                                                           "[error rates prior alpha parameter (1.0)]:" +
+                                                           "[error rates prior beta parameter (2.0)], (vi) \"LI\": " +
+                                                           "no options.")
+                                             .hasArg().build());
+        commandLineOptions.addOption(Option.builder("e").longOpt("errorRatesFile")
+                                             .desc("Output error rates file location. Supported file extensions are " +
+                                                           "\"protobin\" and \"csv\".")
+                                             .hasArg().build());
+        commandLineOptions.addOption(Option.builder("i").longOpt("integratedDataFile")
+                                             .desc("Output integrated data file location. Supported file extensions " +
+                                                           "are \"protobin\" and \"csv\".")
+                                             .hasArg().build());
+        commandLineOptions.addOption(Option.builder("h").longOpt("help").desc("Prints this message.").build());
         // Parse the command-line arguments
         CommandLineParser parser = new DefaultParser();
+        HelpFormatter helpFormatter = new HelpFormatter();
+        helpFormatter.setWidth(120);
         try {
             CommandLine line = parser.parse(commandLineOptions, args);
             if (line.hasOption("h"))
-                new HelpFormatter().printHelp(
+                helpFormatter.printHelp(
                         "java -cp makina.jar makina.learn.classification.reflection.Integrator",
-                        "",
+                        "This command can be used to estimate the accuracies (or equivalently, the error rates) of " +
+                                "multiple functions/classifiers/humans with binary responses, using only unsupervised" +
+                                "or semi-supervised data.",
                         commandLineOptions,
                         "For more information refer to the readme file at https://github.com/eaplatanios/makina.",
                         true
@@ -639,6 +698,9 @@ public abstract class Integrator {
                 case "HCBI":
                     integrator = new HierarchicalCoupledBayesianIntegrator.Builder(dataFile).options(options).build();
                     break;
+                case "LI":
+                    integrator = new LogicIntegrator.Builder(dataFile).options(options).build();
+                    break;
                 default:
                     throw new IllegalArgumentException("Unsupported method name provided.");
             }
@@ -646,11 +708,12 @@ public abstract class Integrator {
             integrator.integratedData();
             integrator.saveErrorRates(errorRatesFile);
             integrator.saveIntegratedData(integratedDataFile);
-        }
-        catch (ParseException e) {
-            new HelpFormatter().printHelp(
+        } catch (ParseException exception) {
+            helpFormatter.printHelp(
                     "java -cp makina.jar makina.learn.classification.reflection.Integrator",
-                    "",
+                    "This command can be used to estimate the accuracies (or equivalently, the error rates) of " +
+                            "multiple functions/classifiers/humans with binary responses, using only unsupervised" +
+                            "or semi-supervised data.",
                     commandLineOptions,
                     "For more information refer to the readme file at https://github.com/eaplatanios/makina.",
                     true

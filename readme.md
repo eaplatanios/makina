@@ -42,6 +42,47 @@ of the instance with ID `id` being assigned label `label`.
 Finally, an `Integrator.Data<Integrator.Data.PredictedInstance>` can be constructed using a
 `List<Integrator.Data.PredictedInstance>`.
 
+### Command-Line Interface
+
+The integrator classes also support a command line interface. Given that the library JAR file is called `makina.jar`, 
+the command-line interface can be used as follows:
+
+```bash
+usage: java -cp makina.jar makina.learn.classification.reflection.Integrator -d <arg> [-e <arg>] [-h] [-i <arg>] [-m
+       <arg>] [-o <arg>]
+This command can be used to estimate the accuracies (or equivalently, the error rates) of multiple
+functions/classifiers/humans with binary responses, using only unsupervisedor semi-supervised data.
+ -d,--dataFile <arg>             Data file location. Supported file extensions are "protobin" and "csv".
+ -e,--errorRatesFile <arg>       Output error rates file location. Supported file extensions are "protobin" and "csv".
+ -h,--help                       Prints this message.
+ -i,--integratedDataFile <arg>   Output integrated data file location. Supported file extensions are "protobin" and
+                                 "csv".
+ -m,--method <arg>               Method to use (defaults to BI). Currently supported methods include: (i) "MVI", the
+                                 majority vote integrator, (ii) "AI", the agreement based integrator, (iii) "BI", the
+                                 Bayesian integrator, (iv) "CBI", the coupled Bayesian integrator, (v) "HCBI", the
+                                 hierarchical coupled Bayesian integrator, and (vi) "LI", the logic based integrator.
+ -o,--options <arg>              Additional options to use for the chosen method. Each method supports a different set
+                                 of options, all included in a single string and separated using the ":" character.
+                                 Options may not be set by using the "-" character in place of a value. Boolean values
+                                 can be set using "1" for "true" and "0" for "false". The specific options allowed for
+                                 each method are listed here (the default value for each parameter is shown in
+                                 parentheses): (i) "MVI": no options, (ii) "AI": [highest order of agreement rates to
+                                 use (all)]:[boolean value indicating to only use even-sized subsets of functions for
+                                 agreement rates (1)], (iii) "BI": [number of burn-in samples (4000)]:[number of
+                                 thinning samples (10)]:[number of samples (200)]:[labels prior alpha parameter
+                                 (1.0)]:[labels prior beta parameter (1.0)]:[error rates prior alpha parameter
+                                 (1.0)]:[error rates prior beta parameter (2.0)], (iv) "CBI": [number of burn-in samples
+                                 (4000)]:[number of thinning samples (10)]:[number of samples (200)]:[Dirichlet Process
+                                 alpha parameter (1.0)]:[labels prior alpha parameter (1.0)]:[labels prior beta
+                                 parameter (1.0)]:[error rates prior alpha parameter (1.0)]:[error rates prior beta
+                                 parameter (2.0)], (v) "HCBI": [number of burn-in samples (4000)]:[number of thinning
+                                 samples (10)]:[number of samples (200)]:[hierarchical Dirichlet Process alpha parameter
+                                 (1.0)]:[hierarchical [Dirichlet Process gamma parameter (1.0)]:[labels prior alpha
+                                 parameter (1.0)]:[labels prior beta parameter (1.0)]:[error rates prior alpha parameter
+                                 (1.0)]:[error rates prior beta parameter (2.0)], (vi) "LI": no options.
+For more information refer to the readme file at https://github.com/eaplatanios/makina.
+```
+
 ### References
 
 1. Emmanouil A. Platanios, Avrim Blum, and Tom Mitchell, *Estimating Accuracy from Unlabeled Data*, Uncertainty in

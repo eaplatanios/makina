@@ -130,9 +130,6 @@ public final class CoupledBayesianIntegrator extends Integrator {
                 this.errorRatesPriorAlpha = Double.parseDouble(optionsStringParts[6]);
             if (!optionsStringParts[7].equals("-"))
                 this.errorRatesPriorBeta = Double.parseDouble(optionsStringParts[7]);
-            if (numberOfSamples <= numberOfBurnInSamples)
-                throw new IllegalArgumentException("The total number of samples is required to be larger than the " +
-                                                           "number of burn-in samples.");
             return self();
         }
 
