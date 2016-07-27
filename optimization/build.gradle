@@ -9,7 +9,7 @@ dependencies {
     compile project(':math')
     compile 'org.apache.commons:commons-lang3:3.3.2'
     compile 'org.scalanlp:breeze_2.11:0.11.2'
-    compile 'org.scalanlp:breeze-natives_2.11:0.12'
+//    compile 'org.scalanlp:breeze-natives_2.11:0.12'
     testCompile 'org.scalatest:scalatest_2.11:2.2.6'
 }
 
