@@ -12,7 +12,7 @@ All the code related to the "Estimating Accuracy from Unlabeled Data" papers is 
 2. Agreement rates based approach described in [1] and implemented in the `AgreementIntegrator` class.
 3. Bayesian approaches described in [2] and implemented in the `BayesianIntegrator`, `CoupledBayesianIntegrator`, and
 `HierarchicalCoupledBayesianIntegrator` classes.
-<!--4. Logic approach described in [3] and implemented in the `LogicIntegrator` class.-->
+4. Logic approach described in [3] and implemented in the `LogicIntegrator` class.
 
 All of these classes implement the same abstract class, `Integrator`. In order to construct an `Integrator` object you
 need to use the corresponding `Builder` class (it is an inner class in all the integrator implementation classes -- for
@@ -82,6 +82,49 @@ functions/classifiers/humans with binary responses, using only unsupervisedor se
                                  (1.0)]:[error rates prior beta parameter (2.0)], (vi) "LI": no options.
 For more information refer to the readme file at https://github.com/eaplatanios/makina.
 ```
+
+An example use of this command is:
+
+```bash
+java -cp makina.jar makina.learn.classification.reflection.Integrator -d input_data.csv -e error_rates.csv -i integrated_data.csv -m BI -o 4000:10:200:-:-:-:-
+```
+
+The two supported data formats are the Protocol Buffers binary format which can be written to and read from using the 
+automatically generated `IntegratorProtos` class in the `makina.learn.classification.reflection` package, and the CSV 
+data format. There are three possible CSV format files, one for each different kind of information that can be stored. 
+The first one is for predicted data instances (e.g., the input data and the integrated output data) and each line is 
+formatted as follows:
+
+```
+ID,LABEL,FUNCTION_ID,VALUE
+432523,animal,2,0.67
+123124,cat,1,0.43
+...
+```
+
+In this case, `VALUE` corresponds to the probability that the function with ID `FUNCTION_ID` assigns to the data 
+instance with ID `ID` for having label `LABEL` assigned to it. The second one is for observed data instances (i.e., 
+supervised data instances) and each line is formatted as follows:
+
+```
+ID,LABEL,VALUE
+432523,animal,1
+123124,cat,0
+...
+```
+
+In this case, `VALUE` corresponds to the boolean observed label (`1` for `true` and `0` for `false`) for label `LABEL` 
+and data instance with ID `ID`. Finally, the third kind of information is the error rates information. In that case, 
+each line is formatted as follows:
+
+```
+LABEL,FUNCTION_ID,VALUE
+animal,2,0.12
+cat,1,0.05
+...
+```
+
+In this case, `VALUE` corresponds to the error rate of the function with ID `FUNCTION_ID`, for label `LABEL`.
 
 ### References
 
