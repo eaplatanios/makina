@@ -63,133 +63,133 @@ def load_error_rates_from_csv(error_rates, filename):
     return error_rates
 
 
-def save_predicted_data(predicted_data, filename):
+def save_predicted_instances(predicted_instances, filename):
     file_extension = get_filename_extension(filename)
     if file_extension == 'protobin':
-        save_predicted_data_to_protobin(predicted_data, filename)
+        save_predicted_instances_to_protobin(predicted_instances, filename)
     elif file_extension == 'csv':
-        save_predicted_data_to_csv(predicted_data, filename)
+        save_predicted_instances_to_csv(predicted_instances, filename)
     else:
         raise ValueError('Unsupported file extension: ' + file_extension + '.')
 
 
-def load_predicted_data(predicted_data, filename):
+def load_predicted_instances(predicted_instances, filename):
     file_extension = get_filename_extension(filename)
     if file_extension == 'protobin':
-        load_predicted_data_from_protobin(predicted_data, filename)
+        load_predicted_instances_from_protobin(predicted_instances, filename)
     elif file_extension == 'csv':
-        load_predicted_data_from_csv(predicted_data, filename)
+        load_predicted_instances_from_csv(predicted_instances, filename)
     else:
         raise ValueError('Unsupported file extension: ' + file_extension + '.')
 
 
-def save_predicted_data_to_protobin(predicted_data, filename):
-    predicted_instances = integrator_pb2.PredictedInstances()
-    for instance in predicted_data:
-        predicted_instance = predicted_instances.predictedInstance.add()
-        predicted_instance.id = instance[0]
-        predicted_instance.label = instance[1]
-        predicted_instance.functionId = instance[2]
-        predicted_instance.value = instance[3]
+def save_predicted_instances_to_protobin(predicted_instances, filename):
+    proto_predicted_instances = integrator_pb2.PredictedInstances()
+    for predicted_instance in predicted_instances:
+        proto_predicted_instance = proto_predicted_instances.predictedInstance.add()
+        proto_predicted_instance.id = predicted_instance[0]
+        proto_predicted_instance.label = predicted_instance[1]
+        proto_predicted_instance.functionId = predicted_instance[2]
+        proto_predicted_instance.value = predicted_instance[3]
     f = open(filename, 'wb')
-    f.write(predicted_instances.SerializeToString())
+    f.write(proto_predicted_instances.SerializeToString())
     f.close()
 
 
-def load_predicted_data_from_protobin(predicted_data, filename):
-    predicted_instances = integrator_pb2.PredictedInstances()
+def load_predicted_instances_from_protobin(predicted_instances, filename):
+    proto_predicted_instances = integrator_pb2.PredictedInstances()
     f = open(filename, 'rb')
-    predicted_instances.ParseFromString(f.read())
+    proto_predicted_instances.ParseFromString(f.read())
     f.close()
-    for predicted_instance in predicted_instances.predictedInstance:
-        predicted_data.append((predicted_instance.id,
-                               predicted_instance.label,
-                               predicted_instance.functionId,
-                               predicted_instance.value))
-    return predicted_data
+    for proto_predicted_instance in proto_predicted_instances.predictedInstance:
+        predicted_instances.append((proto_predicted_instance.id,
+                                    proto_predicted_instance.label,
+                                    proto_predicted_instance.functionId,
+                                    proto_predicted_instance.value))
+    return predicted_instances
 
 
-def save_predicted_data_to_csv(predicted_data, filename):
+def save_predicted_instances_to_csv(predicted_instances, filename):
     f = open(filename, 'w')
     f.write('ID,LABEL,FUNCTION_ID,VALUE\n')
-    for instance in predicted_data:
+    for instance in predicted_instances:
         f.write(str(instance[0]) + ',' + instance[1] + ',' + str(instance[2]) + ',' + str(instance[3]) + '\n')
     f.close()
 
 
-def load_predicted_data_from_csv(predicted_data, filename):
+def load_predicted_instances_from_csv(predicted_instances, filename):
     f = open(filename, 'r')
     lines = [line.rstrip('\n') for line in f]
     f.close()
     for line in lines:
         if line == 'ID,LABEL,FUNCTION_ID,VALUE':
             continue
-        predicted_data.append((int(line[0]), line[1], int(line[2]), float(line[3])))
-    return predicted_data
+        predicted_instances.append((int(line[0]), line[1], int(line[2]), float(line[3])))
+    return predicted_instances
 
 
-def save_observed_data(observed_data, filename):
+def save_observed_instances(observed_instances, filename):
     file_extension = get_filename_extension(filename)
     if file_extension == 'protobin':
-        save_observed_data_to_protobin(observed_data, filename)
+        save_observed_instances_to_protobin(observed_instances, filename)
     elif file_extension == 'csv':
-        save_observed_data_to_csv(observed_data, filename)
+        save_observed_instances_to_csv(observed_instances, filename)
     else:
         raise ValueError('Unsupported file extension: ' + file_extension + '.')
 
 
-def load_observed_data(observed_data, filename):
+def load_observed_instances(observed_instances, filename):
     file_extension = get_filename_extension(filename)
     if file_extension == 'protobin':
-        load_observed_data_from_protobin(observed_data, filename)
+        load_observed_instances_from_protobin(observed_instances, filename)
     elif file_extension == 'csv':
-        load_observed_data_from_csv(observed_data, filename)
+        load_observed_instances_from_csv(observed_instances, filename)
     else:
         raise ValueError('Unsupported file extension: ' + file_extension + '.')
 
 
-def save_observed_data_to_protobin(observed_data, filename):
-    observed_instances = integrator_pb2.ObservedInstances()
-    for instance in observed_data:
-        observed_instance = observed_instances.observedInstance.add()
-        observed_instance.id = instance[0]
-        observed_instance.label = instance[1]
-        observed_instance.value = instance[2]
+def save_observed_instances_to_protobin(observed_instances, filename):
+    proto_observed_instances = integrator_pb2.ObservedInstances()
+    for observed_instance in observed_instances:
+        proto_observed_instance = proto_observed_instances.observedInstance.add()
+        proto_observed_instance.id = observed_instance[0]
+        proto_observed_instance.label = observed_instance[1]
+        proto_observed_instance.value = observed_instance[2]
     f = open(filename, 'wb')
-    f.write(observed_instances.SerializeToString())
+    f.write(proto_observed_instances.SerializeToString())
     f.close()
 
 
-def load_observed_data_from_protobin(observed_data, filename):
-    observed_instances = integrator_pb2.ObservedInstances()
+def load_observed_instances_from_protobin(observed_instances, filename):
+    proto_observed_instances = integrator_pb2.ObservedInstances()
     f = open(filename, 'rb')
-    observed_instances.ParseFromString(f.read())
+    proto_observed_instances.ParseFromString(f.read())
     f.close()
-    for observed_instance in observed_instances.observedInstance:
-        observed_data.append((observed_instance.id,
-                              observed_instance.label,
-                              observed_instance.functionId,
-                              observed_instance.value))
-    return observed_data
+    for proto_observed_instance in proto_observed_instances.observedInstance:
+        observed_instances.append((proto_observed_instance.id,
+                                   proto_observed_instance.label,
+                                   proto_observed_instance.functionId,
+                                   proto_observed_instance.value))
+    return observed_instances
 
 
-def save_observed_data_to_csv(observed_data, filename):
+def save_observed_instances_to_csv(observed_instances, filename):
     f = open(filename, 'w')
     f.write('ID,LABEL,VALUE\n')
-    for instance in observed_data:
+    for instance in observed_instances:
         f.write(str(instance[0]) + ',' + instance[1] + ',' + ('1' if instance[2] else '0') + '\n')
     f.close()
 
 
-def load_observed_data_from_csv(observed_data, filename):
+def load_observed_instances_from_csv(observed_instances, filename):
     f = open(filename, 'r')
     lines = [line.rstrip('\n') for line in f]
     f.close()
     for line in lines:
         if line == 'ID,LABEL,VALUE':
             continue
-        observed_data.append((int(line[0]), line[1], line[2] == '1'))
-    return observed_data
+        observed_instances.append((int(line[0]), line[1], line[2] == '1'))
+    return observed_instances
 
 
 def get_filename_extension(filename):
