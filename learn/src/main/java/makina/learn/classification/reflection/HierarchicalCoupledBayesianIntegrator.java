@@ -54,6 +54,7 @@ public final class HierarchicalCoupledBayesianIntegrator extends Integrator {
 
     protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
             extends Integrator.AbstractBuilder<T> {
+        private Long seed = null;
         private double labelsPriorAlpha = 1.0;
         private double labelsPriorBeta = 1.0;
         private double errorRatesPriorAlpha = 1.0;
@@ -70,6 +71,11 @@ public final class HierarchicalCoupledBayesianIntegrator extends Integrator {
 
         private AbstractBuilder(String predictedDataFilename) {
             super(predictedDataFilename);
+        }
+
+        public T seed(Long seed) {
+            this.seed = seed;
+            return self();
         }
 
         public T labelsPriorAlpha(double labelsPriorAlpha) {
@@ -166,6 +172,8 @@ public final class HierarchicalCoupledBayesianIntegrator extends Integrator {
 
     private HierarchicalCoupledBayesianIntegrator(AbstractBuilder<?> builder) {
         super(builder);
+        if (builder.seed != null)
+            randomDataGenerator.reSeed(builder.seed);
         data.stream()
                 .map(Data.PredictedInstance::label)
                 .distinct()

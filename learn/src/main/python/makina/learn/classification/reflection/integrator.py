@@ -1,5 +1,146 @@
+import abc
 import integrator_pb2
 import os
+import subprocess
+
+from makina.learn.classification.constraint import Constraint
+from makina.logging import logger
+
+__author__ = 'Emmanouil Antonios Platanios'
+
+
+class Integrator(object):
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractmethod
+    def name(self):
+        pass
+
+    @abc.abstractmethod
+    def options(self):
+        pass
+
+    def run(self, predicted_data, observed_data=None, constraints=None, integrate_data=False, seed=None,
+            working_directory='.', makina_jar='makina.jar'):
+        predicted_data_file = os.path.join(working_directory, 'predicted_instances.protobin')
+        observed_data_file = os.path.join(working_directory, 'observed_instances.protobin')
+        constraints_file = os.path.join(working_directory, 'contraints.txt')
+        error_rates_file = os.path.join(working_directory, 'error_rates.protobin')
+        integrated_data_file = os.path.join(working_directory, 'integrated_data.protobin')
+        save_predicted_instances_to_protobin(predicted_data, predicted_data_file)
+        if observed_data is not None:
+            save_observed_instances_to_protobin(observed_data, observed_data_file)
+        command_line_options = ['java', 'cp', makina_jar, 'makina.learn.classification.reflection.Integrator',
+                                '-d', predicted_data_file, '-e', error_rates_file, '-m', self.name(),
+                                '-o', ':'.join(self.options())]
+        if constraints is not None:
+            save_constraints(constraints, constraints_file)
+            command_line_options.extend(['-c', constraints_file])
+        if integrate_data:
+            command_line_options.extend(['-i', integrated_data_file])
+        if seed is not None:
+            command_line_options.extend(['-s', seed])
+        return_code = subprocess.Popen(command_line_options).wait()
+        if return_code != 0:
+            logger.error('An error occurred while running the command "' + ' '.join(command_line_options) + '".')
+            return None
+        error_rates = load_error_rates_from_protobin([], error_rates_file)
+        integrated_data = load_predicted_instances_from_protobin([], integrated_data_file) if integrate_data else None
+        return error_rates, integrated_data
+
+
+class MajorityVoteIntegrator(Integrator):
+    def name(self):
+        return 'MVI'
+
+    def options(self):
+        return []
+
+
+class AgreementIntegrator(Integrator):
+    def __init__(self, highest_order=-1, only_even_cardinality_subsets_agreements=True):
+        self.highest_order = highest_order
+        self.only_even_cardinality_subsets_agreements = only_even_cardinality_subsets_agreements
+
+    def name(self):
+        return 'AI'
+
+    def options(self):
+        return [str(self.highest_order), '1' if self.only_even_cardinality_subsets_agreements else '0']
+
+
+class BayesianIntegrator(Integrator):
+    def __init__(self, number_of_burn_in_samples=4000, number_of_thinning_samples=10, number_of_samples=200,
+                 labels_prior_alpha=1.0, labels_prior_beta=1.0, error_rates_prior_alpha=1.0,
+                 error_rates_prior_beta=2.0):
+        self.number_of_burn_in_samples = number_of_burn_in_samples
+        self.number_of_thinning_samples = number_of_thinning_samples
+        self.number_of_samples = number_of_samples
+        self.labels_prior_alpha = labels_prior_alpha
+        self.labels_prior_beta = labels_prior_beta
+        self.error_rates_prior_alpha = error_rates_prior_alpha
+        self.error_rates_prior_beta = error_rates_prior_beta
+
+    def name(self):
+        return 'BI'
+
+    def options(self):
+        return [str(self.number_of_burn_in_samples), str(self.number_of_thinning_samples), str(self.number_of_samples),
+                str(self.labels_prior_alpha), str(self.labels_prior_beta), str(self.error_rates_prior_alpha),
+                str(self.error_rates_prior_beta)]
+
+
+class CoupledBayesianIntegrator(Integrator):
+    def __init__(self, number_of_burn_in_samples=4000, number_of_thinning_samples=10, number_of_samples=200, alpha=1.0,
+                 labels_prior_alpha=1.0, labels_prior_beta=1.0, error_rates_prior_alpha=1.0,
+                 error_rates_prior_beta=2.0):
+        self.number_of_burn_in_samples = number_of_burn_in_samples
+        self.number_of_thinning_samples = number_of_thinning_samples
+        self.number_of_samples = number_of_samples
+        self.alpha = alpha
+        self.labels_prior_alpha = labels_prior_alpha
+        self.labels_prior_beta = labels_prior_beta
+        self.error_rates_prior_alpha = error_rates_prior_alpha
+        self.error_rates_prior_beta = error_rates_prior_beta
+
+    def name(self):
+        return 'CBI'
+
+    def options(self):
+        return [str(self.number_of_burn_in_samples), str(self.number_of_thinning_samples), str(self.number_of_samples),
+                str(self.alpha), str(self.labels_prior_alpha), str(self.labels_prior_beta),
+                str(self.error_rates_prior_alpha), str(self.error_rates_prior_beta)]
+
+
+class HierarchicalCoupledBayesianIntegrator(Integrator):
+    def __init__(self, number_of_burn_in_samples=4000, number_of_thinning_samples=10, number_of_samples=200, alpha=1.0,
+                 gamma=1.0, labels_prior_alpha=1.0, labels_prior_beta=1.0, error_rates_prior_alpha=1.0,
+                 error_rates_prior_beta=2.0):
+        self.number_of_burn_in_samples = number_of_burn_in_samples
+        self.number_of_thinning_samples = number_of_thinning_samples
+        self.number_of_samples = number_of_samples
+        self.alpha = alpha
+        self.gamma = gamma
+        self.labels_prior_alpha = labels_prior_alpha
+        self.labels_prior_beta = labels_prior_beta
+        self.error_rates_prior_alpha = error_rates_prior_alpha
+        self.error_rates_prior_beta = error_rates_prior_beta
+
+    def name(self):
+        return 'HCBI'
+
+    def options(self):
+        return [str(self.number_of_burn_in_samples), str(self.number_of_thinning_samples), str(self.number_of_samples),
+                str(self.alpha), str(self.gamma), str(self.labels_prior_alpha), str(self.labels_prior_beta),
+                str(self.error_rates_prior_alpha), str(self.error_rates_prior_beta)]
+
+
+class LogicIntegrator(Integrator):
+    def name(self):
+        return 'LI'
+
+    def options(self):
+        return []
 
 
 def save_error_rates(error_rates, filename):
@@ -194,3 +335,19 @@ def load_observed_instances_from_csv(observed_instances, filename):
 
 def get_filename_extension(filename):
     return os.path.splitext(filename)[1]
+
+
+def save_constraints(constraints, filename):
+    f = open(filename, 'w')
+    for constraint in constraints:
+        f.write(str(constraint) + '\n')
+    f.close()
+
+
+def load_constraints(constraints, filename):
+    f = open(filename, 'r')
+    lines = [line.rstrip('\n') for line in f]
+    f.close()
+    for line in lines:
+        constraints.add(Constraint.from_string(line))
+    return constraints

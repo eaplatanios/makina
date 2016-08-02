@@ -1,6 +1,9 @@
 package makina.learn.classification.reflection;
 
 import makina.learn.classification.Label;
+import makina.learn.classification.constraint.Constraint;
+import makina.learn.classification.constraint.MutualExclusionConstraint;
+import makina.learn.classification.constraint.SubsumptionConstraint;
 import org.apache.commons.cli.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,9 +14,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -463,6 +464,56 @@ public abstract class Integrator {
         return filenameParts[filenameParts.length - 1];
     }
 
+    public static boolean saveConstraints(String filename, Set<Constraint> constraints) {
+        FileWriter writer = null;
+        try {
+            writer = new FileWriter(filename);
+            for (Constraint constraint : constraints)
+                if (constraint instanceof MutualExclusionConstraint)
+                    writer.write("!" + String.join(",", ((MutualExclusionConstraint) constraint).getLabels().stream()
+                            .map(Label::name).collect(Collectors.toList())) + "\n");
+                else if (constraint instanceof SubsumptionConstraint)
+                    writer.write(((SubsumptionConstraint) constraint).getParentLabel().name() + " -> " +
+                                         ((SubsumptionConstraint) constraint).getChildLabel().name() + "\n");
+                else
+                    logger.warn("Unsupported constraint type encountered and will not be saved.");
+        } catch (IOException exception) {
+            logger.error("There was an error while saving observed instances to the provided file.", exception);
+            return false;
+        } finally {
+            try {
+                if (writer != null) {
+                    writer.flush();
+                    writer.close();
+                }
+            } catch (IOException exception) {
+                logger.error("There was an error while flushing and closing the file writer.", exception);
+            }
+        }
+        return true;
+    }
+
+    public static Set<Constraint> loadConstraints(String filename) {
+        Set<Constraint> constraints = new HashSet<>();
+        try {
+            Files.newBufferedReader(Paths.get(filename)).lines().forEach(line -> {
+                if (line.startsWith("!")) {
+                    constraints.add(new MutualExclusionConstraint(Arrays.stream(line.substring(1).split(","))
+                                                                          .map(Label::new)
+                                                                          .collect(Collectors.toSet())));
+                } else {
+                    String[] lineParts = line.split(" -> ");
+                    String[] childrenLabels = lineParts[1].split(",");
+                    for (String childLabel : childrenLabels)
+                        constraints.add(new SubsumptionConstraint(new Label(lineParts[0]), new Label(childLabel)));
+                }
+            });
+        } catch (IOException e) {
+            throw new IllegalArgumentException("There was a problem with the provided constraints file.");
+        }
+        return constraints;
+    }
+
     public static class Data<T extends Data.Instance> implements Iterable<T> {
         private final List<T> instances;
 
@@ -599,10 +650,17 @@ public abstract class Integrator {
 
     public static void main(String[] args) {
         Options commandLineOptions = new Options();
-        commandLineOptions.addOption(Option.builder("d").longOpt("dataFile")
-                                             .desc("Data file location. Supported file extensions are \"protobin\" " +
-                                                           "and \"csv\".")
+        commandLineOptions.addOption(Option.builder("d").longOpt("predictedDataFile")
+                                             .desc("Predicted data file location. Supported file extensions are " +
+                                                           "\"protobin\" and \"csv\".")
                                              .hasArg().required().build());
+        commandLineOptions.addOption(Option.builder("od").longOpt("observedDataFile")
+                                             .desc("Observed data file location. Supported file extensions are " +
+                                                           "\"protobin\" and \"csv\".")
+                                             .hasArg().build());
+        commandLineOptions.addOption(Option.builder("c").longOpt("constraintsFile")
+                                             .desc("Constraints file location.")
+                                             .hasArg().build());
         commandLineOptions.addOption(Option.builder("m").longOpt("method")
                                              .desc("Method to use (defaults to BI). Currently supported methods " +
                                                            "include: (i) \"MVI\", the majority vote integrator, (ii) " +
@@ -659,6 +717,10 @@ public abstract class Integrator {
                                              .desc("Output integrated data file location. Supported file extensions " +
                                                            "are \"protobin\" and \"csv\".")
                                              .hasArg().build());
+        commandLineOptions.addOption(Option.builder("s").longOpt("randomSeed")
+                                             .desc("Seed to use for the random number generator (only relevant if " +
+                                                           "the chosen integrator uses a random number generator).")
+                                             .hasArg().build());
         commandLineOptions.addOption(Option.builder("h").longOpt("help").desc("Prints this message.").build());
         // Parse the command-line arguments
         CommandLineParser parser = new DefaultParser();
@@ -676,38 +738,77 @@ public abstract class Integrator {
                         "For more information refer to the readme file at https://github.com/eaplatanios/makina.",
                         true
                 );
-            String dataFile = line.getOptionValue("d");
+            String predictedDataFile = line.getOptionValue("d");
+            String observedDataFile = line.getOptionValue("od", null);
+            String constraintsFile = line.getOptionValue("c", null);
+            Set<Constraint> constraints = new HashSet<>();
+            if (constraintsFile != null)
+                constraints.addAll(loadConstraints(constraintsFile));
             String method = line.getOptionValue("m", "BI");
             String options = line.getOptionValue("o", "");
-            String errorRatesFile = line.getOptionValue("e", "error_rates.protobin");
-            String integratedDataFile = line.getOptionValue("i", "integrated_data.protobin");
+            String seedString = line.getOptionValue("s", null);
+            Long seed = null;
+            if (seedString != null)
+                seed = Long.parseLong(seedString);
+            String errorRatesFile = line.getOptionValue("e", null);
+            String integratedDataFile = line.getOptionValue("i", null);
+            if (errorRatesFile == null && integratedDataFile == null) {
+                logger.error("No output files where specified. Either the error rates or the integrated data output " +
+                                     "files (i.e., '-e' and '-i' command-line options, respectively) need to be " +
+                                     "specified.");
+                return;
+            }
             Integrator integrator;
             switch (method) {
                 case "MVI":
-                    integrator = new MajorityVoteIntegrator.Builder(dataFile).options(options).build();
+                    integrator = new MajorityVoteIntegrator.Builder(predictedDataFile).options(options).build();
                     break;
                 case "AI":
-                    integrator = new AgreementIntegrator.Builder(dataFile).options(options).build();
+                    if (observedDataFile != null)
+                        integrator = new AgreementIntegrator.Builder(predictedDataFile, observedDataFile)
+                                .options(options).build();
+                    else
+                        integrator = new AgreementIntegrator.Builder(predictedDataFile).options(options).build();
                     break;
                 case "BI":
-                    integrator = new BayesianIntegrator.Builder(dataFile).options(options).build();
+//                    if (observedDataFile != null)
+//                        integrator = new BayesianIntegrator.Builder(predictedDataFile, observedDataFile).seed(seed)
+//                                .options(options).build();
+//                    else
+                    integrator = new BayesianIntegrator.Builder(predictedDataFile).seed(seed).options(options).build();
                     break;
                 case "CBI":
-                    integrator = new CoupledBayesianIntegrator.Builder(dataFile).options(options).build();
+//                    if (observedDataFile != null)
+//                        integrator = new CoupledBayesianIntegrator.Builder(predictedDataFile, observedDataFile)
+//                                .seed(seed).options(options).build();
+//                    else
+                    integrator = new CoupledBayesianIntegrator.Builder(predictedDataFile).seed(seed).options(options).build();
                     break;
                 case "HCBI":
-                    integrator = new HierarchicalCoupledBayesianIntegrator.Builder(dataFile).options(options).build();
+//                    if (observedDataFile != null)
+//                        integrator = new HierarchicalCoupledBayesianIntegrator.Builder(predictedDataFile,
+//                                                                                       observedDataFile).seed(seed)
+//                                .options(options).build();
+//                    else
+                    integrator = new HierarchicalCoupledBayesianIntegrator.Builder(predictedDataFile).seed(seed).options(options).build();
                     break;
                 case "LI":
-                    integrator = new LogicIntegrator.Builder(dataFile).options(options).build();
+                    if (observedDataFile != null)
+                        integrator = new LogicIntegrator.Builder(predictedDataFile, observedDataFile)
+                                .addConstraints(constraints).options(options).build();
+                    else
+                        integrator = new LogicIntegrator.Builder(predictedDataFile)
+                                .addConstraints(constraints).options(options).build();
                     break;
                 default:
                     throw new IllegalArgumentException("Unsupported method name provided.");
             }
             integrator.errorRates();
             integrator.integratedData();
-            integrator.saveErrorRates(errorRatesFile);
-            integrator.saveIntegratedData(integratedDataFile);
+            if (errorRatesFile != null)
+                integrator.saveErrorRates(errorRatesFile);
+            if (integratedDataFile != null)
+                integrator.saveIntegratedData(integratedDataFile);
         } catch (ParseException exception) {
             helpFormatter.printHelp(
                     "java -cp makina.jar makina.learn.classification.reflection.Integrator",
