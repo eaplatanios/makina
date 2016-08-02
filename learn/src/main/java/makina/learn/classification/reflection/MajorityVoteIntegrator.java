@@ -27,6 +27,7 @@ public final class MajorityVoteIntegrator extends Integrator {
 
         private AbstractBuilder(String predictedDataFilename) {
             super(predictedDataFilename);
+            extractLabelsSet();
         }
 
         private void extractLabelsSet() {
@@ -105,18 +106,18 @@ public final class MajorityVoteIntegrator extends Integrator {
                     .filter(i -> i.label().equals(label))
                     .map(Data.PredictedInstance::functionId)
                     .distinct()
-                    .forEach(classifierID -> {
+                    .forEach(functionId -> {
                         int[] numberOfErrorSamples = new int[] { 0 };
                         int[] numberOfSamples = new int[] { 0 };
                         data.stream()
-                                .filter(i -> i.label().equals(label) && i.functionId() == classifierID)
+                                .filter(i -> i.label().equals(label) && i.functionId() == functionId)
                                 .forEach(instance -> {
                                     if ((instance.value() >= 0.5 && !integratedPredictions.get(label).get(instance.id()))
                                             || (instance.value() < 0.5 && integratedPredictions.get(label).get(instance.id())))
                                         numberOfErrorSamples[0]++;
                                     numberOfSamples[0]++;
                                 });
-                        errorRatesInstances.add(new ErrorRates.Instance(label, classifierID, numberOfErrorSamples[0] / (double) numberOfSamples[0]));
+                        errorRatesInstances.add(new ErrorRates.Instance(label, functionId, numberOfErrorSamples[0] / (double) numberOfSamples[0]));
                     });
         }
         integratedData = new Data<>(integratedDataInstances);
