@@ -8,57 +8,57 @@ public final class IntegratorProtos {
   public static void registerAllExtensions(
       com.google.protobuf.ExtensionRegistry registry) {
   }
-  public interface ObservedInstanceOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:makina.learn.classification.reflection.ObservedInstance)
+  public interface ErrorRateOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:makina.learn.classification.reflection.ErrorRate)
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>required int32 id = 1;</code>
-     */
-    boolean hasId();
-    /**
-     * <code>required int32 id = 1;</code>
-     */
-    int getId();
-
-    /**
-     * <code>required string label = 2;</code>
+     * <code>required string label = 1;</code>
      */
     boolean hasLabel();
     /**
-     * <code>required string label = 2;</code>
+     * <code>required string label = 1;</code>
      */
     java.lang.String getLabel();
     /**
-     * <code>required string label = 2;</code>
+     * <code>required string label = 1;</code>
      */
     com.google.protobuf.ByteString
         getLabelBytes();
 
     /**
-     * <code>required bool value = 3;</code>
+     * <code>required int32 functionId = 2;</code>
+     */
+    boolean hasFunctionId();
+    /**
+     * <code>required int32 functionId = 2;</code>
+     */
+    int getFunctionId();
+
+    /**
+     * <code>required double value = 3;</code>
      */
     boolean hasValue();
     /**
-     * <code>required bool value = 3;</code>
+     * <code>required double value = 3;</code>
      */
-    boolean getValue();
+    double getValue();
   }
   /**
-   * Protobuf type {@code makina.learn.classification.reflection.ObservedInstance}
+   * Protobuf type {@code makina.learn.classification.reflection.ErrorRate}
    */
-  public  static final class ObservedInstance extends
+  public  static final class ErrorRate extends
       com.google.protobuf.GeneratedMessage implements
-      // @@protoc_insertion_point(message_implements:makina.learn.classification.reflection.ObservedInstance)
-      ObservedInstanceOrBuilder {
-    // Use ObservedInstance.newBuilder() to construct.
-    private ObservedInstance(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      // @@protoc_insertion_point(message_implements:makina.learn.classification.reflection.ErrorRate)
+      ErrorRateOrBuilder {
+    // Use ErrorRate.newBuilder() to construct.
+    private ErrorRate(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
     }
-    private ObservedInstance() {
-      id_ = 0;
+    private ErrorRate() {
       label_ = "";
-      value_ = false;
+      functionId_ = 0;
+      value_ = 0D;
     }
 
     @java.lang.Override
@@ -66,7 +66,7 @@ public final class IntegratorProtos {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private ObservedInstance(
+    private ErrorRate(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -89,20 +89,20 @@ public final class IntegratorProtos {
               }
               break;
             }
-            case 8: {
-              bitField0_ |= 0x00000001;
-              id_ = input.readInt32();
-              break;
-            }
-            case 18: {
+            case 10: {
               com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000002;
+              bitField0_ |= 0x00000001;
               label_ = bs;
               break;
             }
-            case 24: {
+            case 16: {
+              bitField0_ |= 0x00000002;
+              functionId_ = input.readInt32();
+              break;
+            }
+            case 25: {
               bitField0_ |= 0x00000004;
-              value_ = input.readBool();
+              value_ = input.readDouble();
               break;
             }
           }
@@ -119,42 +119,27 @@ public final class IntegratorProtos {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ObservedInstance_descriptor;
+      return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ErrorRate_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ObservedInstance_fieldAccessorTable
+      return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ErrorRate_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.class, makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.Builder.class);
+              makina.learn.classification.reflection.IntegratorProtos.ErrorRate.class, makina.learn.classification.reflection.IntegratorProtos.ErrorRate.Builder.class);
     }
 
     private int bitField0_;
-    public static final int ID_FIELD_NUMBER = 1;
-    private int id_;
+    public static final int LABEL_FIELD_NUMBER = 1;
+    private volatile java.lang.Object label_;
     /**
-     * <code>required int32 id = 1;</code>
+     * <code>required string label = 1;</code>
      */
-    public boolean hasId() {
+    public boolean hasLabel() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required int32 id = 1;</code>
-     */
-    public int getId() {
-      return id_;
-    }
-
-    public static final int LABEL_FIELD_NUMBER = 2;
-    private volatile java.lang.Object label_;
-    /**
-     * <code>required string label = 2;</code>
-     */
-    public boolean hasLabel() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
-    }
-    /**
-     * <code>required string label = 2;</code>
+     * <code>required string label = 1;</code>
      */
     public java.lang.String getLabel() {
       java.lang.Object ref = label_;
@@ -171,7 +156,7 @@ public final class IntegratorProtos {
       }
     }
     /**
-     * <code>required string label = 2;</code>
+     * <code>required string label = 1;</code>
      */
     public com.google.protobuf.ByteString
         getLabelBytes() {
@@ -187,18 +172,33 @@ public final class IntegratorProtos {
       }
     }
 
-    public static final int VALUE_FIELD_NUMBER = 3;
-    private boolean value_;
+    public static final int FUNCTIONID_FIELD_NUMBER = 2;
+    private int functionId_;
     /**
-     * <code>required bool value = 3;</code>
+     * <code>required int32 functionId = 2;</code>
+     */
+    public boolean hasFunctionId() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>required int32 functionId = 2;</code>
+     */
+    public int getFunctionId() {
+      return functionId_;
+    }
+
+    public static final int VALUE_FIELD_NUMBER = 3;
+    private double value_;
+    /**
+     * <code>required double value = 3;</code>
      */
     public boolean hasValue() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>required bool value = 3;</code>
+     * <code>required double value = 3;</code>
      */
-    public boolean getValue() {
+    public double getValue() {
       return value_;
     }
 
@@ -208,11 +208,11 @@ public final class IntegratorProtos {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
-      if (!hasId()) {
+      if (!hasLabel()) {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasLabel()) {
+      if (!hasFunctionId()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -227,13 +227,13 @@ public final class IntegratorProtos {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeInt32(1, id_);
+        com.google.protobuf.GeneratedMessage.writeString(output, 1, label_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        com.google.protobuf.GeneratedMessage.writeString(output, 2, label_);
+        output.writeInt32(2, functionId_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeBool(3, value_);
+        output.writeDouble(3, value_);
       }
       unknownFields.writeTo(output);
     }
@@ -244,15 +244,15 @@ public final class IntegratorProtos {
 
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(1, id_);
+        size += com.google.protobuf.GeneratedMessage.computeStringSize(1, label_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += com.google.protobuf.GeneratedMessage.computeStringSize(2, label_);
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(2, functionId_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(3, value_);
+          .computeDoubleSize(3, value_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -260,58 +260,58 @@ public final class IntegratorProtos {
     }
 
     private static final long serialVersionUID = 0L;
-    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstance parseFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRate parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstance parseFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRate parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstance parseFrom(byte[] data)
+    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRate parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstance parseFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRate parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstance parseFrom(java.io.InputStream input)
+    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRate parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstance parseFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRate parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstance parseDelimitedFrom(java.io.InputStream input)
+    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRate parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstance parseDelimitedFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRate parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstance parseFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRate parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstance parseFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRate parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -323,7 +323,7 @@ public final class IntegratorProtos {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(makina.learn.classification.reflection.IntegratorProtos.ObservedInstance prototype) {
+    public static Builder newBuilder(makina.learn.classification.reflection.IntegratorProtos.ErrorRate prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -338,25 +338,25 @@ public final class IntegratorProtos {
       return builder;
     }
     /**
-     * Protobuf type {@code makina.learn.classification.reflection.ObservedInstance}
+     * Protobuf type {@code makina.learn.classification.reflection.ErrorRate}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:makina.learn.classification.reflection.ObservedInstance)
-        makina.learn.classification.reflection.IntegratorProtos.ObservedInstanceOrBuilder {
+        // @@protoc_insertion_point(builder_implements:makina.learn.classification.reflection.ErrorRate)
+        makina.learn.classification.reflection.IntegratorProtos.ErrorRateOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ObservedInstance_descriptor;
+        return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ErrorRate_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ObservedInstance_fieldAccessorTable
+        return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ErrorRate_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.class, makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.Builder.class);
+                makina.learn.classification.reflection.IntegratorProtos.ErrorRate.class, makina.learn.classification.reflection.IntegratorProtos.ErrorRate.Builder.class);
       }
 
-      // Construct using makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.newBuilder()
+      // Construct using makina.learn.classification.reflection.IntegratorProtos.ErrorRate.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -372,44 +372,44 @@ public final class IntegratorProtos {
       }
       public Builder clear() {
         super.clear();
-        id_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000001);
         label_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        functionId_ = 0;
         bitField0_ = (bitField0_ & ~0x00000002);
-        value_ = false;
+        value_ = 0D;
         bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ObservedInstance_descriptor;
+        return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ErrorRate_descriptor;
       }
 
-      public makina.learn.classification.reflection.IntegratorProtos.ObservedInstance getDefaultInstanceForType() {
-        return makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.getDefaultInstance();
+      public makina.learn.classification.reflection.IntegratorProtos.ErrorRate getDefaultInstanceForType() {
+        return makina.learn.classification.reflection.IntegratorProtos.ErrorRate.getDefaultInstance();
       }
 
-      public makina.learn.classification.reflection.IntegratorProtos.ObservedInstance build() {
-        makina.learn.classification.reflection.IntegratorProtos.ObservedInstance result = buildPartial();
+      public makina.learn.classification.reflection.IntegratorProtos.ErrorRate build() {
+        makina.learn.classification.reflection.IntegratorProtos.ErrorRate result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public makina.learn.classification.reflection.IntegratorProtos.ObservedInstance buildPartial() {
-        makina.learn.classification.reflection.IntegratorProtos.ObservedInstance result = new makina.learn.classification.reflection.IntegratorProtos.ObservedInstance(this);
+      public makina.learn.classification.reflection.IntegratorProtos.ErrorRate buildPartial() {
+        makina.learn.classification.reflection.IntegratorProtos.ErrorRate result = new makina.learn.classification.reflection.IntegratorProtos.ErrorRate(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        result.id_ = id_;
+        result.label_ = label_;
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        result.label_ = label_;
+        result.functionId_ = functionId_;
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
@@ -420,23 +420,23 @@ public final class IntegratorProtos {
       }
 
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof makina.learn.classification.reflection.IntegratorProtos.ObservedInstance) {
-          return mergeFrom((makina.learn.classification.reflection.IntegratorProtos.ObservedInstance)other);
+        if (other instanceof makina.learn.classification.reflection.IntegratorProtos.ErrorRate) {
+          return mergeFrom((makina.learn.classification.reflection.IntegratorProtos.ErrorRate)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(makina.learn.classification.reflection.IntegratorProtos.ObservedInstance other) {
-        if (other == makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.getDefaultInstance()) return this;
-        if (other.hasId()) {
-          setId(other.getId());
-        }
+      public Builder mergeFrom(makina.learn.classification.reflection.IntegratorProtos.ErrorRate other) {
+        if (other == makina.learn.classification.reflection.IntegratorProtos.ErrorRate.getDefaultInstance()) return this;
         if (other.hasLabel()) {
-          bitField0_ |= 0x00000002;
+          bitField0_ |= 0x00000001;
           label_ = other.label_;
           onChanged();
+        }
+        if (other.hasFunctionId()) {
+          setFunctionId(other.getFunctionId());
         }
         if (other.hasValue()) {
           setValue(other.getValue());
@@ -447,10 +447,10 @@ public final class IntegratorProtos {
       }
 
       public final boolean isInitialized() {
-        if (!hasId()) {
+        if (!hasLabel()) {
           return false;
         }
-        if (!hasLabel()) {
+        if (!hasFunctionId()) {
           return false;
         }
         if (!hasValue()) {
@@ -463,11 +463,11 @@ public final class IntegratorProtos {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        makina.learn.classification.reflection.IntegratorProtos.ObservedInstance parsedMessage = null;
+        makina.learn.classification.reflection.IntegratorProtos.ErrorRate parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (makina.learn.classification.reflection.IntegratorProtos.ObservedInstance) e.getUnfinishedMessage();
+          parsedMessage = (makina.learn.classification.reflection.IntegratorProtos.ErrorRate) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -478,47 +478,15 @@ public final class IntegratorProtos {
       }
       private int bitField0_;
 
-      private int id_ ;
+      private java.lang.Object label_ = "";
       /**
-       * <code>required int32 id = 1;</code>
+       * <code>required string label = 1;</code>
        */
-      public boolean hasId() {
+      public boolean hasLabel() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required int32 id = 1;</code>
-       */
-      public int getId() {
-        return id_;
-      }
-      /**
-       * <code>required int32 id = 1;</code>
-       */
-      public Builder setId(int value) {
-        bitField0_ |= 0x00000001;
-        id_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>required int32 id = 1;</code>
-       */
-      public Builder clearId() {
-        bitField0_ = (bitField0_ & ~0x00000001);
-        id_ = 0;
-        onChanged();
-        return this;
-      }
-
-      private java.lang.Object label_ = "";
-      /**
-       * <code>required string label = 2;</code>
-       */
-      public boolean hasLabel() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
-      }
-      /**
-       * <code>required string label = 2;</code>
+       * <code>required string label = 1;</code>
        */
       public java.lang.String getLabel() {
         java.lang.Object ref = label_;
@@ -535,7 +503,7 @@ public final class IntegratorProtos {
         }
       }
       /**
-       * <code>required string label = 2;</code>
+       * <code>required string label = 1;</code>
        */
       public com.google.protobuf.ByteString
           getLabelBytes() {
@@ -551,152 +519,184 @@ public final class IntegratorProtos {
         }
       }
       /**
-       * <code>required string label = 2;</code>
+       * <code>required string label = 1;</code>
        */
       public Builder setLabel(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000002;
+  bitField0_ |= 0x00000001;
         label_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required string label = 2;</code>
+       * <code>required string label = 1;</code>
        */
       public Builder clearLabel() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000001);
         label_ = getDefaultInstance().getLabel();
         onChanged();
         return this;
       }
       /**
-       * <code>required string label = 2;</code>
+       * <code>required string label = 1;</code>
        */
       public Builder setLabelBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000002;
+  bitField0_ |= 0x00000001;
         label_ = value;
         onChanged();
         return this;
       }
 
-      private boolean value_ ;
+      private int functionId_ ;
       /**
-       * <code>required bool value = 3;</code>
+       * <code>required int32 functionId = 2;</code>
+       */
+      public boolean hasFunctionId() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required int32 functionId = 2;</code>
+       */
+      public int getFunctionId() {
+        return functionId_;
+      }
+      /**
+       * <code>required int32 functionId = 2;</code>
+       */
+      public Builder setFunctionId(int value) {
+        bitField0_ |= 0x00000002;
+        functionId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int32 functionId = 2;</code>
+       */
+      public Builder clearFunctionId() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        functionId_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private double value_ ;
+      /**
+       * <code>required double value = 3;</code>
        */
       public boolean hasValue() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>required bool value = 3;</code>
+       * <code>required double value = 3;</code>
        */
-      public boolean getValue() {
+      public double getValue() {
         return value_;
       }
       /**
-       * <code>required bool value = 3;</code>
+       * <code>required double value = 3;</code>
        */
-      public Builder setValue(boolean value) {
+      public Builder setValue(double value) {
         bitField0_ |= 0x00000004;
         value_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required bool value = 3;</code>
+       * <code>required double value = 3;</code>
        */
       public Builder clearValue() {
         bitField0_ = (bitField0_ & ~0x00000004);
-        value_ = false;
+        value_ = 0D;
         onChanged();
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:makina.learn.classification.reflection.ObservedInstance)
+      // @@protoc_insertion_point(builder_scope:makina.learn.classification.reflection.ErrorRate)
     }
 
-    // @@protoc_insertion_point(class_scope:makina.learn.classification.reflection.ObservedInstance)
-    private static final makina.learn.classification.reflection.IntegratorProtos.ObservedInstance DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:makina.learn.classification.reflection.ErrorRate)
+    private static final makina.learn.classification.reflection.IntegratorProtos.ErrorRate DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new makina.learn.classification.reflection.IntegratorProtos.ObservedInstance();
+      DEFAULT_INSTANCE = new makina.learn.classification.reflection.IntegratorProtos.ErrorRate();
     }
 
-    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstance getDefaultInstance() {
+    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRate getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    @java.lang.Deprecated public static final com.google.protobuf.Parser<ObservedInstance>
-        PARSER = new com.google.protobuf.AbstractParser<ObservedInstance>() {
-      public ObservedInstance parsePartialFrom(
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ErrorRate>
+        PARSER = new com.google.protobuf.AbstractParser<ErrorRate>() {
+      public ErrorRate parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new ObservedInstance(input, extensionRegistry);
+          return new ErrorRate(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<ObservedInstance> parser() {
+    public static com.google.protobuf.Parser<ErrorRate> parser() {
       return PARSER;
     }
 
     @java.lang.Override
-    public com.google.protobuf.Parser<ObservedInstance> getParserForType() {
+    public com.google.protobuf.Parser<ErrorRate> getParserForType() {
       return PARSER;
     }
 
-    public makina.learn.classification.reflection.IntegratorProtos.ObservedInstance getDefaultInstanceForType() {
+    public makina.learn.classification.reflection.IntegratorProtos.ErrorRate getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
   }
 
-  public interface ObservedInstancesOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:makina.learn.classification.reflection.ObservedInstances)
+  public interface ErrorRatesOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:makina.learn.classification.reflection.ErrorRates)
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+     * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
      */
-    java.util.List<makina.learn.classification.reflection.IntegratorProtos.ObservedInstance> 
-        getObservedInstanceList();
+    java.util.List<makina.learn.classification.reflection.IntegratorProtos.ErrorRate> 
+        getErrorRateList();
     /**
-     * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+     * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
      */
-    makina.learn.classification.reflection.IntegratorProtos.ObservedInstance getObservedInstance(int index);
+    makina.learn.classification.reflection.IntegratorProtos.ErrorRate getErrorRate(int index);
     /**
-     * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+     * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
      */
-    int getObservedInstanceCount();
+    int getErrorRateCount();
     /**
-     * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+     * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
      */
-    java.util.List<? extends makina.learn.classification.reflection.IntegratorProtos.ObservedInstanceOrBuilder> 
-        getObservedInstanceOrBuilderList();
+    java.util.List<? extends makina.learn.classification.reflection.IntegratorProtos.ErrorRateOrBuilder> 
+        getErrorRateOrBuilderList();
     /**
-     * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+     * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
      */
-    makina.learn.classification.reflection.IntegratorProtos.ObservedInstanceOrBuilder getObservedInstanceOrBuilder(
+    makina.learn.classification.reflection.IntegratorProtos.ErrorRateOrBuilder getErrorRateOrBuilder(
         int index);
   }
   /**
-   * Protobuf type {@code makina.learn.classification.reflection.ObservedInstances}
+   * Protobuf type {@code makina.learn.classification.reflection.ErrorRates}
    */
-  public  static final class ObservedInstances extends
+  public  static final class ErrorRates extends
       com.google.protobuf.GeneratedMessage implements
-      // @@protoc_insertion_point(message_implements:makina.learn.classification.reflection.ObservedInstances)
-      ObservedInstancesOrBuilder {
-    // Use ObservedInstances.newBuilder() to construct.
-    private ObservedInstances(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      // @@protoc_insertion_point(message_implements:makina.learn.classification.reflection.ErrorRates)
+      ErrorRatesOrBuilder {
+    // Use ErrorRates.newBuilder() to construct.
+    private ErrorRates(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
     }
-    private ObservedInstances() {
-      observedInstance_ = java.util.Collections.emptyList();
+    private ErrorRates() {
+      errorRate_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -704,7 +704,7 @@ public final class IntegratorProtos {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private ObservedInstances(
+    private ErrorRates(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -729,10 +729,10 @@ public final class IntegratorProtos {
             }
             case 10: {
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                observedInstance_ = new java.util.ArrayList<makina.learn.classification.reflection.IntegratorProtos.ObservedInstance>();
+                errorRate_ = new java.util.ArrayList<makina.learn.classification.reflection.IntegratorProtos.ErrorRate>();
                 mutable_bitField0_ |= 0x00000001;
               }
-              observedInstance_.add(input.readMessage(makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.parser(), extensionRegistry));
+              errorRate_.add(input.readMessage(makina.learn.classification.reflection.IntegratorProtos.ErrorRate.parser(), extensionRegistry));
               break;
             }
           }
@@ -744,7 +744,7 @@ public final class IntegratorProtos {
             e).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-          observedInstance_ = java.util.Collections.unmodifiableList(observedInstance_);
+          errorRate_ = java.util.Collections.unmodifiableList(errorRate_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -752,49 +752,49 @@ public final class IntegratorProtos {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ObservedInstances_descriptor;
+      return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ErrorRates_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ObservedInstances_fieldAccessorTable
+      return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ErrorRates_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              makina.learn.classification.reflection.IntegratorProtos.ObservedInstances.class, makina.learn.classification.reflection.IntegratorProtos.ObservedInstances.Builder.class);
+              makina.learn.classification.reflection.IntegratorProtos.ErrorRates.class, makina.learn.classification.reflection.IntegratorProtos.ErrorRates.Builder.class);
     }
 
-    public static final int OBSERVEDINSTANCE_FIELD_NUMBER = 1;
-    private java.util.List<makina.learn.classification.reflection.IntegratorProtos.ObservedInstance> observedInstance_;
+    public static final int ERRORRATE_FIELD_NUMBER = 1;
+    private java.util.List<makina.learn.classification.reflection.IntegratorProtos.ErrorRate> errorRate_;
     /**
-     * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+     * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
      */
-    public java.util.List<makina.learn.classification.reflection.IntegratorProtos.ObservedInstance> getObservedInstanceList() {
-      return observedInstance_;
+    public java.util.List<makina.learn.classification.reflection.IntegratorProtos.ErrorRate> getErrorRateList() {
+      return errorRate_;
     }
     /**
-     * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+     * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
      */
-    public java.util.List<? extends makina.learn.classification.reflection.IntegratorProtos.ObservedInstanceOrBuilder> 
-        getObservedInstanceOrBuilderList() {
-      return observedInstance_;
+    public java.util.List<? extends makina.learn.classification.reflection.IntegratorProtos.ErrorRateOrBuilder> 
+        getErrorRateOrBuilderList() {
+      return errorRate_;
     }
     /**
-     * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+     * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
      */
-    public int getObservedInstanceCount() {
-      return observedInstance_.size();
+    public int getErrorRateCount() {
+      return errorRate_.size();
     }
     /**
-     * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+     * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
      */
-    public makina.learn.classification.reflection.IntegratorProtos.ObservedInstance getObservedInstance(int index) {
-      return observedInstance_.get(index);
+    public makina.learn.classification.reflection.IntegratorProtos.ErrorRate getErrorRate(int index) {
+      return errorRate_.get(index);
     }
     /**
-     * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+     * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
      */
-    public makina.learn.classification.reflection.IntegratorProtos.ObservedInstanceOrBuilder getObservedInstanceOrBuilder(
+    public makina.learn.classification.reflection.IntegratorProtos.ErrorRateOrBuilder getErrorRateOrBuilder(
         int index) {
-      return observedInstance_.get(index);
+      return errorRate_.get(index);
     }
 
     private byte memoizedIsInitialized = -1;
@@ -803,8 +803,8 @@ public final class IntegratorProtos {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
-      for (int i = 0; i < getObservedInstanceCount(); i++) {
-        if (!getObservedInstance(i).isInitialized()) {
+      for (int i = 0; i < getErrorRateCount(); i++) {
+        if (!getErrorRate(i).isInitialized()) {
           memoizedIsInitialized = 0;
           return false;
         }
@@ -815,8 +815,8 @@ public final class IntegratorProtos {
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      for (int i = 0; i < observedInstance_.size(); i++) {
-        output.writeMessage(1, observedInstance_.get(i));
+      for (int i = 0; i < errorRate_.size(); i++) {
+        output.writeMessage(1, errorRate_.get(i));
       }
       unknownFields.writeTo(output);
     }
@@ -826,9 +826,9 @@ public final class IntegratorProtos {
       if (size != -1) return size;
 
       size = 0;
-      for (int i = 0; i < observedInstance_.size(); i++) {
+      for (int i = 0; i < errorRate_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, observedInstance_.get(i));
+          .computeMessageSize(1, errorRate_.get(i));
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -836,58 +836,58 @@ public final class IntegratorProtos {
     }
 
     private static final long serialVersionUID = 0L;
-    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstances parseFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRates parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstances parseFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRates parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstances parseFrom(byte[] data)
+    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRates parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstances parseFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRates parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstances parseFrom(java.io.InputStream input)
+    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRates parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstances parseFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRates parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstances parseDelimitedFrom(java.io.InputStream input)
+    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRates parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstances parseDelimitedFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRates parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstances parseFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRates parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstances parseFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRates parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -899,7 +899,7 @@ public final class IntegratorProtos {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(makina.learn.classification.reflection.IntegratorProtos.ObservedInstances prototype) {
+    public static Builder newBuilder(makina.learn.classification.reflection.IntegratorProtos.ErrorRates prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -914,25 +914,25 @@ public final class IntegratorProtos {
       return builder;
     }
     /**
-     * Protobuf type {@code makina.learn.classification.reflection.ObservedInstances}
+     * Protobuf type {@code makina.learn.classification.reflection.ErrorRates}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:makina.learn.classification.reflection.ObservedInstances)
-        makina.learn.classification.reflection.IntegratorProtos.ObservedInstancesOrBuilder {
+        // @@protoc_insertion_point(builder_implements:makina.learn.classification.reflection.ErrorRates)
+        makina.learn.classification.reflection.IntegratorProtos.ErrorRatesOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ObservedInstances_descriptor;
+        return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ErrorRates_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ObservedInstances_fieldAccessorTable
+        return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ErrorRates_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                makina.learn.classification.reflection.IntegratorProtos.ObservedInstances.class, makina.learn.classification.reflection.IntegratorProtos.ObservedInstances.Builder.class);
+                makina.learn.classification.reflection.IntegratorProtos.ErrorRates.class, makina.learn.classification.reflection.IntegratorProtos.ErrorRates.Builder.class);
       }
 
-      // Construct using makina.learn.classification.reflection.IntegratorProtos.ObservedInstances.newBuilder()
+      // Construct using makina.learn.classification.reflection.IntegratorProtos.ErrorRates.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -944,87 +944,87 @@ public final class IntegratorProtos {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getObservedInstanceFieldBuilder();
+          getErrorRateFieldBuilder();
         }
       }
       public Builder clear() {
         super.clear();
-        if (observedInstanceBuilder_ == null) {
-          observedInstance_ = java.util.Collections.emptyList();
+        if (errorRateBuilder_ == null) {
+          errorRate_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000001);
         } else {
-          observedInstanceBuilder_.clear();
+          errorRateBuilder_.clear();
         }
         return this;
       }
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ObservedInstances_descriptor;
+        return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ErrorRates_descriptor;
       }
 
-      public makina.learn.classification.reflection.IntegratorProtos.ObservedInstances getDefaultInstanceForType() {
-        return makina.learn.classification.reflection.IntegratorProtos.ObservedInstances.getDefaultInstance();
+      public makina.learn.classification.reflection.IntegratorProtos.ErrorRates getDefaultInstanceForType() {
+        return makina.learn.classification.reflection.IntegratorProtos.ErrorRates.getDefaultInstance();
       }
 
-      public makina.learn.classification.reflection.IntegratorProtos.ObservedInstances build() {
-        makina.learn.classification.reflection.IntegratorProtos.ObservedInstances result = buildPartial();
+      public makina.learn.classification.reflection.IntegratorProtos.ErrorRates build() {
+        makina.learn.classification.reflection.IntegratorProtos.ErrorRates result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public makina.learn.classification.reflection.IntegratorProtos.ObservedInstances buildPartial() {
-        makina.learn.classification.reflection.IntegratorProtos.ObservedInstances result = new makina.learn.classification.reflection.IntegratorProtos.ObservedInstances(this);
+      public makina.learn.classification.reflection.IntegratorProtos.ErrorRates buildPartial() {
+        makina.learn.classification.reflection.IntegratorProtos.ErrorRates result = new makina.learn.classification.reflection.IntegratorProtos.ErrorRates(this);
         int from_bitField0_ = bitField0_;
-        if (observedInstanceBuilder_ == null) {
+        if (errorRateBuilder_ == null) {
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
-            observedInstance_ = java.util.Collections.unmodifiableList(observedInstance_);
+            errorRate_ = java.util.Collections.unmodifiableList(errorRate_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
-          result.observedInstance_ = observedInstance_;
+          result.errorRate_ = errorRate_;
         } else {
-          result.observedInstance_ = observedInstanceBuilder_.build();
+          result.errorRate_ = errorRateBuilder_.build();
         }
         onBuilt();
         return result;
       }
 
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof makina.learn.classification.reflection.IntegratorProtos.ObservedInstances) {
-          return mergeFrom((makina.learn.classification.reflection.IntegratorProtos.ObservedInstances)other);
+        if (other instanceof makina.learn.classification.reflection.IntegratorProtos.ErrorRates) {
+          return mergeFrom((makina.learn.classification.reflection.IntegratorProtos.ErrorRates)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(makina.learn.classification.reflection.IntegratorProtos.ObservedInstances other) {
-        if (other == makina.learn.classification.reflection.IntegratorProtos.ObservedInstances.getDefaultInstance()) return this;
-        if (observedInstanceBuilder_ == null) {
-          if (!other.observedInstance_.isEmpty()) {
-            if (observedInstance_.isEmpty()) {
-              observedInstance_ = other.observedInstance_;
+      public Builder mergeFrom(makina.learn.classification.reflection.IntegratorProtos.ErrorRates other) {
+        if (other == makina.learn.classification.reflection.IntegratorProtos.ErrorRates.getDefaultInstance()) return this;
+        if (errorRateBuilder_ == null) {
+          if (!other.errorRate_.isEmpty()) {
+            if (errorRate_.isEmpty()) {
+              errorRate_ = other.errorRate_;
               bitField0_ = (bitField0_ & ~0x00000001);
             } else {
-              ensureObservedInstanceIsMutable();
-              observedInstance_.addAll(other.observedInstance_);
+              ensureErrorRateIsMutable();
+              errorRate_.addAll(other.errorRate_);
             }
             onChanged();
           }
         } else {
-          if (!other.observedInstance_.isEmpty()) {
-            if (observedInstanceBuilder_.isEmpty()) {
-              observedInstanceBuilder_.dispose();
-              observedInstanceBuilder_ = null;
-              observedInstance_ = other.observedInstance_;
+          if (!other.errorRate_.isEmpty()) {
+            if (errorRateBuilder_.isEmpty()) {
+              errorRateBuilder_.dispose();
+              errorRateBuilder_ = null;
+              errorRate_ = other.errorRate_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              observedInstanceBuilder_ = 
+              errorRateBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
-                   getObservedInstanceFieldBuilder() : null;
+                   getErrorRateFieldBuilder() : null;
             } else {
-              observedInstanceBuilder_.addAllMessages(other.observedInstance_);
+              errorRateBuilder_.addAllMessages(other.errorRate_);
             }
           }
         }
@@ -1034,8 +1034,8 @@ public final class IntegratorProtos {
       }
 
       public final boolean isInitialized() {
-        for (int i = 0; i < getObservedInstanceCount(); i++) {
-          if (!getObservedInstance(i).isInitialized()) {
+        for (int i = 0; i < getErrorRateCount(); i++) {
+          if (!getErrorRate(i).isInitialized()) {
             return false;
           }
         }
@@ -1046,11 +1046,11 @@ public final class IntegratorProtos {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        makina.learn.classification.reflection.IntegratorProtos.ObservedInstances parsedMessage = null;
+        makina.learn.classification.reflection.IntegratorProtos.ErrorRates parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (makina.learn.classification.reflection.IntegratorProtos.ObservedInstances) e.getUnfinishedMessage();
+          parsedMessage = (makina.learn.classification.reflection.IntegratorProtos.ErrorRates) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1061,279 +1061,279 @@ public final class IntegratorProtos {
       }
       private int bitField0_;
 
-      private java.util.List<makina.learn.classification.reflection.IntegratorProtos.ObservedInstance> observedInstance_ =
+      private java.util.List<makina.learn.classification.reflection.IntegratorProtos.ErrorRate> errorRate_ =
         java.util.Collections.emptyList();
-      private void ensureObservedInstanceIsMutable() {
+      private void ensureErrorRateIsMutable() {
         if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          observedInstance_ = new java.util.ArrayList<makina.learn.classification.reflection.IntegratorProtos.ObservedInstance>(observedInstance_);
+          errorRate_ = new java.util.ArrayList<makina.learn.classification.reflection.IntegratorProtos.ErrorRate>(errorRate_);
           bitField0_ |= 0x00000001;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          makina.learn.classification.reflection.IntegratorProtos.ObservedInstance, makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.Builder, makina.learn.classification.reflection.IntegratorProtos.ObservedInstanceOrBuilder> observedInstanceBuilder_;
+          makina.learn.classification.reflection.IntegratorProtos.ErrorRate, makina.learn.classification.reflection.IntegratorProtos.ErrorRate.Builder, makina.learn.classification.reflection.IntegratorProtos.ErrorRateOrBuilder> errorRateBuilder_;
 
       /**
-       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
        */
-      public java.util.List<makina.learn.classification.reflection.IntegratorProtos.ObservedInstance> getObservedInstanceList() {
-        if (observedInstanceBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(observedInstance_);
+      public java.util.List<makina.learn.classification.reflection.IntegratorProtos.ErrorRate> getErrorRateList() {
+        if (errorRateBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(errorRate_);
         } else {
-          return observedInstanceBuilder_.getMessageList();
+          return errorRateBuilder_.getMessageList();
         }
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
        */
-      public int getObservedInstanceCount() {
-        if (observedInstanceBuilder_ == null) {
-          return observedInstance_.size();
+      public int getErrorRateCount() {
+        if (errorRateBuilder_ == null) {
+          return errorRate_.size();
         } else {
-          return observedInstanceBuilder_.getCount();
+          return errorRateBuilder_.getCount();
         }
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
        */
-      public makina.learn.classification.reflection.IntegratorProtos.ObservedInstance getObservedInstance(int index) {
-        if (observedInstanceBuilder_ == null) {
-          return observedInstance_.get(index);
+      public makina.learn.classification.reflection.IntegratorProtos.ErrorRate getErrorRate(int index) {
+        if (errorRateBuilder_ == null) {
+          return errorRate_.get(index);
         } else {
-          return observedInstanceBuilder_.getMessage(index);
+          return errorRateBuilder_.getMessage(index);
         }
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
        */
-      public Builder setObservedInstance(
-          int index, makina.learn.classification.reflection.IntegratorProtos.ObservedInstance value) {
-        if (observedInstanceBuilder_ == null) {
+      public Builder setErrorRate(
+          int index, makina.learn.classification.reflection.IntegratorProtos.ErrorRate value) {
+        if (errorRateBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureObservedInstanceIsMutable();
-          observedInstance_.set(index, value);
+          ensureErrorRateIsMutable();
+          errorRate_.set(index, value);
           onChanged();
         } else {
-          observedInstanceBuilder_.setMessage(index, value);
+          errorRateBuilder_.setMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
        */
-      public Builder setObservedInstance(
-          int index, makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.Builder builderForValue) {
-        if (observedInstanceBuilder_ == null) {
-          ensureObservedInstanceIsMutable();
-          observedInstance_.set(index, builderForValue.build());
+      public Builder setErrorRate(
+          int index, makina.learn.classification.reflection.IntegratorProtos.ErrorRate.Builder builderForValue) {
+        if (errorRateBuilder_ == null) {
+          ensureErrorRateIsMutable();
+          errorRate_.set(index, builderForValue.build());
           onChanged();
         } else {
-          observedInstanceBuilder_.setMessage(index, builderForValue.build());
+          errorRateBuilder_.setMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
        */
-      public Builder addObservedInstance(makina.learn.classification.reflection.IntegratorProtos.ObservedInstance value) {
-        if (observedInstanceBuilder_ == null) {
+      public Builder addErrorRate(makina.learn.classification.reflection.IntegratorProtos.ErrorRate value) {
+        if (errorRateBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureObservedInstanceIsMutable();
-          observedInstance_.add(value);
+          ensureErrorRateIsMutable();
+          errorRate_.add(value);
           onChanged();
         } else {
-          observedInstanceBuilder_.addMessage(value);
+          errorRateBuilder_.addMessage(value);
         }
         return this;
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
        */
-      public Builder addObservedInstance(
-          int index, makina.learn.classification.reflection.IntegratorProtos.ObservedInstance value) {
-        if (observedInstanceBuilder_ == null) {
+      public Builder addErrorRate(
+          int index, makina.learn.classification.reflection.IntegratorProtos.ErrorRate value) {
+        if (errorRateBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureObservedInstanceIsMutable();
-          observedInstance_.add(index, value);
+          ensureErrorRateIsMutable();
+          errorRate_.add(index, value);
           onChanged();
         } else {
-          observedInstanceBuilder_.addMessage(index, value);
+          errorRateBuilder_.addMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
        */
-      public Builder addObservedInstance(
-          makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.Builder builderForValue) {
-        if (observedInstanceBuilder_ == null) {
-          ensureObservedInstanceIsMutable();
-          observedInstance_.add(builderForValue.build());
+      public Builder addErrorRate(
+          makina.learn.classification.reflection.IntegratorProtos.ErrorRate.Builder builderForValue) {
+        if (errorRateBuilder_ == null) {
+          ensureErrorRateIsMutable();
+          errorRate_.add(builderForValue.build());
           onChanged();
         } else {
-          observedInstanceBuilder_.addMessage(builderForValue.build());
+          errorRateBuilder_.addMessage(builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
        */
-      public Builder addObservedInstance(
-          int index, makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.Builder builderForValue) {
-        if (observedInstanceBuilder_ == null) {
-          ensureObservedInstanceIsMutable();
-          observedInstance_.add(index, builderForValue.build());
+      public Builder addErrorRate(
+          int index, makina.learn.classification.reflection.IntegratorProtos.ErrorRate.Builder builderForValue) {
+        if (errorRateBuilder_ == null) {
+          ensureErrorRateIsMutable();
+          errorRate_.add(index, builderForValue.build());
           onChanged();
         } else {
-          observedInstanceBuilder_.addMessage(index, builderForValue.build());
+          errorRateBuilder_.addMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
        */
-      public Builder addAllObservedInstance(
-          java.lang.Iterable<? extends makina.learn.classification.reflection.IntegratorProtos.ObservedInstance> values) {
-        if (observedInstanceBuilder_ == null) {
-          ensureObservedInstanceIsMutable();
+      public Builder addAllErrorRate(
+          java.lang.Iterable<? extends makina.learn.classification.reflection.IntegratorProtos.ErrorRate> values) {
+        if (errorRateBuilder_ == null) {
+          ensureErrorRateIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
-              values, observedInstance_);
+              values, errorRate_);
           onChanged();
         } else {
-          observedInstanceBuilder_.addAllMessages(values);
+          errorRateBuilder_.addAllMessages(values);
         }
         return this;
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
        */
-      public Builder clearObservedInstance() {
-        if (observedInstanceBuilder_ == null) {
-          observedInstance_ = java.util.Collections.emptyList();
+      public Builder clearErrorRate() {
+        if (errorRateBuilder_ == null) {
+          errorRate_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000001);
           onChanged();
         } else {
-          observedInstanceBuilder_.clear();
+          errorRateBuilder_.clear();
         }
         return this;
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
        */
-      public Builder removeObservedInstance(int index) {
-        if (observedInstanceBuilder_ == null) {
-          ensureObservedInstanceIsMutable();
-          observedInstance_.remove(index);
+      public Builder removeErrorRate(int index) {
+        if (errorRateBuilder_ == null) {
+          ensureErrorRateIsMutable();
+          errorRate_.remove(index);
           onChanged();
         } else {
-          observedInstanceBuilder_.remove(index);
+          errorRateBuilder_.remove(index);
         }
         return this;
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
        */
-      public makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.Builder getObservedInstanceBuilder(
+      public makina.learn.classification.reflection.IntegratorProtos.ErrorRate.Builder getErrorRateBuilder(
           int index) {
-        return getObservedInstanceFieldBuilder().getBuilder(index);
+        return getErrorRateFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
        */
-      public makina.learn.classification.reflection.IntegratorProtos.ObservedInstanceOrBuilder getObservedInstanceOrBuilder(
+      public makina.learn.classification.reflection.IntegratorProtos.ErrorRateOrBuilder getErrorRateOrBuilder(
           int index) {
-        if (observedInstanceBuilder_ == null) {
-          return observedInstance_.get(index);  } else {
-          return observedInstanceBuilder_.getMessageOrBuilder(index);
+        if (errorRateBuilder_ == null) {
+          return errorRate_.get(index);  } else {
+          return errorRateBuilder_.getMessageOrBuilder(index);
         }
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
        */
-      public java.util.List<? extends makina.learn.classification.reflection.IntegratorProtos.ObservedInstanceOrBuilder> 
-           getObservedInstanceOrBuilderList() {
-        if (observedInstanceBuilder_ != null) {
-          return observedInstanceBuilder_.getMessageOrBuilderList();
+      public java.util.List<? extends makina.learn.classification.reflection.IntegratorProtos.ErrorRateOrBuilder> 
+           getErrorRateOrBuilderList() {
+        if (errorRateBuilder_ != null) {
+          return errorRateBuilder_.getMessageOrBuilderList();
         } else {
-          return java.util.Collections.unmodifiableList(observedInstance_);
+          return java.util.Collections.unmodifiableList(errorRate_);
         }
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
        */
-      public makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.Builder addObservedInstanceBuilder() {
-        return getObservedInstanceFieldBuilder().addBuilder(
-            makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.getDefaultInstance());
+      public makina.learn.classification.reflection.IntegratorProtos.ErrorRate.Builder addErrorRateBuilder() {
+        return getErrorRateFieldBuilder().addBuilder(
+            makina.learn.classification.reflection.IntegratorProtos.ErrorRate.getDefaultInstance());
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
        */
-      public makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.Builder addObservedInstanceBuilder(
+      public makina.learn.classification.reflection.IntegratorProtos.ErrorRate.Builder addErrorRateBuilder(
           int index) {
-        return getObservedInstanceFieldBuilder().addBuilder(
-            index, makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.getDefaultInstance());
+        return getErrorRateFieldBuilder().addBuilder(
+            index, makina.learn.classification.reflection.IntegratorProtos.ErrorRate.getDefaultInstance());
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
        */
-      public java.util.List<makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.Builder> 
-           getObservedInstanceBuilderList() {
-        return getObservedInstanceFieldBuilder().getBuilderList();
+      public java.util.List<makina.learn.classification.reflection.IntegratorProtos.ErrorRate.Builder> 
+           getErrorRateBuilderList() {
+        return getErrorRateFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          makina.learn.classification.reflection.IntegratorProtos.ObservedInstance, makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.Builder, makina.learn.classification.reflection.IntegratorProtos.ObservedInstanceOrBuilder> 
-          getObservedInstanceFieldBuilder() {
-        if (observedInstanceBuilder_ == null) {
-          observedInstanceBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              makina.learn.classification.reflection.IntegratorProtos.ObservedInstance, makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.Builder, makina.learn.classification.reflection.IntegratorProtos.ObservedInstanceOrBuilder>(
-                  observedInstance_,
+          makina.learn.classification.reflection.IntegratorProtos.ErrorRate, makina.learn.classification.reflection.IntegratorProtos.ErrorRate.Builder, makina.learn.classification.reflection.IntegratorProtos.ErrorRateOrBuilder> 
+          getErrorRateFieldBuilder() {
+        if (errorRateBuilder_ == null) {
+          errorRateBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              makina.learn.classification.reflection.IntegratorProtos.ErrorRate, makina.learn.classification.reflection.IntegratorProtos.ErrorRate.Builder, makina.learn.classification.reflection.IntegratorProtos.ErrorRateOrBuilder>(
+                  errorRate_,
                   ((bitField0_ & 0x00000001) == 0x00000001),
                   getParentForChildren(),
                   isClean());
-          observedInstance_ = null;
+          errorRate_ = null;
         }
-        return observedInstanceBuilder_;
+        return errorRateBuilder_;
       }
 
-      // @@protoc_insertion_point(builder_scope:makina.learn.classification.reflection.ObservedInstances)
+      // @@protoc_insertion_point(builder_scope:makina.learn.classification.reflection.ErrorRates)
     }
 
-    // @@protoc_insertion_point(class_scope:makina.learn.classification.reflection.ObservedInstances)
-    private static final makina.learn.classification.reflection.IntegratorProtos.ObservedInstances DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:makina.learn.classification.reflection.ErrorRates)
+    private static final makina.learn.classification.reflection.IntegratorProtos.ErrorRates DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new makina.learn.classification.reflection.IntegratorProtos.ObservedInstances();
+      DEFAULT_INSTANCE = new makina.learn.classification.reflection.IntegratorProtos.ErrorRates();
     }
 
-    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstances getDefaultInstance() {
+    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRates getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    @java.lang.Deprecated public static final com.google.protobuf.Parser<ObservedInstances>
-        PARSER = new com.google.protobuf.AbstractParser<ObservedInstances>() {
-      public ObservedInstances parsePartialFrom(
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ErrorRates>
+        PARSER = new com.google.protobuf.AbstractParser<ErrorRates>() {
+      public ErrorRates parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new ObservedInstances(input, extensionRegistry);
+          return new ErrorRates(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<ObservedInstances> parser() {
+    public static com.google.protobuf.Parser<ErrorRates> parser() {
       return PARSER;
     }
 
     @java.lang.Override
-    public com.google.protobuf.Parser<ObservedInstances> getParserForType() {
+    public com.google.protobuf.Parser<ErrorRates> getParserForType() {
       return PARSER;
     }
 
-    public makina.learn.classification.reflection.IntegratorProtos.ObservedInstances getDefaultInstanceForType() {
+    public makina.learn.classification.reflection.IntegratorProtos.ErrorRates getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -2755,57 +2755,57 @@ public final class IntegratorProtos {
 
   }
 
-  public interface ErrorRateOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:makina.learn.classification.reflection.ErrorRate)
+  public interface ObservedInstanceOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:makina.learn.classification.reflection.ObservedInstance)
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>required string label = 1;</code>
+     * <code>required int32 id = 1;</code>
+     */
+    boolean hasId();
+    /**
+     * <code>required int32 id = 1;</code>
+     */
+    int getId();
+
+    /**
+     * <code>required string label = 2;</code>
      */
     boolean hasLabel();
     /**
-     * <code>required string label = 1;</code>
+     * <code>required string label = 2;</code>
      */
     java.lang.String getLabel();
     /**
-     * <code>required string label = 1;</code>
+     * <code>required string label = 2;</code>
      */
     com.google.protobuf.ByteString
         getLabelBytes();
 
     /**
-     * <code>required int32 functionId = 2;</code>
-     */
-    boolean hasFunctionId();
-    /**
-     * <code>required int32 functionId = 2;</code>
-     */
-    int getFunctionId();
-
-    /**
-     * <code>required double value = 3;</code>
+     * <code>required bool value = 3;</code>
      */
     boolean hasValue();
     /**
-     * <code>required double value = 3;</code>
+     * <code>required bool value = 3;</code>
      */
-    double getValue();
+    boolean getValue();
   }
   /**
-   * Protobuf type {@code makina.learn.classification.reflection.ErrorRate}
+   * Protobuf type {@code makina.learn.classification.reflection.ObservedInstance}
    */
-  public  static final class ErrorRate extends
+  public  static final class ObservedInstance extends
       com.google.protobuf.GeneratedMessage implements
-      // @@protoc_insertion_point(message_implements:makina.learn.classification.reflection.ErrorRate)
-      ErrorRateOrBuilder {
-    // Use ErrorRate.newBuilder() to construct.
-    private ErrorRate(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      // @@protoc_insertion_point(message_implements:makina.learn.classification.reflection.ObservedInstance)
+      ObservedInstanceOrBuilder {
+    // Use ObservedInstance.newBuilder() to construct.
+    private ObservedInstance(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
     }
-    private ErrorRate() {
+    private ObservedInstance() {
+      id_ = 0;
       label_ = "";
-      functionId_ = 0;
-      value_ = 0D;
+      value_ = false;
     }
 
     @java.lang.Override
@@ -2813,7 +2813,7 @@ public final class IntegratorProtos {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private ErrorRate(
+    private ObservedInstance(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -2836,20 +2836,20 @@ public final class IntegratorProtos {
               }
               break;
             }
-            case 10: {
-              com.google.protobuf.ByteString bs = input.readBytes();
+            case 8: {
               bitField0_ |= 0x00000001;
+              id_ = input.readInt32();
+              break;
+            }
+            case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000002;
               label_ = bs;
               break;
             }
-            case 16: {
-              bitField0_ |= 0x00000002;
-              functionId_ = input.readInt32();
-              break;
-            }
-            case 25: {
+            case 24: {
               bitField0_ |= 0x00000004;
-              value_ = input.readDouble();
+              value_ = input.readBool();
               break;
             }
           }
@@ -2866,27 +2866,42 @@ public final class IntegratorProtos {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ErrorRate_descriptor;
+      return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ObservedInstance_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ErrorRate_fieldAccessorTable
+      return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ObservedInstance_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              makina.learn.classification.reflection.IntegratorProtos.ErrorRate.class, makina.learn.classification.reflection.IntegratorProtos.ErrorRate.Builder.class);
+              makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.class, makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.Builder.class);
     }
 
     private int bitField0_;
-    public static final int LABEL_FIELD_NUMBER = 1;
-    private volatile java.lang.Object label_;
+    public static final int ID_FIELD_NUMBER = 1;
+    private int id_;
     /**
-     * <code>required string label = 1;</code>
+     * <code>required int32 id = 1;</code>
      */
-    public boolean hasLabel() {
+    public boolean hasId() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required string label = 1;</code>
+     * <code>required int32 id = 1;</code>
+     */
+    public int getId() {
+      return id_;
+    }
+
+    public static final int LABEL_FIELD_NUMBER = 2;
+    private volatile java.lang.Object label_;
+    /**
+     * <code>required string label = 2;</code>
+     */
+    public boolean hasLabel() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>required string label = 2;</code>
      */
     public java.lang.String getLabel() {
       java.lang.Object ref = label_;
@@ -2903,7 +2918,7 @@ public final class IntegratorProtos {
       }
     }
     /**
-     * <code>required string label = 1;</code>
+     * <code>required string label = 2;</code>
      */
     public com.google.protobuf.ByteString
         getLabelBytes() {
@@ -2919,33 +2934,18 @@ public final class IntegratorProtos {
       }
     }
 
-    public static final int FUNCTIONID_FIELD_NUMBER = 2;
-    private int functionId_;
-    /**
-     * <code>required int32 functionId = 2;</code>
-     */
-    public boolean hasFunctionId() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
-    }
-    /**
-     * <code>required int32 functionId = 2;</code>
-     */
-    public int getFunctionId() {
-      return functionId_;
-    }
-
     public static final int VALUE_FIELD_NUMBER = 3;
-    private double value_;
+    private boolean value_;
     /**
-     * <code>required double value = 3;</code>
+     * <code>required bool value = 3;</code>
      */
     public boolean hasValue() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>required double value = 3;</code>
+     * <code>required bool value = 3;</code>
      */
-    public double getValue() {
+    public boolean getValue() {
       return value_;
     }
 
@@ -2955,11 +2955,11 @@ public final class IntegratorProtos {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
-      if (!hasLabel()) {
+      if (!hasId()) {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasFunctionId()) {
+      if (!hasLabel()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -2974,13 +2974,13 @@ public final class IntegratorProtos {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        com.google.protobuf.GeneratedMessage.writeString(output, 1, label_);
+        output.writeInt32(1, id_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeInt32(2, functionId_);
+        com.google.protobuf.GeneratedMessage.writeString(output, 2, label_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeDouble(3, value_);
+        output.writeBool(3, value_);
       }
       unknownFields.writeTo(output);
     }
@@ -2991,15 +2991,15 @@ public final class IntegratorProtos {
 
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += com.google.protobuf.GeneratedMessage.computeStringSize(1, label_);
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, id_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(2, functionId_);
+        size += com.google.protobuf.GeneratedMessage.computeStringSize(2, label_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeDoubleSize(3, value_);
+          .computeBoolSize(3, value_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -3007,58 +3007,58 @@ public final class IntegratorProtos {
     }
 
     private static final long serialVersionUID = 0L;
-    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRate parseFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstance parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRate parseFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstance parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRate parseFrom(byte[] data)
+    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstance parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRate parseFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstance parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRate parseFrom(java.io.InputStream input)
+    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstance parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRate parseFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstance parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRate parseDelimitedFrom(java.io.InputStream input)
+    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstance parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRate parseDelimitedFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstance parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRate parseFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstance parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRate parseFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstance parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -3070,7 +3070,7 @@ public final class IntegratorProtos {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(makina.learn.classification.reflection.IntegratorProtos.ErrorRate prototype) {
+    public static Builder newBuilder(makina.learn.classification.reflection.IntegratorProtos.ObservedInstance prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -3085,25 +3085,25 @@ public final class IntegratorProtos {
       return builder;
     }
     /**
-     * Protobuf type {@code makina.learn.classification.reflection.ErrorRate}
+     * Protobuf type {@code makina.learn.classification.reflection.ObservedInstance}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:makina.learn.classification.reflection.ErrorRate)
-        makina.learn.classification.reflection.IntegratorProtos.ErrorRateOrBuilder {
+        // @@protoc_insertion_point(builder_implements:makina.learn.classification.reflection.ObservedInstance)
+        makina.learn.classification.reflection.IntegratorProtos.ObservedInstanceOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ErrorRate_descriptor;
+        return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ObservedInstance_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ErrorRate_fieldAccessorTable
+        return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ObservedInstance_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                makina.learn.classification.reflection.IntegratorProtos.ErrorRate.class, makina.learn.classification.reflection.IntegratorProtos.ErrorRate.Builder.class);
+                makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.class, makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.Builder.class);
       }
 
-      // Construct using makina.learn.classification.reflection.IntegratorProtos.ErrorRate.newBuilder()
+      // Construct using makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -3119,44 +3119,44 @@ public final class IntegratorProtos {
       }
       public Builder clear() {
         super.clear();
-        label_ = "";
+        id_ = 0;
         bitField0_ = (bitField0_ & ~0x00000001);
-        functionId_ = 0;
+        label_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
-        value_ = 0D;
+        value_ = false;
         bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ErrorRate_descriptor;
+        return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ObservedInstance_descriptor;
       }
 
-      public makina.learn.classification.reflection.IntegratorProtos.ErrorRate getDefaultInstanceForType() {
-        return makina.learn.classification.reflection.IntegratorProtos.ErrorRate.getDefaultInstance();
+      public makina.learn.classification.reflection.IntegratorProtos.ObservedInstance getDefaultInstanceForType() {
+        return makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.getDefaultInstance();
       }
 
-      public makina.learn.classification.reflection.IntegratorProtos.ErrorRate build() {
-        makina.learn.classification.reflection.IntegratorProtos.ErrorRate result = buildPartial();
+      public makina.learn.classification.reflection.IntegratorProtos.ObservedInstance build() {
+        makina.learn.classification.reflection.IntegratorProtos.ObservedInstance result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public makina.learn.classification.reflection.IntegratorProtos.ErrorRate buildPartial() {
-        makina.learn.classification.reflection.IntegratorProtos.ErrorRate result = new makina.learn.classification.reflection.IntegratorProtos.ErrorRate(this);
+      public makina.learn.classification.reflection.IntegratorProtos.ObservedInstance buildPartial() {
+        makina.learn.classification.reflection.IntegratorProtos.ObservedInstance result = new makina.learn.classification.reflection.IntegratorProtos.ObservedInstance(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        result.label_ = label_;
+        result.id_ = id_;
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        result.functionId_ = functionId_;
+        result.label_ = label_;
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
@@ -3167,23 +3167,23 @@ public final class IntegratorProtos {
       }
 
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof makina.learn.classification.reflection.IntegratorProtos.ErrorRate) {
-          return mergeFrom((makina.learn.classification.reflection.IntegratorProtos.ErrorRate)other);
+        if (other instanceof makina.learn.classification.reflection.IntegratorProtos.ObservedInstance) {
+          return mergeFrom((makina.learn.classification.reflection.IntegratorProtos.ObservedInstance)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(makina.learn.classification.reflection.IntegratorProtos.ErrorRate other) {
-        if (other == makina.learn.classification.reflection.IntegratorProtos.ErrorRate.getDefaultInstance()) return this;
+      public Builder mergeFrom(makina.learn.classification.reflection.IntegratorProtos.ObservedInstance other) {
+        if (other == makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.getDefaultInstance()) return this;
+        if (other.hasId()) {
+          setId(other.getId());
+        }
         if (other.hasLabel()) {
-          bitField0_ |= 0x00000001;
+          bitField0_ |= 0x00000002;
           label_ = other.label_;
           onChanged();
-        }
-        if (other.hasFunctionId()) {
-          setFunctionId(other.getFunctionId());
         }
         if (other.hasValue()) {
           setValue(other.getValue());
@@ -3194,10 +3194,10 @@ public final class IntegratorProtos {
       }
 
       public final boolean isInitialized() {
-        if (!hasLabel()) {
+        if (!hasId()) {
           return false;
         }
-        if (!hasFunctionId()) {
+        if (!hasLabel()) {
           return false;
         }
         if (!hasValue()) {
@@ -3210,11 +3210,11 @@ public final class IntegratorProtos {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        makina.learn.classification.reflection.IntegratorProtos.ErrorRate parsedMessage = null;
+        makina.learn.classification.reflection.IntegratorProtos.ObservedInstance parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (makina.learn.classification.reflection.IntegratorProtos.ErrorRate) e.getUnfinishedMessage();
+          parsedMessage = (makina.learn.classification.reflection.IntegratorProtos.ObservedInstance) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -3225,15 +3225,47 @@ public final class IntegratorProtos {
       }
       private int bitField0_;
 
-      private java.lang.Object label_ = "";
+      private int id_ ;
       /**
-       * <code>required string label = 1;</code>
+       * <code>required int32 id = 1;</code>
        */
-      public boolean hasLabel() {
+      public boolean hasId() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required string label = 1;</code>
+       * <code>required int32 id = 1;</code>
+       */
+      public int getId() {
+        return id_;
+      }
+      /**
+       * <code>required int32 id = 1;</code>
+       */
+      public Builder setId(int value) {
+        bitField0_ |= 0x00000001;
+        id_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int32 id = 1;</code>
+       */
+      public Builder clearId() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        id_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object label_ = "";
+      /**
+       * <code>required string label = 2;</code>
+       */
+      public boolean hasLabel() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required string label = 2;</code>
        */
       public java.lang.String getLabel() {
         java.lang.Object ref = label_;
@@ -3250,7 +3282,7 @@ public final class IntegratorProtos {
         }
       }
       /**
-       * <code>required string label = 1;</code>
+       * <code>required string label = 2;</code>
        */
       public com.google.protobuf.ByteString
           getLabelBytes() {
@@ -3266,184 +3298,152 @@ public final class IntegratorProtos {
         }
       }
       /**
-       * <code>required string label = 1;</code>
+       * <code>required string label = 2;</code>
        */
       public Builder setLabel(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000001;
+  bitField0_ |= 0x00000002;
         label_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required string label = 1;</code>
+       * <code>required string label = 2;</code>
        */
       public Builder clearLabel() {
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000002);
         label_ = getDefaultInstance().getLabel();
         onChanged();
         return this;
       }
       /**
-       * <code>required string label = 1;</code>
+       * <code>required string label = 2;</code>
        */
       public Builder setLabelBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000001;
+  bitField0_ |= 0x00000002;
         label_ = value;
         onChanged();
         return this;
       }
 
-      private int functionId_ ;
+      private boolean value_ ;
       /**
-       * <code>required int32 functionId = 2;</code>
-       */
-      public boolean hasFunctionId() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
-      }
-      /**
-       * <code>required int32 functionId = 2;</code>
-       */
-      public int getFunctionId() {
-        return functionId_;
-      }
-      /**
-       * <code>required int32 functionId = 2;</code>
-       */
-      public Builder setFunctionId(int value) {
-        bitField0_ |= 0x00000002;
-        functionId_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>required int32 functionId = 2;</code>
-       */
-      public Builder clearFunctionId() {
-        bitField0_ = (bitField0_ & ~0x00000002);
-        functionId_ = 0;
-        onChanged();
-        return this;
-      }
-
-      private double value_ ;
-      /**
-       * <code>required double value = 3;</code>
+       * <code>required bool value = 3;</code>
        */
       public boolean hasValue() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>required double value = 3;</code>
+       * <code>required bool value = 3;</code>
        */
-      public double getValue() {
+      public boolean getValue() {
         return value_;
       }
       /**
-       * <code>required double value = 3;</code>
+       * <code>required bool value = 3;</code>
        */
-      public Builder setValue(double value) {
+      public Builder setValue(boolean value) {
         bitField0_ |= 0x00000004;
         value_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required double value = 3;</code>
+       * <code>required bool value = 3;</code>
        */
       public Builder clearValue() {
         bitField0_ = (bitField0_ & ~0x00000004);
-        value_ = 0D;
+        value_ = false;
         onChanged();
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:makina.learn.classification.reflection.ErrorRate)
+      // @@protoc_insertion_point(builder_scope:makina.learn.classification.reflection.ObservedInstance)
     }
 
-    // @@protoc_insertion_point(class_scope:makina.learn.classification.reflection.ErrorRate)
-    private static final makina.learn.classification.reflection.IntegratorProtos.ErrorRate DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:makina.learn.classification.reflection.ObservedInstance)
+    private static final makina.learn.classification.reflection.IntegratorProtos.ObservedInstance DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new makina.learn.classification.reflection.IntegratorProtos.ErrorRate();
+      DEFAULT_INSTANCE = new makina.learn.classification.reflection.IntegratorProtos.ObservedInstance();
     }
 
-    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRate getDefaultInstance() {
+    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstance getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    @java.lang.Deprecated public static final com.google.protobuf.Parser<ErrorRate>
-        PARSER = new com.google.protobuf.AbstractParser<ErrorRate>() {
-      public ErrorRate parsePartialFrom(
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ObservedInstance>
+        PARSER = new com.google.protobuf.AbstractParser<ObservedInstance>() {
+      public ObservedInstance parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new ErrorRate(input, extensionRegistry);
+          return new ObservedInstance(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<ErrorRate> parser() {
+    public static com.google.protobuf.Parser<ObservedInstance> parser() {
       return PARSER;
     }
 
     @java.lang.Override
-    public com.google.protobuf.Parser<ErrorRate> getParserForType() {
+    public com.google.protobuf.Parser<ObservedInstance> getParserForType() {
       return PARSER;
     }
 
-    public makina.learn.classification.reflection.IntegratorProtos.ErrorRate getDefaultInstanceForType() {
+    public makina.learn.classification.reflection.IntegratorProtos.ObservedInstance getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
   }
 
-  public interface ErrorRatesOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:makina.learn.classification.reflection.ErrorRates)
+  public interface ObservedInstancesOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:makina.learn.classification.reflection.ObservedInstances)
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+     * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
      */
-    java.util.List<makina.learn.classification.reflection.IntegratorProtos.ErrorRate> 
-        getErrorRateList();
+    java.util.List<makina.learn.classification.reflection.IntegratorProtos.ObservedInstance> 
+        getObservedInstanceList();
     /**
-     * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+     * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
      */
-    makina.learn.classification.reflection.IntegratorProtos.ErrorRate getErrorRate(int index);
+    makina.learn.classification.reflection.IntegratorProtos.ObservedInstance getObservedInstance(int index);
     /**
-     * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+     * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
      */
-    int getErrorRateCount();
+    int getObservedInstanceCount();
     /**
-     * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+     * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
      */
-    java.util.List<? extends makina.learn.classification.reflection.IntegratorProtos.ErrorRateOrBuilder> 
-        getErrorRateOrBuilderList();
+    java.util.List<? extends makina.learn.classification.reflection.IntegratorProtos.ObservedInstanceOrBuilder> 
+        getObservedInstanceOrBuilderList();
     /**
-     * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+     * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
      */
-    makina.learn.classification.reflection.IntegratorProtos.ErrorRateOrBuilder getErrorRateOrBuilder(
+    makina.learn.classification.reflection.IntegratorProtos.ObservedInstanceOrBuilder getObservedInstanceOrBuilder(
         int index);
   }
   /**
-   * Protobuf type {@code makina.learn.classification.reflection.ErrorRates}
+   * Protobuf type {@code makina.learn.classification.reflection.ObservedInstances}
    */
-  public  static final class ErrorRates extends
+  public  static final class ObservedInstances extends
       com.google.protobuf.GeneratedMessage implements
-      // @@protoc_insertion_point(message_implements:makina.learn.classification.reflection.ErrorRates)
-      ErrorRatesOrBuilder {
-    // Use ErrorRates.newBuilder() to construct.
-    private ErrorRates(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      // @@protoc_insertion_point(message_implements:makina.learn.classification.reflection.ObservedInstances)
+      ObservedInstancesOrBuilder {
+    // Use ObservedInstances.newBuilder() to construct.
+    private ObservedInstances(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
     }
-    private ErrorRates() {
-      errorRate_ = java.util.Collections.emptyList();
+    private ObservedInstances() {
+      observedInstance_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -3451,7 +3451,7 @@ public final class IntegratorProtos {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private ErrorRates(
+    private ObservedInstances(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -3476,10 +3476,10 @@ public final class IntegratorProtos {
             }
             case 10: {
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                errorRate_ = new java.util.ArrayList<makina.learn.classification.reflection.IntegratorProtos.ErrorRate>();
+                observedInstance_ = new java.util.ArrayList<makina.learn.classification.reflection.IntegratorProtos.ObservedInstance>();
                 mutable_bitField0_ |= 0x00000001;
               }
-              errorRate_.add(input.readMessage(makina.learn.classification.reflection.IntegratorProtos.ErrorRate.parser(), extensionRegistry));
+              observedInstance_.add(input.readMessage(makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.parser(), extensionRegistry));
               break;
             }
           }
@@ -3491,7 +3491,7 @@ public final class IntegratorProtos {
             e).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-          errorRate_ = java.util.Collections.unmodifiableList(errorRate_);
+          observedInstance_ = java.util.Collections.unmodifiableList(observedInstance_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -3499,49 +3499,49 @@ public final class IntegratorProtos {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ErrorRates_descriptor;
+      return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ObservedInstances_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ErrorRates_fieldAccessorTable
+      return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ObservedInstances_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              makina.learn.classification.reflection.IntegratorProtos.ErrorRates.class, makina.learn.classification.reflection.IntegratorProtos.ErrorRates.Builder.class);
+              makina.learn.classification.reflection.IntegratorProtos.ObservedInstances.class, makina.learn.classification.reflection.IntegratorProtos.ObservedInstances.Builder.class);
     }
 
-    public static final int ERRORRATE_FIELD_NUMBER = 1;
-    private java.util.List<makina.learn.classification.reflection.IntegratorProtos.ErrorRate> errorRate_;
+    public static final int OBSERVEDINSTANCE_FIELD_NUMBER = 1;
+    private java.util.List<makina.learn.classification.reflection.IntegratorProtos.ObservedInstance> observedInstance_;
     /**
-     * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+     * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
      */
-    public java.util.List<makina.learn.classification.reflection.IntegratorProtos.ErrorRate> getErrorRateList() {
-      return errorRate_;
+    public java.util.List<makina.learn.classification.reflection.IntegratorProtos.ObservedInstance> getObservedInstanceList() {
+      return observedInstance_;
     }
     /**
-     * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+     * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
      */
-    public java.util.List<? extends makina.learn.classification.reflection.IntegratorProtos.ErrorRateOrBuilder> 
-        getErrorRateOrBuilderList() {
-      return errorRate_;
+    public java.util.List<? extends makina.learn.classification.reflection.IntegratorProtos.ObservedInstanceOrBuilder> 
+        getObservedInstanceOrBuilderList() {
+      return observedInstance_;
     }
     /**
-     * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+     * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
      */
-    public int getErrorRateCount() {
-      return errorRate_.size();
+    public int getObservedInstanceCount() {
+      return observedInstance_.size();
     }
     /**
-     * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+     * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
      */
-    public makina.learn.classification.reflection.IntegratorProtos.ErrorRate getErrorRate(int index) {
-      return errorRate_.get(index);
+    public makina.learn.classification.reflection.IntegratorProtos.ObservedInstance getObservedInstance(int index) {
+      return observedInstance_.get(index);
     }
     /**
-     * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+     * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
      */
-    public makina.learn.classification.reflection.IntegratorProtos.ErrorRateOrBuilder getErrorRateOrBuilder(
+    public makina.learn.classification.reflection.IntegratorProtos.ObservedInstanceOrBuilder getObservedInstanceOrBuilder(
         int index) {
-      return errorRate_.get(index);
+      return observedInstance_.get(index);
     }
 
     private byte memoizedIsInitialized = -1;
@@ -3550,8 +3550,8 @@ public final class IntegratorProtos {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
-      for (int i = 0; i < getErrorRateCount(); i++) {
-        if (!getErrorRate(i).isInitialized()) {
+      for (int i = 0; i < getObservedInstanceCount(); i++) {
+        if (!getObservedInstance(i).isInitialized()) {
           memoizedIsInitialized = 0;
           return false;
         }
@@ -3562,8 +3562,8 @@ public final class IntegratorProtos {
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      for (int i = 0; i < errorRate_.size(); i++) {
-        output.writeMessage(1, errorRate_.get(i));
+      for (int i = 0; i < observedInstance_.size(); i++) {
+        output.writeMessage(1, observedInstance_.get(i));
       }
       unknownFields.writeTo(output);
     }
@@ -3573,9 +3573,9 @@ public final class IntegratorProtos {
       if (size != -1) return size;
 
       size = 0;
-      for (int i = 0; i < errorRate_.size(); i++) {
+      for (int i = 0; i < observedInstance_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, errorRate_.get(i));
+          .computeMessageSize(1, observedInstance_.get(i));
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -3583,58 +3583,58 @@ public final class IntegratorProtos {
     }
 
     private static final long serialVersionUID = 0L;
-    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRates parseFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstances parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRates parseFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstances parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRates parseFrom(byte[] data)
+    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstances parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRates parseFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstances parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRates parseFrom(java.io.InputStream input)
+    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstances parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRates parseFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstances parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRates parseDelimitedFrom(java.io.InputStream input)
+    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstances parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRates parseDelimitedFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstances parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRates parseFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstances parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRates parseFrom(
+    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstances parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -3646,7 +3646,7 @@ public final class IntegratorProtos {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(makina.learn.classification.reflection.IntegratorProtos.ErrorRates prototype) {
+    public static Builder newBuilder(makina.learn.classification.reflection.IntegratorProtos.ObservedInstances prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -3661,25 +3661,25 @@ public final class IntegratorProtos {
       return builder;
     }
     /**
-     * Protobuf type {@code makina.learn.classification.reflection.ErrorRates}
+     * Protobuf type {@code makina.learn.classification.reflection.ObservedInstances}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:makina.learn.classification.reflection.ErrorRates)
-        makina.learn.classification.reflection.IntegratorProtos.ErrorRatesOrBuilder {
+        // @@protoc_insertion_point(builder_implements:makina.learn.classification.reflection.ObservedInstances)
+        makina.learn.classification.reflection.IntegratorProtos.ObservedInstancesOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ErrorRates_descriptor;
+        return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ObservedInstances_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ErrorRates_fieldAccessorTable
+        return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ObservedInstances_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                makina.learn.classification.reflection.IntegratorProtos.ErrorRates.class, makina.learn.classification.reflection.IntegratorProtos.ErrorRates.Builder.class);
+                makina.learn.classification.reflection.IntegratorProtos.ObservedInstances.class, makina.learn.classification.reflection.IntegratorProtos.ObservedInstances.Builder.class);
       }
 
-      // Construct using makina.learn.classification.reflection.IntegratorProtos.ErrorRates.newBuilder()
+      // Construct using makina.learn.classification.reflection.IntegratorProtos.ObservedInstances.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -3691,87 +3691,87 @@ public final class IntegratorProtos {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getErrorRateFieldBuilder();
+          getObservedInstanceFieldBuilder();
         }
       }
       public Builder clear() {
         super.clear();
-        if (errorRateBuilder_ == null) {
-          errorRate_ = java.util.Collections.emptyList();
+        if (observedInstanceBuilder_ == null) {
+          observedInstance_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000001);
         } else {
-          errorRateBuilder_.clear();
+          observedInstanceBuilder_.clear();
         }
         return this;
       }
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ErrorRates_descriptor;
+        return makina.learn.classification.reflection.IntegratorProtos.internal_static_makina_learn_classification_reflection_ObservedInstances_descriptor;
       }
 
-      public makina.learn.classification.reflection.IntegratorProtos.ErrorRates getDefaultInstanceForType() {
-        return makina.learn.classification.reflection.IntegratorProtos.ErrorRates.getDefaultInstance();
+      public makina.learn.classification.reflection.IntegratorProtos.ObservedInstances getDefaultInstanceForType() {
+        return makina.learn.classification.reflection.IntegratorProtos.ObservedInstances.getDefaultInstance();
       }
 
-      public makina.learn.classification.reflection.IntegratorProtos.ErrorRates build() {
-        makina.learn.classification.reflection.IntegratorProtos.ErrorRates result = buildPartial();
+      public makina.learn.classification.reflection.IntegratorProtos.ObservedInstances build() {
+        makina.learn.classification.reflection.IntegratorProtos.ObservedInstances result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public makina.learn.classification.reflection.IntegratorProtos.ErrorRates buildPartial() {
-        makina.learn.classification.reflection.IntegratorProtos.ErrorRates result = new makina.learn.classification.reflection.IntegratorProtos.ErrorRates(this);
+      public makina.learn.classification.reflection.IntegratorProtos.ObservedInstances buildPartial() {
+        makina.learn.classification.reflection.IntegratorProtos.ObservedInstances result = new makina.learn.classification.reflection.IntegratorProtos.ObservedInstances(this);
         int from_bitField0_ = bitField0_;
-        if (errorRateBuilder_ == null) {
+        if (observedInstanceBuilder_ == null) {
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
-            errorRate_ = java.util.Collections.unmodifiableList(errorRate_);
+            observedInstance_ = java.util.Collections.unmodifiableList(observedInstance_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
-          result.errorRate_ = errorRate_;
+          result.observedInstance_ = observedInstance_;
         } else {
-          result.errorRate_ = errorRateBuilder_.build();
+          result.observedInstance_ = observedInstanceBuilder_.build();
         }
         onBuilt();
         return result;
       }
 
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof makina.learn.classification.reflection.IntegratorProtos.ErrorRates) {
-          return mergeFrom((makina.learn.classification.reflection.IntegratorProtos.ErrorRates)other);
+        if (other instanceof makina.learn.classification.reflection.IntegratorProtos.ObservedInstances) {
+          return mergeFrom((makina.learn.classification.reflection.IntegratorProtos.ObservedInstances)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(makina.learn.classification.reflection.IntegratorProtos.ErrorRates other) {
-        if (other == makina.learn.classification.reflection.IntegratorProtos.ErrorRates.getDefaultInstance()) return this;
-        if (errorRateBuilder_ == null) {
-          if (!other.errorRate_.isEmpty()) {
-            if (errorRate_.isEmpty()) {
-              errorRate_ = other.errorRate_;
+      public Builder mergeFrom(makina.learn.classification.reflection.IntegratorProtos.ObservedInstances other) {
+        if (other == makina.learn.classification.reflection.IntegratorProtos.ObservedInstances.getDefaultInstance()) return this;
+        if (observedInstanceBuilder_ == null) {
+          if (!other.observedInstance_.isEmpty()) {
+            if (observedInstance_.isEmpty()) {
+              observedInstance_ = other.observedInstance_;
               bitField0_ = (bitField0_ & ~0x00000001);
             } else {
-              ensureErrorRateIsMutable();
-              errorRate_.addAll(other.errorRate_);
+              ensureObservedInstanceIsMutable();
+              observedInstance_.addAll(other.observedInstance_);
             }
             onChanged();
           }
         } else {
-          if (!other.errorRate_.isEmpty()) {
-            if (errorRateBuilder_.isEmpty()) {
-              errorRateBuilder_.dispose();
-              errorRateBuilder_ = null;
-              errorRate_ = other.errorRate_;
+          if (!other.observedInstance_.isEmpty()) {
+            if (observedInstanceBuilder_.isEmpty()) {
+              observedInstanceBuilder_.dispose();
+              observedInstanceBuilder_ = null;
+              observedInstance_ = other.observedInstance_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              errorRateBuilder_ = 
+              observedInstanceBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
-                   getErrorRateFieldBuilder() : null;
+                   getObservedInstanceFieldBuilder() : null;
             } else {
-              errorRateBuilder_.addAllMessages(other.errorRate_);
+              observedInstanceBuilder_.addAllMessages(other.observedInstance_);
             }
           }
         }
@@ -3781,8 +3781,8 @@ public final class IntegratorProtos {
       }
 
       public final boolean isInitialized() {
-        for (int i = 0; i < getErrorRateCount(); i++) {
-          if (!getErrorRate(i).isInitialized()) {
+        for (int i = 0; i < getObservedInstanceCount(); i++) {
+          if (!getObservedInstance(i).isInitialized()) {
             return false;
           }
         }
@@ -3793,11 +3793,11 @@ public final class IntegratorProtos {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        makina.learn.classification.reflection.IntegratorProtos.ErrorRates parsedMessage = null;
+        makina.learn.classification.reflection.IntegratorProtos.ObservedInstances parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (makina.learn.classification.reflection.IntegratorProtos.ErrorRates) e.getUnfinishedMessage();
+          parsedMessage = (makina.learn.classification.reflection.IntegratorProtos.ObservedInstances) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -3808,294 +3808,294 @@ public final class IntegratorProtos {
       }
       private int bitField0_;
 
-      private java.util.List<makina.learn.classification.reflection.IntegratorProtos.ErrorRate> errorRate_ =
+      private java.util.List<makina.learn.classification.reflection.IntegratorProtos.ObservedInstance> observedInstance_ =
         java.util.Collections.emptyList();
-      private void ensureErrorRateIsMutable() {
+      private void ensureObservedInstanceIsMutable() {
         if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          errorRate_ = new java.util.ArrayList<makina.learn.classification.reflection.IntegratorProtos.ErrorRate>(errorRate_);
+          observedInstance_ = new java.util.ArrayList<makina.learn.classification.reflection.IntegratorProtos.ObservedInstance>(observedInstance_);
           bitField0_ |= 0x00000001;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          makina.learn.classification.reflection.IntegratorProtos.ErrorRate, makina.learn.classification.reflection.IntegratorProtos.ErrorRate.Builder, makina.learn.classification.reflection.IntegratorProtos.ErrorRateOrBuilder> errorRateBuilder_;
+          makina.learn.classification.reflection.IntegratorProtos.ObservedInstance, makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.Builder, makina.learn.classification.reflection.IntegratorProtos.ObservedInstanceOrBuilder> observedInstanceBuilder_;
 
       /**
-       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
        */
-      public java.util.List<makina.learn.classification.reflection.IntegratorProtos.ErrorRate> getErrorRateList() {
-        if (errorRateBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(errorRate_);
+      public java.util.List<makina.learn.classification.reflection.IntegratorProtos.ObservedInstance> getObservedInstanceList() {
+        if (observedInstanceBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(observedInstance_);
         } else {
-          return errorRateBuilder_.getMessageList();
+          return observedInstanceBuilder_.getMessageList();
         }
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
        */
-      public int getErrorRateCount() {
-        if (errorRateBuilder_ == null) {
-          return errorRate_.size();
+      public int getObservedInstanceCount() {
+        if (observedInstanceBuilder_ == null) {
+          return observedInstance_.size();
         } else {
-          return errorRateBuilder_.getCount();
+          return observedInstanceBuilder_.getCount();
         }
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
        */
-      public makina.learn.classification.reflection.IntegratorProtos.ErrorRate getErrorRate(int index) {
-        if (errorRateBuilder_ == null) {
-          return errorRate_.get(index);
+      public makina.learn.classification.reflection.IntegratorProtos.ObservedInstance getObservedInstance(int index) {
+        if (observedInstanceBuilder_ == null) {
+          return observedInstance_.get(index);
         } else {
-          return errorRateBuilder_.getMessage(index);
+          return observedInstanceBuilder_.getMessage(index);
         }
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
        */
-      public Builder setErrorRate(
-          int index, makina.learn.classification.reflection.IntegratorProtos.ErrorRate value) {
-        if (errorRateBuilder_ == null) {
+      public Builder setObservedInstance(
+          int index, makina.learn.classification.reflection.IntegratorProtos.ObservedInstance value) {
+        if (observedInstanceBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureErrorRateIsMutable();
-          errorRate_.set(index, value);
+          ensureObservedInstanceIsMutable();
+          observedInstance_.set(index, value);
           onChanged();
         } else {
-          errorRateBuilder_.setMessage(index, value);
+          observedInstanceBuilder_.setMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
        */
-      public Builder setErrorRate(
-          int index, makina.learn.classification.reflection.IntegratorProtos.ErrorRate.Builder builderForValue) {
-        if (errorRateBuilder_ == null) {
-          ensureErrorRateIsMutable();
-          errorRate_.set(index, builderForValue.build());
+      public Builder setObservedInstance(
+          int index, makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.Builder builderForValue) {
+        if (observedInstanceBuilder_ == null) {
+          ensureObservedInstanceIsMutable();
+          observedInstance_.set(index, builderForValue.build());
           onChanged();
         } else {
-          errorRateBuilder_.setMessage(index, builderForValue.build());
+          observedInstanceBuilder_.setMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
        */
-      public Builder addErrorRate(makina.learn.classification.reflection.IntegratorProtos.ErrorRate value) {
-        if (errorRateBuilder_ == null) {
+      public Builder addObservedInstance(makina.learn.classification.reflection.IntegratorProtos.ObservedInstance value) {
+        if (observedInstanceBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureErrorRateIsMutable();
-          errorRate_.add(value);
+          ensureObservedInstanceIsMutable();
+          observedInstance_.add(value);
           onChanged();
         } else {
-          errorRateBuilder_.addMessage(value);
+          observedInstanceBuilder_.addMessage(value);
         }
         return this;
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
        */
-      public Builder addErrorRate(
-          int index, makina.learn.classification.reflection.IntegratorProtos.ErrorRate value) {
-        if (errorRateBuilder_ == null) {
+      public Builder addObservedInstance(
+          int index, makina.learn.classification.reflection.IntegratorProtos.ObservedInstance value) {
+        if (observedInstanceBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureErrorRateIsMutable();
-          errorRate_.add(index, value);
+          ensureObservedInstanceIsMutable();
+          observedInstance_.add(index, value);
           onChanged();
         } else {
-          errorRateBuilder_.addMessage(index, value);
+          observedInstanceBuilder_.addMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
        */
-      public Builder addErrorRate(
-          makina.learn.classification.reflection.IntegratorProtos.ErrorRate.Builder builderForValue) {
-        if (errorRateBuilder_ == null) {
-          ensureErrorRateIsMutable();
-          errorRate_.add(builderForValue.build());
+      public Builder addObservedInstance(
+          makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.Builder builderForValue) {
+        if (observedInstanceBuilder_ == null) {
+          ensureObservedInstanceIsMutable();
+          observedInstance_.add(builderForValue.build());
           onChanged();
         } else {
-          errorRateBuilder_.addMessage(builderForValue.build());
+          observedInstanceBuilder_.addMessage(builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
        */
-      public Builder addErrorRate(
-          int index, makina.learn.classification.reflection.IntegratorProtos.ErrorRate.Builder builderForValue) {
-        if (errorRateBuilder_ == null) {
-          ensureErrorRateIsMutable();
-          errorRate_.add(index, builderForValue.build());
+      public Builder addObservedInstance(
+          int index, makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.Builder builderForValue) {
+        if (observedInstanceBuilder_ == null) {
+          ensureObservedInstanceIsMutable();
+          observedInstance_.add(index, builderForValue.build());
           onChanged();
         } else {
-          errorRateBuilder_.addMessage(index, builderForValue.build());
+          observedInstanceBuilder_.addMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
        */
-      public Builder addAllErrorRate(
-          java.lang.Iterable<? extends makina.learn.classification.reflection.IntegratorProtos.ErrorRate> values) {
-        if (errorRateBuilder_ == null) {
-          ensureErrorRateIsMutable();
+      public Builder addAllObservedInstance(
+          java.lang.Iterable<? extends makina.learn.classification.reflection.IntegratorProtos.ObservedInstance> values) {
+        if (observedInstanceBuilder_ == null) {
+          ensureObservedInstanceIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
-              values, errorRate_);
+              values, observedInstance_);
           onChanged();
         } else {
-          errorRateBuilder_.addAllMessages(values);
+          observedInstanceBuilder_.addAllMessages(values);
         }
         return this;
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
        */
-      public Builder clearErrorRate() {
-        if (errorRateBuilder_ == null) {
-          errorRate_ = java.util.Collections.emptyList();
+      public Builder clearObservedInstance() {
+        if (observedInstanceBuilder_ == null) {
+          observedInstance_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000001);
           onChanged();
         } else {
-          errorRateBuilder_.clear();
+          observedInstanceBuilder_.clear();
         }
         return this;
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
        */
-      public Builder removeErrorRate(int index) {
-        if (errorRateBuilder_ == null) {
-          ensureErrorRateIsMutable();
-          errorRate_.remove(index);
+      public Builder removeObservedInstance(int index) {
+        if (observedInstanceBuilder_ == null) {
+          ensureObservedInstanceIsMutable();
+          observedInstance_.remove(index);
           onChanged();
         } else {
-          errorRateBuilder_.remove(index);
+          observedInstanceBuilder_.remove(index);
         }
         return this;
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
        */
-      public makina.learn.classification.reflection.IntegratorProtos.ErrorRate.Builder getErrorRateBuilder(
+      public makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.Builder getObservedInstanceBuilder(
           int index) {
-        return getErrorRateFieldBuilder().getBuilder(index);
+        return getObservedInstanceFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
        */
-      public makina.learn.classification.reflection.IntegratorProtos.ErrorRateOrBuilder getErrorRateOrBuilder(
+      public makina.learn.classification.reflection.IntegratorProtos.ObservedInstanceOrBuilder getObservedInstanceOrBuilder(
           int index) {
-        if (errorRateBuilder_ == null) {
-          return errorRate_.get(index);  } else {
-          return errorRateBuilder_.getMessageOrBuilder(index);
+        if (observedInstanceBuilder_ == null) {
+          return observedInstance_.get(index);  } else {
+          return observedInstanceBuilder_.getMessageOrBuilder(index);
         }
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
        */
-      public java.util.List<? extends makina.learn.classification.reflection.IntegratorProtos.ErrorRateOrBuilder> 
-           getErrorRateOrBuilderList() {
-        if (errorRateBuilder_ != null) {
-          return errorRateBuilder_.getMessageOrBuilderList();
+      public java.util.List<? extends makina.learn.classification.reflection.IntegratorProtos.ObservedInstanceOrBuilder> 
+           getObservedInstanceOrBuilderList() {
+        if (observedInstanceBuilder_ != null) {
+          return observedInstanceBuilder_.getMessageOrBuilderList();
         } else {
-          return java.util.Collections.unmodifiableList(errorRate_);
+          return java.util.Collections.unmodifiableList(observedInstance_);
         }
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
        */
-      public makina.learn.classification.reflection.IntegratorProtos.ErrorRate.Builder addErrorRateBuilder() {
-        return getErrorRateFieldBuilder().addBuilder(
-            makina.learn.classification.reflection.IntegratorProtos.ErrorRate.getDefaultInstance());
+      public makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.Builder addObservedInstanceBuilder() {
+        return getObservedInstanceFieldBuilder().addBuilder(
+            makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.getDefaultInstance());
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
        */
-      public makina.learn.classification.reflection.IntegratorProtos.ErrorRate.Builder addErrorRateBuilder(
+      public makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.Builder addObservedInstanceBuilder(
           int index) {
-        return getErrorRateFieldBuilder().addBuilder(
-            index, makina.learn.classification.reflection.IntegratorProtos.ErrorRate.getDefaultInstance());
+        return getObservedInstanceFieldBuilder().addBuilder(
+            index, makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.getDefaultInstance());
       }
       /**
-       * <code>repeated .makina.learn.classification.reflection.ErrorRate errorRate = 1;</code>
+       * <code>repeated .makina.learn.classification.reflection.ObservedInstance observedInstance = 1;</code>
        */
-      public java.util.List<makina.learn.classification.reflection.IntegratorProtos.ErrorRate.Builder> 
-           getErrorRateBuilderList() {
-        return getErrorRateFieldBuilder().getBuilderList();
+      public java.util.List<makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.Builder> 
+           getObservedInstanceBuilderList() {
+        return getObservedInstanceFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          makina.learn.classification.reflection.IntegratorProtos.ErrorRate, makina.learn.classification.reflection.IntegratorProtos.ErrorRate.Builder, makina.learn.classification.reflection.IntegratorProtos.ErrorRateOrBuilder> 
-          getErrorRateFieldBuilder() {
-        if (errorRateBuilder_ == null) {
-          errorRateBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              makina.learn.classification.reflection.IntegratorProtos.ErrorRate, makina.learn.classification.reflection.IntegratorProtos.ErrorRate.Builder, makina.learn.classification.reflection.IntegratorProtos.ErrorRateOrBuilder>(
-                  errorRate_,
+          makina.learn.classification.reflection.IntegratorProtos.ObservedInstance, makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.Builder, makina.learn.classification.reflection.IntegratorProtos.ObservedInstanceOrBuilder> 
+          getObservedInstanceFieldBuilder() {
+        if (observedInstanceBuilder_ == null) {
+          observedInstanceBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              makina.learn.classification.reflection.IntegratorProtos.ObservedInstance, makina.learn.classification.reflection.IntegratorProtos.ObservedInstance.Builder, makina.learn.classification.reflection.IntegratorProtos.ObservedInstanceOrBuilder>(
+                  observedInstance_,
                   ((bitField0_ & 0x00000001) == 0x00000001),
                   getParentForChildren(),
                   isClean());
-          errorRate_ = null;
+          observedInstance_ = null;
         }
-        return errorRateBuilder_;
+        return observedInstanceBuilder_;
       }
 
-      // @@protoc_insertion_point(builder_scope:makina.learn.classification.reflection.ErrorRates)
+      // @@protoc_insertion_point(builder_scope:makina.learn.classification.reflection.ObservedInstances)
     }
 
-    // @@protoc_insertion_point(class_scope:makina.learn.classification.reflection.ErrorRates)
-    private static final makina.learn.classification.reflection.IntegratorProtos.ErrorRates DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:makina.learn.classification.reflection.ObservedInstances)
+    private static final makina.learn.classification.reflection.IntegratorProtos.ObservedInstances DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new makina.learn.classification.reflection.IntegratorProtos.ErrorRates();
+      DEFAULT_INSTANCE = new makina.learn.classification.reflection.IntegratorProtos.ObservedInstances();
     }
 
-    public static makina.learn.classification.reflection.IntegratorProtos.ErrorRates getDefaultInstance() {
+    public static makina.learn.classification.reflection.IntegratorProtos.ObservedInstances getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    @java.lang.Deprecated public static final com.google.protobuf.Parser<ErrorRates>
-        PARSER = new com.google.protobuf.AbstractParser<ErrorRates>() {
-      public ErrorRates parsePartialFrom(
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ObservedInstances>
+        PARSER = new com.google.protobuf.AbstractParser<ObservedInstances>() {
+      public ObservedInstances parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new ErrorRates(input, extensionRegistry);
+          return new ObservedInstances(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<ErrorRates> parser() {
+    public static com.google.protobuf.Parser<ObservedInstances> parser() {
       return PARSER;
     }
 
     @java.lang.Override
-    public com.google.protobuf.Parser<ErrorRates> getParserForType() {
+    public com.google.protobuf.Parser<ObservedInstances> getParserForType() {
       return PARSER;
     }
 
-    public makina.learn.classification.reflection.IntegratorProtos.ErrorRates getDefaultInstanceForType() {
+    public makina.learn.classification.reflection.IntegratorProtos.ObservedInstances getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
   }
 
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_makina_learn_classification_reflection_ObservedInstance_descriptor;
+    internal_static_makina_learn_classification_reflection_ErrorRate_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_makina_learn_classification_reflection_ObservedInstance_fieldAccessorTable;
+      internal_static_makina_learn_classification_reflection_ErrorRate_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_makina_learn_classification_reflection_ObservedInstances_descriptor;
+    internal_static_makina_learn_classification_reflection_ErrorRates_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_makina_learn_classification_reflection_ObservedInstances_fieldAccessorTable;
+      internal_static_makina_learn_classification_reflection_ErrorRates_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_makina_learn_classification_reflection_PredictedInstance_descriptor;
   private static final 
@@ -4107,15 +4107,15 @@ public final class IntegratorProtos {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_makina_learn_classification_reflection_PredictedInstances_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_makina_learn_classification_reflection_ErrorRate_descriptor;
+    internal_static_makina_learn_classification_reflection_ObservedInstance_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_makina_learn_classification_reflection_ErrorRate_fieldAccessorTable;
+      internal_static_makina_learn_classification_reflection_ObservedInstance_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_makina_learn_classification_reflection_ErrorRates_descriptor;
+    internal_static_makina_learn_classification_reflection_ObservedInstances_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_makina_learn_classification_reflection_ErrorRates_fieldAccessorTable;
+      internal_static_makina_learn_classification_reflection_ObservedInstances_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -4127,20 +4127,20 @@ public final class IntegratorProtos {
     java.lang.String[] descriptorData = {
       "\n7makina/learn/classification/reflection" +
       "/integrator.proto\022&makina.learn.classifi" +
-      "cation.reflection\"<\n\020ObservedInstance\022\n\n" +
-      "\002id\030\001 \002(\005\022\r\n\005label\030\002 \002(\t\022\r\n\005value\030\003 \002(\010\"" +
-      "g\n\021ObservedInstances\022R\n\020observedInstance" +
-      "\030\001 \003(\01328.makina.learn.classification.ref" +
-      "lection.ObservedInstance\"Q\n\021PredictedIns" +
-      "tance\022\n\n\002id\030\001 \002(\005\022\r\n\005label\030\002 \002(\t\022\022\n\nfunc" +
-      "tionId\030\003 \002(\005\022\r\n\005value\030\004 \002(\001\"j\n\022Predicted" +
-      "Instances\022T\n\021predictedInstance\030\001 \003(\01329.m",
-      "akina.learn.classification.reflection.Pr" +
-      "edictedInstance\"=\n\tErrorRate\022\r\n\005label\030\001 " +
-      "\002(\t\022\022\n\nfunctionId\030\002 \002(\005\022\r\n\005value\030\003 \002(\001\"R" +
-      "\n\nErrorRates\022D\n\terrorRate\030\001 \003(\01321.makina" +
-      ".learn.classification.reflection.ErrorRa" +
-      "teB\022B\020IntegratorProtos"
+      "cation.reflection\"=\n\tErrorRate\022\r\n\005label\030" +
+      "\001 \002(\t\022\022\n\nfunctionId\030\002 \002(\005\022\r\n\005value\030\003 \002(\001" +
+      "\"R\n\nErrorRates\022D\n\terrorRate\030\001 \003(\01321.maki" +
+      "na.learn.classification.reflection.Error" +
+      "Rate\"Q\n\021PredictedInstance\022\n\n\002id\030\001 \002(\005\022\r\n" +
+      "\005label\030\002 \002(\t\022\022\n\nfunctionId\030\003 \002(\005\022\r\n\005valu" +
+      "e\030\004 \002(\001\"j\n\022PredictedInstances\022T\n\021predict" +
+      "edInstance\030\001 \003(\01329.makina.learn.classifi",
+      "cation.reflection.PredictedInstance\"<\n\020O" +
+      "bservedInstance\022\n\n\002id\030\001 \002(\005\022\r\n\005label\030\002 \002" +
+      "(\t\022\r\n\005value\030\003 \002(\010\"g\n\021ObservedInstances\022R" +
+      "\n\020observedInstance\030\001 \003(\01328.makina.learn." +
+      "classification.reflection.ObservedInstan" +
+      "ceB\022B\020IntegratorProtos"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -4154,18 +4154,18 @@ public final class IntegratorProtos {
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
         }, assigner);
-    internal_static_makina_learn_classification_reflection_ObservedInstance_descriptor =
+    internal_static_makina_learn_classification_reflection_ErrorRate_descriptor =
       getDescriptor().getMessageTypes().get(0);
-    internal_static_makina_learn_classification_reflection_ObservedInstance_fieldAccessorTable = new
+    internal_static_makina_learn_classification_reflection_ErrorRate_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-        internal_static_makina_learn_classification_reflection_ObservedInstance_descriptor,
-        new java.lang.String[] { "Id", "Label", "Value", });
-    internal_static_makina_learn_classification_reflection_ObservedInstances_descriptor =
+        internal_static_makina_learn_classification_reflection_ErrorRate_descriptor,
+        new java.lang.String[] { "Label", "FunctionId", "Value", });
+    internal_static_makina_learn_classification_reflection_ErrorRates_descriptor =
       getDescriptor().getMessageTypes().get(1);
-    internal_static_makina_learn_classification_reflection_ObservedInstances_fieldAccessorTable = new
+    internal_static_makina_learn_classification_reflection_ErrorRates_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-        internal_static_makina_learn_classification_reflection_ObservedInstances_descriptor,
-        new java.lang.String[] { "ObservedInstance", });
+        internal_static_makina_learn_classification_reflection_ErrorRates_descriptor,
+        new java.lang.String[] { "ErrorRate", });
     internal_static_makina_learn_classification_reflection_PredictedInstance_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_makina_learn_classification_reflection_PredictedInstance_fieldAccessorTable = new
@@ -4178,18 +4178,18 @@ public final class IntegratorProtos {
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_makina_learn_classification_reflection_PredictedInstances_descriptor,
         new java.lang.String[] { "PredictedInstance", });
-    internal_static_makina_learn_classification_reflection_ErrorRate_descriptor =
+    internal_static_makina_learn_classification_reflection_ObservedInstance_descriptor =
       getDescriptor().getMessageTypes().get(4);
-    internal_static_makina_learn_classification_reflection_ErrorRate_fieldAccessorTable = new
+    internal_static_makina_learn_classification_reflection_ObservedInstance_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-        internal_static_makina_learn_classification_reflection_ErrorRate_descriptor,
-        new java.lang.String[] { "Label", "FunctionId", "Value", });
-    internal_static_makina_learn_classification_reflection_ErrorRates_descriptor =
+        internal_static_makina_learn_classification_reflection_ObservedInstance_descriptor,
+        new java.lang.String[] { "Id", "Label", "Value", });
+    internal_static_makina_learn_classification_reflection_ObservedInstances_descriptor =
       getDescriptor().getMessageTypes().get(5);
-    internal_static_makina_learn_classification_reflection_ErrorRates_fieldAccessorTable = new
+    internal_static_makina_learn_classification_reflection_ObservedInstances_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-        internal_static_makina_learn_classification_reflection_ErrorRates_descriptor,
-        new java.lang.String[] { "ErrorRate", });
+        internal_static_makina_learn_classification_reflection_ObservedInstances_descriptor,
+        new java.lang.String[] { "ObservedInstance", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

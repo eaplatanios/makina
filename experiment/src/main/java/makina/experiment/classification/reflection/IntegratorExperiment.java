@@ -598,7 +598,7 @@ public class IntegratorExperiment {
         switch (args[2]) {
             case "NELL":
                 double threshold = Double.parseDouble(args[4]);
-                constraints = DataSets.importConstraints(args[3] + "/constraints.txt");
+                constraints = Integrator.loadConstraints(args[3] + "/constraints.txt");
                 DataSets.NELLData nellData = DataSets.importNELLData(args[3]);
                 BiMap<String, Integer> instanceIds = HashBiMap.create();
                 BiMap<String, Integer> componentIds = HashBiMap.create();
