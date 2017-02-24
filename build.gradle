@@ -75,6 +75,6 @@ subprojects {
             mainClassName = ""
         def arguments = System.getProperty('args')
         if (arguments != null)
-            args arguments.tokenize(", ")
+            args arguments.split(", ")
     }
 }
