@@ -26,6 +26,7 @@ import makina.math.matrix.Vector;
 import makina.math.matrix.Vectors;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -43,21 +44,23 @@ public class ConstrainedLearningExperiment {
     private static final Map<ScoringFunction, String> matlabPlotColorsMap = new HashMap<>();
 
     static {
-        matlabPlotColorsMap.put(new RandomScoringFunction(), "[0, 0.4470, 0.7410, 0.8]");
-        matlabPlotColorsMap.put(new RandomScoringFunction(true), "[0, 0.7470, 1, 0.8]");
-        matlabPlotColorsMap.put(new EntropyScoringFunction(), "[0.8500, 0.3250, 0.0980, 0.8]");
-        matlabPlotColorsMap.put(new EntropyScoringFunction(true), "[1, 0.7250, 0.1980, 0.8]");
-        matlabPlotColorsMap.put(new ConstraintPropagationScoringFunction(true), "[0.9290, 0.6940, 0.1250, 0.8]");
-        matlabPlotColorsMap.put(new ConstraintPropagationScoringFunction(SurpriseFunction.NEGATIVE_LOGARITHM, false), "[0.3010, 0.7450, 0.9330, 0.8]");
-        matlabPlotColorsMap.put(new ConstraintPropagationScoringFunction(SurpriseFunction.ONE_MINUS_PROBABILITY, false), "[0.6350, 0.0780, 0.1840, 0.8]");
-        matlabPlotColorsMap.put(new ConstraintPropagationScoringFunction(SurpriseFunction.NEGATIVE_LOGARITHM, true), "[0.4940, 0.1840, 0.5560, 0.8]");
-        matlabPlotColorsMap.put(new ConstraintPropagationScoringFunction(SurpriseFunction.ONE_MINUS_PROBABILITY, true), "[0.4660, 0.6740, 0.1880, 0.8]");
+        matlabPlotColorsMap.put(new RandomScoringFunction(), "0.055, 0.1843, 0.4000");
+        matlabPlotColorsMap.put(new RandomScoringFunction(true), "0, 0.6000, 0.8500");
+        matlabPlotColorsMap.put(new EntropyScoringFunction(), "0, 0.4470, 0.7410");
+        matlabPlotColorsMap.put(new EntropyScoringFunction(true), "0, 0.7470, 1");
+        matlabPlotColorsMap.put(new ExpectedLabelsFixedScoringFunction(true), "0.9290, 0.6940, 0.1250");
+        matlabPlotColorsMap.put(new ConstraintPropagationScoringFunction(true), "0.7500, 0.2250, 0.0480");
+//        matlabPlotColorsMap.put(new ConstraintPropagationScoringFunction(SurpriseFunction.NEGATIVE_LOGARITHM, false), "0.3010, 0.7450, 0.9330");
+//        matlabPlotColorsMap.put(new ConstraintPropagationScoringFunction(SurpriseFunction.ONE_MINUS_PROBABILITY, false), "0.6350, 0.0780, 0.1840");
+        matlabPlotColorsMap.put(new ConstraintPropagationScoringFunction(SurpriseFunction.NEGATIVE_LOGARITHM, true), "0.8500, 0.3250, 0.0980");
+        matlabPlotColorsMap.put(new ConstraintPropagationScoringFunction(SurpriseFunction.ONE_MINUS_PROBABILITY, true), "1.000, 0.4850, 0.2280");
     }
 
     private final BiMap<DataInstance<Vector>, Integer> dataInstances = HashBiMap.create();
     private final Map<Label, TrainableClassifier<Vector, Double>> classifiers = new ConcurrentHashMap<>();
     private final Map<Label, DataSet<PredictedDataInstance<Vector, Double>>> classifiersTrainingDataSet = new HashMap<>();
     private final Map<Label, DataSet<PredictedDataInstance<Vector, Double>>> classifiersTestingDataSet = new ConcurrentHashMap<>();
+    private final Map<Label, DataSet<PredictedDataInstance<Vector, Double>>> classifiersEvaluationDataSet = new ConcurrentHashMap<>();
     private final Map<Label, Integer> labelClassifiers = new HashMap<>();
 
     private final int numberOfExamplesToPickPerIteration;
@@ -70,6 +73,7 @@ public class ConstrainedLearningExperiment {
     private final ImportedDataSet importedDataSet;
     private final Map<DataInstance<Vector>, Map<Label, Boolean>> trainingDataSet;
     private final Map<DataInstance<Vector>, Map<Label, Boolean>> testingDataSet;
+    private final Map<DataInstance<Vector>, Map<Label, Boolean>> evaluationDataSet;
     private final Set<ResultType> resultTypes;
     private final ConstraintSet constraints;
 
@@ -93,12 +97,27 @@ public class ConstrainedLearningExperiment {
         this.labels = importedDataSet.labels;
         this.importedDataSet = importedDataSet;
         this.trainingDataSet = copyDataSetMap(importedDataSet.trainingDataSet);
-        this.testingDataSet = copyDataSetMap(importedDataSet.testingDataSet);   // TODO: Temporary fix.
+        Map<DataInstance<Vector>, Map<Label, Boolean>> testingDataSet = copyDataSetMap(importedDataSet.testingDataSet);
+        List<DataInstance<Vector>> shuffledTestInstances = shuffledInstances(testingDataSet);
+        int testSize = (int) Math.floor(0.95 * shuffledTestInstances.size());
+        Set<DataInstance<Vector>> testInstances = new HashSet<>(shuffledTestInstances.subList(0, testSize));
+        Set<DataInstance<Vector>> evaluationInstances = new HashSet<>(shuffledTestInstances.subList(testSize, shuffledTestInstances.size()));
+        this.testingDataSet = testingDataSet
+                .entrySet()
+                .stream()
+                .filter(p -> testInstances.contains(p.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        this.evaluationDataSet = testingDataSet
+                .entrySet()
+                .stream()
+                .filter(p -> evaluationInstances.contains(p.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         this.resultTypes = resultTypes;
         this.constraints = importedDataSet.constraints;
         for (Label label : labels) {
             classifiersTrainingDataSet.put(label, new DataSetInMemory<>());
             classifiersTestingDataSet.put(label, new DataSetInMemory<>());
+            classifiersEvaluationDataSet.put(label, new DataSetInMemory<>());
             Vector randomFeatureVector = trainingDataSet.keySet().iterator().next().features();
             LogisticRegressionAdaGrad.Builder classifierBuilder =
                     new LogisticRegressionAdaGrad.Builder(randomFeatureVector.size())
@@ -118,7 +137,7 @@ public class ConstrainedLearningExperiment {
                 classifierBuilder.sparse(true);
             classifiers.put(label, classifierBuilder.build());
         }
-        for (Map.Entry<DataInstance<Vector>, Map<Label, Boolean>> instanceEntry : trainingDataSet.entrySet()) {
+        for (Map.Entry<DataInstance<Vector>, Map<Label, Boolean>> instanceEntry : this.trainingDataSet.entrySet()) {
             dataInstances.putIfAbsent(instanceEntry.getKey(), dataInstances.size());
             for (Map.Entry<Label, Boolean> instanceLabelEntry : instanceEntry.getValue().entrySet()) {
                 PredictedDataInstance<Vector, Double> predictedInstance =
@@ -130,7 +149,7 @@ public class ConstrainedLearningExperiment {
                 classifiersTrainingDataSet.get(instanceLabelEntry.getKey()).add(predictedInstance);
             }
         }
-        for (Map.Entry<DataInstance<Vector>, Map<Label, Boolean>> instanceEntry : testingDataSet.entrySet()) {
+        for (Map.Entry<DataInstance<Vector>, Map<Label, Boolean>> instanceEntry : this.testingDataSet.entrySet()) {
             dataInstances.putIfAbsent(instanceEntry.getKey(), dataInstances.size());
             for (Map.Entry<Label, Boolean> instanceLabelEntry : instanceEntry.getValue().entrySet()) {
                 PredictedDataInstance<Vector, Double> predictedInstance =
@@ -142,6 +161,23 @@ public class ConstrainedLearningExperiment {
                 classifiersTestingDataSet.get(instanceLabelEntry.getKey()).add(predictedInstance);
             }
         }
+        for (Map.Entry<DataInstance<Vector>, Map<Label, Boolean>> instanceEntry : this.evaluationDataSet.entrySet()) {
+            for (Map.Entry<Label, Boolean> instanceLabelEntry : instanceEntry.getValue().entrySet()) {
+                PredictedDataInstance<Vector, Double> predictedInstance =
+                        new PredictedDataInstance<>(instanceEntry.getKey().name(),
+                                instanceEntry.getKey().features(),
+                                instanceLabelEntry.getValue() ? 1.0 : 0.0,
+                                null,
+                                1.0);
+                classifiersEvaluationDataSet.get(instanceLabelEntry.getKey()).add(predictedInstance);
+            }
+        }
+    }
+
+    private <T> List<DataInstance<Vector>> shuffledInstances(Map<DataInstance<Vector>, Map<Label, T>> map) {
+        List<DataInstance<Vector>> instances = new ArrayList<>(map.keySet());
+        Collections.shuffle(instances);
+        return instances;
     }
 
     private <T> Map<DataInstance<Vector>, Map<Label, T>> copyDataSetMap(Map<DataInstance<Vector>, Map<Label, T>> map) {
@@ -153,12 +189,13 @@ public class ConstrainedLearningExperiment {
 
     private ExperimentResults runExperiment() {
         logger.info("Running experiment...");
-        trainClassifiers();
         Map<Label, DataSet<PredictedDataInstance<Vector, Double>>> classifierDataSet = new HashMap<>();
         Map<Label, DataSet<PredictedDataInstance<Vector, Double>>> testingDataSet = new HashMap<>();
+        Map<Label, DataSet<PredictedDataInstance<Vector, Double>>> evaluationDataSet = new HashMap<>();
         for (Label label : labels) {
             DataSet<PredictedDataInstance<Vector, Double>> classifierDataSetCopy = new DataSetInMemory<>();
             DataSet<PredictedDataInstance<Vector, Double>> testingDataSetCopy = new DataSetInMemory<>();
+            DataSet<PredictedDataInstance<Vector, Double>> evaluationDataSetCopy = new DataSetInMemory<>();
             for (PredictedDataInstance<Vector, Double> instance : classifiersTestingDataSet.get(label)) {
                 classifierDataSetCopy.add(new PredictedDataInstance<>(instance.name(),
                                                                       instance.features(),
@@ -171,9 +208,18 @@ public class ConstrainedLearningExperiment {
                                                                    instance.source(),
                                                                    instance.probability()));
             }
+            for (PredictedDataInstance<Vector, Double> instance : classifiersEvaluationDataSet.get(label)) {
+                evaluationDataSetCopy.add(new PredictedDataInstance<>(instance.name(),
+                        instance.features(),
+                        instance.label(),
+                        instance.source(),
+                        instance.probability()));
+            }
             classifierDataSet.put(label, classifierDataSetCopy);
             testingDataSet.put(label, testingDataSetCopy);
+            evaluationDataSet.put(label, evaluationDataSetCopy);
         }
+        trainClassifiers(evaluationDataSet);
         final long experimentStartTime = System.currentTimeMillis();
         ExperimentResults results = new ExperimentResults();
         Map<DataInstance<Vector>, Map<Label, Boolean>> activeLearningDataSet = new HashMap<>();
@@ -229,13 +275,17 @@ public class ConstrainedLearningExperiment {
             // Compute precision-recall curves and related evaluation metrics
             PrecisionRecall<Vector, Double> fullPrecisionRecall = new PrecisionRecall<>(1000);
             PrecisionRecall<Vector, Double> testingPrecisionRecall = new PrecisionRecall<>(1000);
+            PrecisionRecall<Vector, Double> evaluationPrecisionRecall = new PrecisionRecall<>(1000);
             BinaryPredictionAccuracy<Vector, Double> fullPredictionAccuracy = new BinaryPredictionAccuracy<>();
             BinaryPredictionAccuracy<Vector, Double> testingPredictionAccuracy = new BinaryPredictionAccuracy<>();
+            BinaryPredictionAccuracy<Vector, Double> evaluationPredictionAccuracy = new BinaryPredictionAccuracy<>();
             final double[] weightsSum = { 0.0 };
             final double[] fullAverageAUC = { 0.0 };
             final double[] testingAverageAUC = { 0.0 };
+            final double[] evaluationAverageAUC = { 0.0 };
             final double[] fullAveragePredictionAccuracy = { 0.0 };
             final double[] testingAveragePredictionAccuracy = { 0.0 };
+            final double[] evaluationAveragePredictionAccuracy = { 0.0 };
             labels.stream().forEach(label -> {
                 double weight =
                         importedDataSet.trainingDataSetStatistics.get(label).numberOfPositiveExamples
@@ -243,47 +293,68 @@ public class ConstrainedLearningExperiment {
                 weightsSum[0] += weight;
                 if (resultTypes.contains(ResultType.AVERAGE_AUC_FULL_DATA_SET)) {
                     fullPrecisionRecall.addResult(label.name(),
-                                                  classifierDataSet.get(label),
-                                                  dataInstance -> this.testingDataSet.get(new DataInstance<>(dataInstance.name(),
-                                                                                                             dataInstance.features())).get(label));
+                            classifierDataSet.get(label),
+                            dataInstance -> this.testingDataSet.get(new DataInstance<>(dataInstance.name(),
+                                    dataInstance.features())).get(label));
                     fullAverageAUC[0] += weight * fullPrecisionRecall.getAreaUnderCurve(label.name());
                 }
                 if (resultTypes.contains(ResultType.AVERAGE_AUC_TESTING_DATA_SET)) {
                     testingPrecisionRecall.addResult(label.name(),
-                                                     testingDataSet.get(label),
-                                                     dataInstance -> this.testingDataSet.get(new DataInstance<>(dataInstance.name(),
-                                                                                                                dataInstance.features())).get(label));
+                            testingDataSet.get(label),
+                            dataInstance -> this.testingDataSet.get(new DataInstance<>(dataInstance.name(),
+                                    dataInstance.features())).get(label));
                     testingAverageAUC[0] += weight * testingPrecisionRecall.getAreaUnderCurve(label.name());
+                }
+                if (resultTypes.contains(ResultType.AVERAGE_AUC_EVALUATION_DATA_SET)) {
+                    evaluationPrecisionRecall.addResult(label.name(),
+                            evaluationDataSet.get(label),
+                            dataInstance -> this.evaluationDataSet.get(new DataInstance<>(dataInstance.name(),
+                                    dataInstance.features())).get(label));
+                    evaluationAverageAUC[0] += weight * evaluationPrecisionRecall.getAreaUnderCurve(label.name());
                 }
                 if (resultTypes.contains(ResultType.PREDICTION_ACCURACY_FULL_DATA_SET)) {
                     fullPredictionAccuracy.addResult(label.name(),
-                                                     classifierDataSet.get(label),
-                                                     dataInstance -> this.testingDataSet.get(new DataInstance<>(dataInstance.name(),
-                                                                                                                dataInstance.features())).get(label));
+                            classifierDataSet.get(label),
+                            dataInstance -> this.testingDataSet.get(new DataInstance<>(dataInstance.name(),
+                                    dataInstance.features())).get(label));
                     fullAveragePredictionAccuracy[0] += weight * fullPredictionAccuracy.getPredictionAccuracy(label.name());
                 }
                 if (resultTypes.contains(ResultType.PREDICTION_ACCURACY_TESTING_DATA_SET)) {
                     testingPredictionAccuracy.addResult(label.name(),
-                                                        testingDataSet.get(label),
-                                                        dataInstance -> this.testingDataSet.get(new DataInstance<>(dataInstance.name(),
-                                                                                                                   dataInstance.features())).get(label));
+                            testingDataSet.get(label),
+                            dataInstance -> this.testingDataSet.get(new DataInstance<>(dataInstance.name(),
+                                    dataInstance.features())).get(label));
                     testingAveragePredictionAccuracy[0] += weight * testingPredictionAccuracy.getPredictionAccuracy(label.name());
+                }
+                if (resultTypes.contains(ResultType.PREDICTION_ACCURACY_EVALUATION_DATA_SET)) {
+                    evaluationPredictionAccuracy.addResult(label.name(),
+                            evaluationDataSet.get(label),
+                            dataInstance -> this.evaluationDataSet.get(new DataInstance<>(dataInstance.name(),
+                                    dataInstance.features())).get(label));
+                    evaluationAveragePredictionAccuracy[0] += weight * evaluationPredictionAccuracy.getPredictionAccuracy(label.name());
                 }
             });
             if (resultTypes.contains(ResultType.AVERAGE_AUC_FULL_DATA_SET))
                 results.averageAreasUnderTheCurve.put(iterationNumber, fullAverageAUC[0] / weightsSum[0]);
             if (resultTypes.contains(ResultType.AVERAGE_AUC_TESTING_DATA_SET))
                 results.averageTestingAreasUnderTheCurve.put(iterationNumber, testingAverageAUC[0] / weightsSum[0]);
+            if (resultTypes.contains(ResultType.AVERAGE_AUC_EVALUATION_DATA_SET))
+                results.averageEvaluationAreasUnderTheCurve.put(iterationNumber, evaluationAverageAUC[0] / weightsSum[0]);
             if (resultTypes.contains(ResultType.AUC_1_ITERATIONS_FULL_DATA_SET)
                     && fullAverageAUC[0] / weightsSum[0] >= 0.999)
                 results.auc1IterationsFull = iterationNumber;
             if (resultTypes.contains(ResultType.AUC_1_ITERATIONS_TESTING_DATA_SET)
                     && testingAverageAUC[0] / weightsSum[0] >= 0.999)
                 results.auc1IterationsTesting = iterationNumber;
+            if (resultTypes.contains(ResultType.AUC_1_ITERATIONS_EVALUATION_DATA_SET)
+                    && evaluationAverageAUC[0] / weightsSum[0] >= 0.999)
+                results.auc1IterationsEvaluation = iterationNumber;
             if (resultTypes.contains(ResultType.PREDICTION_ACCURACY_FULL_DATA_SET))
                 results.predictionAccuracies.put(iterationNumber, fullAveragePredictionAccuracy[0] / weightsSum[0]);
             if (resultTypes.contains(ResultType.PREDICTION_ACCURACY_TESTING_DATA_SET))
                 results.testingPredictionAccuracies.put(iterationNumber, testingAveragePredictionAccuracy[0] / weightsSum[0]);
+            if (resultTypes.contains(ResultType.PREDICTION_ACCURACY_EVALUATION_DATA_SET))
+                results.evaluationPredictionAccuracies.put(iterationNumber, evaluationAveragePredictionAccuracy[0] / weightsSum[0]);
             if (resultTypes.contains(ResultType.NUMBER_OF_EXAMPLES_PICKED))
                 results.numberOfExamplesPicked.put(iterationNumber, numberOfExamplesPicked);
             if (learning.getNumberOfUnlabeledInstances() == 0 || ++iterationNumber >= maximumNumberOfIterations) {
@@ -299,7 +370,7 @@ public class ConstrainedLearningExperiment {
                     for (Learning.InstanceToLabel instance : selectedInstances)
                         numberOfExamplesPicked += labelInstance(learning, instance, classifierDataSet, testingDataSet);
                     if (retrainClassifiers) {
-                        trainClassifiers();
+                        trainClassifiers(evaluationDataSet);
                         if (useLogicIntegrator)
                             buildLogicIntegrator();
                     }
@@ -315,7 +386,7 @@ public class ConstrainedLearningExperiment {
                         numberOfExamplesPicked += labelInstance(learning, instance, classifierDataSet, testingDataSet);
                     }
                     if (retrainClassifiers) {
-                        trainClassifiers();
+                        trainClassifiers(evaluationDataSet);
                         if (useLogicIntegrator)
                             buildLogicIntegrator();
                     }
@@ -330,7 +401,7 @@ public class ConstrainedLearningExperiment {
                             break;
                         numberOfExamplesPicked += labelInstance(learning, instance, classifierDataSet, testingDataSet);
                         if (retrainClassifiers) {
-                            trainClassifiers();
+                            trainClassifiers(evaluationDataSet);
                             if (useLogicIntegrator)
                                 buildLogicIntegrator();
                         }
@@ -350,7 +421,7 @@ public class ConstrainedLearningExperiment {
         return results;
     }
 
-    private void trainClassifiers() {
+    private void trainClassifiers(Map<Label, DataSet<PredictedDataInstance<Vector, Double>>> evaluationDataSet) {
         labels.parallelStream().forEach(label -> {
             classifiers.get(label).train(classifiersTrainingDataSet.get(label));
             classifiers.get(label).predictInPlace(classifiersTestingDataSet.get(label));
@@ -359,6 +430,14 @@ public class ConstrainedLearningExperiment {
                     instance.label(1 - instance.label());
                     instance.probability(1 - instance.probability());
                 }
+            if (evaluationDataSet != null) {
+                classifiers.get(label).predictInPlace(evaluationDataSet.get(label));
+                for (PredictedDataInstance<Vector, Double> instance : evaluationDataSet.get(label))
+                    if (instance.label() < 0.5) {
+                        instance.label(1 - instance.label());
+                        instance.probability(1 - instance.probability());
+                    }
+            }
         });
         predictedDataSet = new ConcurrentHashMap<>();
         for (Map.Entry<Label, DataSet<PredictedDataInstance<Vector, Double>>> instanceEntry : classifiersTestingDataSet.entrySet()) {
@@ -496,12 +575,17 @@ public class ConstrainedLearningExperiment {
             int largestVectorSize = 0;
             for (ExperimentResults result : results.values().stream().flatMap(Collection::stream).collect(Collectors.toList()))
                 largestVectorSize = Math.max(largestVectorSize, result.averageAreasUnderTheCurve.keySet().size());
+            for (ExperimentResults result : results.values().stream().flatMap(Collection::stream).collect(Collectors.toList()))
+                largestVectorSize = Math.max(largestVectorSize, result.averageTestingAreasUnderTheCurve.keySet().size());
+            for (ExperimentResults result : results.values().stream().flatMap(Collection::stream).collect(Collectors.toList()))
+                largestVectorSize = Math.max(largestVectorSize, result.averageEvaluationAreasUnderTheCurve.keySet().size());
             StringJoiner xStringJoiner = new StringJoiner(",", "[", "]");
             for (int xIndex = 0; xIndex < largestVectorSize; xIndex++)
                 xStringJoiner.add(String.valueOf(xIndex));
             writer.write("x = " + xStringJoiner.toString() + ";\n");
             Map<ScoringFunction, Integer> scoringFunctionIndexMap = new HashMap<>();
             int currentScoringFunctionIndex = 1;
+            int xLimit = 0;
             double averageAreaUnderCurveYLimitMax = 0;
             double averageAreaUnderCurveYLimitMin = Double.MAX_VALUE;
             double predictionAccuracyYLimitMax = 0;
@@ -552,20 +636,38 @@ public class ConstrainedLearningExperiment {
                         writer.write(simpleMapToMatlabString(result.averageAreasUnderTheCurve, methodName, ResultType.AVERAGE_AUC_FULL_DATA_SET.name().toLowerCase(), "1.0", experimentIndex, largestVectorSize) + "\n");
                         averageAreaUnderCurveYLimitMax = Math.max(averageAreaUnderCurveYLimitMax, result.averageAreasUnderTheCurve.values().stream().mapToDouble(x -> x).max().orElse(0.0));
                         averageAreaUnderCurveYLimitMin = Math.min(averageAreaUnderCurveYLimitMin, result.averageAreasUnderTheCurve.values().stream().mapToDouble(x -> x).min().orElse(0.0));
+                        xLimit = Math.max(xLimit, result.averageAreasUnderTheCurve.keySet().stream().mapToInt(x -> x).max().orElse(0));
                     }
-                    if (resultTypes.contains(ResultType.AVERAGE_AUC_TESTING_DATA_SET))
+                    if (resultTypes.contains(ResultType.AVERAGE_AUC_TESTING_DATA_SET)) {
                         writer.write(simpleMapToMatlabString(result.averageTestingAreasUnderTheCurve, methodName, ResultType.AVERAGE_AUC_TESTING_DATA_SET.name().toLowerCase(), "1.0", experimentIndex, largestVectorSize) + "\n");
-                    if (resultTypes.contains(ResultType.AVERAGE_AUC_EVALUATION_DATA_SET))
+                        averageAreaUnderCurveYLimitMax = Math.max(averageAreaUnderCurveYLimitMax, result.averageTestingAreasUnderTheCurve.values().stream().mapToDouble(x -> x).max().orElse(0.0));
+                        averageAreaUnderCurveYLimitMin = Math.min(averageAreaUnderCurveYLimitMin, result.averageTestingAreasUnderTheCurve.values().stream().mapToDouble(x -> x).min().orElse(0.0));
+                        xLimit = Math.max(xLimit, result.averageTestingAreasUnderTheCurve.keySet().stream().mapToInt(x -> x).max().orElse(0));
+                    }
+                    if (resultTypes.contains(ResultType.AVERAGE_AUC_EVALUATION_DATA_SET)) {
                         writer.write(simpleMapToMatlabString(result.averageEvaluationAreasUnderTheCurve, methodName, ResultType.AVERAGE_AUC_EVALUATION_DATA_SET.name().toLowerCase(), null, experimentIndex, largestVectorSize) + "\n");
+                        averageAreaUnderCurveYLimitMax = Math.max(averageAreaUnderCurveYLimitMax, result.averageEvaluationAreasUnderTheCurve.values().stream().mapToDouble(x -> x).max().orElse(0.0));
+                        averageAreaUnderCurveYLimitMin = Math.min(averageAreaUnderCurveYLimitMin, result.averageEvaluationAreasUnderTheCurve.values().stream().mapToDouble(x -> x).min().orElse(0.0));
+                        xLimit = Math.max(xLimit, result.averageEvaluationAreasUnderTheCurve.keySet().stream().mapToInt(x -> x).max().orElse(0));
+                    }
                     if (resultTypes.contains(ResultType.PREDICTION_ACCURACY_FULL_DATA_SET)) {
                         writer.write(simpleMapToMatlabString(result.predictionAccuracies, methodName, ResultType.PREDICTION_ACCURACY_FULL_DATA_SET.name().toLowerCase(), "1.0", experimentIndex, largestVectorSize) + "\n");
                         predictionAccuracyYLimitMax = Math.max(predictionAccuracyYLimitMax, result.predictionAccuracies.values().stream().mapToDouble(x -> x).max().orElse(0.0));
                         predictionAccuracyYLimitMin = Math.min(predictionAccuracyYLimitMin, result.predictionAccuracies.values().stream().mapToDouble(x -> x).min().orElse(0.0));
+                        xLimit = Math.max(xLimit, result.predictionAccuracies.keySet().stream().mapToInt(x -> x).max().orElse(0));
                     }
-                    if (resultTypes.contains(ResultType.PREDICTION_ACCURACY_TESTING_DATA_SET))
+                    if (resultTypes.contains(ResultType.PREDICTION_ACCURACY_TESTING_DATA_SET)) {
                         writer.write(simpleMapToMatlabString(result.testingPredictionAccuracies, methodName, ResultType.PREDICTION_ACCURACY_TESTING_DATA_SET.name().toLowerCase(), "1.0", experimentIndex, largestVectorSize) + "\n");
-                    if (resultTypes.contains(ResultType.PREDICTION_ACCURACY_EVALUATION_DATA_SET))
+                        predictionAccuracyYLimitMax = Math.max(predictionAccuracyYLimitMax, result.testingPredictionAccuracies.values().stream().mapToDouble(x -> x).max().orElse(0.0));
+                        predictionAccuracyYLimitMin = Math.min(predictionAccuracyYLimitMin, result.testingPredictionAccuracies.values().stream().mapToDouble(x -> x).min().orElse(0.0));
+                        xLimit = Math.max(xLimit, result.testingPredictionAccuracies.keySet().stream().mapToInt(x -> x).max().orElse(0));
+                    }
+                    if (resultTypes.contains(ResultType.PREDICTION_ACCURACY_EVALUATION_DATA_SET)) {
                         writer.write(simpleMapToMatlabString(result.evaluationPredictionAccuracies, methodName, ResultType.PREDICTION_ACCURACY_EVALUATION_DATA_SET.name().toLowerCase(), null, experimentIndex, largestVectorSize) + "\n");
+                        predictionAccuracyYLimitMax = Math.max(predictionAccuracyYLimitMax, result.evaluationPredictionAccuracies.values().stream().mapToDouble(x -> x).max().orElse(0.0));
+                        predictionAccuracyYLimitMin = Math.min(predictionAccuracyYLimitMin, result.evaluationPredictionAccuracies.values().stream().mapToDouble(x -> x).min().orElse(0.0));
+                        xLimit = Math.max(xLimit, result.evaluationPredictionAccuracies.keySet().stream().mapToInt(x -> x).max().orElse(0));
+                    }
                     if (resultTypes.contains(ResultType.NUMBER_OF_EXAMPLES_PICKED)) {
                         writer.write(simpleMapToMatlabString(result.numberOfExamplesPicked, methodName, ResultType.NUMBER_OF_EXAMPLES_PICKED.name().toLowerCase(), null, experimentIndex, largestVectorSize) + "\n");
                         numberOfFixedExamplesYLimitMax = Math.max(numberOfFixedExamplesYLimitMax, result.numberOfExamplesPicked.values().stream().mapToDouble(x -> x).max().orElse(0.0));
@@ -581,7 +683,7 @@ public class ConstrainedLearningExperiment {
             writer.write("figure;\n");
             writer.write("setappdata(gcf, 'SubplotDefaultAxesLocation', [0.05, 0.3, 0.9, 0.7]);\n");
             int plotIndex = 1;
-            int xLimit = Integer.MAX_VALUE;
+            int pDefined = -1;
             double auc1YLimitMax = 0;
             for (ResultType resultType : resultTypes) {
                 if (resultType != ResultType.TOTAL_TIME_TAKEN) {
@@ -592,15 +694,17 @@ public class ConstrainedLearningExperiment {
                             && resultType != ResultType.AUC_1_ITERATIONS_EVALUATION_DATA_SET) {
                         for (Map.Entry<ScoringFunction, List<ExperimentResults>> resultsEntry : results.entrySet()) {
                             String methodName = resultsEntry.getKey().toString().toLowerCase().replace("-", "_");
-                            if (plotIndex == 1)
+                            if (pDefined < 0 || pDefined == plotIndex) {
                                 writer.write("p(" + scoringFunctionIndexMap.get(resultsEntry.getKey()) + ") = plot(x, " +
-                                                     "mean(y_" + methodName + "_" + resultType.name().toLowerCase() +
-                                                     ", 1), 'Color', [" + matlabPlotColorsMap.get(resultsEntry.getKey()) +
-                                                     ", 0.8], 'LineWidth', 3);\n");
-                            else
+                                        "mean(y_" + methodName + "_" + resultType.name().toLowerCase() +
+                                        ", 1), 'Color', [" + matlabPlotColorsMap.get(resultsEntry.getKey()) +
+                                        ", 0.8], 'LineWidth', 3);\n");
+                                pDefined = plotIndex;
+                            } else {
                                 writer.write("plot(x, mean(y_" + methodName + "_" + resultType.name().toLowerCase() +
-                                                     ", 1), 'Color', [" + matlabPlotColorsMap.get(resultsEntry.getKey()) +
-                                                     ", 0.8], 'LineWidth', 3);\n");
+                                        ", 1), 'Color', [" + matlabPlotColorsMap.get(resultsEntry.getKey()) +
+                                        ", 0.8], 'LineWidth', 3);\n");
+                            }
                         }
                     } else {
                         StringJoiner xTicks = new StringJoiner(",", "[", "]");
@@ -616,23 +720,30 @@ public class ConstrainedLearningExperiment {
                                     .append("), 'FaceColor', [")
                                     .append(matlabPlotColorsMap.get(resultsEntry.getKey()))
                                     .append("]);\n");
-                            xLimit = Math.min(xLimit, (int) Math.floor(resultsEntry.getValue()
-                                                                               .stream()
-                                                                               .mapToDouble(result -> result.auc1IterationsFull)
-                                                                               .average()
-                                                                               .orElse(0.0)));
                             auc1YLimitMax = Math.max(auc1YLimitMax,
-                                                     resultsEntry.getValue()
-                                                             .stream()
-                                                             .mapToDouble(result -> result.auc1IterationsFull)
-                                                             .max()
-                                                             .orElse(0.0));
+                                    resultsEntry.getValue()
+                                            .stream()
+                                            .mapToDouble(result -> result.auc1IterationsFull)
+                                            .max()
+                                            .orElse(0.0));
+                            auc1YLimitMax = Math.max(auc1YLimitMax,
+                                    resultsEntry.getValue()
+                                            .stream()
+                                            .mapToDouble(result -> result.auc1IterationsTesting)
+                                            .max()
+                                            .orElse(0.0));
+                            auc1YLimitMax = Math.max(auc1YLimitMax,
+                                    resultsEntry.getValue()
+                                            .stream()
+                                            .mapToDouble(result -> result.auc1IterationsEvaluation)
+                                            .max()
+                                            .orElse(0.0));
                             switch (resultType) {
                                 case AUC_1_ITERATIONS_FULL_DATA_SET:
                                     yValues.add(String.valueOf(resultsEntry.getValue()
-                                                                       .stream()
-                                                                       .mapToDouble(result -> result.auc1IterationsFull)
-                                                                       .average()
+                                            .stream()
+                                            .mapToDouble(result -> result.auc1IterationsFull)
+                                            .average()
                                                                        .orElse(0.0)));
                                     break;
                                 case AUC_1_ITERATIONS_TESTING_DATA_SET:
@@ -658,47 +769,32 @@ public class ConstrainedLearningExperiment {
                     }
                     if (includeTitle)
                         switch (resultType) {
-//                            case AVERAGE_AUC_FULL_DATA_SET:
-//                                writer.write("title('Average AUC Over Full Data Set');\n");
-//                                break;
-//                            case AVERAGE_AUC_TESTING_DATA_SET:
-//                                writer.write("title('Average AUC Over Unlabeled Data Set');\n");
-//                                break;
-//                            case AVERAGE_AUC_EVALUATION_DATA_SET:
-//                                writer.write("title('Average AUC Over Evaluation Data Set');\n");
-//                                break;
                             case AVERAGE_AUC_FULL_DATA_SET:
+                                writer.write("title({'Average AUC Full', ''});\n");
+                                break;
                             case AVERAGE_AUC_TESTING_DATA_SET:
+                                writer.write("title({'Average AUC Testing', ''});\n");
+                                break;
                             case AVERAGE_AUC_EVALUATION_DATA_SET:
-                                writer.write("title({'Average AUC', ''});\n");
+                                writer.write("title({'Average AUC Evaluation', ''});\n");
                                 break;
-//                            case AUC_1_ITERATIONS_FULL_DATA_SET:
-//                                writer.write("title('Number of Iterations Until Average AUC 1 Over Full Data Set');\n");
-//                                break;
-//                            case AUC_1_ITERATIONS_TESTING_DATA_SET:
-//                                writer.write("title('Number of Iterations Until Average AUC 1 Over Unlabeled Data Set');\n");
-//                                break;
-//                            case AUC_1_ITERATIONS_EVALUATION_DATA_SET:
-//                                writer.write("title('Number of Iterations Until Average AUC 1 Over Evaluation Data Set');\n");
-//                                break;
                             case AUC_1_ITERATIONS_FULL_DATA_SET:
-                            case AUC_1_ITERATIONS_TESTING_DATA_SET:
-                            case AUC_1_ITERATIONS_EVALUATION_DATA_SET:
-                                writer.write("title({'Iterations until Average AUC=1', ''});\n");
+                                writer.write("title({'Iterations until Average AUC Full=1', ''});\n");
                                 break;
-//                            case PREDICTION_ACCURACY_FULL_DATA_SET:
-//                                writer.write("title('Prediction Accuracy Over Full Data Set');\n");
-//                                break;
-//                            case PREDICTION_ACCURACY_TESTING_DATA_SET:
-//                                writer.write("title('Prediction Accuracy Over Unlabeled Data Set');\n");
-//                                break;
-//                            case PREDICTION_ACCURACY_EVALUATION_DATA_SET:
-//                                writer.write("title('Prediction Accuracy Over Evaluation Data Set');\n");
-//                                break;
+                            case AUC_1_ITERATIONS_TESTING_DATA_SET:
+                                writer.write("title({'Iterations until Average AUC Testing=1', ''});\n");
+                                break;
+                            case AUC_1_ITERATIONS_EVALUATION_DATA_SET:
+                                writer.write("title({'Iterations until Average AUC Evaluation=1', ''});\n");
+                                break;
                             case PREDICTION_ACCURACY_FULL_DATA_SET:
+                                writer.write("title({'Prediction Accuracy Full', ''});\n");
+                                break;
                             case PREDICTION_ACCURACY_TESTING_DATA_SET:
+                                writer.write("title({'Prediction Accuracy Testing', ''});\n");
+                                break;
                             case PREDICTION_ACCURACY_EVALUATION_DATA_SET:
-                                writer.write("title({'Prediction Accuracy', ''});\n");
+                                writer.write("title({'Prediction Accuracy Evaluation', ''});\n");
                                 break;
                             case NUMBER_OF_EXAMPLES_PICKED:
                                 writer.write("title({'Number of Fixed Labels', ''});\n");
@@ -1453,6 +1549,22 @@ public class ConstrainedLearningExperiment {
         return sortedResults;
     }
 
+    public static String execReadToString(String execCommand) {
+        try {
+            Process proc = Runtime.getRuntime().exec(execCommand);
+            try (InputStream stream = proc.getInputStream()) {
+                try (Scanner s = new Scanner(stream).useDelimiter("\\A")) {
+                    return s.hasNext() ? s.next() : "";
+                }
+            } catch (Exception e) {
+                logger.error(e);
+            }
+        } catch (Exception e) {
+            logger.error(e);
+        }
+        return null;
+    }
+
     public static void main(String[] args) {
         int numberOfExperimentRepetitions = 2;
         int numberOfExamplesToPickPerIteration = 1000000;
@@ -1462,10 +1574,11 @@ public class ConstrainedLearningExperiment {
         boolean includeVerticalAxisLabelInResultsPlot = true;
         boolean includeLegendInResultsPlot = true;
         ScoringFunction[] scoringFunctions = new ScoringFunction[] {
-//                new RandomScoringFunction(),
-//                new RandomScoringFunction(true),
+                new RandomScoringFunction(),
                 new EntropyScoringFunction(),
+                new RandomScoringFunction(true),
                 new EntropyScoringFunction(true),
+                new ExpectedLabelsFixedScoringFunction(true),
                 new ConstraintPropagationScoringFunction(true),
 //                new ConstraintPropagationScoringFunction(SurpriseFunction.NEGATIVE_LOGARITHM, false),
 //                new ConstraintPropagationScoringFunction(SurpriseFunction.ONE_MINUS_PROBABILITY, false),
@@ -1473,8 +1586,10 @@ public class ConstrainedLearningExperiment {
                 new ConstraintPropagationScoringFunction(SurpriseFunction.ONE_MINUS_PROBABILITY, true)
         };
         Set<ResultType> resultTypes = new LinkedHashSet<>();
-        resultTypes.add(ResultType.AUC_1_ITERATIONS_FULL_DATA_SET);
+//        resultTypes.add(ResultType.AUC_1_ITERATIONS_FULL_DATA_SET);
         resultTypes.add(ResultType.AVERAGE_AUC_FULL_DATA_SET);
+//        resultTypes.add(ResultType.AVERAGE_AUC_FULL_DATA_SET);
+        resultTypes.add(ResultType.AVERAGE_AUC_EVALUATION_DATA_SET);
 //        resultTypes.add(ResultType.PREDICTION_ACCURACY_FULL_DATA_SET);
         resultTypes.add(ResultType.NUMBER_OF_EXAMPLES_PICKED);
         boolean useLogicIntegrator = args[0].equals("1");
@@ -1482,198 +1597,131 @@ public class ConstrainedLearningExperiment {
         double negativeToPositiveTrainingExamplesRatio = 1;
         ExamplePickingMethod examplePickingMethod = ExamplePickingMethod.PSEUDO_SEQUENTIAL;
 
+        String experiment = args[2];
         String workingDirectory;
+        String cplFeatureMapDirectory;
+        switch (execReadToString("hostname")) {
+            case "Emmanouils-MBP.wv.cc.cmu.edu":
+                workingDirectory = "/Users/Anthony/Development/Data/NELL/Active Learning Experiment/";
+                cplFeatureMapDirectory = "/Users/Anthony/Development/Data/NELL/Server/all-pairs/all-pairs-OC-2011-02-02-smallcontexts50-gz";
+                break;
+            case "gpu1.learning.cs.cmu.edu":
+            case "gpu2.learning.cs.cmu.edu":
+            case "gpu3.learning.cs.cmu.edu":
+                workingDirectory = "/home/eplatani/data/active_learning/";
+                cplFeatureMapDirectory = "/home/eplatani/data/nell/all_pairs/all-pairs-OC-2011-02-02-smallcontexts50-gz";
+                break;
+            default:
+                throw new IllegalStateException("Unsupported hostname.");
+        }
         ImportedDataSet dataSet;
         Map<ScoringFunction, List<ExperimentResults>> results;
 
-//        // NELL Data Set Experiment
-//        logger.info("Running NELL experiment...");
-//        numberOfExperimentRepetitions = 10;
-//        numberOfExamplesToPickPerIteration = 1000;
-//        maximumNumberOfIterations = 1000;
-//        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment NELL 13 Class - LogicIteration";
-////        workingDirectory = "/home/eplatani/active_learning/data/Experiment NELL 11 Class - LogicIteration";
-//        String cplFeatureMapDirectory = "/Volumes/Macintosh HD/Users/Anthony/Development/Data Sets/NELL/Server/all-pairs/all-pairs-OC-2011-02-02-smallcontexts50-gz";
-////        String cplFeatureMapDirectory = "/nell/data/all-pairs-dir/all-pairs-OC-2011-02-02-smallcontexts50-gz";
-//        dataSet = importNELLData(cplFeatureMapDirectory, workingDirectory, negativeToPositiveTrainingExamplesRatio, 0, 0);
-
-        // IRIS Data Set Experiment
-        logger.info("Running IRIS experiment...");
+        // NELL Data Set Experiment
+        logger.info("Running " + experiment + " experiment...");
+        workingDirectory += "Experiment " + experiment + " - LogicIteration";
         numberOfExperimentRepetitions = 10;
-        numberOfExamplesToPickPerIteration = 1;
-        maximumNumberOfIterations = 1000;
-        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment IRIS - LogicIteration";
-        dataSet = importISOLETDataSet(workingDirectory, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
-
-//        // DNA Data Set Experiment
-//        logger.info("Running DNA experiment...");
-//        numberOfExperimentRepetitions = 10;
-//        numberOfExamplesToPickPerIteration = 50;
-//        maximumNumberOfIterations = 1000;
-//        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment DNA - LogicIteration";
-//        dataSet = importLIBSVMDataSet(workingDirectory, true, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
-
-//        // LETTER Data Set Experiment
-//        logger.info("Running LETTER experiment...");
-//        numberOfExperimentRepetitions = 10;
-//        numberOfExamplesToPickPerIteration = 1000;
-//        maximumNumberOfIterations = 100000;
-//        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment LETTER - LogicIteration";
-//        dataSet = importLIBSVMDataSet(workingDirectory, false, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
-
-//        // PENDIGITS Data Set Experiment
-//        logger.info("Running PENDIGITS experiment...");
-//        numberOfExperimentRepetitions = 10;
-//        numberOfExamplesToPickPerIteration = 100;
-//        maximumNumberOfIterations = 100000;
-//        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment PENDIGITS - LogicIteration";
-//        dataSet = importLIBSVMDataSet(workingDirectory, false, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
-
-//        // ISOLET Data Set Experiment
-//        logger.info("Running ISOLET experiment...");
-//        numberOfExperimentRepetitions = 10;
-//        numberOfExamplesToPickPerIteration = 1000;
-//        maximumNumberOfIterations = 100000;
-//        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment ISOLET - LogicIteration";
-//        dataSet = importISOLETDataSet(workingDirectory, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
-
-//        // PROTEIN Data Set Experiment
-//        logger.info("Running PROTEIN experiment...");
-//        numberOfExperimentRepetitions = 10;
-//        numberOfExamplesToPickPerIteration = 100;
-//        maximumNumberOfIterations = 2000;
-//        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment PROTEIN - LogicIteration";
-//        dataSet = importLIBSVMDataSet(workingDirectory, false, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
-
-//        // SATIMAGE Data Set Experiment
-//        logger.info("Running SATIMAGE experiment...");
-//        numberOfExperimentRepetitions = 10;
-//        numberOfExamplesToPickPerIteration = 100;
-//        maximumNumberOfIterations = 100000;
-//        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment SATIMAGE - LogicIteration";
-//        dataSet = importLIBSVMDataSet(workingDirectory, false, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
-
-//        // VOWEL Data Set Experiment
-//        logger.info("Running VOWEL experiment...");
-//        numberOfExperimentRepetitions = 10;
-//        numberOfExamplesToPickPerIteration = 10;
-//        maximumNumberOfIterations = 100000;
-//        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment VOWEL - LogicIteration";
-//        dataSet = importLIBSVMDataSet(workingDirectory, false, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
-
-//        // SHUTTLE Data Set Experiment
-//        logger.info("Running SHUTTLE experiment...");
-//        numberOfExperimentRepetitions = 10;
-//        numberOfExamplesToPickPerIteration = 1000;
-//        maximumNumberOfIterations = 100000;
-//        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment SHUTTLE - LogicIteration";
-//        dataSet = importLIBSVMDataSet(workingDirectory, false, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
-
-//        // SENSIT-VEHICLE Data Set Experiment
-//        logger.info("Running SENSIT-VEHICLE experiment...");
-//        numberOfExperimentRepetitions = 10;
-//        numberOfExamplesToPickPerIteration = 1000;
-//        maximumNumberOfIterations = 100000;
-//        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment SENSIT-VEHICLE - LogicIteration";
-//        dataSet = importLIBSVMDataSet(workingDirectory, false, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
-
-//        // WINE Data Set Experiment
-//        logger.info("Running WINE experiment...");
-//        numberOfExperimentRepetitions = 10;
-//        numberOfExamplesToPickPerIteration = 1;
-//        maximumNumberOfIterations = 1000;
-//        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment WINE - LogicIteration";
-//        dataSet = importLIBSVMDataSet(workingDirectory, false, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
-
-//        // SENSIT-VEHICLE-SEISMIC Data Set Experiment
-//        logger.info("Running SENSIT-VEHICLE-SEISMIC experiment...");
-//        numberOfExperimentRepetitions = 1;
-//        initialNumberOfExamples = 1000;
-//        initialRatioOfPositiveExamples = 0.3;
-//        numberOfExamplesToPickPerIteration = 10000;
-//        String workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment SENSIT-VEHICLE-SEISMIC";
-//        ImportedDataSet sensitVehicleSeismicTypeDataSet = importLIBSVMDataSet(workingDirectory, false);
-//        runExperiments(numberOfExperimentRepetitions,
-//                       initialNumberOfExamples,
-//                       initialRatioOfPositiveExamples,
-//                       numberOfExamplesToPickPerIteration,
-//                       workingDirectory,
-//                       activeLearningMethods,
-//                       examplePickingMethod,
-//                       sensitVehicleSeismicTypeDataSet,
-//                       resultTypes);
-//        logger.info("Finished all experiments!");
-
-//        // GLASS Data Set Experiment
-//        logger.info("Running GLASS experiment...");
-//        numberOfExperimentRepetitions = 10;
-//        numberOfExamplesToPickPerIteration = 10;
-//        maximumNumberOfIterations = 10000000;
-//        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment GLASS - LogicIteration";
-//        dataSet = importLIBSVMDataSet(workingDirectory, false, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
-
-//        // VEHICLE Data Set Experiment
-//        logger.info("Running VEHICLE experiment...");
-//        numberOfExperimentRepetitions = 10;
-//        numberOfExamplesToPickPerIteration = 10;
-//        maximumNumberOfIterations = 1000;
-//        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment VEHICLE";
-//        dataSet = importLIBSVMDataSet(workingDirectory, false, 0.0, 0.0);
-
-//        // MNIST Data Set Experiment
-//        logger.info("Running MNIST experiment...");
-//        numberOfExperimentRepetitions = 1;
-//        numberOfExamplesToPickPerIteration = 10000;
-//        maximumNumberOfIterations = 100000;
-////        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment MNIST - LogicIteration";
-//        workingDirectory = "/home/eplatani/active_learning/data/Experiment MNIST - LogicIteration";
-//        dataSet = importLIBSVMDataSet(workingDirectory, true, 0.0, 0.0);
-
-//        // SEGMENT Data Set Experiment
-//        logger.info("Running SEGMENT experiment...");
-//        numberOfExperimentRepetitions = 10;
-//        numberOfExamplesToPickPerIteration = 100;
-//        maximumNumberOfIterations = 1000;
-//        workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment SEGMENT - LogicIteration";
-//        dataSet = importLIBSVMDataSet(workingDirectory, false, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
-
-//        // COVTYPE Data Set Experiment
-//        logger.info("Running COVTYPE experiment...");
-//        numberOfExperimentRepetitions = 5;
-//        initialNumberOfExamples = 10000;
-//        initialRatioOfPositiveExamples = 0.1;
-//        numberOfExamplesToPickPerIteration = 10000;
-//        String workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment COVTYPE";
-//        ImportedDataSet covTypeDataSet = importLIBSVMDataSet(workingDirectory, true);
-//        runExperiments(numberOfExperimentRepetitions,
-//                       initialNumberOfExamples,
-//                       initialRatioOfPositiveExamples,
-//                       numberOfExamplesToPickPerIteration,
-//                       workingDirectory,
-//                       activeLearningMethods,
-//                       examplePickingMethod,
-//                       covTypeDataSet,
-//                       resultTypes);
-//        logger.info("Finished all experiments!");
-
-//        // NEWS20 Data Set Experiment
-//        logger.info("Running NEWS20 experiment...");
-//        numberOfExperimentRepetitions = 1;
-//        initialNumberOfExamples = 1000;
-//        initialRatioOfPositiveExamples = 0.3;
-//        numberOfExamplesToPickPerIteration = 10000;
-//        String workingDirectory = "/Users/Anthony/Development/Data Sets/NELL/Active Learning Experiment/Experiment NEWS20";
-//        ImportedDataSet news20TypeDataSet = importLIBSVMDataSet(workingDirectory, true);
-//        runExperiments(numberOfExperimentRepetitions,
-//                       initialNumberOfExamples,
-//                       initialRatioOfPositiveExamples,
-//                       numberOfExamplesToPickPerIteration,
-//                       workingDirectory,
-//                       activeLearningMethods,
-//                       examplePickingMethod,
-//                       news20TypeDataSet,
-//                       resultTypes);
-//        logger.info("Finished all experiments!");
+        switch (experiment) {
+            case "NELL 7 Class":
+            case "NELL 11 Class":
+            case "NELL 13 Class":
+                numberOfExamplesToPickPerIteration = 1000;
+                maximumNumberOfIterations = 1000;
+                dataSet = importNELLDataSet(cplFeatureMapDirectory, workingDirectory, negativeToPositiveTrainingExamplesRatio, 0, 0);
+                break;
+            case "IRIS":
+                numberOfExamplesToPickPerIteration = 1;
+                maximumNumberOfIterations = 1000;
+                dataSet = importISOLETDataSet(workingDirectory, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
+                break;
+            case "DNA":
+                numberOfExamplesToPickPerIteration = 50;
+                maximumNumberOfIterations = 1000;
+                dataSet = importLIBSVMDataSet(workingDirectory, true, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
+                break;
+            case "LETTER":
+                numberOfExamplesToPickPerIteration = 1000;
+                maximumNumberOfIterations = 100000;
+                dataSet = importLIBSVMDataSet(workingDirectory, true, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
+                break;
+            case "PENDIGITS":
+                numberOfExamplesToPickPerIteration = 100;
+                maximumNumberOfIterations = 100000;
+                dataSet = importLIBSVMDataSet(workingDirectory, false, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
+                break;
+            case "ISOLET":
+                numberOfExamplesToPickPerIteration = 1000;
+                maximumNumberOfIterations = 100000;
+                dataSet = importISOLETDataSet(workingDirectory, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
+                break;
+            case "PROTEIN":
+                numberOfExamplesToPickPerIteration = 100;
+                maximumNumberOfIterations = 2000;
+                dataSet = importLIBSVMDataSet(workingDirectory, false, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
+                break;
+            case "SATIMAGE":
+                numberOfExamplesToPickPerIteration = 100;
+                maximumNumberOfIterations = 100000;
+                dataSet = importLIBSVMDataSet(workingDirectory, false, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
+                break;
+            case "VOWEL":
+                numberOfExamplesToPickPerIteration = 10;
+                maximumNumberOfIterations = 100000;
+                dataSet = importLIBSVMDataSet(workingDirectory, false, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
+                break;
+            case "SHUTTLE":
+                numberOfExamplesToPickPerIteration = 1000;
+                maximumNumberOfIterations = 100000;
+                dataSet = importLIBSVMDataSet(workingDirectory, false, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
+                break;
+            case "SENSIT-VEHICLE":
+                numberOfExamplesToPickPerIteration = 1000;
+                maximumNumberOfIterations = 100000;
+                dataSet = importLIBSVMDataSet(workingDirectory, false, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
+                break;
+            case "SENSIT-VEHICLE-SEISMIC":
+                numberOfExamplesToPickPerIteration = 1000;
+                maximumNumberOfIterations = 10000;
+                dataSet = importLIBSVMDataSet(workingDirectory, false, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
+                break;
+            case "WINE":
+                numberOfExamplesToPickPerIteration = 1;
+                maximumNumberOfIterations = 1000;
+                dataSet = importLIBSVMDataSet(workingDirectory, false, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
+                break;
+            case "GLASS":
+                numberOfExamplesToPickPerIteration = 10;
+                maximumNumberOfIterations = 10000000;
+                dataSet = importLIBSVMDataSet(workingDirectory, false, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
+                break;
+            case "VEHICLE":
+                numberOfExamplesToPickPerIteration = 10;
+                maximumNumberOfIterations = 1000;
+                dataSet = importLIBSVMDataSet(workingDirectory, false, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
+                break;
+            case "MNIST":
+                numberOfExamplesToPickPerIteration = 10000;
+                maximumNumberOfIterations = 100000;
+                dataSet = importLIBSVMDataSet(workingDirectory, true, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
+                break;
+            case "SEGMENT":
+                numberOfExamplesToPickPerIteration = 100;
+                maximumNumberOfIterations = 1000;
+                dataSet = importLIBSVMDataSet(workingDirectory, false, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
+                break;
+            case "COVTYPE":
+                numberOfExamplesToPickPerIteration = 10000;
+                maximumNumberOfIterations = 1000000;
+                dataSet = importLIBSVMDataSet(workingDirectory, true, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
+                break;
+            case "NEWS20":
+                numberOfExamplesToPickPerIteration = 10000;
+                maximumNumberOfIterations = 1000000;
+                dataSet = importLIBSVMDataSet(workingDirectory, true, negativeToPositiveTrainingExamplesRatio, 0.0, 0.0);
+                break;
+            default:
+                throw new IllegalStateException("Unsupported dataset name.");
+        }
 
         String resultsDirectoryName;
         if (retrainClassifiers && useLogicIntegrator)
