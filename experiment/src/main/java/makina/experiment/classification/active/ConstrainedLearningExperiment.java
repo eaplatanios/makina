@@ -1553,7 +1553,7 @@ public class ConstrainedLearningExperiment {
         try {
             Process proc = Runtime.getRuntime().exec(execCommand);
             try (InputStream stream = proc.getInputStream()) {
-                try (Scanner s = new Scanner(stream).useDelimiter("\\A")) {
+                try (Scanner s = new Scanner(stream).useDelimiter("\n")) {
                     return s.hasNext() ? s.next() : "";
                 }
             } catch (Exception e) {
@@ -1600,7 +1600,8 @@ public class ConstrainedLearningExperiment {
         String experiment = args[2];
         String workingDirectory;
         String cplFeatureMapDirectory;
-        switch (execReadToString("hostname")) {
+        String hostname = execReadToString("hostname");
+        switch (hostname) {
             case "Emmanouils-MBP.wv.cc.cmu.edu":
                 workingDirectory = "/Users/Anthony/Development/Data/NELL/Active Learning Experiment/";
                 cplFeatureMapDirectory = "/Users/Anthony/Development/Data/NELL/Server/all-pairs/all-pairs-OC-2011-02-02-smallcontexts50-gz";
@@ -1612,7 +1613,7 @@ public class ConstrainedLearningExperiment {
                 cplFeatureMapDirectory = "/home/eplatani/data/nell/all_pairs/all-pairs-OC-2011-02-02-smallcontexts50-gz";
                 break;
             default:
-                throw new IllegalStateException("Unsupported hostname.");
+                throw new IllegalStateException("Unsupported hostname \"" + hostname + "\".");
         }
         ImportedDataSet dataSet;
         Map<ScoringFunction, List<ExperimentResults>> results;
