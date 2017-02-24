@@ -59,7 +59,7 @@ public class IntegratorExperiment {
 
     private void runExperiment(String methodName, boolean detailedLog) {
         Integrator integrator;
-        int experimentRepetitions = 1;
+        int experimentRepetitions = 2;
         Matcher patternMatcher = Pattern.compile("([^\\[\\]]*)(?:\\[(.*?)\\])?").matcher(methodName);
         if (patternMatcher.find()) {
             methodName = patternMatcher.group(1);
@@ -243,11 +243,21 @@ public class IntegratorExperiment {
                     CollectionUtilities.sortByValue(sampleErrorRatesMap.get(label)).entrySet().stream()
                             .map(Map.Entry::getKey)
                             .collect(Collectors.toList());
+            int[] ranks = new int[rankedByErrorRate.size()];
+            int[] sampleRanks = new int[rankedByErrorRate.size()];
             for (int i = 0; i < rankedByErrorRate.size(); i++) {
-                double adErrorRank = Math.abs(rankedByErrorRate.get(i) - rankedBySampleErrorRate.get(i));
-                madErrorRank[0] += adErrorRank;
-                madErrorRankWeighted[0] += adErrorRank * numberOfInstances.get(label);
+                ranks[rankedByErrorRate.get(i)] = i;
+                sampleRanks[rankedBySampleErrorRate.get(i)] = i;
             }
+            double tempMadErrorRank = 0.0;
+            double tempMadErrorRankWeighted = 0.0;
+            for (int i = 0; i < rankedByErrorRate.size(); i++) {
+                double adErrorRank = Math.abs(ranks[i] - sampleRanks[i]);
+                tempMadErrorRank += adErrorRank;
+                tempMadErrorRankWeighted += adErrorRank * numberOfInstances.get(label);
+            }
+            madErrorRank[0] += tempMadErrorRank / rankedByErrorRate.size();
+            madErrorRankWeighted[0] += tempMadErrorRankWeighted / rankedByErrorRate.size(); // TODO: Fix bug.
             double[] adLabel = {0};
             double[] adHardLabel = {0};
             int[] numberOfSamples = {0};
@@ -606,7 +616,6 @@ public class IntegratorExperiment {
                 List<Integrator.Data.PredictedInstance> predictedInstances = new ArrayList<>();
                 for (DataSets.NELLData.Instance instance : nellData) {
                     int instanceID = instanceIds.computeIfAbsent(instance.nounPhrase(), key -> instanceIds.size());
-                    int componentID = componentIds.computeIfAbsent(instance.component(), key -> componentIds.size());
                     if (instance.component().equals("KI"))
                         observedInstances.add(new Integrator.Data.ObservedInstance(instanceID,
                                                                                    new Label(instance.category()),
@@ -615,7 +624,7 @@ public class IntegratorExperiment {
                         predictedInstances.add(new Integrator.Data.PredictedInstance(
                                 instanceID,
                                 new Label(instance.category()),
-                                componentID,
+                                componentIds.computeIfAbsent(instance.component(), key -> componentIds.size()),
                                 softPredictions ? instance.probability() : (instance.probability() >= 0.5 ? 1.0 : 0.0))
                         );
                 }

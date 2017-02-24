@@ -64,11 +64,11 @@ public final class LogicIntegrator extends Integrator {
 
         public AbstractBuilder(Data<Data.PredictedInstance> predictedData, Data<Data.ObservedInstance> observedData) {
             super(predictedData);
-            if (observedData != null)
-                extractLabelsSet(observedData);
-            extractLabelsSet(predictedData);
-            extractClassifiersSet(predictedData);
             this.observedData = observedData;
+            if (this.observedData != null)
+                extractLabelsSet(this.observedData);
+            extractLabelsSet(data);
+            extractClassifiersSet(data);
         }
 
         private AbstractBuilder(String predictedDataFilename) {
@@ -385,7 +385,11 @@ public final class LogicIntegrator extends Integrator {
             assignment = new ArrayList<>(2);
             assignment.add(instanceKeysMap.inverse().get(instance.id()));
             assignment.add(labelKeysMap.inverse().get(instance.label()));
-            GroundPredicate integratedLabelPredicate = logicManager.addGroundPredicate(labelPredicate, assignment, null);
+            GroundPredicate integratedLabelPredicate;
+            if (!logicManager.checkIfGroundPredicateExists(labelPredicate, assignment))
+                integratedLabelPredicate = logicManager.addGroundPredicate(labelPredicate, assignment, null);
+            else
+                integratedLabelPredicate = logicManager.getGroundPredicate(labelPredicate, assignment);
             ensembleRulePredicates.add(integratedLabelPredicate);
             majorityVotePriorRulePredicates.add(integratedLabelPredicate);
             pslBuilder.addRule(ensembleRulePredicates, new boolean[] { true, false, false }, 2, 1);

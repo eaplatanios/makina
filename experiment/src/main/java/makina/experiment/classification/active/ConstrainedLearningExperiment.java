@@ -176,7 +176,7 @@ public class ConstrainedLearningExperiment {
 
     private <T> List<DataInstance<Vector>> shuffledInstances(Map<DataInstance<Vector>, Map<Label, T>> map) {
         List<DataInstance<Vector>> instances = new ArrayList<>(map.keySet());
-        Collections.shuffle(instances);
+        Collections.shuffle(instances, new Random(9999));
         return instances;
     }
 
