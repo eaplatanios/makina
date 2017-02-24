@@ -1597,7 +1597,7 @@ public class ConstrainedLearningExperiment {
         double negativeToPositiveTrainingExamplesRatio = 1;
         ExamplePickingMethod examplePickingMethod = ExamplePickingMethod.PSEUDO_SEQUENTIAL;
 
-        String experiment = args[2];
+        String experiment = args[2].replace("'", "");
         String workingDirectory;
         String cplFeatureMapDirectory;
         String hostname = execReadToString("hostname");
