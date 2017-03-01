@@ -15,7 +15,8 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
     private final Matrix identityMatrix;
     private final Method method;
     private final int m;
-
+    
+    private final Matrix initialHessian;
     private Matrix currentH;
     private Matrix previousH;
     Vector[] s;
@@ -24,10 +25,21 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
 
     private double symmetricRankOneSkippingParameter = 1e-8;
 
+    public final Vector currentPoint() {
+    	return currentPoint;
+    }
+    public final double currentValue() {
+    	return currentObjectiveValue;
+    }
+    public final Matrix currentH() {
+    	return this.currentH;
+    }
+
     protected static abstract class AbstractBuilder<T extends AbstractBuilder<T>>
             extends AbstractLineSearchSolver.AbstractBuilder<T> {
         private Method method = Method.BROYDEN_FLETCHER_GOLDFARB_SHANNO;
         private int m = 1;
+        private Matrix initialHessian = Matrix.identity(initialPoint.size());
         private double symmetricRankOneSkippingParameter = 1e-8;
 
         public AbstractBuilder(AbstractFunction objective, Vector initialPoint) {
@@ -56,6 +68,11 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
 
             this.m = m;
             return self();
+        }
+        
+        public T initialHessian(final Matrix initialHessian) {
+        	this.initialHessian = initialHessian;
+        	return self();
         }
 
         public T symmetricRankOneSkippingParameter(double symmetricRankOneSkippingParameter) {
@@ -90,9 +107,10 @@ public final class QuasiNewtonSolver extends AbstractLineSearchSolver {
         super(builder);
         method = builder.method;
         m = builder.m;
+        initialHessian = builder.initialHessian;
         symmetricRankOneSkippingParameter = builder.symmetricRankOneSkippingParameter;
         identityMatrix = Matrix.identity(builder.initialPoint.size());
-        currentH = identityMatrix;
+        currentH = initialHessian.copy();
         s = new Vector[m];
         y = new Vector[m];
     }
